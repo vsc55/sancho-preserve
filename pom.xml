@@ -6,15 +6,16 @@
 
     <groupId>org.sancho</groupId>
     <artifactId>sancho</artifactId>
-    <!-- This branch holds the 0.9.4-59 sources recovered by decompiling the last
-         published binary (CFR). Unlike the 0.9.4-23 source on main, -59 already
-         moved off the deprecated SWT TableTree onto Tree, so no Eclipse classes
-         are vendored and stock (signed) SWT/JFace jars are used directly. -->
-    <version>0.9.4-59</version>
+    <!-- 0.9.4-60: the 0.9.4-59 sources recovered by decompiling the last published
+         binary, ported to modern SWT/JFace and JDK 17+, plus bug fixes. See
+         CHANGELOG.md. -59 already used Tree (not the deprecated TableTree), but it
+         injects a few classes into org.eclipse.jface.viewers, so JFace is consumed
+         unsigned from local-repo. -->
+    <version>0.9.4-60</version>
     <packaging>jar</packaging>
 
     <name>Sancho</name>
-    <description>Java/SWT GUI for the MLDonkey P2P client (0.9.4-59, decompiled)</description>
+    <description>Java/SWT GUI for the MLDonkey P2P client (modernized 0.9.4 build)</description>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
