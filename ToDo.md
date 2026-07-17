@@ -44,6 +44,3 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
   tolerate table data that mutates mid-sort. A "proper" fix would snapshot the
   sort keys before sorting — larger and riskier; only worth it if the VM-level
   mitigation ever proves insufficient.
-- [ ] **The local `sancho-0.9.4-59/` folder** (313 MB, the published binary + a
-  bundled JRE used for decompilation) is git-ignored. Remove it locally once no
-  longer needed.
