@@ -6,7 +6,10 @@
 
     <groupId>org.sancho</groupId>
     <artifactId>sancho</artifactId>
-    <version>0.9.4-59</version>
+    <!-- Matches VersionInfo.VERSION in the source. The repo holds the 0.9.4-23
+         snapshot; the later published 0.9.4-59 binary was built from newer sources
+         that are not preserved here. -->
+    <version>0.9.4-23</version>
     <packaging>jar</packaging>
 
     <name>Sancho</name>
@@ -96,6 +99,8 @@
                     <archive>
                         <manifest>
                             <mainClass>sancho.core.Sancho</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
                         </manifest>
                     </archive>
                 </configuration>

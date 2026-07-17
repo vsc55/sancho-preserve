@@ -59,7 +59,7 @@ current JDK. It has been verified to build and launch on **Windows with JDK 17+*
 (tested with Temurin 25).
 
 ```bash
-mvn clean package        # compiles sancho-src/src, produces target/sancho-0.9.4-59.jar
+mvn clean package        # compiles sancho-src/src, produces target/sancho-0.9.4-23.jar
 mvn compile              # just compile
 ```
 
@@ -102,6 +102,38 @@ class into a signed package, signature-stripped copies of SWT and JFace are kept
 via a project-local Maven repository. Regenerate them with
 [`tools/unsign-libs.ps1`](tools/unsign-libs.ps1). For an OS other than Windows,
 strip signatures from the matching `org.eclipse.swt.*` fragment and adjust `pom.xml`.
+
+### Windows executable (jpackage)
+
+A portable Windows app image — `sancho.exe` with a bundled Java runtime, so it runs
+without a separate JDK — is produced by [tools/build-exe.ps1](tools/build-exe.ps1):
+
+```powershell
+pwsh tools/build-exe.ps1
+# output: target/dist/sancho/sancho.exe   (folder is portable, copy it anywhere)
+```
+
+Requires JDK 17+ (for `jpackage`) and Maven on `PATH`. A WiX Toolset install is only
+needed if you extend the script to emit an `.msi`/`.exe` installer (`--type msi`).
+
+#### Torrent / protocol association (send to core on double-click)
+
+Sancho has a built-in registry integration — no external `.reg` editing needed:
+
+1. Run `sancho.exe` and open **Preferences → sancho: Windows registry**.
+2. **File extensions** tab → **Register association** → **Update windows registry**
+   associates `.torrent` files. The **Protocols** tab does the same for `ed2k:`,
+   `magnet:` and `sig2dat:`. (This runs `regedit`, so Windows may prompt for elevation.)
+
+Double-clicking a `.torrent` (or an `ed2k:`/`magnet:` link) then runs
+`sancho.exe -l "<file-or-link>"`, which connects to the MLDonkey core and hands it the
+download directly (`S_DLLINK`), without opening the full GUI. As the preference page
+warns, for `.torrent` files the core should be able to read the file (same machine, or
+mldonkey core > 2.5.17).
+
+The launcher is named `sancho.exe` and started with `-Duser.dir=$ROOTDIR` on purpose:
+the registry page derives the executable path from `user.dir`, and `$ROOTDIR` pins it to
+the folder that actually contains `sancho.exe`, so the written association is always correct.
 
 ### AppImage
 
