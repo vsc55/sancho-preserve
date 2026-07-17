@@ -57,6 +57,9 @@ Sancho used a `0.9.4-NN` snapshot scheme.
 | `0.9.4-61` | Maintained **JSch** fork + CI build check | [Release](../../releases/tag/0.9.4-61) |
 | `0.9.4-62` | **Cross-platform** release artifacts (Windows / Linux / macOS) | [Release](../../releases/tag/0.9.4-62) |
 | `0.9.4-63` | Self-contained **uber-jar** (one-file `java -jar`) | [Release](../../releases/tag/0.9.4-63) |
+| `0.9.4-64` | Dropped `gnu-regexp` for the JDK's `java.util.regex` | [Release](../../releases/tag/0.9.4-64) |
+| `0.9.4-65` | Release pipeline off deprecated Node-20 artifact actions | [Release](../../releases/tag/0.9.4-65) |
+| `0.9.4-66` | macOS external-link fix, platform-code cleanup, Dependabot | [Release](../../releases/tag/0.9.4-66) |
 
 **`main`** always holds the newest modernized build; [CHANGELOG.md](CHANGELOG.md)
 and the [Releases](../../releases) page are the authoritative, up-to-date list.
