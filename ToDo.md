@@ -12,10 +12,10 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
   Windows/Linux/macOS matrix publishing Windows `.zip` + jar, Linux `.deb` +
   `.rpm`, and macOS `.dmg`. See CHANGELOG.
 
-- [ ] **Functional end-to-end verification.** So far only *build + launch* are
-  verified. Stand up a test MLDonkey core and validate the real flows (connect,
-  search, download, sort live tables, IRC, web browser, cell editing, preference
-  icons). This is what would confirm the decompiled/ported code behaves correctly.
+- [~] **Functional end-to-end verification.** ✅ Verified working on **Windows**
+  against a real MLDonkey core. Remaining: validate on **Linux** and **macOS**, and
+  spot-check the ported edge flows (sorting live tables, IRC, web browser, cell
+  editing, preference icons) on each platform.
 
 ## Nice to have
 
