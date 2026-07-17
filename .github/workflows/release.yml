@@ -83,6 +83,13 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y rpm fakeroot binutils
 
+      - name: Install WiX 3.14 (Windows, for the .msi installer)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install wixtoolset --version=3.14.1 -y --no-progress
+          "C:\Program Files (x86)\WiX Toolset v3.14\bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
       - name: Package
         shell: pwsh
         run: |
@@ -94,6 +101,9 @@ jobs:
             $plat = "win64"
             pwsh -NoProfile -File tools/build-app.ps1 -Type app-image
             Compress-Archive -Path target/dist/sancho/* -DestinationPath "out/sancho-$ver-win64.zip" -Force
+            # Also build the .msi installer (reuses the assembled app-input).
+            pwsh -NoProfile -File tools/build-app.ps1 -Type msi
+            Get-ChildItem target/dist/*.msi | ForEach-Object { Copy-Item $_.FullName "out/sancho-$ver-win64.msi" }
           }
           elseif ($IsMacOS) {
             $plat = "macos-arm64"
@@ -116,6 +126,59 @@ jobs:
           Copy-Item $uber.FullName "out/sancho-$ver-$plat.jar"
 
           Get-ChildItem out | ForEach-Object { Write-Host $_.Name }
+
+      - name: Smoke-test the .msi (silent install / verify / uninstall)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $msi = (Get-ChildItem out/sancho-*-win64.msi | Select-Object -First 1).FullName
+          $exe = "C:\Program Files\sancho\sancho.exe"
+          $torrentCmd = "HKLM:\SOFTWARE\Classes\bittorrent\shell\open\command"
+
+          function Invoke-Msi([string[]]$a) {
+            $p = Start-Process msiexec -ArgumentList $a -Wait -PassThru
+            if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 3010) {
+              throw "msiexec $($a -join ' ') -> exit $($p.ExitCode)"
+            }
+          }
+
+          Write-Host "== 1) silent install (associations ON by default) =="
+          Invoke-Msi @("/i", $msi, "/qn", "/l*v", "install.log")
+          if (-not (Test-Path $exe)) { throw "install: $exe is missing" }
+          $cmd = (Get-Item $torrentCmd).GetValue("")
+          Write-Host "  .torrent command = $cmd"
+          if ($cmd -notmatch 'sancho\.exe.+-l.+%1') { throw "install: torrent association wrong: $cmd" }
+          foreach ($p in @("ed2k","magnet","sig2dat")) {
+            if (-not (Test-Path "HKLM:\SOFTWARE\Classes\$p\shell\open\command")) {
+              throw "install: $p protocol not registered"
+            }
+          }
+          Write-Host "  associations registered OK"
+
+          Write-Host "== 2) silent uninstall (must remove files + registry) =="
+          Invoke-Msi @("/x", $msi, "/qn", "/l*v", "uninstall.log")
+          if (Test-Path $exe) { throw "uninstall: $exe still present" }
+          if (Test-Path "HKLM:\SOFTWARE\Classes\bittorrent") { throw "uninstall: bittorrent key not removed" }
+          if (Test-Path "HKLM:\SOFTWARE\Classes\ed2k")       { throw "uninstall: ed2k key not removed" }
+          Write-Host "  clean uninstall OK"
+
+          Write-Host "== 3) silent install with REGISTERASSOC=0 (no associations) =="
+          Invoke-Msi @("/i", $msi, "/qn", "REGISTERASSOC=0", "/l*v", "install0.log")
+          if (-not (Test-Path $exe)) { throw "install0: $exe is missing" }
+          if (Test-Path "HKLM:\SOFTWARE\Classes\bittorrent") { throw "install0: associations registered despite REGISTERASSOC=0" }
+          Write-Host "  REGISTERASSOC=0 correctly skipped associations OK"
+          Invoke-Msi @("/x", $msi, "/qn")
+          Write-Host "MSI smoke-test PASSED"
+
+      - name: Dump MSI logs on failure
+        if: ${{ runner.os == 'Windows' && failure() }}
+        shell: pwsh
+        run: |
+          Get-ChildItem *.log -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "==================== $($_.Name) (tail) ===================="
+            Get-Content $_.FullName -Tail 60
+          }
 
       - name: Upload to release
         if: startsWith(github.ref, 'refs/tags/')

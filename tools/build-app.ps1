@@ -40,6 +40,16 @@ Set-Location $root
 
 $appVersion = $AppVersion
 
+# jpackage's --app-version must be numeric (major.minor.build), so the MSI/exe internal
+# version is $AppVersion (e.g. 0.9.4). For the output *file* name we want the full
+# project version with its build number (e.g. 0.9.4-66), read from pom.xml.
+$fullVersion = $AppVersion
+$pom = Join-Path $root "pom.xml"
+if (Test-Path $pom) {
+    $m = Select-String -Path $pom -Pattern '<version>([^<]+)</version>' | Select-Object -First 1
+    if ($m) { $fullVersion = $m.Matches[0].Groups[1].Value }
+}
+
 if (-not $Type) {
     if ($IsMacOS) { $Type = "dmg" } else { $Type = "app-image" }
 }
@@ -81,8 +91,32 @@ $jpArgs = @(
     "--java-options", "-Djava.util.Arrays.useLegacyMergeSort=true",
     "--java-options", "-Duser.dir=`$ROOTDIR"
 )
+
+# Windows installer (.msi / .exe): Start-menu + desktop shortcuts, a stable upgrade
+# UUID so new versions replace old ones, and the custom WiX (packaging/windows/wix)
+# that offers the optional .torrent/ed2k/magnet/sig2dat association registration.
+# Per-machine install (default) -> associations land in HKLM. Requires WiX 3.14.
+if (($Type -eq "msi" -or $Type -eq "exe") -and ($IsWindows -or $env:OS -eq "Windows_NT")) {
+    $jpArgs += @(
+        "--win-menu", "--win-menu-group", "Sancho",
+        "--win-shortcut",
+        "--win-shortcut-prompt",   # shows the options dialog carrying our REGISTERASSOC checkbox
+        "--win-upgrade-uuid", "eb175abb-5d6d-4c3d-87f2-420da357de4f",
+        "--resource-dir", (Join-Path $root "packaging/windows/wix")
+    )
+}
+
 jpackage @jpArgs
 if ($LASTEXITCODE -ne 0) { throw "jpackage failed" }
+
+# jpackage names the installer sancho-<appVersion>.<ext>; rename it to carry the full
+# project version (with build number) so the local artifact is sancho-0.9.4-66.msi.
+if (($Type -eq "msi" -or $Type -eq "exe") -and ($fullVersion -ne $appVersion)) {
+    $built = Join-Path $dest "sancho-$appVersion.$Type"
+    if (Test-Path $built) {
+        Move-Item -Force $built (Join-Path $dest "sancho-$fullVersion.$Type")
+    }
+}
 
 Write-Host ""
 Write-Host "Done -> $dest"

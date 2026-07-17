@@ -31,9 +31,10 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
   follow-up is to rewrite those sites to use `Pattern`/`Matcher` directly and drop
   the adapter — best done once functional tests back the link-parsing paths.
 
-- [ ] **MSI installer.** Instead of the portable app image, emit a proper
-  `.msi`/`.exe` installer (`jpackage --type msi`, needs WiX in CI) with Start Menu
-  shortcuts and file associations registered at install time.
+- [x] ~~MSI installer~~ — done: releases ship `sancho-<ver>-win64.msi` (jpackage +
+  WiX 3) with shortcuts, upgrade code, and an opt-out checkbox / `REGISTERASSOC`
+  property to register the .torrent + ed2k/magnet/sig2dat associations. See
+  CHANGELOG.
 
 ## Housekeeping
 

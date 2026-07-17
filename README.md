@@ -32,7 +32,8 @@ Grab the latest build from the **[Releases](../../releases)** page:
 
 | Platform | File | Install / run |
 | --- | --- | --- |
-| Windows | `sancho-<ver>-win64.zip` | Unzip anywhere, run `sancho.exe` (portable, bundled JRE) |
+| Windows (installer) | `sancho-<ver>-win64.msi` | Run it — installs to Program Files with Start-menu/desktop shortcuts and (optional) `.torrent`/`ed2k`/`magnet`/`sig2dat` associations |
+| Windows (portable) | `sancho-<ver>-win64.zip` | Unzip anywhere, run `sancho.exe` (portable, bundled JRE) |
 | Debian / Ubuntu | `sancho-<ver>-linux-x86_64.deb` | `sudo apt install ./sancho-*.deb` |
 | Fedora / RHEL | `sancho-<ver>-linux-x86_64.rpm` | `sudo dnf install ./sancho-*.rpm` |
 | macOS (Apple Silicon) | `sancho-<ver>-macos-arm64.dmg` | Open the `.dmg`, drag **Sancho** to Applications |
@@ -60,6 +61,7 @@ Sancho used a `0.9.4-NN` snapshot scheme.
 | `0.9.4-64` | Dropped `gnu-regexp` for the JDK's `java.util.regex` | [Release](../../releases/tag/0.9.4-64) |
 | `0.9.4-65` | Release pipeline off deprecated Node-20 artifact actions | [Release](../../releases/tag/0.9.4-65) |
 | `0.9.4-66` | macOS external-link fix, platform-code cleanup, Dependabot | [Release](../../releases/tag/0.9.4-66) |
+| `0.9.4-67` | Windows **`.msi` installer** (optional association prompt + silent-install support) | [Release](../../releases/tag/0.9.4-67) |
 
 **`main`** always holds the newest modernized build; [CHANGELOG.md](CHANGELOG.md)
 and the [Releases](../../releases) page are the authoritative, up-to-date list.
@@ -149,7 +151,19 @@ dpkg/fakeroot and `rpm` needs rpmbuild. Releases build these automatically per O
 
 #### Torrent / protocol association (send to core on double-click)
 
-Sancho has a built-in registry integration — no external `.reg` editing needed:
+**With the `.msi` installer** this is offered up front: the setup dialog has a
+checkbox *"Register .torrent files and ed2k:, magnet:, sig2dat: links…"* (on by
+default). For a silent/unattended install, control it with the public property:
+
+```powershell
+msiexec /i sancho-<ver>-win64.msi /qn REGISTERASSOC=0   # 0 = do not register
+```
+
+The installer writes the associations to `HKLM\Software\Classes` (per-machine) with
+the command `"…\sancho.exe" "-l" "%1"` — the same layout the app itself uses.
+
+**Any install (portable zip too)** can also do it from inside the app — no external
+`.reg` editing needed:
 
 1. Run `sancho.exe` and open **Preferences → sancho: Windows registry**.
 2. **File extensions** tab → **Register association** → **Update windows registry**
@@ -165,6 +179,33 @@ mldonkey core > 2.5.17).
 The launcher is named `sancho.exe` and started with `-Duser.dir=$ROOTDIR` on purpose:
 the registry page derives the executable path from `user.dir`, and `$ROOTDIR` pins it to
 the folder that actually contains `sancho.exe`, so the written association is always correct.
+
+#### Unattended / silent install (MSI)
+
+The `.msi` is a standard Windows Installer package, so it installs silently with
+`msiexec`:
+
+```powershell
+# silent per-machine install (associations registered by default)
+msiexec /i sancho-<ver>-win64.msi /qn
+
+# silent install WITHOUT registering the .torrent/ed2k/magnet/sig2dat associations
+msiexec /i sancho-<ver>-win64.msi /qn REGISTERASSOC=0
+
+# choose the install directory, and write a verbose log
+msiexec /i sancho-<ver>-win64.msi /qn INSTALLDIR="C:\Apps\Sancho" /l*v install.log
+
+# silent uninstall
+msiexec /x sancho-<ver>-win64.msi /qn
+```
+
+Notes:
+
+- **`REGISTERASSOC`** (public property) — `1` (default) registers the associations,
+  `0` skips them. In an interactive install it maps to the setup dialog checkbox.
+- The install is **per-machine** (writes `HKLM`), so a silent install needs an
+  elevated/admin context.
+- `msiexec` flags: `/qn` no UI, `/qb` basic UI, `/norestart`, `/l*v <file>` full log.
 
 ### Releases (GitHub Actions)
 

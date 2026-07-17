@@ -8,6 +8,19 @@ The upstream project's original changelog (2004–2006) is preserved at
 authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 (`git checkout 0.9.4-23`).
 
+## [0.9.4-67] — 2026-07-18
+
+### Added
+
+- **Windows `.msi` installer.** Releases now ship `sancho-<ver>-win64.msi` (WiX 3
+  via jpackage) next to the portable zip: it installs to Program Files with
+  Start-menu / desktop shortcuts and a stable upgrade code (new versions replace
+  old ones). The setup dialog has an opt-out checkbox to register the `.torrent`
+  file type and the `ed2k` / `magnet` / `sig2dat` URL protocols under
+  `HKLM\Software\Classes` (command `"…\sancho.exe" "-l" "%1"`, matching the app's
+  own Windows-registry page). Silent installs control it with the public
+  `REGISTERASSOC` property (`msiexec /i … /qn REGISTERASSOC=0`).
+
 ## [0.9.4-66] — 2026-07-18
 
 ### Fixed
