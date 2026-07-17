@@ -8,7 +8,7 @@ The upstream project's original changelog (2004–2006) is preserved at
 authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 (`git checkout 0.9.4-23`).
 
-## [Unreleased]
+## [0.9.4-62] — 2026-07-17
 
 ### Added
 
@@ -17,6 +17,10 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
   (`win32`, `gtk.linux.x86_64/aarch64`, `cocoa.macosx.x86_64/aarch64`); override
   with `-Dswt.artifactId=…`. The CI **Build** workflow runs on a
   Linux/Windows/macOS matrix.
+- **Cross-platform release artifacts.** The release workflow is now a
+  Windows/Linux/macOS matrix that publishes, in one Release: the Windows portable
+  `.zip` + jar, Linux `.deb` + `.rpm`, and a macOS `.dmg`. `build-exe.ps1` became
+  the cross-platform `tools/build-app.ps1 -Type <app-image|deb|rpm|dmg>`.
 
 ### Changed
 
@@ -53,7 +57,7 @@ fixes found in review.
 - **VS Code** config ([`.vscode/`](.vscode)) with a ready "Sancho (GUI)" run
   configuration (F5) including the required VM args.
 - **Windows portable executable** via `jpackage`
-  ([`tools/build-exe.ps1`](tools/build-exe.ps1)): `sancho.exe` with a bundled Java
+  (`tools/build-exe.ps1`, later renamed): `sancho.exe` with a bundled Java
   runtime. The launcher is named/started so the app's built-in
   *Preferences → Windows registry* page wires `.torrent` / `ed2k:` double-click to
   the core.

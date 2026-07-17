@@ -1,22 +1,30 @@
 name: Release
 
 # Tag a commit (on any branch) to build and publish that snapshot.
-#   git tag v0.9.4-59 && git push origin v0.9.4-59
-# The tagged commit decides what gets built: a tag on `main` builds the
-# authentic 0.9.4-23 source; a tag on `decompiled-0.9.4-59` builds that branch.
+#   git tag 0.9.4-62 && git push origin 0.9.4-62
+# The tagged commit decides what gets built.
 on:
   push:
     tags:
       - 'v*'
-      - '[0-9]*'            # bare version tags too, e.g. 0.9.4-23 / 0.9.4-59
-  workflow_dispatch:        # allow manual runs from the Actions tab (no release)
+      - '[0-9]*'            # bare version tags too, e.g. 0.9.4-62
+  workflow_dispatch:        # manual run builds artifacts without publishing
 
 permissions:
   contents: write            # needed to create the GitHub Release
 
 jobs:
-  windows-release:
-    runs-on: windows-latest
+  # Build a native package per platform (jpackage), plus the plain jar on Windows.
+  package:
+    name: package (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+          - os: ubuntu-latest
+          - os: macos-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -28,46 +36,68 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Build portable Windows app image (jar + sancho.exe)
-        shell: pwsh
-        run: pwsh -NoProfile -File tools/build-exe.ps1
+      - name: Install deb/rpm tooling (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y rpm fakeroot binutils
 
-      - name: Assemble release artifacts
-        id: artifacts
+      - name: Package
         shell: pwsh
         run: |
-          $version = "${{ github.ref_name }}" -replace '^v', ''
-          if (-not $version) { $version = "dev" }
-          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $ver = "${{ github.ref_name }}" -replace '^v', ''
+          if (-not $ver) { $ver = "dev" }
+          New-Item -ItemType Directory -Force out | Out-Null
 
-          # Portable app image (sancho.exe + bundled Java runtime)
-          Compress-Archive -Path target/dist/sancho/* `
-              -DestinationPath "dist/sancho-$version-win64.zip" -Force
+          if ($IsWindows) {
+            pwsh -NoProfile -File tools/build-app.ps1 -Type app-image
+            Compress-Archive -Path target/dist/sancho/* -DestinationPath "out/sancho-$ver-win64.zip" -Force
+            # Also ship the plain jar (built once here; it is platform-independent).
+            $jar = Get-ChildItem target/*.jar | Where-Object { $_.Name -notmatch 'sources|javadoc' } | Select-Object -First 1
+            Copy-Item $jar.FullName "out/sancho-$ver.jar"
+          }
+          elseif ($IsMacOS) {
+            pwsh -NoProfile -File tools/build-app.ps1 -Type dmg
+            Get-ChildItem target/dist/*.dmg | ForEach-Object { Copy-Item $_.FullName "out/sancho-$ver-macos-arm64.dmg" }
+          }
+          else {
+            pwsh -NoProfile -File tools/build-app.ps1 -Type deb
+            pwsh -NoProfile -File tools/build-app.ps1 -Type rpm
+            Get-ChildItem target/dist/*.deb | ForEach-Object { Copy-Item $_.FullName "out/sancho-$ver-linux-x86_64.deb" }
+            Get-ChildItem target/dist/*.rpm | ForEach-Object { Copy-Item $_.FullName "out/sancho-$ver-linux-x86_64.rpm" }
+          }
+          Get-ChildItem out | ForEach-Object { Write-Host $_.Name }
 
-          # Plain runnable jar (needs a local JRE + the deps on the classpath)
-          $jar = Get-ChildItem target/*.jar |
-              Where-Object { $_.Name -notmatch 'sources|javadoc' } |
-              Select-Object -First 1
-          Copy-Item $jar.FullName "dist/$($jar.Name)" -Force
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sancho-${{ matrix.os }}
+          path: out/*
+          if-no-files-found: error
 
-          Get-ChildItem dist | ForEach-Object { Write-Host $_.Name }
+  # Collect all platform artifacts and publish one Release with CHANGELOG notes.
+  release:
+    needs: package
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
 
-      # Uses the runner's preinstalled GitHub CLI instead of a third-party action
-      # (no deprecated Node runtime), and replaces any existing release for the tag
-      # so re-runs are idempotent. Release notes come from the matching CHANGELOG.md
-      # section (falling back to auto-generated notes). Fails loudly if the token
-      # lacks contents:write.
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
       - name: Publish GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = "${{ github.ref_name }}"
           gh release delete "$tag" --yes --cleanup-tag=false 2>$null
-          $files = Get-ChildItem dist | ForEach-Object { $_.FullName }
+          $files = Get-ChildItem dist -File -Recurse | ForEach-Object { $_.FullName }
 
-          # Extract this version's section from CHANGELOG.md for the release body.
+          # Release notes from the matching CHANGELOG.md section (else auto-generate).
           $useChangelog = $false
           if (Test-Path CHANGELOG.md) {
             $lines = Get-Content CHANGELOG.md

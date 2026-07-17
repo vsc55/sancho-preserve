@@ -44,8 +44,8 @@ Sancho used a `0.9.4-NN` snapshot scheme.
 - `sancho-src/` — Java source tree (see the version note above)
 - `pom.xml` — Maven build
 - `local-repo/` — signature-stripped JFace (see dependencies)
-- `tools/` — `build-exe.ps1` (Windows `.exe`) and `unsign-libs.ps1`
-- `packaging/windows/` — app icon
+- `tools/` — `build-app.ps1` (native packages) and `unsign-libs.ps1`
+- `packaging/` — per-OS app icons (windows/linux/macos)
 - `.github/workflows/` — release automation
 - `appimage/` — AppDir used to build the legacy Linux AppImage
 - `CHANGELOG.md`, `LICENSE`
@@ -99,18 +99,20 @@ consumed via a project-local Maven repository (regenerate with
 [`tools/unsign-libs.ps1`](tools/unsign-libs.ps1)). SWT itself is used unmodified
 (stock, signed) — nothing is injected into its packages.
 
-### Windows executable (jpackage)
+### Native packages (jpackage)
 
-A portable Windows app image — `sancho.exe` with a bundled Java runtime, so it runs
-without a separate JDK — is produced by [tools/build-exe.ps1](tools/build-exe.ps1):
+[tools/build-app.ps1](tools/build-app.ps1) bundles a Java runtime with the app via
+`jpackage` — no separate JDK needed to run it. It is cross-platform (pwsh 7+):
 
 ```powershell
-pwsh tools/build-exe.ps1
-# output: target/dist/sancho/sancho.exe   (folder is portable, copy it anywhere)
+pwsh tools/build-app.ps1                # default: app-image (Windows/Linux) or dmg (macOS)
+pwsh tools/build-app.ps1 -Type deb      # or rpm / dmg / app-image
+# output under target/dist/
 ```
 
-Requires JDK 17+ (for `jpackage`) and Maven on `PATH`. A WiX Toolset install is only
-needed if you extend the script to emit an `.msi`/`.exe` installer (`--type msi`).
+Requires JDK 17+ (for `jpackage`) and Maven on `PATH`. On Linux, `deb` needs
+dpkg/fakeroot and `rpm` needs rpmbuild. Releases build these automatically per OS
+(Windows portable `.zip`, Linux `.deb` + `.rpm`, macOS `.dmg`).
 
 #### Torrent / protocol association (send to core on double-click)
 
@@ -133,11 +135,12 @@ the folder that actually contains `sancho.exe`, so the written association is al
 
 ### Releases (GitHub Actions)
 
-Pushing a version tag builds and publishes a Release with the jar and the Windows
-app image, using the matching [CHANGELOG.md](CHANGELOG.md) section as the notes:
+Pushing a version tag builds on a Windows/Linux/macOS matrix and publishes one
+Release with all artifacts — Windows portable `.zip` + jar, Linux `.deb` + `.rpm`,
+macOS `.dmg` — using the matching [CHANGELOG.md](CHANGELOG.md) section as the notes:
 
 ```bash
-git tag 0.9.4-61 && git push origin 0.9.4-61
+git tag 0.9.4-62 && git push origin 0.9.4-62
 ```
 
 ### AppImage (legacy)
@@ -150,7 +153,7 @@ An AppImage of the older build can be generated from the `appimage/` AppDir:
 
 ## 🖥 Running
 
-- **Windows:** `sancho.exe` (from a Release or `tools/build-exe.ps1`), or
+- **Windows:** `sancho.exe` (from a Release or `tools/build-app.ps1`), or
   `java -jar target/sancho-<version>.jar`.
 - **Linux / macOS:** `mvn clean package` picks your platform's SWT automatically;
   run with `mvn exec:java` or `java -cp target/classes:<deps> sancho.core.Sancho`.

@@ -8,10 +8,9 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
 - [x] ~~Cross-platform **build**~~ — done: OS/arch pom profiles auto-select the SWT
   fragment, JFace decoupled/unsigned, CI builds on Linux/Windows/macOS. See
   CHANGELOG.
-- [ ] **Cross-platform release artifacts.** The build is multi-OS, but releases
-  still only ship the Windows `sancho.exe`. Produce Linux/macOS artifacts too
-  (jpackage app image / `.deb` / `.dmg`, or a portable launcher) from a release
-  matrix, so non-Windows users get a download.
+- [x] ~~Cross-platform **release artifacts**~~ — done: the release workflow is a
+  Windows/Linux/macOS matrix publishing Windows `.zip` + jar, Linux `.deb` +
+  `.rpm`, and macOS `.dmg`. See CHANGELOG.
 
 - [ ] **Functional end-to-end verification.** So far only *build + launch* are
   verified. Stand up a test MLDonkey core and validate the real flows (connect,
