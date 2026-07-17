@@ -52,6 +52,57 @@ Git tags in this repository correspond to preserved snapshots, not necessarily c
 
 ## 🔧 Building
 
+### Modern build (Maven + VS Code)
+
+A `pom.xml` was added so the original 2004-era source tree compiles and runs on a
+current JDK. It has been verified to build and launch on **Windows with JDK 17+**
+(tested with Temurin 25).
+
+```bash
+mvn clean package        # compiles sancho-src/src, produces target/sancho-0.9.4-59.jar
+mvn compile              # just compile
+```
+
+Run from Maven:
+
+```bash
+mvn exec:java "-Dexec.args="   # or: java -cp "target/classes;<deps>" sancho.core.Sancho
+```
+
+**Recommended VM args** (silence JDK 25 native-access warnings and the legacy
+comparator issue in the old table sorters):
+
+```
+--enable-native-access=ALL-UNNAMED
+-Djava.util.Arrays.useLegacyMergeSort=true
+```
+
+#### In VS Code
+
+1. Install the **Extension Pack for Java** (Red Hat).
+2. Open the repository folder — the Java extension imports the Maven project and
+   resolves dependencies automatically.
+3. Press **F5** / use the **"Sancho (GUI)"** run configuration in
+   [.vscode/launch.json](.vscode/launch.json).
+
+#### Notes on dependencies
+
+Original external libraries are resolved from Maven Central: **Eclipse SWT + JFace**,
+**GNU Trove** (`gnu.trove`, Trove 2.x flat package), **GNU RegExp**, and **JSch**.
+PircBot is listed historically but is not referenced by the source.
+
+Three deprecated Eclipse classes removed from modern SWT/JFace
+(`org.eclipse.swt.custom.TableTree`, `TableTreeEditor`, and
+`org.eclipse.jface.viewers.TableTreeViewer`) are vendored back into
+`sancho-src/src` so the original `TableTree`-based download views still compile.
+
+Because the stock Eclipse jars are signed, and the JVM refuses to load an unsigned
+class into a signed package, signature-stripped copies of SWT and JFace are kept in
+[`local-repo/`](local-repo/) under the `org.sancho.thirdparty` group id and consumed
+via a project-local Maven repository. Regenerate them with
+[`tools/unsign-libs.ps1`](tools/unsign-libs.ps1). For an OS other than Windows,
+strip signatures from the matching `org.eclipse.swt.*` fragment and adjust `pom.xml`.
+
 ### AppImage
 
 An AppImage can be generated using:

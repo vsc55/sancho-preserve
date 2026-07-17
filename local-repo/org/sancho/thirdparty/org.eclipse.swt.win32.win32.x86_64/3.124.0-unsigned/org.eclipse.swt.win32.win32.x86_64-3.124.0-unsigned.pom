@@ -1,0 +1,8 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.sancho.thirdparty</groupId>
+  <artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
+  <version>3.124.0-unsigned</version>
+  <description>Eclipse SWT (win32/x86_64) 3.124.0 with jar signatures stripped, so
+  vendored classes can be added to org.eclipse.swt.custom. Regenerate with tools/unsign-libs.</description>
+</project>

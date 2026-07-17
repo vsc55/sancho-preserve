@@ -435,6 +435,11 @@ public class TableTreeItem extends Item {
     return newItems;
   }
 
+  /** Returns the underlying SWT TableItem backing this node. */
+  public TableItem getTableItem() {
+    return tableItem;
+  }
+
   TableTreeItem getItem(TableItem tableItem) {
     if (tableItem == null)
       return null;

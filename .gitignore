@@ -4,3 +4,7 @@ Sancho.AppDir/
 *.AppImage
 *.exe
 *.sh
+
+# Maven / VS Code Java build output
+target/
+cp.txt

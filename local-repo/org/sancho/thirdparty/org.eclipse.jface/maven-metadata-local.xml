@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>org.sancho.thirdparty</groupId>
+  <artifactId>org.eclipse.jface</artifactId>
+  <versioning>
+    <release>3.31.0-unsigned</release>
+    <versions>
+      <version>3.31.0-unsigned</version>
+    </versions>
+    <lastUpdated>20260717182512</lastUpdated>
+  </versioning>
+</metadata>
