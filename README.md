@@ -52,16 +52,19 @@ Git tags in this repository correspond to preserved snapshots, not necessarily c
 
 ## 🔧 Building
 
-> **Branch note:** this `decompiled-0.9.4-59` branch does **not** contain the
-> authentic source. `sancho-src/src` here was recovered by decompiling the last
+> **Source note:** `sancho-src/src` here is the **0.9.4-59** tree, which does
+> **not** come from authentic source — it was recovered by decompiling the last
 > published `sancho-0.9.4-59` binary (Vineflower) and then ported to modern
 > SWT/JFace so it compiles and runs on a current JDK. It adds the features that
 > never had preserved source (IRC, web browser, network stats, file comments) and
-> already uses `Tree` instead of the deprecated `TableTree`. For the genuine early
-> source, see `main` (the `0.9.4-23` snapshot). Reconstruction caveats: the
-> GCJ-only `Prov` bootstrap is stubbed out, a couple of removed-JFace hooks
-> (cell-edit mouse handling, per-node preference icons) are no-ops, and
+> already uses `Tree` instead of the deprecated `TableTree`. Reconstruction
+> caveats: the GCJ-only `Prov` bootstrap is stubbed out, a couple of removed-JFace
+> hooks (cell-edit mouse handling, per-node preference icons) are no-ops, and
 > `MyMenuManager` / dynamic field-editor clearing use reflection.
+>
+> The genuine early **0.9.4-23** source (hand-written, with its original comments)
+> is preserved at the [`0.9.4-23`](../../releases/tag/0.9.4-23) tag; check it out
+> with `git checkout 0.9.4-23`.
 
 ### Modern build (Maven + VS Code)
 
