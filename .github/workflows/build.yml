@@ -17,7 +17,12 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -29,7 +34,7 @@ jobs:
           java-version: '21'
           cache: maven
 
-      # Compilation only needs the SWT/JFace jars on the classpath (not native
-      # libraries), so this runs fine on Linux even though the app targets win32.
+      # The pom's OS/arch profiles auto-select the SWT fragment, so the same
+      # command builds on Linux (gtk), Windows (win32) and macOS (cocoa/aarch64).
       - name: Build
         run: mvn -B -ntp clean package

@@ -22,12 +22,16 @@
         <!-- Vineflower emits UTF-8 (e.g. the SWT.MOZILLA style shows up as the
              char literal '耀'). -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <swt.version>3.124.0</swt.version>
+        <!-- Default SWT fragment; the profiles below override it per OS/arch.
+             Override manually with -Dswt.artifactId=org.eclipse.swt.<ws>.<os>.<arch>. -->
+        <swt.artifactId>org.eclipse.swt.win32.win32.x86_64</swt.artifactId>
     </properties>
 
-    <!-- Like -23, -59 injects its own classes into an Eclipse package
-         (org.eclipse.jface.viewers.{ICustomViewer,CustomTableViewer,CustomTreeViewer}),
-         so JFace must be unsigned. SWT is not injected into, so stock SWT is fine,
-         but the unsigned-JFace artifact pulls the matching unsigned SWT anyway.
+    <!-- -59 injects its own classes into org.eclipse.jface.viewers
+         (ICustomViewer, CustomTableViewer, CustomTreeViewer), so JFace must be
+         unsigned (the JVM refuses to load them into the signed package). SWT is
+         NOT injected into, so the stock signed SWT fragment is used per platform.
          tools/unsign-libs.ps1 regenerates local-repo/. -->
     <repositories>
         <repository>
@@ -39,12 +43,15 @@
     </repositories>
 
     <dependencies>
+        <!-- Stock (signed) SWT fragment for the target platform; artifactId is set
+             by the OS/arch profiles below. -->
         <dependency>
-            <groupId>org.sancho.thirdparty</groupId>
-            <artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
-            <version>3.124.0-unsigned</version>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>${swt.artifactId}</artifactId>
+            <version>${swt.version}</version>
         </dependency>
 
+        <!-- Platform-independent unsigned JFace (from local-repo). -->
         <dependency>
             <groupId>org.sancho.thirdparty</groupId>
             <artifactId>org.eclipse.jface</artifactId>
@@ -128,4 +135,44 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- Auto-select the SWT fragment for the building machine's OS/arch. Each
+         profile only overrides swt.artifactId; everything else is shared. -->
+    <profiles>
+        <profile>
+            <id>swt-windows</id>
+            <activation><os><family>windows</family></os></activation>
+            <properties>
+                <swt.artifactId>org.eclipse.swt.win32.win32.x86_64</swt.artifactId>
+            </properties>
+        </profile>
+        <profile>
+            <id>swt-linux-x86_64</id>
+            <activation><os><name>Linux</name><arch>amd64</arch></os></activation>
+            <properties>
+                <swt.artifactId>org.eclipse.swt.gtk.linux.x86_64</swt.artifactId>
+            </properties>
+        </profile>
+        <profile>
+            <id>swt-linux-aarch64</id>
+            <activation><os><name>Linux</name><arch>aarch64</arch></os></activation>
+            <properties>
+                <swt.artifactId>org.eclipse.swt.gtk.linux.aarch64</swt.artifactId>
+            </properties>
+        </profile>
+        <profile>
+            <id>swt-mac-x86_64</id>
+            <activation><os><family>mac</family><arch>x86_64</arch></os></activation>
+            <properties>
+                <swt.artifactId>org.eclipse.swt.cocoa.macosx.x86_64</swt.artifactId>
+            </properties>
+        </profile>
+        <profile>
+            <id>swt-mac-aarch64</id>
+            <activation><os><family>mac</family><arch>aarch64</arch></os></activation>
+            <properties>
+                <swt.artifactId>org.eclipse.swt.cocoa.macosx.aarch64</swt.artifactId>
+            </properties>
+        </profile>
+    </profiles>
 </project>

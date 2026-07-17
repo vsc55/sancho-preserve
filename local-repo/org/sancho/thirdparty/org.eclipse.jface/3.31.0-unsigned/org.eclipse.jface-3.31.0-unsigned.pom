@@ -3,14 +3,11 @@
   <groupId>org.sancho.thirdparty</groupId>
   <artifactId>org.eclipse.jface</artifactId>
   <version>3.31.0-unsigned</version>
-  <description>Eclipse JFace 3.31.0 with jar signatures stripped, so the vendored
-  org.eclipse.jface.viewers.TableTreeViewer can share the package.</description>
+  <description>Eclipse JFace 3.31.0 with jar signatures stripped, so Sancho's
+  vendored org.eclipse.jface.viewers.Custom* classes can share the package. SWT is
+  NOT a dependency here: the consuming project supplies the stock (signed) SWT
+  fragment for the target OS, so this artifact stays platform-independent.</description>
   <dependencies>
-    <dependency>
-      <groupId>org.sancho.thirdparty</groupId>
-      <artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
-      <version>3.124.0-unsigned</version>
-    </dependency>
     <dependency>
       <groupId>org.eclipse.platform</groupId>
       <artifactId>org.eclipse.core.commands</artifactId>

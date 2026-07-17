@@ -43,7 +43,7 @@ Sancho used a `0.9.4-NN` snapshot scheme.
 
 - `sancho-src/` — Java source tree (see the version note above)
 - `pom.xml` — Maven build
-- `local-repo/` — signature-stripped SWT/JFace (see dependencies)
+- `local-repo/` — signature-stripped JFace (see dependencies)
 - `tools/` — `build-exe.ps1` (Windows `.exe`) and `unsign-libs.ps1`
 - `packaging/windows/` — app icon
 - `.github/workflows/` — release automation
@@ -54,10 +54,12 @@ Sancho used a `0.9.4-NN` snapshot scheme.
 
 ### Maven + VS Code
 
-Verified to build and launch on **Windows with JDK 17+** (tested with Temurin 25).
+Builds on **Windows, Linux and macOS** with **JDK 17+** — the pom auto-selects the
+right SWT fragment for your OS/arch (verified in CI on all three). Verified to
+launch on Windows (Temurin 25).
 
 ```bash
-mvn clean package        # compiles sancho-src/src, produces target/sancho-0.9.4-60.jar
+mvn clean package        # compiles sancho-src/src, produces target/sancho-<version>.jar
 mvn compile              # just compile
 ```
 
@@ -83,14 +85,19 @@ Resolved from Maven Central: **Eclipse SWT + JFace**, **GNU Trove**
 (`gnu.trove`, Trove 2.x flat package), **GNU RegExp**, **JSch**, and **PircBot**
 (used by the IRC feature).
 
+**SWT is platform-specific**, so the pom auto-selects the fragment for the build
+machine via OS/arch profiles (`win32`, `gtk.linux.x86_64/aarch64`,
+`cocoa.macosx.x86_64/aarch64`); override with
+`-Dswt.artifactId=org.eclipse.swt.<ws>.<os>.<arch>` if needed.
+
 Sancho injects three of its own classes into the `org.eclipse.jface.viewers`
 package (`ICustomViewer`, `CustomTableViewer`, `CustomTreeViewer`), and the JVM
-refuses to load them into the otherwise **signed** JFace jar. So
-signature-stripped copies of SWT and JFace are kept in [`local-repo/`](local-repo/)
-under the `org.sancho.thirdparty` group id and consumed via a project-local Maven
-repository. Regenerate them with [`tools/unsign-libs.ps1`](tools/unsign-libs.ps1).
-For an OS other than Windows, strip signatures from the matching
-`org.eclipse.swt.*` fragment and adjust `pom.xml`.
+refuses to load them into the otherwise **signed** JFace jar. So a single,
+platform-independent **signature-stripped JFace** is kept in
+[`local-repo/`](local-repo/) under the `org.sancho.thirdparty` group id and
+consumed via a project-local Maven repository (regenerate with
+[`tools/unsign-libs.ps1`](tools/unsign-libs.ps1)). SWT itself is used unmodified
+(stock, signed) — nothing is injected into its packages.
 
 ### Windows executable (jpackage)
 
@@ -144,9 +151,9 @@ An AppImage of the older build can be generated from the `appimage/` AppDir:
 ## 🖥 Running
 
 - **Windows:** `sancho.exe` (from a Release or `tools/build-exe.ps1`), or
-  `java -jar target/sancho-0.9.4-60.jar`.
-- **Other platforms / from source:** run `sancho.core.Sancho` with the SWT
-  fragment for your OS on the classpath (see the dependencies note).
+  `java -jar target/sancho-<version>.jar`.
+- **Linux / macOS:** `mvn clean package` picks your platform's SWT automatically;
+  run with `mvn exec:java` or `java -cp target/classes:<deps> sancho.core.Sancho`.
 
 Sancho needs a reachable **MLDonkey core** to do anything useful; configure the
 host/port and login in Preferences (or via the setup wizard on first run).

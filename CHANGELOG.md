@@ -8,6 +8,22 @@ The upstream project's original changelog (2004–2006) is preserved at
 authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 (`git checkout 0.9.4-23`).
 
+## [Unreleased]
+
+### Added
+
+- **Cross-platform build (Linux / macOS / Windows).** The pom now auto-selects the
+  stock SWT fragment for the build machine via OS/arch profiles
+  (`win32`, `gtk.linux.x86_64/aarch64`, `cocoa.macosx.x86_64/aarch64`); override
+  with `-Dswt.artifactId=…`. The CI **Build** workflow runs on a
+  Linux/Windows/macOS matrix.
+
+### Changed
+
+- Only **JFace** is now signature-stripped (it is platform-independent); SWT is
+  used stock/signed per platform, decoupled from the unsigned-JFace artifact.
+  `tools/unsign-libs.ps1` and `local-repo/` updated accordingly.
+
 ## [0.9.4-61] — 2026-07-17
 
 ### Changed

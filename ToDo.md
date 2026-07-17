@@ -5,13 +5,13 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
 
 ## High value
 
-- [ ] **Cross-platform build (Linux / macOS).** The build is currently pinned to
-  **win32**. Only JFace needs to be unsigned (for the injected
-  `org.eclipse.jface.viewers` `Custom*` classes); SWT itself can come stock from
-  Maven Central per OS. Add Maven profiles (`-Pwin` / `-Plinux` / `-Pmac`) that
-  select the right `org.eclipse.swt.*` fragment, and decouple the unsigned-JFace
-  artifact from the win32 SWT it currently pulls. Then produce Linux/macOS
-  artifacts (app image and/or a portable launcher) alongside the Windows exe.
+- [x] ~~Cross-platform **build**~~ — done: OS/arch pom profiles auto-select the SWT
+  fragment, JFace decoupled/unsigned, CI builds on Linux/Windows/macOS. See
+  CHANGELOG.
+- [ ] **Cross-platform release artifacts.** The build is multi-OS, but releases
+  still only ship the Windows `sancho.exe`. Produce Linux/macOS artifacts too
+  (jpackage app image / `.deb` / `.dmg`, or a portable launcher) from a release
+  matrix, so non-Windows users get a download.
 
 - [ ] **Functional end-to-end verification.** So far only *build + launch* are
   verified. Stand up a test MLDonkey core and validate the real flows (connect,
