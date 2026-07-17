@@ -8,6 +8,21 @@ The upstream project's original changelog (2004–2006) is preserved at
 authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 (`git checkout 0.9.4-23`).
 
+## [Unreleased]
+
+### Changed
+
+- Replaced the abandoned **`com.jcraft:jsch:0.1.55`** with the maintained fork
+  **`com.github.mwiede:jsch:0.2.23`** (same `com.jcraft.jsch` package, so a
+  drop-in), which carries security fixes and modern algorithms.
+
+### Build & tooling
+
+- Added a **Build** workflow ([`.github/workflows/build.yml`](.github/workflows/build.yml))
+  that compiles and packages on every push and pull request to `main`, so
+  regressions surface before a release tag is cut. Added build and release
+  badges to the README.
+
 ## [0.9.4-60] — 2026-07-17
 
 First versioned release of the modernized build. `sancho-src/src` is the

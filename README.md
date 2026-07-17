@@ -1,5 +1,8 @@
 # Sancho
 
+[![Build](https://github.com/vsc55/sancho-p2p/actions/workflows/build.yml/badge.svg)](https://github.com/vsc55/sancho-p2p/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/v/release/vsc55/sancho-p2p?display_name=tag&sort=date)](https://github.com/vsc55/sancho-p2p/releases)
+
 **Sancho** is a Java/SWT desktop GUI for the **MLDonkey** peer-to-peer client
 (eDonkey2000, Kademlia, BitTorrent and more), originally developed by
 Rutger M. Ovidius in the mid-2000s. It monitors and controls an MLDonkey core:
@@ -61,7 +64,7 @@ mvn compile              # just compile
 **Recommended VM args** (silence JDK native-access warnings; the legacy merge sort
 is also requested in code, so a plain `java -jar` works without it):
 
-```
+```text
 --enable-native-access=ALL-UNNAMED
 -Djava.util.Arrays.useLegacyMergeSort=true
 ```

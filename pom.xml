@@ -70,10 +70,12 @@
             <version>1.1.4</version>
         </dependency>
 
+        <!-- Maintained drop-in fork of the abandoned com.jcraft:jsch:0.1.55 (same
+             com.jcraft.jsch package), with security fixes and modern algorithms. -->
         <dependency>
-            <groupId>com.jcraft</groupId>
+            <groupId>com.github.mwiede</groupId>
             <artifactId>jsch</artifactId>
-            <version>0.1.55</version>
+            <version>0.2.23</version>
         </dependency>
     </dependencies>
 
