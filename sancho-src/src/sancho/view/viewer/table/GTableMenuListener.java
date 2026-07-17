@@ -142,7 +142,9 @@ public abstract class GTableMenuListener implements IMenuListener, ISelectionCha
       }
 
       String var1 = SWT.getPlatform();
-      if (!var1.equals("fox") && !var1.equals("carbon")) {
+      // Skip the extra mouse listener on macOS (old "carbon" and modern "cocoa"),
+      // matching the original intent — the platform handles the popup itself.
+      if (!var1.equals("fox") && !var1.equals("carbon") && !var1.equals("cocoa")) {
          this.gView.getComposite().addMouseListener(new GTableMenuListener$1(this));
       }
 

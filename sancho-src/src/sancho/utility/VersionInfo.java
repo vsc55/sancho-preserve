@@ -51,7 +51,7 @@ public class VersionInfo {
 
    public static Image getTrayIcon() {
       String var0 = SWT.getPlatform();
-      if (var0.equals("gtk") || var0.equals("motif")) {
+      if (var0.equals("gtk")) {   // "motif" was a long-removed SWT platform
          return SResources.getImage("tray-22");
       } else {
          return oldWindows ? SResources.getImage("tray-16") : SResources.getImage("ProgramIcon-128");

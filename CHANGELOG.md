@@ -10,6 +10,18 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 
 ## [Unreleased]
 
+### Fixed
+
+- **macOS external links**: `WebLauncher` keyed the native `/usr/bin/open` on the
+  removed `carbon` SWT platform, so modern macOS (`cocoa`) fell through to the
+  generic path. It now handles `cocoa` too.
+
+### Changed
+
+- Platform-code audit: removed dead checks for long-gone SWT platforms
+  (`motif` in the tray icon; `carbon` for the sort-indicator default) and skip the
+  extra table mouse listener on `cocoa` as well (matching the old `carbon` intent).
+
 ### Build & tooling
 
 - Added **Dependabot** (`.github/dependabot.yml`): weekly updates for GitHub

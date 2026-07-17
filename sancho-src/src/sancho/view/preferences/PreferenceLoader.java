@@ -294,7 +294,7 @@ public class PreferenceLoader {
       setDColor(var0, var1, "tableAlternateBGColor", 29);
       setDColor(var0, var1, "tablesBackgroundColor", 25);
       var0.setDefault("tableHilightSorted", false);
-      var0.setDefault("tableSortIndicator", !SWT.getPlatform().equals("carbon"));
+      var0.setDefault("tableSortIndicator", true);   // was !"carbon" (removed SWT platform); always true now
       setDColor(var0, var1, "tableSortedColumnBGColor", 29);
       PreferenceConverter.setDefault(var0, "downloadHistoryWindowBounds", new Rectangle(0, 0, 500, 400));
       PreferenceConverter.setDefault(var0, "downloadCompleteWindowBounds", new Rectangle(0, 0, 320, 300));

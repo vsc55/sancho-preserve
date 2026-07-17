@@ -65,7 +65,9 @@ public class WebLauncher {
          }
 
          Program.launch(var0);
-      } else if ("carbon".equals(var3)) {
+      } else if ("carbon".equals(var3) || "cocoa".equals(var3)) {
+         // "carbon" was the old 32-bit macOS SWT platform; modern macOS reports
+         // "cocoa". Both open external links with the native `open` command.
          try {
             String[] var4 = new String[]{"/usr/bin/open", var1};
             Runtime.getRuntime().exec(var4);

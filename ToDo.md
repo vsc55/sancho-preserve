@@ -40,8 +40,9 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
 - [x] ~~Dependabot~~ — done: `.github/dependabot.yml` watches GitHub Actions and
   Maven deps/plugins weekly, ignoring the compatibility-pinned ones (Eclipse SWT,
   which moves with the vendored JFace; Trove major). See CHANGELOG.
-- [ ] **Audit remaining platform code** (`_wpf`, other legacy branches) and remove
-  dead paths, as was done for the `_win32` browser.
+- [x] ~~Audit remaining platform code~~ — done: no `_wpf`/platform-suffix files
+  remain; fixed macOS external-link opening (checked the removed `carbon` platform
+  instead of `cocoa`) and cleaned dead `carbon`/`motif` checks. See CHANGELOG.
 - [ ] **Comparator hardening (optional).** The legacy merge sort is requested to
   tolerate table data that mutates mid-sort. A "proper" fix would snapshot the
   sort keys before sorting — larger and riskier; only worth it if the VM-level
