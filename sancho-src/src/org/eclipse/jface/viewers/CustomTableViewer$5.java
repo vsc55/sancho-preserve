@@ -12,6 +12,8 @@ class CustomTableViewer$5 extends MouseAdapter {
    }
 
    public void mouseDown(MouseEvent var1) {
-      /* cell-edit mouse hook removed from modern JFace */
+      /* No-op: modern JFace TableViewer/TreeViewer create a default ColumnViewerEditor
+      // whose activation strategy starts cell editing on click, so the 2008-era
+      // tableViewerImpl.handleMouseDown() forwarding is no longer needed. */
    }
 }

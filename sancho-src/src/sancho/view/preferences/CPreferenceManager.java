@@ -32,7 +32,7 @@ public class CPreferenceManager extends PreferenceManager {
 
    protected IPreferenceNode addNode(IPreferenceNode var1, CPreferencePage var2, String var3) {
       var2.setPreferenceStore(this.preferenceStore);
-      PreferenceNode var4 = new PreferenceNode(var2.getTitle(), var2);
+      PreferenceNode var4 = new ImagePreferenceNode(var2.getTitle(), var2, SResources.getImageDescriptor(var3));
       var1.add(var4);
       return var4;
    }
@@ -92,7 +92,7 @@ public class CPreferenceManager extends PreferenceManager {
          Object var12 = this.find("Networks");
          if (var12 == null) {
             MLDonkeyPreferencePage var13 = new MLDonkeyPreferencePage("Networks", 0);
-            var12 = new PreferenceNode("Networks", var13);
+            var12 = new ImagePreferenceNode("Networks", var13, SResources.getImageDescriptor("globe"));
             var13.setEmpty(true);
             this.addToRoot((IPreferenceNode)var12);
          }
@@ -101,10 +101,10 @@ public class CPreferenceManager extends PreferenceManager {
       }
 
       if (var6 != null) {
-         this.addToRoot(new PreferenceNode("Advanced", var6));
+         this.addToRoot(new ImagePreferenceNode("Advanced", var6, SResources.getImageDescriptor("bulb-small")));
       }
 
-      this.addToRoot(new PreferenceNode("All", var7));
+      this.addToRoot(new ImagePreferenceNode("All", var7, SResources.getImageDescriptor("exclamation")));
    }
 
    private void addSortedOptions(Map var1, IPreferenceNode var2) {
@@ -139,7 +139,7 @@ public class CPreferenceManager extends PreferenceManager {
             var7 = "preferences";
          }
 
-         var2.add(new PreferenceNode(var3[var4], var5));
+         var2.add(new ImagePreferenceNode(var3[var4], var5, SResources.getImageDescriptor(var7)));
       }
    }
 
