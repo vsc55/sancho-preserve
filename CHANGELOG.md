@@ -8,6 +8,13 @@ The upstream project's original changelog (2004–2006) is preserved at
 authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 (`git checkout 0.9.4-23`).
 
+## [Unreleased]
+
+### Build & tooling
+
+- CI: bump `actions/upload-artifact` and `actions/download-artifact` to v5
+  (Node 24) to clear the Node 20 deprecation warning in the Release workflow.
+
 ## [0.9.4-63] — 2026-07-18
 
 ### Added
