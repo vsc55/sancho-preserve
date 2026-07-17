@@ -1,0 +1,64 @@
+name: Release
+
+# Tag a commit (on any branch) to build and publish that snapshot.
+#   git tag v0.9.4-59 && git push origin v0.9.4-59
+# The tagged commit decides what gets built: a tag on `main` builds the
+# authentic 0.9.4-23 source; a tag on `decompiled-0.9.4-59` builds that branch.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:        # allow manual runs from the Actions tab (no release)
+
+permissions:
+  contents: write            # needed to create the GitHub Release
+
+jobs:
+  windows-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Build portable Windows app image (jar + sancho.exe)
+        shell: pwsh
+        run: pwsh -NoProfile -File tools/build-exe.ps1
+
+      - name: Assemble release artifacts
+        id: artifacts
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          if (-not $version) { $version = "dev" }
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+
+          # Portable app image (sancho.exe + bundled Java runtime)
+          Compress-Archive -Path target/dist/sancho/* `
+              -DestinationPath "dist/sancho-$version-win64.zip" -Force
+
+          # Plain runnable jar (needs a local JRE + the deps on the classpath)
+          $jar = Get-ChildItem target/*.jar |
+              Where-Object { $_.Name -notmatch 'sources|javadoc' } |
+              Select-Object -First 1
+          Copy-Item $jar.FullName "dist/$($jar.Name)" -Force
+
+          Get-ChildItem dist | ForEach-Object { Write-Host $_.Name }
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Sancho ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            dist/sancho-*-win64.zip
+            dist/sancho-*.jar

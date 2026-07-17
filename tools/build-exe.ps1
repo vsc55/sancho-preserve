@@ -31,12 +31,19 @@ $root = Split-Path -Parent $PSScriptRoot   # repo root (tools\ is one level down
 Set-Location $root
 
 $appVersion = "0.9.4"
-$mainJar    = "sancho-0.9.4-23.jar"   # matches <version> in pom.xml (the -23 source snapshot)
 $icon       = "packaging\windows\sancho.ico"
 
 Write-Host "==> mvn clean package"
 mvn -q clean package
 if ($LASTEXITCODE -ne 0) { throw "Maven build failed" }
+
+# Detect the produced application jar (branch-independent: -23 or -59).
+$jar = Get-ChildItem "target\*.jar" |
+    Where-Object { $_.Name -notmatch 'sources|javadoc' } |
+    Select-Object -First 1
+if (-not $jar) { throw "No application jar found in target\" }
+$mainJar = $jar.Name
+Write-Host "==> main jar: $mainJar"
 
 Write-Host "==> collecting dependencies into target\app-input\lib"
 mvn -q dependency:copy-dependencies "-DoutputDirectory=target\app-input\lib" "-DincludeScope=runtime"
