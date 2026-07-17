@@ -1,118 +1,112 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.transfer.clients;
 
-import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-
 import sancho.model.mldonkey.Client;
+import sancho.model.mldonkey.File;
 import sancho.view.preferences.PreferenceLoader;
-import sancho.view.utility.SResources;
 import sancho.view.viewer.table.GTableLabelProvider;
 
-public class ClientTableLabelProvider extends GTableLabelProvider implements IColorProvider {
+public class ClientTableLabelProvider extends GTableLabelProvider {
+   boolean displayColors;
+   Color hasFilesColor;
+   Color connectedColor;
+   Color disconnectedColor;
 
-  public static final String RS_TRUE = SResources.getString("l.true");
-  public static final String RS_FALSE = SResources.getString("l.false");
+   public ClientTableLabelProvider(ClientTableView var1) {
+      super(var1);
+   }
 
-  boolean displayColors;
-  Color hasFilesColor;
-  Color connectedColor;
-  Color disconnectedColor;
+   public Image getColumnImage(Object var1, int var2) {
+      Client var3 = (Client)var1;
+      switch (this.cViewer.getColumnIDs()[var2]) {
+         case 0:
+            return var3.getEnumNetwork().getImage();
+         case 1:
+            return var3.getNameImage();
+         case 2:
+            return var3.getSoftwareImage();
+         case 3:
+         case 4:
+         case 5:
+         case 7:
+         case 11:
+         default:
+            return null;
+         case 6:
+            return var3.getAddr().getImage();
+         case 8:
+            return var3.getClientModeEnum().getImage();
+         case 9:
+            return var3.getStateEnum().getImage();
+         case 10:
+            return var3.hasFilesImage();
+         case 12:
+            return var3.getSUIImage();
+         case 13:
+            return var3.getAddr().getImage();
+      }
+   }
 
-  public ClientTableLabelProvider(ClientTableView cTableViewer) {
-    super(cTableViewer);
-  }
+   public String getColumnText(Object var1, int var2) {
+      Client var3 = (Client)var1;
+      switch (this.cViewer.getColumnIDs()[var2]) {
+         case 0:
+            return var3.getEnumNetwork().getName();
+         case 1:
+            return var3.getName();
+         case 2:
+            return var3.getSoftware();
+         case 3:
+            return var3.getUploadedString();
+         case 4:
+            return var3.getDownloadedString();
+         case 5:
+            return var3.getConnectedTimeString();
+         case 6:
+            return var3.getAddr().toString();
+         case 7:
+            return String.valueOf(var3.getPort()).intern();
+         case 8:
+            return var3.getModeString();
+         case 9:
+            return var3.getDetailedClientActivity();
+         case 10:
+            return var3.hasFilesString();
+         case 11:
+            File var4 = (File)this.gView.getViewer().getInput();
+            if (var4 instanceof File) {
+               return var3.getFileAvailabilityPercentString(var4);
+            }
 
-  public Image getColumnImage(Object element, int columnIndex) {
-    Client client = (Client) element;
+            return "";
+         case 12:
+            return var3.getSUIString();
+         case 13:
+            return var3.getAddr().getCountry();
+         default:
+            return "";
+      }
+   }
 
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case ClientTableView.STATE :
-        return client.getStateEnum().getImage();
+   public Color getForeground(Object var1, int var2) {
+      if (!this.displayColors) {
+         return null;
+      } else {
+         Client var3 = (Client)var1;
+         if (var3.hasFiles()) {
+            return this.hasFilesColor;
+         } else {
+            return var3.isConnected() ? this.connectedColor : this.disconnectedColor;
+         }
+      }
+   }
 
-      case ClientTableView.NETWORK :
-        return client.getEnumNetwork().getImage();
-
-      case ClientTableView.SOFTWARE :
-        return client.getSoftwareImage();
-
-      default :
-        return null;
-    }
-  }
-
-  public String getColumnText(Object element, int columnIndex) {
-    Client client = (Client) element;
-
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case ClientTableView.STATE :
-        return client.getDetailedClientActivity();
-
-      case ClientTableView.NAME :
-        return client.getName();
-
-      case ClientTableView.NETWORK :
-        return client.getEnumNetwork().getName();
-
-      case ClientTableView.KIND :
-        return client.getModeString();
-
-      case ClientTableView.SOFTWARE :
-        return client.getSoftware();
-
-      case ClientTableView.UPLOADED :
-        return client.getUploadedString();
-
-      case ClientTableView.DOWNLOADED :
-        return client.getDownloadedString();
-
-      case ClientTableView.SOCK_ADDR :
-        return client.getAddr().toString();
-
-      case ClientTableView.PORT :
-        return String.valueOf(client.getPort());
-
-      case ClientTableView.CONNECT_TIME :
-        return client.getConnectedTimeString();
-
-      case ClientTableView.HAS_FILES :
-        return client.hasFiles() ? RS_TRUE : RS_FALSE;
-
-      default :
-        return SResources.S_ES;
-    }
-  }
-
-  public Color getForeground(Object element) {
-    if (!displayColors)
-      return null;
-
-    Client client = (Client) element;
-
-    if (client.hasFiles())
-      return hasFilesColor;
-    else if (client.isConnected())
-      return connectedColor;
-    else
-      return disconnectedColor;
-
-  }
-
-  public Color getBackground(Object element) {
-    return null;
-  }
-
-  public void updateDisplay() {
-    super.updateDisplay();
-    displayColors = PreferenceLoader.loadBoolean("displayTableColors");
-    connectedColor = PreferenceLoader.loadColor("clientsConnectedColor");
-    hasFilesColor = PreferenceLoader.loadColor("clientsHasFilesColor");
-    disconnectedColor = PreferenceLoader.loadColor("clientsDisconnectedColor");
-  }
-
+   public void updateDisplay() {
+      super.updateDisplay();
+      this.displayColors = PreferenceLoader.loadBoolean("displayTableColors");
+      this.connectedColor = PreferenceLoader.loadColor("clientsConnectedColor");
+      this.hasFilesColor = PreferenceLoader.loadColor("clientsHasFilesColor");
+      this.disconnectedColor = PreferenceLoader.loadColor("clientsDisconnectedColor");
+   }
 }

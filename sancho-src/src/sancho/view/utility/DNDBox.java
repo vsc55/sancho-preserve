@@ -1,22 +1,6 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.utility;
 
-import java.util.Observable;
-import java.util.Observer;
-
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.preference.PreferenceConverter;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
@@ -26,259 +10,179 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
-
 import sancho.core.Sancho;
 import sancho.model.mldonkey.ClientStats;
+import sancho.utility.MyObservable;
+import sancho.utility.MyObserver;
 import sancho.view.MainWindow;
 import sancho.view.preferences.PreferenceLoader;
-import sancho.view.statusline.actions.DNDBoxAction;
-import sancho.view.statusline.actions.PreferencesAction;
-import sancho.view.statusline.actions.RateBandwidthDialogAction;
 
-public class DNDBox implements Observer, PaintListener {
+public class DNDBox implements MyObserver, PaintListener {
+   static int JUMP_MARGIN = 10;
+   MainWindow mainWindow;
+   Point mouseDownPoint;
+   boolean multiMonitors;
+   MenuManager popupMenu;
+   Rectangle screenBounds;
+   Shell shell;
+   Rectangle shellBounds;
+   Point shellLocation;
+   Shell dummyShell;
+   StringBuffer upString = new StringBuffer();
+   StringBuffer downString = new StringBuffer();
+   int cWidth;
+   int cHeight;
+   Font textFont;
+   Color bColor;
+   Color fColor;
+   int shellWidth;
+   int shellHeight;
 
-  static int JUMP_MARGIN = 10;
-  MainWindow mainWindow;
-  Point mouseDownPoint;
-  boolean multiMonitors;
-  MenuManager popupMenu;
-  Rectangle screenBounds;
-  Shell shell;
-  Rectangle shellBounds;
-  Point shellLocation;
-  Shell dummyShell;
-
-  StringBuffer upString = new StringBuffer();
-  StringBuffer downString = new StringBuffer();
-
-  int cWidth;
-  int cHeight;
-
-  Font textFont;
-  Color bColor;
-  Color fColor;
-
-  int shellWidth;
-  int shellHeight;
-
-  public DNDBox(MainWindow mainWindow) {
-    this.mainWindow = mainWindow;
-
-    dummyShell = new Shell();
-    dummyShell.setVisible(false);
-
-    this.shell = new Shell(dummyShell, SWT.ON_TOP | SWT.NO_TRIM | SWT.NO_BACKGROUND);
-    this.shell.setLayout(new FillLayout());
-
-    bColor = PreferenceLoader.loadColor("dndBackgroundColor");
-    fColor = PreferenceLoader.loadColor("dndForegroundColor");
-    textFont = PreferenceLoader.loadFont("dndFontData");
-
-    GC gc = new GC(shell);
-    gc.setFont(textFont);
-
-    cWidth = gc.getFontMetrics().getAverageCharWidth();
-    cHeight = gc.getFontMetrics().getHeight();
-
-    gc.dispose();
-
-    int numChars = PreferenceLoader.loadInt("dndWidth");
-
-    shellHeight = cHeight * 2 + 6;
-    shellWidth = numChars * cWidth;
-
-    shell.setBounds(0, 0, shellWidth, shellHeight);
-
-    this.shell.addPaintListener(this);
-    this.shellBounds = shell.getBounds();
-
-    popupMenu = new MenuManager();
-    popupMenu.addMenuListener(new DNDBoxMenuListener());
-    popupMenu.setRemoveAllWhenShown(true);
-
-    this.shell.setMenu(popupMenu.createContextMenu(shell));
-    this.screenBounds = this.shell.getDisplay().getBounds();
-
-    Rectangle saved = PreferenceLoader.loadRectangle("dndBoxWindowBounds");
-    if (saved.x == -1)
-      this.shell.setLocation(screenBounds.width - shellBounds.width, screenBounds.height - shellBounds.height
-          - 40);
-    else
-      this.shell.setLocation(saved.x, saved.y);
-
-    this.shell.addDisposeListener(new DisposeListener() {
-      public void widgetDisposed(DisposeEvent e) {
-        PreferenceConverter.setValue(PreferenceLoader.getPreferenceStore(), "dndBoxWindowBounds", shell
-            .getBounds());
-
-        if (Sancho.hasCollectionFactory())
-          Sancho.getCore().getClientStats().deleteObserver(DNDBox.this);
-
-      }
-    });
-
-    this.shell.open();
-
-    WidgetFactory.createLinkDropTarget(this.shell);
-
-    // fox?
-    if (this.shell.getDisplay().getMonitors().length > 1)
-      multiMonitors = true;
-
-    Listener shellListener = new Listener() {
-      public void handleEvent(Event e) {
-        switch (e.type) {
-          case SWT.MouseDown :
-            onMouseDown(e);
-            break;
-          case SWT.MouseUp :
-            onMouseUp(e);
-            break;
-          case SWT.MouseMove :
-            onMouseMove(e);
-            break;
-        }
-      }
-    };
-    int[] shellEvents = new int[]{SWT.MouseDown, SWT.MouseUp, SWT.MouseMove};
-
-    for (int i = 0; i < shellEvents.length; i++)
-      this.shell.addListener(shellEvents[i], shellListener);
-
-    setConnected(true);
-  }
-
-  public void close() {
-    if (this.shell != null && !this.shell.isDisposed())
-      this.shell.close();
-    if (this.dummyShell != null && !this.dummyShell.isDisposed())
-      this.dummyShell.close();
-    if (this.shell != null && !this.shell.isDisposed())
-      this.shell.dispose();
-  }
-
-  public void onMouseDown(Event e) {
-    mouseDownPoint = new Point(e.x, e.y);
-  }
-
-  public void setConnected(boolean b) {
-    if (Sancho.hasCollectionFactory()) {
-      Sancho.getCore().getClientStats().addObserver(this);
-    }
-  }
-
-  public void onMouseMove(Event e) {
-    if (mouseDownPoint != null) {
-      this.shellLocation = shell.getLocation();
-
-      int x = shellLocation.x - (mouseDownPoint.x - e.x);
-      int y = shellLocation.y - (mouseDownPoint.y - e.y);
-
-      if (!multiMonitors) {
-        x = x < JUMP_MARGIN ? 0 : x;
-        y = y < JUMP_MARGIN ? 0 : y;
-
-        if (x > screenBounds.width - (shellBounds.width + JUMP_MARGIN))
-          x = screenBounds.width - shellBounds.width;
-        if (y > screenBounds.height - (shellBounds.height + JUMP_MARGIN))
-          y = screenBounds.height - shellBounds.height;
-      }
-
-      this.shell.setLocation(x, y);
-    }
-  }
-
-  public void onMouseUp(Event e) {
-    mouseDownPoint = null;
-  }
-
-  public void redrawImage(ClientStats clientStats) {
-    if (shell == null || clientStats == null || shell.isDisposed())
-      return;
-
-    upString.setLength(0);
-    downString.setLength(0);
-
-    upString.append("U:" + clientStats.getTcpUpRateString());
-    downString.append("D:" + clientStats.getTcpDownRateString());
-
-    this.shell.redraw();
-  }
-
-  public void paintControl(PaintEvent e) {
-
-    int x = shell.getBounds().x;
-    int y = shell.getBounds().y;
-
-    e.gc.setBackground(bColor);
-    e.gc.fillRectangle(0, 0, shellWidth - 1, shellHeight - 1);
-
-    e.gc.setForeground(fColor);
-    e.gc.setFont(textFont);
-
-    e.gc.drawText(upString.toString(), 3, 2, true);
-    e.gc.drawText(downString.toString(), 3, cHeight + 4, true);
-
-    e.gc.drawRectangle(0, 0, shellWidth - 1, shellHeight - 1);
-
-    // e.gc.drawImage(image, e.x, e.y, e.width, e.height, e.x, e.y, e.width, e.height);
-  }
-
-  public void update(final Observable o, Object obj) {
-    if (o instanceof ClientStats) {
-      if (this.shell != null && !this.shell.isDisposed()) {
-        this.shell.getDisplay().asyncExec(new Runnable() {
-          public void run() {
-            redrawImage((ClientStats) o);
-          }
-        });
-      }
-    }
-  }
-
-  class DNDBoxMenuListener implements IMenuListener {
-    public void menuAboutToShow(IMenuManager menuManager) {
-      if (Sancho.monitorMode) {
-        menuManager.add(new ExitAction(mainWindow.getShell()));
+   public DNDBox(MainWindow var1) {
+      this.mainWindow = var1;
+      this.dummyShell = new Shell();
+      this.dummyShell.setVisible(false);
+      this.shell = new Shell(this.dummyShell, 278536);
+      this.shell.setLayout(new FillLayout());
+      this.bColor = PreferenceLoader.loadColor("dndBackgroundColor");
+      this.fColor = PreferenceLoader.loadColor("dndForegroundColor");
+      this.textFont = PreferenceLoader.loadFont("dndFontData");
+      GC var2 = new GC(this.shell);
+      var2.setFont(this.textFont);
+      this.cWidth = var2.getFontMetrics().getAverageCharWidth();
+      this.cHeight = var2.getFontMetrics().getHeight();
+      var2.dispose();
+      int var3 = PreferenceLoader.loadInt("dndWidth");
+      this.shellHeight = this.cHeight * 2 + 6;
+      this.shellWidth = var3 * this.cWidth;
+      this.shell.setBounds(0, 0, this.shellWidth, this.shellHeight);
+      this.shell.addPaintListener(this);
+      this.shellBounds = this.shell.getBounds();
+      this.popupMenu = new MenuManager();
+      this.popupMenu.addMenuListener(new DNDBox$DNDBoxMenuListener(this));
+      this.popupMenu.setRemoveAllWhenShown(true);
+      this.shell.setMenu(this.popupMenu.createContextMenu(this.shell));
+      this.screenBounds = this.shell.getDisplay().getBounds();
+      Rectangle var4 = PreferenceLoader.loadRectangle("dndBoxWindowBounds");
+      if (var4.x != -1 && this.screenBounds.contains(var4.x, var4.y)) {
+         this.shell.setLocation(var4.x, var4.y);
       } else {
-        menuManager.add(new HideRestoreAction(mainWindow.getShell()));
-        if (mainWindow.getShell().isVisible())
-          menuManager.add(new DNDBoxAction(mainWindow));
-        menuManager.add(new Separator());
-        menuManager.add(new PreferencesAction(mainWindow));
-        menuManager.add(new RateBandwidthDialogAction(shell));
+         this.shell.setLocation(this.screenBounds.width - this.shellBounds.width, this.screenBounds.height - this.shellBounds.height - 40);
       }
-    }
-  }
 
-  static class ExitAction extends Action {
+      this.shell.addDisposeListener(new DNDBox$1(this));
+      this.shell.open();
+      WidgetFactory.createLinkDropTarget(this.shell);
+      if (this.shell.getDisplay().getMonitors().length > 1) {
+         this.multiMonitors = true;
+      }
 
-    Shell shell;
+      DNDBox$2 var5 = new DNDBox$2(this);
+      int[] var6 = new int[]{3, 4, 5, 8};
 
-    public ExitAction(Shell shell) {
-      super(SResources.getString("menu.file.exit"));
-      this.shell = shell;
-    }
+      for (int var7 = 0; var7 < var6.length; var7++) {
+         this.shell.addListener(var6[var7], var5);
+      }
 
-    public void run() {
-      shell.close();
-    }
-  }
+      this.setConnected(true);
+   }
 
-  static class HideRestoreAction extends Action {
+   public void close() {
+      if (this.shell != null && !this.shell.isDisposed()) {
+         this.shell.close();
+      }
 
-    Shell shell;
+      if (this.dummyShell != null && !this.dummyShell.isDisposed()) {
+         this.dummyShell.close();
+      }
 
-    public HideRestoreAction(Shell shell) {
-      super(SResources.getString(shell.isVisible() ? "mi.hide" : "mi.restore"));
-      setImageDescriptor(SResources.getImageDescriptor(shell.isVisible() ? "minus" : "plus"));
-      this.shell = shell;
-    }
+      if (this.shell != null && !this.shell.isDisposed()) {
+         this.shell.dispose();
+      }
+   }
 
-    public void run() {
-      shell.setVisible(!shell.isVisible());
-    }
-  }
+   public void onMouseDown(Event var1) {
+      this.mouseDownPoint = new Point(var1.x, var1.y);
+   }
+
+   public void setConnected(boolean var1) {
+      if (Sancho.hasCollectionFactory()) {
+         Sancho.getCore().getClientStats().addObserver(this);
+      }
+   }
+
+   public void onMouseDoubleClick(Event var1) {
+      if (!Sancho.monitorMode) {
+         Shell var2 = this.mainWindow.getShell();
+         boolean var3 = var2.isVisible();
+         if (var3) {
+            var2.setVisible(false);
+         } else {
+            var2.setVisible(true);
+            if (var2.getMinimized()) {
+               var2.setMinimized(false);
+            }
+         }
+      }
+   }
+
+   public void onMouseMove(Event var1) {
+      if (this.mouseDownPoint != null) {
+         this.shellLocation = this.shell.getLocation();
+         this.screenBounds = this.shell.getDisplay().getBounds();
+         int var2 = this.shellLocation.x - (this.mouseDownPoint.x - var1.x);
+         int var3 = this.shellLocation.y - (this.mouseDownPoint.y - var1.y);
+         if (!this.multiMonitors) {
+            var2 = var2 < JUMP_MARGIN ? 0 : var2;
+            var3 = var3 < JUMP_MARGIN ? 0 : var3;
+            if (var2 > this.screenBounds.width - (this.shellBounds.width + JUMP_MARGIN)) {
+               var2 = this.screenBounds.width - this.shellBounds.width;
+            }
+
+            if (var3 > this.screenBounds.height - (this.shellBounds.height + JUMP_MARGIN)) {
+               var3 = this.screenBounds.height - this.shellBounds.height;
+            }
+         }
+
+         this.shell.setLocation(var2, var3);
+      }
+   }
+
+   public void onMouseUp(Event var1) {
+      this.mouseDownPoint = null;
+   }
+
+   public void redrawImage(ClientStats var1) {
+      if (this.shell != null && var1 != null && !this.shell.isDisposed()) {
+         this.upString.setLength(0);
+         this.downString.setLength(0);
+         this.upString.append("U:" + var1.getTcpUpRateString());
+         this.downString.append("D:" + var1.getTcpDownRateString());
+         this.shell.redraw();
+      }
+   }
+
+   public void paintControl(PaintEvent var1) {
+      this.screenBounds = this.shell.getDisplay().getBounds();
+      int var2 = this.shell.getBounds().x;
+      int var3 = this.shell.getBounds().y;
+      if (!this.screenBounds.contains(var2, var3)) {
+         this.shell.setLocation(this.screenBounds.width - this.shellBounds.width, this.screenBounds.height - this.shellBounds.height - 40);
+      }
+
+      var1.gc.setBackground(this.bColor);
+      var1.gc.fillRectangle(0, 0, this.shellWidth - 1, this.shellHeight - 1);
+      var1.gc.setForeground(this.fColor);
+      var1.gc.setFont(this.textFont);
+      var1.gc.drawText(this.upString.toString(), 3, 2, true);
+      var1.gc.drawText(this.downString.toString(), 3, this.cHeight + 4, true);
+      var1.gc.drawRectangle(0, 0, this.shellWidth - 1, this.shellHeight - 1);
+   }
+
+   public void update(MyObservable var1, Object var2, int var3) {
+      if (var1 instanceof ClientStats && this.shell != null && !this.shell.isDisposed()) {
+         this.shell.getDisplay().asyncExec(new DNDBox$3(this, var1));
+      }
+   }
 }

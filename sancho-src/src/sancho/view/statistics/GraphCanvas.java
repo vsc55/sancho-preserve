@@ -1,99 +1,120 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.statistics;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
-
+import sancho.view.preferences.PreferenceLoader;
 import sancho.view.viewFrame.ViewFrame;
 
 public class GraphCanvas extends Composite implements PaintListener, Runnable, DisposeListener {
-  private Composite composite;
-  private Graph graph;
-  private GraphPainter graphPainter;
-  private Image imageBuffer;
-  private boolean needNewBuffer;
-  private ViewFrame viewFrame;
+   public static final short MAX_GRAPH_TYPES = 2;
+   private Composite composite;
+   private GraphData graphData;
+   private String graphName;
+   private GraphPainter graphPainter;
+   private boolean graphReverse;
+   private int graphType;
+   private Image imageBuffer;
+   private boolean needNewBuffer;
+   private ViewFrame viewFrame;
 
-  public GraphCanvas(Composite composite, String name, String graphName, ViewFrame viewFrame) {
-    super(composite, SWT.NO_BACKGROUND);
-    this.viewFrame = viewFrame;
-    this.composite = composite;
-    this.graphPainter = new GraphPainter(composite);
+   public GraphCanvas(Composite var1, String var2, String var3, ViewFrame var4) {
+      super(var1, 262144);
+      this.viewFrame = var4;
+      this.composite = var1;
+      this.graphName = var3;
+      this.graphData = new GraphData(var1.getDisplay(), var2, var3);
+      this.graphPainter = new GraphPainter(var1, this.graphData);
+      this.addPaintListener(this);
+      this.addDisposeListener(this);
+      this.addControlListener(new GraphCanvas$1(this));
+      this.addMouseListener(new GraphCanvas$2(this));
+      this.updateDisplay();
+   }
 
-    graph = new Graph(name, graphName);
-    graphPainter.setGraph(graph);
+   public void addPoint(float var1) {
+      this.graphData.addPoint((int)(var1 * 100.0F));
+   }
 
-    addMouseListener(new MouseAdapter() {
-      public void mouseDoubleClick(MouseEvent e) {
-        graph.toggleDisplay();
+   public GraphData getGraphData() {
+      return this.graphData;
+   }
+
+   public void paintControl(PaintEvent var1) {
+      if (this.needNewBuffer) {
+         Rectangle var2 = this.composite.getBounds();
+         if (var2.height <= 0 || var2.width <= 0) {
+            return;
+         }
+
+         if (this.imageBuffer != null) {
+            this.imageBuffer.dispose();
+         }
+
+         this.imageBuffer = new Image(null, this.composite.getBounds());
       }
-    });
 
-    addPaintListener(this);
-    addDisposeListener(this);
+      this.graphPainter.paint(var1.gc, this.imageBuffer);
+      this.needNewBuffer = false;
+   }
 
-    addControlListener(new ControlAdapter() {
-      public void controlResized(ControlEvent e) {
-        needNewBuffer = true;
+   public void redrawInThread() {
+      if (!this.isDisposed() && this.viewFrame.isVisible()) {
+         this.getDisplay().asyncExec(this);
       }
-    });
-  }
+   }
 
-  public void addPoint(float value) {
-    graph.addPoint((int) (value * 100));
-  }
+   public void reverse() {
+      this.graphReverse = !this.graphReverse;
+      this.graphPainter.setReverse(this.graphReverse);
+   }
 
-  public Graph getGraph() {
-    return graph;
-  }
+   public void run() {
+      if (!this.isDisposed() && this.isVisible()) {
+         this.redraw();
+      }
+   }
 
-  public void redrawInThread() {
-    if (!isDisposed() && viewFrame.isVisible())
-      getDisplay().asyncExec(this);
-  }
+   public void toggleDisplay() {
+      this.graphType++;
+      if (this.graphType > 2) {
+         this.graphType = 0;
+      }
 
-  public void paintControl(PaintEvent e) {
-    if (needNewBuffer) {
-      Rectangle r = composite.getBounds();
-      if (r.height <= 0 || r.width <= 0)
-        return;
+      this.graphPainter.setGraphType(this.graphType);
+      PreferenceStore var1 = PreferenceLoader.getPreferenceStore();
+      var1.setValue("graph" + this.graphName + "Type", this.graphType);
+   }
 
-      if (imageBuffer != null)
-        imageBuffer.dispose();
-     
-      imageBuffer = new Image(null, composite.getBounds());
-    }
-    graphPainter.paint(e.gc, imageBuffer);
-    needNewBuffer = false;
-  }
+   public void updateDisplay() {
+      this.graphType = PreferenceLoader.loadInt("graph" + this.graphName + "Type");
+      this.graphReverse = PreferenceLoader.loadBoolean("graph" + this.graphName + "Reverse");
+      this.graphPainter.updateDisplay();
+      this.graphPainter.setGraphType(this.graphType);
+      this.graphPainter.setReverse(this.graphReverse);
+   }
 
-  public void run() {
-    if (!isDisposed() && isVisible())
-      redraw();
-  }
+   public void widgetDisposed(DisposeEvent var1) {
+      if (this.imageBuffer != null && !this.imageBuffer.isDisposed()) {
+         this.imageBuffer.dispose();
+      }
 
-  public void updateDisplay() {
-    graph.updateDisplay();
-    graphPainter.updateDisplay();
-  }
+      PreferenceStore var2 = PreferenceLoader.getPreferenceStore();
+      var2.setValue("graph" + this.graphName + "Type", this.graphType);
+      var2.setValue("graph" + this.graphName + "Reverse", this.graphReverse);
+   }
 
-  public void widgetDisposed(DisposeEvent e) {
-    if (imageBuffer != null && !imageBuffer.isDisposed())
-      imageBuffer.dispose();
-  }
+   public void dispose() {
+      this.graphData.dispose();
+   }
 
+   // $VF: synthetic method
+   static boolean access$002(GraphCanvas var0, boolean var1) {
+      return var0.needNewBuffer = var1;
+   }
 }

@@ -1,12 +1,6 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.viewer.filters;
 
 import org.eclipse.jface.viewers.Viewer;
-
 import sancho.model.mldonkey.Client;
 import sancho.model.mldonkey.File;
 import sancho.model.mldonkey.Result;
@@ -15,24 +9,21 @@ import sancho.model.mldonkey.Server;
 import sancho.view.viewer.GView;
 
 public class StateViewerFilter extends AbstractViewerFilter {
+   public StateViewerFilter(GView var1) {
+      super(var1);
+   }
 
-  public StateViewerFilter(GView gView) {
-    super(gView);
-  }
-
-  public boolean select(Viewer viewer, Object parentElement, Object element) {
-    if (element instanceof Server)
-      return isFiltered(((Server) element).getStateEnum());
-    else if (element instanceof File)
-      return isFiltered(((File) element).getFileStateEnum());
-    else if (element instanceof Client)
-      return isFiltered(((Client) element).getStateEnum());
-    else if (element instanceof Result)
-      return isFiltered(((Result) element).getRating());
-    else if (element instanceof Room)
-      return isFiltered(((Room) element).getRoomState());
-    else
-      return true;
-  }
-
+   public boolean select(Viewer var1, Object var2, Object var3) {
+      if (var3 instanceof Server) {
+         return this.isFiltered(((Server)var3).getStateEnum());
+      } else if (var3 instanceof File) {
+         return this.isFiltered(((File)var3).getFileStateEnum());
+      } else if (var3 instanceof Client) {
+         return this.isFiltered(((Client)var3).getStateEnum());
+      } else if (var3 instanceof Result) {
+         return this.isFiltered(((Result)var3).getRating());
+      } else {
+         return var3 instanceof Room ? this.isFiltered(((Room)var3).getRoomState()) : true;
+      }
+   }
 }

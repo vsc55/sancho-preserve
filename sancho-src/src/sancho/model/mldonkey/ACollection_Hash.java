@@ -1,55 +1,53 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
 import gnu.trove.THashMap;
-
-import java.util.Observable;
+import gnu.trove.TObjectObjectProcedure;
 import java.util.Set;
-
 import sancho.core.ICore;
+import sancho.utility.MyObservable;
 
-public abstract class ACollection_Hash extends Observable implements ICollection {
-  protected ICore core;
-  protected THashMap infoMap;
+public abstract class ACollection_Hash extends MyObservable implements ICollection {
+   protected ICore core;
+   protected THashMap infoMap;
 
-  ACollection_Hash() {
-    this(null);
-  }
+   ACollection_Hash() {
+      this(null);
+   }
 
-  ACollection_Hash(ICore core) {
-    this.core = core;
-    this.infoMap = new THashMap();
-  }
+   ACollection_Hash(ICore var1) {
+      this.core = var1;
+      this.infoMap = new THashMap();
+   }
 
-  public synchronized boolean containsKey(Object key) {
-    return this.infoMap.contains(key);
-  }
+   public synchronized boolean containsKey(Object var1) {
+      return this.infoMap.contains(var1);
+   }
 
-  public void dispose() {
-    deleteObservers();
-  }
+   public void dispose() {
+      this.deleteObservers();
+   }
 
-  public synchronized Set entrySet() {
-    return this.infoMap.entrySet();
-  }
+   public synchronized Set entrySet() {
+      return this.infoMap.entrySet();
+   }
 
-  public synchronized Object get(Object key) {
-    return this.infoMap.get(key);
-  }
+   public synchronized boolean forEachEntry(TObjectObjectProcedure var1) {
+      return this.infoMap.forEachEntry(var1);
+   }
 
-  public synchronized Set keySet() {
-    return this.infoMap.keySet();
-  }
+   public synchronized Object get(Object var1) {
+      return this.infoMap.get(var1);
+   }
 
-  public synchronized Object put(Object key, Object value) {
-    return this.infoMap.put(key, value);
-  }
+   public synchronized Set keySet() {
+      return this.infoMap.keySet();
+   }
 
-  public synchronized int size() {
-    return this.infoMap.size();
-  }
+   public synchronized Object put(Object var1, Object var2) {
+      return this.infoMap.put(var1, var2);
+   }
+
+   public synchronized int size() {
+      return this.infoMap.size();
+   }
 }

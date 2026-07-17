@@ -1,51 +1,44 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey.utility;
 
+import sancho.core.ICore;
 import sancho.model.mldonkey.enums.EnumClientMode;
-import sancho.view.utility.SResources;
+import sancho.utility.SwissArmy;
 
 public class Kind {
+   protected int port;
+   private byte[] hash;
+   protected Addr addr;
 
-  Kind() {
-    this.addr = UtilityFactory.getAddr();
-  }
+   Kind(ICore var1) {
+      this.addr = UtilityFactory.getAddr(var1);
+   }
 
-  private int port;
-  private String name;
-  private String hash;
-  private Addr addr;
+   public synchronized String getHash() {
+      return this.hash == null ? "" : SwissArmy.calcStringOfMD4(this.hash);
+   }
 
-  public synchronized String getHash() {
-    return hash != null ? hash : SResources.S_ES;
-  }
+   public Addr getAddr() {
+      return this.addr;
+   }
 
-  public synchronized String getName() {
-    return name != null ? name : SResources.S_ES;
-  }
+   public synchronized int getPort() {
+      return this.port;
+   }
 
-  public Addr getAddr() {
-    return addr;
-  }
+   public synchronized EnumClientMode read(MessageBuffer var1) {
+      EnumClientMode var2 = EnumClientMode.byteToEnum(var1.getByte());
+      if (var2 == EnumClientMode.DIRECT) {
+         this.addr.read(false, var1);
+         this.port = var1.getUInt16();
+      } else {
+         this.addr.read(true, var1);
+         this.hash = var1.getMd4();
+         this.readAddr(var1);
+      }
 
-  public synchronized int getPort() {
-    return port;
-  }
+      return var2;
+   }
 
-  // guiEncoding#buf_kind
-  public synchronized EnumClientMode read(MessageBuffer messageBuffer) {
-    EnumClientMode mode = EnumClientMode.byteToEnum(messageBuffer.getByte());
-    if (mode == EnumClientMode.DIRECT) {
-      this.addr.read(false, messageBuffer);
-      this.port = messageBuffer.getUInt16();
-    } else {
-      this.name = messageBuffer.getString();
-      this.hash = messageBuffer.getMd4();
-      this.addr.setUnknown();
-    }
-    return mode;
-  }
+   public void readAddr(MessageBuffer var1) {
+   }
 }

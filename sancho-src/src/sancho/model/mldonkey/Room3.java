@@ -1,28 +1,23 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
 import sancho.core.ICore;
 import sancho.model.mldonkey.utility.MessageBuffer;
 
 public class Room3 extends Room {
-  private int numUsers;
+   private int numUsers;
 
-  Room3(ICore core) {
-    super(core);
-  }
+   Room3(ICore var1) {
+      super(var1);
+   }
 
-  public void read(int roomNumber, MessageBuffer messageBuffer) {
-    super.read(roomNumber, messageBuffer);
-    synchronized (this) {
-      this.numUsers = messageBuffer.getInt32();
-    }
-  }
+   public void read(int var1, MessageBuffer var2) {
+      super.read(var1, var2);
+      synchronized (this) {
+         this.numUsers = var2.getInt32();
+      }
+   }
 
-  public synchronized int getNumUsers() {
-    return numUsers;
-  }
+   public synchronized int getNumUsers() {
+      return this.numUsers;
+   }
 }

@@ -1,15 +1,9 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.transfer.downloads;
 
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-
 import sancho.model.mldonkey.enums.EnumFileState;
+import sancho.view.utility.MyMenuManager;
 import sancho.view.utility.SResources;
 import sancho.view.viewFrame.TabbedSashViewFrame;
 import sancho.view.viewFrame.TabbedSashViewListener;
@@ -19,45 +13,29 @@ import sancho.view.viewer.actions.ExclusionStateFilterAction;
 import sancho.view.viewer.actions.RemoveAllFiltersAction;
 
 public class DownloadViewListener extends TabbedSashViewListener {
+   public DownloadViewListener(TabbedSashViewFrame var1) {
+      super(var1);
+   }
 
-  public DownloadViewListener(TabbedSashViewFrame sashViewFrame) {
-    super(sashViewFrame);
-  }
-
-  public void menuAboutToShow(IMenuManager menuManager) {
-    // columnSelector
-    menuManager.add(new ColumnSelectorAction(gView));
-    menuManager.add(new Separator());
-    createDynamicColumnSubMenu(menuManager);
-    // sortMenu for macOS
-    createSortByColumnSubMenu(menuManager);
-
-    // filter submenu
-    MenuManager filterSubMenu = new MenuManager(SResources.getString("mi.show"));
-
-    // all filters
-    filterSubMenu.add(new RemoveAllFiltersAction(gView));
-
-    // network filters
-    filterSubMenu.add(new Separator());
-    createEnabledNetworkFilterSubMenu(filterSubMenu);
-
-    // state filter - exclusionary
-    filterSubMenu.add(new Separator());
-    filterSubMenu.add(new ExclusionStateFilterAction(EnumFileState.PAUSED.getName(), gView,
-        EnumFileState.PAUSED));
-    filterSubMenu.add(new ExclusionStateFilterAction(EnumFileState.QUEUED.getName(), gView,
-        EnumFileState.QUEUED));
-
-    filterSubMenu.add(new Separator());
-
-    createExtensionFilterMenuItems(filterSubMenu);
-    menuManager.add(filterSubMenu);
-    menuManager.add(new ToggleTabsAction((TabbedSashViewFrame) viewFrame));
-
-    filterSubMenu.add(new Separator());
-    // flip sash/maximize sash
-    createSashActions(menuManager, "l.uploaders");
-  }
-
+   public void menuAboutToShow(IMenuManager var1) {
+      var1.add(new ColumnSelectorAction(this.gView));
+      var1.add(new Separator());
+      this.createDynamicColumnSubMenu(var1);
+      this.createSortByColumnSubMenu(var1);
+      MyMenuManager var2 = new MyMenuManager(SResources.getString("mi.show"));
+      var2.setImageString("target");
+      var2.add(new RemoveAllFiltersAction(this.gView));
+      var2.add(new Separator());
+      this.createEnabledNetworkFilterSubMenu(var2);
+      var2.add(new Separator());
+      var2.add(new ExclusionStateFilterAction(EnumFileState.PAUSED.getName(), this.gView, EnumFileState.PAUSED));
+      var2.add(new ExclusionStateFilterAction(EnumFileState.QUEUED.getName(), this.gView, EnumFileState.QUEUED));
+      var2.add(new Separator());
+      this.createExtensionFilterMenuItems(var2);
+      var1.add(var2);
+      var1.add(new ToggleTabsAction((TabbedSashViewFrame)this.viewFrame));
+      var1.add(new DownloadViewListener$DisplayChunkGraphsAction(this, (DownloadTreeView)this.gView));
+      var2.add(new Separator());
+      this.createSashActions(var1, "l.uploaders");
+   }
 }

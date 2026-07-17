@@ -1,144 +1,141 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey.utility;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 
 public class MessageEncoder {
-  private ByteArrayOutputStream baOutputStream;
-  private BufferedOutputStream bOutputStream;
-  private byte[] numberBuffer;
-  private byte[] header;
-  private int length;
+   private ByteArrayOutputStream baOutputStream;
+   private BufferedOutputStream bOutputStream;
+   private byte[] numberBuffer;
+   private byte[] header;
+   private int length;
+   private short opCode;
+   private Socket socket;
 
-  private short opCode;
-  private Socket socket;
+   public MessageEncoder(Socket var1) {
+      this.socket = var1;
+      this.header = new byte[6];
+      this.numberBuffer = new byte[8];
+      this.baOutputStream = new ByteArrayOutputStream();
+   }
 
-  public MessageEncoder(Socket socket) {
-    this.socket = socket;
-    this.header = new byte[6];
-    this.numberBuffer = new byte[8];
-    this.baOutputStream = new ByteArrayOutputStream();
-  }
+   private void appendNumber(Number var1) {
+      byte var2;
+      if (var1 instanceof Short) {
+         var2 = 2;
+         this.numberBuffer = this.toBytes((Short)var1, this.numberBuffer, 0);
+      } else if (var1 instanceof Integer) {
+         var2 = 4;
+         this.numberBuffer = this.toBytes((Integer)var1, this.numberBuffer, 0);
+      } else {
+         var2 = 8;
+         this.numberBuffer = this.toBytes((Long)var1, this.numberBuffer, 0);
+      }
 
-  /**
-   * Append a number to the content in LITTLE_ENDIAN. Must be one of: Short,
-   * Integer, or Long
-   * 
-   * @param number
-   */
-  private void appendNumber(Number number) {
-    int nLength;
+      this.baOutputStream.write(this.numberBuffer, 0, var2);
+   }
 
-    if (number instanceof Short) {
-      nLength = 2;
-      numberBuffer = toBytes((Short) number, numberBuffer, 0);
-    } else if (number instanceof Integer) {
-      nLength = 4;
-      numberBuffer = toBytes((Integer) number, numberBuffer, 0);
-    } else {
-      nLength = 8;
-      numberBuffer = toBytes((Long) number, numberBuffer, 0);
-    }
-    this.baOutputStream.write(numberBuffer, 0, nLength);
-  }
+   private void appendObject(Object var1) {
+      if (var1 instanceof Byte) {
+         this.baOutputStream.write((Byte)var1);
+      } else if (var1 instanceof Number) {
+         this.appendNumber((Number)var1);
+      } else if (var1 instanceof String) {
+         String var2 = (String)var1;
 
-  /**
-   * Append an object to the content
-   * 
-   * @param object
-   */
-  private void appendObject(Object object) {
-    if (object instanceof Byte)
-      this.baOutputStream.write(((Byte) object).byteValue());
-    else if (object instanceof Number)
-      appendNumber((Number) object);
-    else if (object instanceof String) {
-      String string = (String) object;
-      appendNumber(new Short((short) string.length()));
-      this.baOutputStream.write(string.getBytes(), 0, string.length());
-    }
-  }
+         byte[] var3;
+         try {
+            var3 = var2.getBytes("UTF8");
+         } catch (UnsupportedEncodingException var5) {
+            var3 = var2.getBytes();
+         }
 
-  /**
-   * Creates the message payload from a given object array
-   * 
-   * @param oArray
-   *          object array which represense the payload
-   * @return size
-   */
-  private int createContent(Object[] oArray) {
-    for (int i = 0; i < oArray.length; i++) {
-      if (oArray[i] instanceof byte[]) {
-        byte[] aByteArray = (byte[]) oArray[i];
-        this.baOutputStream.write(aByteArray, 0, aByteArray.length);
-      } else if (oArray[i].getClass().isArray()) {
-        Object[] oArr = (Object[]) oArray[i];
-        appendNumber(new Short((short) oArr.length));
-        for (int j = 0; j < oArr.length; j++)
-          appendObject(oArr[j]);
-      } else
-        appendObject(oArray[i]);
-    }
-    return baOutputStream.size();
-  }
+         this.appendNumber(new Short((short)var3.length));
+         this.baOutputStream.write(var3, 0, var3.length);
+      }
+   }
 
-  private void createHeader() {
-    this.header = toBytes(new Integer(this.length), header, 0);
-    this.header = toBytes(new Short(this.opCode), header, 4);
-  }
+   private int createContent(Object[] var1) {
+      for (int var2 = 0; var2 < var1.length; var2++) {
+         if (var1[var2] instanceof byte[]) {
+            byte[] var5 = (byte[])var1[var2];
+            this.baOutputStream.write(var5, 0, var5.length);
+         } else if (var1[var2].getClass().isArray()) {
+            Object[] var3 = (Object[])var1[var2];
+            this.appendNumber(new Short((short)var3.length));
 
-  public void send(short opCode, Object[] oArray) throws IOException {
-    this.opCode = opCode;
-    this.length = 2;
-    this.baOutputStream.reset();
+            for (int var4 = 0; var4 < var3.length; var4++) {
+               this.appendObject(var3[var4]);
+            }
+         } else {
+            this.appendObject(var1[var2]);
+         }
+      }
 
-    if (oArray != null)
-      this.length += createContent(oArray);
+      return this.baOutputStream.size();
+   }
 
-    this.createHeader();
-    this.write();
-  }
+   private void createHeader() {
+      this.header = this.toBytes(new Integer(this.length), this.header, 0);
+      this.header = this.toBytes(new Short(this.opCode), this.header, 4);
+   }
 
-  private byte[] toBytes(Integer anInteger, byte[] byteBuffer, int offset) {
-    int i = anInteger.intValue();
-    byteBuffer[0 + offset] = (byte) (i & 0xFF);
-    byteBuffer[1 + offset] = (byte) ((i & 0xFFFF) >> 8);
-    byteBuffer[2 + offset] = (byte) ((i & 0xFFFFFF) >> 16);
-    byteBuffer[3 + offset] = (byte) ((i & 0x7FFFFFFF) >> 24);
-    return byteBuffer;
-  }
+   public void send(short var1, Object[] var2) throws IOException {
+      this.opCode = var1;
+      this.length = 2;
+      this.baOutputStream.reset();
+      if (var2 != null) {
+         this.length = this.length + this.createContent(var2);
+      }
 
-  private byte[] toBytes(Long aLong, byte[] byteBuffer, int offset) {
-    long l = aLong.longValue();
-    for (int j = 0; j < 8; j++) {
-      byteBuffer[j + offset] = (byte) (l % 256);
-      l = l / 256;
-    }
-    return byteBuffer;
-  }
+      this.createHeader();
+      this.write();
+   }
 
-  private byte[] toBytes(Short aShort, byte[] byteBuffer, int offset) {
-    short value = aShort.shortValue();
-    for (int j = 0; j < 2; j++) {
-      byteBuffer[j + offset] = (byte) (value % 256);
-      value = (short) (value / 256);
-    }
-    return byteBuffer;
-  }
+   private byte[] toBytes(Integer var1, byte[] var2, int var3) {
+      int var4 = var1;
+      var2[0 + var3] = (byte)(var4 & 0xFF);
+      var2[1 + var3] = (byte)((var4 & 65535) >> 8);
+      var2[2 + var3] = (byte)((var4 & 16777215) >> 16);
+      var2[3 + var3] = (byte)((var4 & 2147483647) >> 24);
+      return var2;
+   }
 
-  public void write() throws IOException {
-    if (bOutputStream == null)
-      bOutputStream = new BufferedOutputStream(socket.getOutputStream());
-    bOutputStream.write(header);
-    if (length > 2)
-      bOutputStream.write(baOutputStream.toByteArray());
-    bOutputStream.flush();
-  }
+   private byte[] toBytes(Long var1, byte[] var2, int var3) {
+      long var4 = var1;
+
+      for (int var6 = 0; var6 < 8; var6++) {
+         var2[var6 + var3] = (byte)((int)(var4 % 256L));
+         var4 /= 256L;
+      }
+
+      return var2;
+   }
+
+   private byte[] toBytes(Short var1, byte[] var2, int var3) {
+      short var4 = var1;
+
+      for (int var5 = 0; var5 < 2; var5++) {
+         var2[var5 + var3] = (byte)(var4 % 256);
+         var4 = (short)(var4 / 256);
+      }
+
+      return var2;
+   }
+
+   public void write() throws IOException {
+      if (this.bOutputStream == null) {
+         this.bOutputStream = new BufferedOutputStream(this.socket.getOutputStream());
+      }
+
+      this.bOutputStream.write(this.header);
+      if (this.length > 2) {
+         this.bOutputStream.write(this.baOutputStream.toByteArray());
+      }
+
+      this.bOutputStream.flush();
+   }
 }

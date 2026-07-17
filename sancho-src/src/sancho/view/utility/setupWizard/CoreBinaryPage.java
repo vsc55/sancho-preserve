@@ -1,77 +1,50 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.utility.setupWizard;
 
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
 
 public class CoreBinaryPage extends WizardPage {
+   Text text;
 
-  Text text;
+   public CoreBinaryPage() {
+      super("hostPage");
+      this.setTitle(SResources.getString("hm.coreSettings"));
+      this.setMessage(SResources.getString("hm.info"));
+   }
 
-  public CoreBinaryPage() {
-    super("hostPage");
-    setTitle(SResources.getString("hm.coreSettings"));
-    setMessage(SResources.getString("hm.info"));
-  }
+   public void createControl(Composite var1) {
+      Composite var2 = new Composite(var1, 0);
+      var2.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
+      var2.setLayoutData(new GridData(768));
+      Label var3 = new Label(var2, 0);
+      var3.setText(SResources.getString("p.coreExecutableInfo"));
+      GridData var4 = new GridData(768);
+      var3.setLayoutData(var4);
+      Composite var5 = new Composite(var2, 0);
+      var5.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 5, 5, false));
+      var5.setLayoutData(new GridData(768));
+      this.text = new Text(var5, 2052);
+      this.text.setLayoutData(new GridData(768));
+      Button var6 = new Button(var5, 0);
+      var6.setText(SResources.getString("b.browse"));
+      var6.setLayoutData(new GridData());
+      var6.addSelectionListener(new CoreBinaryPage$1(this));
+      this.setControl(var2);
+   }
 
-  public void createControl(Composite parent) {
-
-    Composite mainComposite = new Composite(parent, SWT.NONE);
-    mainComposite.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
-    mainComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-    Label x = new Label(mainComposite, SWT.NONE);
-    x.setText(SResources.getString("p.coreExecutableInfo"));
-    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-    x.setLayoutData(gd);
-
-    Composite subComposite = new Composite(mainComposite, SWT.NONE);
-    subComposite.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 5, 5, false));
-    subComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-    text = new Text(subComposite, SWT.SINGLE | SWT.BORDER);
-    text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    Button b = new Button(subComposite, SWT.NULL);
-    b.setText(SResources.getString("b.browse"));
-    b.setLayoutData(new GridData());
-    b.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        FileDialog fileDialog = new FileDialog(getShell(), SWT.NULL);
-        String result;
-        if ((result = fileDialog.open()) != null) {
-          text.setText(result);
-        }
+   public void saveData() {
+      if (this.text != null && !this.text.isDisposed() && !this.text.getText().equals("")) {
+         PreferenceStore var1 = PreferenceLoader.getPreferenceStore();
+         var1.setValue("coreExecutable", this.text.getText());
+         PreferenceLoader.saveStore();
       }
-    });
-
-    setControl(mainComposite);
-
-  }
-
-  public void saveData() {
-
-    if (text != null && !text.isDisposed() && !text.getText().equals(SResources.S_ES)) {
-      PreferenceStore p = PreferenceLoader.getPreferenceStore();
-      p.setValue("coreExecutable", text.getText());
-      PreferenceLoader.saveStore();
-    }
-  }
-
+   }
 }

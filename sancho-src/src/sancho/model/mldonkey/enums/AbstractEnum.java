@@ -1,36 +1,30 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey.enums;
 
 import sancho.utility.SwissArmy;
 import sancho.view.utility.SResources;
 
 public abstract class AbstractEnum {
-  protected int value;
-  protected String name;
+   protected int value;
+   protected String name;
 
-  protected AbstractEnum(int i, String resString) {
-    value = i;
-    name = (i == 0 ? SResources.S_ES : SResources.getString(resString)).intern();
-  }
+   protected AbstractEnum(int var1, String var2) {
+      this.value = var1;
+      this.name = var1 == 0 ? "" : SResources.getString(var2);
+   }
 
-  public String getName() {
-    return name != null ? name.intern() : SResources.S_ES;
-  }
+   public String getName() {
+      return this.name != null ? this.name : "";
+   }
 
-  public int getValue() {
-    return value;
-  }
+   public int getValue() {
+      return this.value;
+   }
 
-  public byte getByteValue() {
-    return (byte) getIntValue();
-  }
+   public byte getByteValue() {
+      return (byte)this.getIntValue();
+   }
 
-  public int getIntValue() {
-    return SwissArmy.log2(getValue());
-  }
-
+   public int getIntValue() {
+      return SwissArmy.log2(this.getValue());
+   }
 }

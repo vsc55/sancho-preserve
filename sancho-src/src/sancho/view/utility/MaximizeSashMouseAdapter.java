@@ -1,8 +1,3 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.utility;
 
 import org.eclipse.jface.action.MenuManager;
@@ -12,16 +7,16 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Control;
 
 public class MaximizeSashMouseAdapter extends HeaderBarMouseAdapter {
-  private SashForm sashForm;
-  private Control control;
+   private SashForm sashForm;
+   private Control control;
 
-  public MaximizeSashMouseAdapter(CLabel cLabel, MenuManager menuManager, SashForm sashForm, Control control) {
-    super(cLabel, menuManager);
-    this.sashForm = sashForm;
-    this.control = control;
-  }
+   public MaximizeSashMouseAdapter(CLabel var1, MenuManager var2, SashForm var3, Control var4) {
+      super(var1, var2);
+      this.sashForm = var3;
+      this.control = var4;
+   }
 
-  public void mouseDoubleClick(MouseEvent e) {
-    WidgetFactory.setMaximizedSashFormControl(sashForm, control);
-  }
+   public void mouseDoubleClick(MouseEvent var1) {
+      WidgetFactory.toggleMaximizedSashFormControl(this.sashForm, this.control);
+   }
 }

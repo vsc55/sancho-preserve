@@ -1,24 +1,15 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.preferences;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.TabFolder;
-
 import sancho.core.Sancho;
 import sancho.utility.SwissArmy;
 import sancho.utility.VersionInfo;
@@ -26,382 +17,232 @@ import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
 
 public class WinRegPreferencePage extends CPreferencePage {
-  RegisterLink[] registerLinks;
-  RegisterExtension[] registerExtensions;
+   WinRegPreferencePage$RegisterLink[] registerLinks;
+   WinRegPreferencePage$RegisterExtension[] registerExtensions;
 
-  /**
-   * @param title
-   * @param style
-   */
-  protected WinRegPreferencePage(String title) {
-    super(title);
-  }
+   protected WinRegPreferencePage(String var1) {
+      super(var1);
+   }
 
-  protected Control createContents(Composite parent) {
-    Composite composite = new Composite(parent, SWT.NONE);
-    composite.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
+   protected Control createContents(Composite var1) {
+      Composite var2 = new Composite(var1, 0);
+      var2.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
+      TabFolder var3 = new TabFolder(var2, 128);
+      var3.setLayoutData(new GridData(1808));
+      this.createProtocolTab(var3);
+      this.createFileExtensionsTab(var3);
+      return var2;
+   }
 
-    TabFolder tabFolder = new TabFolder(composite, SWT.TOP);
-    tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+   protected void createFileExtensionsTab(TabFolder var1) {
+      Composite var2 = this.createNewTab(var1, "l.fileExtensions");
+      var2.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
+      this.createInformationLabel(var2, "p.registerInfo");
+      this.registerExtensions = new WinRegPreferencePage$RegisterExtension[1];
+      this.registerExtensions[0] = new WinRegPreferencePage$RegisterExtension("bittorrent (.torrent)", var2);
+      Button var3 = new Button(var2, 0);
+      var3.setLayoutData(new GridData(768));
+      var3.setText(SResources.getString("b.updateRegistry"));
+      var3.addSelectionListener(new WinRegPreferencePage$1(this));
+      Point var4 = var2.computeSize(-1, -1);
+      ((ScrolledComposite)var2.getParent()).setMinSize(var4);
+      var2.layout();
+   }
 
-    createProtocolTab(tabFolder);
-    createFileExtensionsTab(tabFolder);
-
-    return composite;
-
-  }
-
-  protected void createFileExtensionsTab(TabFolder tabFolder) {
-    Composite composite = createNewTab(tabFolder, "l.fileExtensions");
-    composite.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
-
-    createInformationLabel(composite, "p.registerInfo");
-
-    registerExtensions = new RegisterExtension[1];
-    registerExtensions[0] = new RegisterExtension("bittorrent (.torrent)", composite);
-
-    Button button = new Button(composite, SWT.NONE);
-    button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    button.setText(SResources.getString("b.updateRegistry"));
-
-    button.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        if (changedExtPrefs())
-          createRegFile();
-      }
-    });
-
-  }
-
-  private boolean changedExtPrefs() {
-    for (int i = 0; i < registerLinks.length; i++) {
-      if (registerExtensions[i].getSelection() != RegisterExtension.NO_CHANGE)
-        return true;
-    }
-    return false;
-  }
-
-  protected void createProtocolTab(TabFolder tabFolder) {
-    Composite composite = createNewTab(tabFolder, "l.protocols");
-    composite.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
-
-    registerLinks = new RegisterLink[3];
-
-    registerLinks[0] = new RegisterLink("ed2k", composite);
-    registerLinks[1] = new RegisterLink("magnet", composite);
-    registerLinks[2] = new RegisterLink("sig2dat", composite);
-
-    Button button = new Button(composite, SWT.NONE);
-    button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    button.setText(SResources.getString("b.updateRegistry"));
-
-    button.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        if (changedLinkPrefs())
-          createRegFile();
-      }
-    });
-  }
-
-  /**
-   * @return true if we should update the registry
-   */
-  private boolean changedLinkPrefs() {
-    for (int i = 0; i < registerLinks.length; i++) {
-      if (registerLinks[i].getSelection() != RegisterLink.NO_CHANGE)
-        return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Create the registry file
-   */
-  private void createRegFile() {
-    String currentDir;
-    FileOutputStream out;
-    PrintStream p;
-
-    currentDir = System.getProperty("user.dir") + System.getProperty("file.separator");
-    String gcjName = System.getProperty("gnu.gcj.progname");
-
-    try {
-
-      String regFile = currentDir + VersionInfo.getName() + ".reg";
-      String exeFile = currentDir + VersionInfo.getName() + ".exe";
-
-      if (gcjName != null && !gcjName.toLowerCase().endsWith("exe"))
-        gcjName += ".exe";
-
-      if (!new File(exeFile).exists() && gcjName != null)
-        exeFile = gcjName;
-
-      String cpath = System.getProperty("java.class.path");
-
-      if (cpath != null && cpath.toLowerCase().endsWith(".exe") && new File(cpath).exists())
-        exeFile = cpath;
-
-      exeFile = SwissArmy.replaceAll(exeFile, "\\\\", "\\\\");
-
-      out = new FileOutputStream(regFile);
-      p = new PrintStream(out);
-
-      p.println("REGEDIT4");
-
-      for (int i = 0; i < registerLinks.length; i++) {
-        switch (registerLinks[i].getSelection()) {
-          case RegisterLink.REGISTER :
-            registerType(p, registerLinks[i].getText(), exeFile, createExtra());
-            break;
-          case RegisterLink.UNREGISTER :
-            unregisterType(p, registerLinks[i].getText());
-            break;
-          default :
-            break;
-        }
+   private boolean changedExtPrefs() {
+      for (int var1 = 0; var1 < this.registerLinks.length; var1++) {
+         if (this.registerExtensions[var1].getSelection() != 0) {
+            return true;
+         }
       }
 
-      for (int i = 0; i < registerExtensions.length; i++) {
-        switch (registerExtensions[i].getSelection()) {
-          case RegisterExtension.REGISTER :
-            registerTorrent(p, exeFile, createExtra());
-            break;
-          case RegisterExtension.UNREGISTER :
-            unregisterTorrent(p);
-            break;
-          default :
-            break;
-        }
+      return false;
+   }
+
+   protected void createProtocolTab(TabFolder var1) {
+      Composite var2 = this.createNewTab(var1, "l.protocols");
+      var2.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
+      this.registerLinks = new WinRegPreferencePage$RegisterLink[4];
+      this.registerLinks[0] = new WinRegPreferencePage$RegisterLink("ed2k", var2);
+      this.registerLinks[1] = new WinRegPreferencePage$RegisterLink("magnet", var2);
+      this.registerLinks[2] = new WinRegPreferencePage$RegisterLink("sig2dat", var2);
+      this.registerLinks[3] = new WinRegPreferencePage$RegisterLink("sfdl", var2);
+      Button var3 = new Button(var2, 0);
+      var3.setLayoutData(new GridData(768));
+      var3.setText(SResources.getString("b.updateRegistry"));
+      var3.addSelectionListener(new WinRegPreferencePage$2(this));
+      Point var4 = var2.computeSize(-1, -1);
+      ((ScrolledComposite)var2.getParent()).setMinSize(var4);
+      var2.layout();
+   }
+
+   private boolean changedLinkPrefs() {
+      for (int var1 = 0; var1 < this.registerLinks.length; var1++) {
+         if (this.registerLinks[var1].getSelection() != 0) {
+            return true;
+         }
       }
 
-      p.close();
+      return false;
+   }
 
-      updateRegistry(regFile);
-    } catch (Exception e) {
-      Sancho.pDebug("createRegFile: " + e);
-    }
-  }
+   private void createRegFile() {
+      String var1 = System.getProperty("user.dir") + System.getProperty("file.separator");
+      String var4 = System.getProperty("gnu.gcj.progname");
 
-  /**
-   * Spawn regedit passing the regfile as the parameter Requires regedit.exe to
-   * be in the system path
-   * 
-   * @param regFile
-   */
-  private void updateRegistry(String regFile) {
-    String[] cmd = new String[3];
+      try {
+         String var5 = var1 + VersionInfo.getName() + ".reg";
+         String var6 = var1 + VersionInfo.getName() + ".exe";
+         if (var4 != null && !var4.toLowerCase().endsWith("exe")) {
+            var4 = var4 + ".exe";
+         }
 
-    cmd[0] = "regedit.exe";
-    cmd[1] = "/s";
-    cmd[2] = regFile;
+         if (!new File(var6).exists() && var4 != null) {
+            var6 = var4;
+         }
 
-    Runtime rt = Runtime.getRuntime();
+         String var7 = System.getProperty("java.class.path");
+         if (var7 != null && var7.toLowerCase().endsWith(".exe") && new File(var7).exists()) {
+            var6 = var7;
+         }
 
-    try {
-      rt.exec(cmd);
-    } catch (Exception e) {
-      Sancho.pDebug("updateRegistry: " + e);
-    }
-  }
+         var6 = SwissArmy.replaceAll(var6, "\\\\", "\\\\");
+         FileOutputStream var2 = new FileOutputStream(var5);
+         PrintStream var3 = new PrintStream(var2);
+         var3.println("REGEDIT4");
 
-  private void registerTorrent(PrintStream p, String exeFile, String extra) {
-    p.println("[HKEY_CLASSES_ROOT\\.torrent]");
-    p.println("@=\"bittorrent\"");
+         for (int var8 = 0; var8 < this.registerLinks.length; var8++) {
+            switch (this.registerLinks[var8].getSelection()) {
+               case 1:
+                  this.registerType(var3, this.registerLinks[var8].getText(), var6, this.createExtra());
+                  break;
+               case 2:
+                  this.unregisterType(var3, this.registerLinks[var8].getText());
+            }
+         }
 
-    p.println("[HKEY_CLASSES_ROOT\\bittorrent]");
-    p.println("@=\"TORRENT File\"");
+         for (int var9 = 0; var9 < this.registerExtensions.length; var9++) {
+            switch (this.registerExtensions[var9].getSelection()) {
+               case 1:
+                  this.registerTorrent(var3, var6, this.createExtra());
+                  break;
+               case 2:
+                  this.unregisterTorrent(var3);
+            }
+         }
 
-    p.println("[HKEY_CLASSES_ROOT\\bittorrent\\shell]");
-    p.println("@=\"open\"");
+         var3.close();
+         this.updateRegistry(var5);
+      } catch (Exception var10) {
+         Sancho.pDebug("createRegFile: " + var10);
+      }
+   }
 
-    p.println("[HKEY_CLASSES_ROOT\\bittorrent\\shell\\open]");
+   private void updateRegistry(String var1) {
+      String[] var2 = new String[]{"regedit.exe", "/s", var1};
+      Runtime var3 = Runtime.getRuntime();
 
-    p.println("[HKEY_CLASSES_ROOT\\bittorrent\\shell\\open\\command]");
-    //  p.println("@=\"\\\"" + exeFile + createExtra() + "\\\" \\\"-l\\\" \\\"\\\\\\\"%1\\\\\\\"\\\"\"");  //why so many?
-    p.println("@=\"\\\"" + exeFile + "\\\" " + extra + "\\\"-l\\\" \\\"\\\\\\\"%1\\\\\\\"\\\"\"");
-  }
+      try {
+         Process var4 = var3.exec(var2);
+         var4.waitFor();
+      } catch (Exception var5) {
+         Sancho.pDebug("updateRegistry: " + var5);
+      }
 
-  private void unregisterTorrent(PrintStream p) {
-    p.println("[-HKEY_CLASSES_ROOT\\bittorrent\\shell\\open\\command]");
-    p.println("[-HKEY_CLASSES_ROOT\\bittorrent\\shell\\open]");
-    p.println("[-HKEY_CLASSES_ROOT\\bittorrent\\shell]");
-    p.println("[-HKEY_CLASSES_ROOT\\bittorrent]");
+      if (!Sancho.debug) {
+         File var6 = new File(var1);
+         if (var6.exists()) {
+            var6.delete();
+         }
+      }
+   }
 
-    p.println("[-HKEY_CLASSES_ROOT\\.torrent]");
-  }
+   private void registerTorrent(PrintStream var1, String var2, String var3) {
+      var1.println("[HKEY_CLASSES_ROOT\\.torrent]");
+      var1.println("@=\"bittorrent\"");
+      var1.println("[HKEY_CLASSES_ROOT\\bittorrent]");
+      var1.println("@=\"TORRENT File\"");
+      var1.println("[HKEY_CLASSES_ROOT\\bittorrent\\shell]");
+      var1.println("@=\"open\"");
+      var1.println("[HKEY_CLASSES_ROOT\\bittorrent\\shell\\open]");
+      var1.println("[HKEY_CLASSES_ROOT\\bittorrent\\shell\\open\\command]");
+      this.printCommand(var1, var2, var3);
+   }
 
-  /**
-   * @param p
-   * @param name
-   * @param exeFile
-   * @param prefFile
-   */
-  private void registerType(PrintStream p, String name, String exeFile, String extra) {
-    p.println("[HKEY_CLASSES_ROOT\\" + name + "]");
-    p.println("@=\"URL: " + name + " Protocol\"");
-    p.println("\"URL Protocol\"=\"\"");
-    p.println("[HKEY_CLASSES_ROOT\\" + name + "\\shell]");
-    p.println("[HKEY_CLASSES_ROOT\\" + name + "\\shell\\open]");
-    p.println("[HKEY_CLASSES_ROOT\\" + name + "\\shell\\open\\command]");
-    p.println("@=\"\\\"" + exeFile + "\\\" " + extra + "\\\"-l\\\" \\\"%1\\\"\"");
-  }
+   private void unregisterTorrent(PrintStream var1) {
+      var1.println("[-HKEY_CLASSES_ROOT\\bittorrent\\shell\\open\\command]");
+      var1.println("[-HKEY_CLASSES_ROOT\\bittorrent\\shell\\open]");
+      var1.println("[-HKEY_CLASSES_ROOT\\bittorrent\\shell]");
+      var1.println("[-HKEY_CLASSES_ROOT\\bittorrent]");
+      var1.println("[-HKEY_CLASSES_ROOT\\.torrent]");
+   }
 
-  private String createExtra() {
-    String s = "";
+   private void registerType(PrintStream var1, String var2, String var3, String var4) {
+      var1.println("[HKEY_CLASSES_ROOT\\" + var2 + "]");
+      var1.println("@=\"URL: " + var2 + " Protocol\"");
+      var1.println("\"URL Protocol\"=\"\"");
+      var1.println("[HKEY_CLASSES_ROOT\\" + var2 + "\\shell]");
+      var1.println("[HKEY_CLASSES_ROOT\\" + var2 + "\\shell\\open]");
+      var1.println("[HKEY_CLASSES_ROOT\\" + var2 + "\\shell\\open\\command]");
+      this.printCommand(var1, var3, var4);
+   }
 
-    String prefFile = PreferenceLoader.getPrefFile();
-    String homeDir = PreferenceLoader.getHomeDirectory();
+   private void printCommand(PrintStream var1, String var2, String var3) {
+      var1.println("@=\"\\\"" + var2 + "\\\" " + var3 + "\\\"-l\\\" \\\"%1\\\"\"");
+   }
 
-    if (prefFile != null)
-      prefFile = SwissArmy.replaceAll(prefFile, "\\\\", "\\\\");
+   private String createExtra() {
+      String var1 = "";
+      String var2 = PreferenceLoader.getPrefFile();
+      String var3 = PreferenceLoader.getHomeDirectory();
+      if (var2 != null) {
+         var2 = SwissArmy.replaceAll(var2, "\\\\", "\\\\");
+      }
 
-    if (homeDir != null) {
-      if (homeDir.endsWith("\\"))
-        homeDir = homeDir.substring(0, homeDir.length() - 1);
+      if (var3 != null) {
+         if (var3.endsWith("\\")) {
+            var3 = var3.substring(0, var3.length() - 1);
+         }
 
-      homeDir = SwissArmy.replaceAll(homeDir, "\\\\", "\\\\");
+         var3 = SwissArmy.replaceAll(var3, "\\\\", "\\\\");
+      }
 
-    }
+      if (PreferenceLoader.jvm != null) {
+         String var4 = PreferenceLoader.jvm;
+         var4 = SwissArmy.replaceAll(var4, "\\\\", "\\\\");
+         var1 = var1 + "\\\"-r\\\" \\\"" + var4 + "\\\" ";
+      }
 
-    if (PreferenceLoader.customPrefFile)
-      s += "\\\"-c\\\" \\\"" + prefFile + "\\\" ";
-    if (PreferenceLoader.customHomeDir)
-      s += "\\\"-j\\\" \\\"" + homeDir + "\\\" ";
+      if (PreferenceLoader.customPrefFile) {
+         var1 = var1 + "\\\"-c\\\" \\\"" + var2 + "\\\" ";
+      }
 
-    return s;
+      if (PreferenceLoader.customHomeDir) {
+         var1 = var1 + "\\\"-j\\\" \\\"" + var3 + "\\\" ";
+      }
 
-  }
+      return var1;
+   }
 
-  /**
-   * @param p
-   * @param name
-   */
-  private void unregisterType(PrintStream p, String name) {
-    p.println("[-HKEY_CLASSES_ROOT\\" + name + "\\shell\\open\\command]");
-    p.println("[-HKEY_CLASSES_ROOT\\" + name + "\\shell\\open]");
-    p.println("[-HKEY_CLASSES_ROOT\\" + name + "\\shell]");
-    p.println("[-HKEY_CLASSES_ROOT\\" + name + "]");
-  }
+   private void unregisterType(PrintStream var1, String var2) {
+      var1.println("[-HKEY_CLASSES_ROOT\\" + var2 + "\\shell\\open\\command]");
+      var1.println("[-HKEY_CLASSES_ROOT\\" + var2 + "\\shell\\open]");
+      var1.println("[-HKEY_CLASSES_ROOT\\" + var2 + "\\shell]");
+      var1.println("[-HKEY_CLASSES_ROOT\\" + var2 + "]");
+   }
 
-  static class RegisterLink {
-    public static final int NO_CHANGE = 0;
-    public static final int REGISTER = 1;
-    public static final int UNREGISTER = 2;
-    private int selection;
-    private String text;
+   // $VF: synthetic method
+   static boolean access$000(WinRegPreferencePage var0) {
+      return var0.changedExtPrefs();
+   }
 
-    public RegisterLink(String text, Composite parent) {
-      this.text = text;
-      selection = NO_CHANGE;
-      createContents(parent);
-    }
+   // $VF: synthetic method
+   static void access$100(WinRegPreferencePage var0) {
+      var0.createRegFile();
+   }
 
-    /**
-     * @param parent
-     */
-    protected void createContents(Composite parent) {
-      Group group = new Group(parent, SWT.SHADOW_ETCHED_IN);
-      group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-      group.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
-      group.setText(text + "://");
-
-      createButton(group, SResources.getString("b.noChange"), NO_CHANGE);
-      createButton(group, SResources.getString("b.registerLink"), REGISTER);
-      createButton(group, SResources.getString("b.unregisterLink"), UNREGISTER);
-    }
-
-    /**
-     * @param group
-     * @param text
-     * @param select
-     * @param type
-     */
-    private void createButton(Group group, String text, final int type) {
-      Button button = new Button(group, SWT.RADIO);
-      button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-      button.setText(text);
-      button.setSelection(type == NO_CHANGE);
-      button.addSelectionListener(new SelectionAdapter() {
-        public void widgetSelected(SelectionEvent e) {
-          selection = type;
-        }
-      });
-    }
-
-    /**
-     * @return int (the selection type)
-     */
-    public int getSelection() {
-      return selection;
-    }
-
-    /**
-     * @return String
-     */
-    public String getText() {
-      return text;
-    }
-  }
-
-  static class RegisterExtension {
-    public static final int NO_CHANGE = 0;
-    public static final int REGISTER = 1;
-    public static final int UNREGISTER = 2;
-    private int selection;
-    private String text;
-
-    public RegisterExtension(String text, Composite parent) {
-      this.text = text;
-      selection = NO_CHANGE;
-      createContents(parent);
-    }
-
-    /**
-     * @param parent
-     */
-    protected void createContents(Composite parent) {
-      Group group = new Group(parent, SWT.SHADOW_ETCHED_IN);
-      group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-      group.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
-      group.setText(text);
-
-      createButton(group, SResources.getString("b.noChange"), NO_CHANGE);
-      createButton(group, SResources.getString("b.registerLink"), REGISTER);
-      createButton(group, SResources.getString("b.unregisterLink"), UNREGISTER);
-    }
-
-    /**
-     * @param group
-     * @param text
-     * @param select
-     * @param type
-     */
-    private void createButton(Group group, String text, final int type) {
-      Button button = new Button(group, SWT.RADIO);
-      button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-      button.setText(text);
-      button.setSelection(type == NO_CHANGE);
-      button.addSelectionListener(new SelectionAdapter() {
-        public void widgetSelected(SelectionEvent e) {
-          selection = type;
-        }
-      });
-    }
-
-    /**
-     * @return int (the selection type)
-     */
-    public int getSelection() {
-      return selection;
-    }
-
-    /**
-     * @return String
-     */
-    public String getText() {
-      return text;
-    }
-  }
-
+   // $VF: synthetic method
+   static boolean access$200(WinRegPreferencePage var0) {
+      return var0.changedLinkPrefs();
+   }
 }

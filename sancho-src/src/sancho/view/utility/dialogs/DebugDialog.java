@@ -1,90 +1,84 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.utility.dialogs;
 
 import gnu.trove.TLongIntHashMap;
-
 import java.util.Arrays;
 import java.util.Date;
-
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
 import sancho.core.ICore;
 import sancho.core.Sancho;
+import sancho.utility.VersionInfo;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.SResources;
 
 public class DebugDialog extends Dialog {
-  public DebugDialog(Shell shell) {
-    super(shell);
-    setShellStyle(getShellStyle() | SWT.RESIZE);
-    Runtime.getRuntime().runFinalization();
-    Runtime.getRuntime().gc();
-  }
+   public DebugDialog(Shell var1) {
+      super(var1);
+      this.setShellStyle(this.getShellStyle() | 16);
+      Runtime.getRuntime().runFinalization();
+      Runtime.getRuntime().gc();
+   }
 
-  protected void configureShell(Shell newShell) {
-    super.configureShell(newShell);
-    newShell.setText(SResources.getString("menu.tools.debug"));
-    newShell.setImage(SResources.getImage("ProgramIcon"));
-  }
+   protected void configureShell(Shell var1) {
+      super.configureShell(var1);
+      var1.setText(SResources.getString("menu.tools.debug"));
+      var1.setImage(VersionInfo.getProgramIcon());
+   }
 
-  protected Control createDialogArea(Composite parent) {
-    Composite composite = (Composite) super.createDialogArea(parent);
+   protected Control createDialogArea(Composite var1) {
+      Composite var2 = (Composite)super.createDialogArea(var1);
+      Text var3 = new Text(var2, 2826);
+      var3.setFont(PreferenceLoader.loadFont("consoleFontData"));
+      GridData var4 = new GridData(1808);
+      var4.heightHint = 200;
+      var3.setLayoutData(var4);
+      StringBuffer var5 = new StringBuffer();
+      String var6 = "\n";
+      var5.append(System.getProperty("java.vm.name") + " " + System.getProperty("java.vm.version") + var6);
+      var5.append("Config: " + PreferenceLoader.getPrefFile() + var6);
+      var5.append(
+         "Connect: "
+            + Sancho.getCoreFactory().getNumRetries()
+            + ": "
+            + Sancho.getCoreFactory().getUptime()
+            + " "
+            + Sancho.getCoreFactory().getConnectedString()
+            + var6
+      );
+      if (Sancho.hasCollectionFactory()) {
+         ICore var7 = Sancho.getCore();
+         var5.append("Core Protocol: " + var7.getProtocol() + var6);
+         var5.append("Network Collection: " + var7.getNetworkCollection().size() + var6);
+         var5.append("File Collection: " + var7.getFileCollection().size() + var6);
+         var5.append("SharedFile Collection: " + var7.getSharedFileCollection().size() + var6);
+         var5.append("Client Collection: " + var7.getClientCollection().size() + var6);
+         var5.append("Server Collection: " + var7.getServerCollection().size() + var6);
+         var5.append("User Collection: " + var7.getUserCollection().size() + var6);
+         var5.append("Room Collection: " + var7.getRoomCollection().size() + var6);
+         var5.append("Result Collection: " + var7.getResultCollection().getNumResults() + " " + var7.getResultCollection().getStats() + var6);
+         var5.append("Uploaders Collection: " + var7.getClientCollection().getUploadersWeakMap().size() + var6);
+         var5.append("Pending Collection: " + var7.getClientCollection().getPendingWeakMap().size() + var6);
+         var5.append("Friends Collection: " + var7.getClientCollection().getFriendsWeakMap().size() + var6);
+         this.appendCleanMap(var5, var7.getClientCollection().getHistoryMap(), "Clean clients: ", var6);
+         this.appendCleanMap(var5, var7.getServerCollection().getHistoryMap(), "Clean servers: ", var6);
+         var5.append(var7.getLastMessage());
+      }
 
-    Text textInfo = new Text(composite, SWT.MULTI | SWT.READ_ONLY | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-    textInfo.setFont(PreferenceLoader.loadFont("consoleFontData"));
-    GridData gd = new GridData(GridData.FILL_BOTH);
-    gd.heightHint = 200;
-    textInfo.setLayoutData(gd);
-    StringBuffer sb = new StringBuffer();
-    String nl = "\n";
-    sb.append(System.getProperty("java.vm.name") + " " + System.getProperty("java.vm.version") + nl);
-    sb.append("Config: " + PreferenceLoader.getPrefFile() + nl);
-    sb.append("Connect: " + Sancho.getCoreFactory().getUptime() + " "
-        + Sancho.getCoreFactory().getConnectedString() + nl);
+      var3.setText(var5.toString());
+      return var2;
+   }
 
-    if (Sancho.hasCollectionFactory()) {
-      ICore core = Sancho.getCore();
+   public void appendCleanMap(StringBuffer var1, TLongIntHashMap var2, String var3, String var4) {
+      long[] var5 = var2.keys();
+      Arrays.sort(var5);
 
-      sb.append("Core Protocol: " + core.getProtocol() + nl);
-      sb.append("Network Collection: " + core.getNetworkCollection().size() + nl);
-      sb.append("File Collection: " + core.getFileCollection().size() + nl);
-      sb.append("SharedFile Collection: " + core.getSharedFileCollection().size() + nl);
-      sb.append("Client Collection: " + core.getClientCollection().size() + nl);
-      sb.append("Server Collection: " + core.getServerCollection().size() + nl);
-      sb.append("User Collection: " + core.getUserCollection().size() + nl);
-      sb.append("Room Collection: " + core.getRoomCollection().size() + nl);
-      sb.append("Result Collection: " + core.getResultCollection().size() + "/" + core.getResultCollection().getNumResults() + nl);
-      sb.append("Uploaders Collection: " + core.getClientCollection().getUploadersWeakMap().size() + nl);
-      sb.append("Pending Collection: " + core.getClientCollection().getPendingWeakMap().size() + nl);
-      sb.append("Friends Collection: " + core.getClientCollection().getFriendsWeakMap().size() + nl);
-
-      appendCleanMap(sb, core.getClientCollection().getHistoryMap(), "Clean clients: ", nl);
-      appendCleanMap(sb, core.getServerCollection().getHistoryMap(), "Clean servers: ", nl);
-      
-      sb.append(core.getLastMessage());
-    }
-
-    textInfo.setText(sb.toString());
-
-    return composite;
-  }
-
-  public void appendCleanMap(StringBuffer sb, TLongIntHashMap tMap, String string, String nl) {
-    long[] keys = tMap.keys();
-    Arrays.sort(keys);
-
-    for (int i = 0; i < keys.length; i++)
-      sb.append(string + tMap.get(keys[i]) + " @ " + new Date(keys[i]) + nl);
-  }
-
+      for (int var6 = 0; var6 < var5.length; var6++) {
+         Date var7 = new Date(var5[var6]);
+         var1.append(var3 + var2.get(var5[var6]) + " @ " + var7.toString() + var4);
+      }
+   }
 }

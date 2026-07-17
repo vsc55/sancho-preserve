@@ -1,115 +1,104 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.viewFrame;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-
 import sancho.view.utility.AbstractTab;
 import sancho.view.utility.MaximizeSashMouseAdapter;
-import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
 import sancho.view.viewer.GView;
 
 public class CTabFolderViewFrame extends SashViewFrame {
-  protected CTabFolder cTabFolder;
+   protected CTabFolder cTabFolder = this.createCTabFolder();
 
-  public CTabFolderViewFrame(SashForm parentSashForm, String prefString, String prefImageString,
-      AbstractTab aTab) {
-    super(parentSashForm, prefString, prefImageString, aTab);
-    this.cTabFolder = createCTabFolder();
+   public CTabFolderViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
+      super(var1, var2, var3, var4);
+      this.cTabFolder.addSelectionListener(new CTabFolderViewFrame$1(this));
+   }
 
-    this.cTabFolder.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        onCTabFolderSelection();
+   protected CTabFolder createCTabFolder() {
+      return WidgetFactory.createCTabFolder(this.childComposite, 0);
+   }
+
+   public void createViewListener(CTabFolderViewListener var1) {
+      this.setupViewListener(var1);
+      this.cLabel.addMouseListener(new MaximizeSashMouseAdapter(this.cLabel, this.menuManager, this.getParentSashForm(), this.getControl()));
+   }
+
+   public void onCTabFolderSelection() {
+      this.updateRefine();
+   }
+
+   public CTabFolder getCTabFolder() {
+      return this.cTabFolder;
+   }
+
+   public GView getGView() {
+      return this.cTabFolder != null
+            && !this.cTabFolder.isDisposed()
+            && this.cTabFolder.getSelection() != null
+            && !this.cTabFolder.getSelection().isDisposed()
+            && this.cTabFolder.getSelection().getData("gView") != null
+         ? (GView)this.cTabFolder.getSelection().getData("gView")
+         : null;
+   }
+
+   public void updateDisplay() {
+      super.updateDisplay();
+
+      for (int var1 = 0; var1 < this.cTabFolder.getItems().length; var1++) {
+         CTabItem var2 = this.cTabFolder.getItems()[var1];
+         if (var2.getData("gView") != null) {
+            GView var3 = (GView)var2.getData("gView");
+            if (var3 != null) {
+               var3.updateDisplay();
+            }
+         }
       }
-    });
-  }
+   }
 
-  protected CTabFolder createCTabFolder() {
-    return WidgetFactory.createCTabFolder(childComposite, SWT.NONE);
-  }
-
-  public void createViewListener(CTabFolderViewListener cTabFolderViewFrameListener) {
-    setupViewListener(cTabFolderViewFrameListener);
-
-    cLabel.addMouseListener(new MaximizeSashMouseAdapter(cLabel, menuManager, getParentSashForm(),
-        getControl()));
-  }
-
-  public void onCTabFolderSelection() {
-    updateRefine();
-  }
-
-  public CTabFolder getCTabFolder() {
-    return cTabFolder;
-  }
-
-  public GView getGView() {
-    if (((cTabFolder != null) && !cTabFolder.isDisposed() && (cTabFolder.getSelection() != null) && !cTabFolder
-        .getSelection().isDisposed())
-        && (cTabFolder.getSelection().getData(GView.S_GVIEW) != null))
-      return (GView) cTabFolder.getSelection().getData(GView.S_GVIEW);
-
-    return null;
-  }
-
-  public void updateDisplay() {
-    super.updateDisplay();
-    for (int i = 0; i < cTabFolder.getItems().length; i++) {
-      CTabItem tabItem = cTabFolder.getItems()[i];
-
-      if (tabItem.getData(GView.S_GVIEW) != null) {
-        // GView gView = (GView) cTabFolder.getSelection().getData(GView.S_GVIEW);
-        GView gView = (GView) tabItem.getData(GView.S_GVIEW);
-        if (gView != null)
-          gView.updateDisplay();
+   public void dispose() {
+      if (this.cTabFolder != null) {
+         this.cTabFolder.dispose();
+         this.cTabFolder = null;
       }
-    }
-  }
 
-  public void updateRefine() {
-    if (refineText != null)
-      if (getGView() != null) {
-        refineText.setText(getGView().getRefineString());
-        refineText.setEnabled(true);
-        clearRefineToolItem.setEnabled(true);
-      } else {
-        refineText.setText(SResources.S_ES);
-        refineText.setEnabled(false);
-        clearRefineToolItem.setEnabled(false);
+      super.dispose();
+   }
+
+   public void updateRefine() {
+      if (this.refineText != null) {
+         if (this.getGView() != null) {
+            this.refineText.setText(this.getGView().getRefineString());
+            this.refineText.setEnabled(true);
+            this.clearRefineToolItem.setEnabled(true);
+         } else {
+            this.refineText.setText("");
+            this.refineText.setEnabled(false);
+            this.clearRefineToolItem.setEnabled(false);
+         }
       }
-  }
+   }
 
-  public void onDisconnect() {
-    for (int i = 0; i < cTabFolder.getItems().length; i++) {
-      CTabItem tabItem = cTabFolder.getItems()[i];
-
-      if (tabItem.getData(GView.S_GVIEW) != null) {
-        // GView gView = (GView) cTabFolder.getSelection().getData(GView.S_GVIEW);
-        GView gView = (GView) tabItem.getData(GView.S_GVIEW);
-        gView.unsetInput();
+   public void onDisconnect() {
+      for (int var1 = 0; var1 < this.cTabFolder.getItems().length; var1++) {
+         CTabItem var2 = this.cTabFolder.getItems()[var1];
+         if (var2.getData("gView") != null) {
+            GView var3 = (GView)var2.getData("gView");
+            var3.unsetInput();
+         }
       }
-    }
-    super.onDisconnect();
-  }
 
-  public void onConnect() {
-    for (int i = 0; i < cTabFolder.getItems().length; i++) {
-      CTabItem tabItem = cTabFolder.getItems()[i];
+      super.onDisconnect();
+   }
 
-      if (tabItem.getData(GView.S_GVIEW) != null) {
-        //  GView gView = (GView) cTabFolder.getSelection().getData(GView.S_GVIEW);
-        GView gView = (GView) tabItem.getData(GView.S_GVIEW);
-        gView.setInput();
+   public void onConnect() {
+      for (int var1 = 0; var1 < this.cTabFolder.getItems().length; var1++) {
+         CTabItem var2 = this.cTabFolder.getItems()[var1];
+         if (var2.getData("gView") != null) {
+            GView var3 = (GView)var2.getData("gView");
+            var3.setInput();
+         }
       }
-    }
-  }
+   }
 }

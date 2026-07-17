@@ -1,48 +1,49 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.friends.clientDirectories;
 
 import java.util.Map;
-
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-
 import sancho.model.mldonkey.Client;
 import sancho.view.friends.clientFiles.ClientFilesTableView;
 import sancho.view.viewer.table.GTableMenuListener;
 
 public class ClientDirectoriesTableMenuListener extends GTableMenuListener {
+   private ClientFilesTableView clientFilesTableView;
+   // $VF: synthetic field
+   static Class class$java$lang$String;
 
-  private ClientFilesTableView clientFilesTableView;
+   public ClientDirectoriesTableMenuListener(ClientDirectoriesTableView var1) {
+      super(var1);
+   }
 
-  public ClientDirectoriesTableMenuListener(ClientDirectoriesTableView rTableViewer) {
-    super(rTableViewer);
-  }
+   public void setDirectoriesView(ClientFilesTableView var1) {
+      this.clientFilesTableView = var1;
+   }
 
-  public void setDirectoriesView(ClientFilesTableView cFDV) {
-    clientFilesTableView = cFDV;
-  }
+   public void selectionChanged(SelectionChangedEvent var1) {
+      this.collectSelections(var1, class$java$lang$String == null ? (class$java$lang$String = class$("java.lang.String")) : class$java$lang$String);
+      if (this.selectedObjects.size() > 0) {
+         Client var2 = (Client)this.gView.getViewer().getInput();
+         Map var3 = var2.getClientFilesResultMap(this.selectedObjects.get(0));
+         this.clientFilesTableView.setInput(var3);
+      } else {
+         this.clientFilesTableView.setInput(null);
+      }
+   }
 
-  public void selectionChanged(SelectionChangedEvent event) {
-    collectSelections(event, String.class);
+   public void setFilesView(ClientFilesTableView var1) {
+      this.clientFilesTableView = var1;
+   }
 
-    if (selectedObjects.size() > 0) {
-      Client client = (Client) gView.getViewer().getInput();
-      Map map = client.getClientFilesResultMap(selectedObjects.get(0));
-      clientFilesTableView.setInput(map);
-    } else {
-      clientFilesTableView.setInput(null);
-    }
-  }
+   public void menuAboutToShow(IMenuManager var1) {
+   }
 
-  public void setFilesView(ClientFilesTableView cFTV) {
-    clientFilesTableView = cFTV;
-  }
-
-  public void menuAboutToShow(IMenuManager menuManager) {
-  }
-
+   // $VF: synthetic method
+   static Class class$(String var0) {
+      try {
+         return Class.forName(var0);
+      } catch (ClassNotFoundException var2) {
+         throw new NoClassDefFoundError(var2.getMessage());
+      }
+   }
 }

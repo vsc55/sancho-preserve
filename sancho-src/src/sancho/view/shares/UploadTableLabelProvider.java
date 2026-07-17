@@ -1,47 +1,43 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.shares;
 
 import org.eclipse.swt.graphics.Image;
-
 import sancho.model.mldonkey.SharedFile;
-import sancho.view.utility.SResources;
 import sancho.view.viewer.table.GTableLabelProvider;
 
 public class UploadTableLabelProvider extends GTableLabelProvider {
-  public UploadTableLabelProvider(UploadTableView uTableViewer) {
-    super(uTableViewer);
-  }
+   public UploadTableLabelProvider(UploadTableView var1) {
+      super(var1);
+   }
 
-  public Image getColumnImage(Object element, int columnIndex) {
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case UploadTableView.NETWORK :
-        SharedFile sharedFile = (SharedFile) element;
-        return sharedFile.getNetworkImage();
-      default :
-        return null;
-    }
-  }
+   public Image getColumnImage(Object var1, int var2) {
+      SharedFile var3 = (SharedFile)var1;
+      switch (this.cViewer.getColumnIDs()[var2]) {
+         case 0:
+            return var3.getNetworkImage();
+         case 3:
+            return var3.getFileTypeImage();
+         default:
+            return null;
+      }
+   }
 
-  public String getColumnText(Object element, int columnIndex) {
-    SharedFile sharedFile = (SharedFile) element;
-
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case UploadTableView.NETWORK :
-        return sharedFile.getNetworkName();
-      case UploadTableView.BYTES :
-        return sharedFile.getUploadedString();
-      case UploadTableView.REQUESTS :
-        return String.valueOf(sharedFile.getRequests());
-      case UploadTableView.NAME :
-        return sharedFile.getName();
-      case UploadTableView.SIZE :
-        return sharedFile.getSizeString();
-      default :
-        return SResources.S_ES;
-    }
-  }
+   public String getColumnText(Object var1, int var2) {
+      SharedFile var3 = (SharedFile)var1;
+      switch (this.cViewer.getColumnIDs()[var2]) {
+         case 0:
+            return var3.getNetworkName();
+         case 1:
+            return var3.getUploadedString();
+         case 2:
+            return var3.getRequestsString();
+         case 3:
+            return var3.getName();
+         case 4:
+            return var3.getSizeString();
+         case 5:
+            return var3.getMagic();
+         default:
+            return "";
+      }
+   }
 }

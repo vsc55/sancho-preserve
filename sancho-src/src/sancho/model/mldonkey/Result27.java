@@ -1,38 +1,61 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
 import sancho.core.ICore;
+import sancho.model.mldonkey.enums.EnumNetwork;
 import sancho.model.mldonkey.utility.MessageBuffer;
 
 public class Result27 extends Result25 {
+   String[] uids;
 
-  String[] uids;
-  int resultTime;
+   Result27(ICore var1) {
+      super(var1);
+   }
 
-  Result27(ICore core) {
-    super(core);
-  }
+   public String getMD4() {
+      if (this.md4 == null) {
+         for (int var1 = 0; var1 < this.uids.length; var1++) {
+            if (this.uids[var1].startsWith("urn:ed2k:")) {
+               return this.uids[var1].substring(9).intern();
+            }
+         }
+      }
 
-  public String getMd4() {
-    if (md4 == null) {
-      for (int i = 0; i < uids.length; i++)
-        if (uids[i].startsWith("urn:ed2k:"))
-          return uids[i].substring(9).intern();
-    }
-    return super.getMd4();
-  }
+      return super.getMD4();
+   }
 
-  protected void readUIDs(MessageBuffer messageBuffer) {
-    uids = messageBuffer.getStringList();
-  }
+   public synchronized String[] getUIDs() {
+      if (this.uids == null) {
+         return null;
+      } else {
+         String[] var1 = new String[this.uids.length];
 
-  public void read(int id, MessageBuffer messageBuffer) {
-    super.read(id, messageBuffer);
-    resultTime = messageBuffer.getInt32();
-  }
+         for (int var2 = 0; var2 < var1.length; var2++) {
+            var1[var2] = this.uids[var2];
+         }
 
+         return var1;
+      }
+   }
+
+   protected void readUIDs(MessageBuffer var1) {
+      this.uids = var1.getStringList();
+      if (this.getEnumNetwork() == EnumNetwork.UNKNOWN) {
+         for (int var2 = 0; var2 < this.uids.length; var2++) {
+            if (this.uids[var2].startsWith("urn:bitprint")) {
+               this.networkEnum = EnumNetwork.GNUT;
+            } else if (this.uids[var2].startsWith("urn:ed2k")) {
+               this.networkEnum = EnumNetwork.DONKEY;
+            } else if (this.uids[var2].startsWith("urn:sig2dat")) {
+               this.networkEnum = EnumNetwork.FT;
+            } else if (this.uids[var2].startsWith("urn:sha1")) {
+               this.networkEnum = EnumNetwork.GNUT;
+            }
+         }
+      }
+   }
+
+   public void read(int var1, MessageBuffer var2) {
+      super.read(var1, var2);
+      int var3 = var2.getInt32();
+   }
 }

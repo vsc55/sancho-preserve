@@ -1,39 +1,45 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.downloadComplete;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-
-import sancho.view.viewer.actions.CopyED2KLinkToClipboardAction;
 import sancho.view.viewer.table.GTableMenuListener;
 
-public class DownloadCompleteTableMenuListener extends GTableMenuListener
-    implements
-      ISelectionChangedListener {
+public class DownloadCompleteTableMenuListener extends GTableMenuListener implements ISelectionChangedListener {
+   // $VF: synthetic field
+   static Class class$sancho$view$downloadComplete$DownloadCompleteItem;
 
-  public DownloadCompleteTableMenuListener(DownloadCompleteTableView fTableView) {
-    super(fTableView);
-  }
+   public DownloadCompleteTableMenuListener(DownloadCompleteTableView var1) {
+      super(var1);
+   }
 
-  public void selectionChanged(SelectionChangedEvent event) {
-    collectSelections(event, DownloadCompleteItem.class);
-  }
+   public void selectionChanged(SelectionChangedEvent var1) {
+      this.collectSelections(
+         var1,
+         class$sancho$view$downloadComplete$DownloadCompleteItem == null
+            ? (class$sancho$view$downloadComplete$DownloadCompleteItem = class$("sancho.view.downloadComplete.DownloadCompleteItem"))
+            : class$sancho$view$downloadComplete$DownloadCompleteItem
+      );
+   }
 
-  public void menuAboutToShow(IMenuManager menuManager) {
-    if (selectedObjects.size() > 0) {
-      String[] linkList = new String[selectedObjects.size()];
+   public void menuAboutToShow(IMenuManager var1) {
+      if (this.selectedObjects.size() > 0) {
+         String[] var2 = new String[this.selectedObjects.size()];
 
-      for (int i = 0; i < selectedObjects.size(); i++)
-        linkList[i] = ((DownloadCompleteItem) selectedObjects.get(i)).getLink();
+         for (int var3 = 0; var3 < this.selectedObjects.size(); var3++) {
+            var2[var3] = ((DownloadCompleteItem)this.selectedObjects.get(var3)).getLink();
+         }
 
-      menuManager.add(new CopyED2KLinkToClipboardAction(false, linkList));
-      menuManager.add(new CopyED2KLinkToClipboardAction(true, linkList));
-    }
-  }
+         this.addClipboardMenu(var1);
+      }
+   }
 
+   // $VF: synthetic method
+   static Class class$(String var0) {
+      try {
+         return Class.forName(var0);
+      } catch (ClassNotFoundException var2) {
+         throw new NoClassDefFoundError(var2.getMessage());
+      }
+   }
 }

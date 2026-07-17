@@ -1,37 +1,30 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.rooms;
 
 import org.eclipse.jface.viewers.Viewer;
-
 import sancho.model.mldonkey.Room;
 import sancho.view.viewer.GSorter;
 
 public class RoomsTableSorter extends GSorter {
-  public RoomsTableSorter(RoomsTableView rTableView) {
-    super(rTableView);
-  }
+   public RoomsTableSorter(RoomsTableView var1) {
+      super(var1);
+   }
 
-  public int compare(Viewer viewer, Object obj1, Object obj2) {
-    Room room1 = (Room) obj1;
-    Room room2 = (Room) obj2;
-
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case RoomsTableView.NAME :
-        return compareStrings(room1.getName(), room2.getName());
-      case RoomsTableView.NUMBER :
-        return compareInts(room1.getId(), room2.getId());
-      case RoomsTableView.USERS :
-        return compareInts(room1.getNumUsers(), room2.getNumUsers());
-      case RoomsTableView.NETWORK :
-        return compareStrings(room1.getNetworkName(), room2.getNetworkName());
-      case RoomsTableView.STATE :
-        return compareStrings(room1.getRoomState().getName(), room2.getRoomState().getName());
-      default :
-        return 0;
-    }
-  }
+   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
+      Room var5 = (Room)var2;
+      Room var6 = (Room)var3;
+      switch (var4) {
+         case 0:
+            return this.compareStrings(var5.getName(), var6.getName());
+         case 1:
+            return this.compareInts(var5.getNumUsers(), var6.getNumUsers());
+         case 2:
+            return this.compareStrings(var5.getRoomState().getName(), var6.getRoomState().getName());
+         case 3:
+            return this.compareStrings(var5.getNetworkName(), var6.getNetworkName());
+         case 4:
+            return this.compareInts(var5.getId(), var6.getId());
+         default:
+            return 0;
+      }
+   }
 }

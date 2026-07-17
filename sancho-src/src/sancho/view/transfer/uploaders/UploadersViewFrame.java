@@ -1,63 +1,43 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.transfer.uploaders;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.ToolItem;
-
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.AbstractTab;
 import sancho.view.utility.SResources;
 import sancho.view.viewFrame.SashViewFrame;
+import sancho.view.viewer.GView;
 
 public class UploadersViewFrame extends SashViewFrame {
-  public UploadersViewFrame(SashForm parentSashForm, String prefString, String prefImageString,
-      AbstractTab aTab) {
-    super(parentSashForm, prefString, prefImageString, aTab);
+   public UploadersViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
+      super(var1, var2, var3, var4);
+      this.gView = new UploadersTableView(this);
+      this.createViewListener(new UploadersViewListener(this));
+      this.createViewToolBar();
+   }
 
-    gView = new UploadersTableView(this);
-    createViewListener(new UploadersViewListener(this));
-    createViewToolBar();
-  }
+   public void createViewToolBar() {
+      super.createViewToolBar();
+      ToolItem var1 = new ToolItem(this.toolBar, 0);
+      var1.setImage(SResources.getImage("plus"));
+      var1.addSelectionListener(new UploadersViewFrame$1(this, var1));
+      this.toggleActive(var1, PreferenceLoader.loadBoolean("pollUploaders"));
+      new ToolItem(this.toolBar, 2);
+      this.addRefine();
+   }
 
-  public void createViewToolBar() {
-    super.createViewToolBar();
+   public void toggleActive(ToolItem var1, boolean var2) {
+      var1.setImage(SResources.getImage(var2 ? "minus" : "plus"));
+      var1.setToolTipText(SResources.getString(var2 ? "l.disableTable" : "l.enableTable"));
+   }
 
-    final ToolItem toolItem = new ToolItem(toolBar, SWT.NONE);
+   // $VF: synthetic method
+   static GView access$000(UploadersViewFrame var0) {
+      return var0.gView;
+   }
 
-    toolItem.setImage(SResources.getImage("plus"));
-    toolItem.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        boolean b = !PreferenceLoader.loadBoolean("pollUploaders");
-        PreferenceLoader.getPreferenceStore().setValue("pollUploaders", b);
-        PreferenceLoader.saveStore();
-
-        if (getCore() != null)
-          getCore().updatePreferences();
-        toggleActive(toolItem, b);
-
-        if (b)
-          gView.setInput();
-        else {
-          gView.getViewer().setInput(null);
-        }
-      }
-    });
-    toggleActive(toolItem, PreferenceLoader.loadBoolean("pollUploaders"));
-    
-    new ToolItem(toolBar, SWT.SEPARATOR);
-    addRefine();
-  }
-
-  public void toggleActive(ToolItem toolItem, boolean b) {
-    toolItem.setImage(SResources.getImage(b ? "minus" : "plus"));
-    toolItem.setToolTipText(SResources.getString(b ? "l.disableTable" : "l.enableTable"));
-  }
-
+   // $VF: synthetic method
+   static GView access$100(UploadersViewFrame var0) {
+      return var0.gView;
+   }
 }

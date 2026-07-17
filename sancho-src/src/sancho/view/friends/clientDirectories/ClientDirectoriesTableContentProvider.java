@@ -1,50 +1,44 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.friends.clientDirectories;
 
 import org.eclipse.jface.viewers.Viewer;
-
 import sancho.model.mldonkey.Client;
 import sancho.view.friends.clientFiles.ClientFilesTableView;
 import sancho.view.viewer.table.GTableContentProvider;
 
 public class ClientDirectoriesTableContentProvider extends GTableContentProvider {
+   ClientFilesTableView clientFilesTableView;
 
-  ClientFilesTableView clientFilesTableView;
+   public ClientDirectoriesTableContentProvider(ClientDirectoriesTableView var1) {
+      super(var1);
+   }
 
-  public ClientDirectoriesTableContentProvider(ClientDirectoriesTableView rTableViewer) {
-    super(rTableViewer);
-  }
-
-  public Object[] getElements(Object inputElement) {
-    if (inputElement instanceof Client) {
-      Client client = (Client) inputElement;
-      if (client.hasFiles())
-        return client.getFileDirectories();
-    }
-    return EMPTY_ARRAY;
-  }
-
-  public void setFilesView(ClientFilesTableView cFTV) {
-    clientFilesTableView = cFTV;
-  }
-
-  public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-
-    if (clientFilesTableView != null)
-      clientFilesTableView.setInput(null);
-
-    if (newInput != null) {
-      Client client = (Client) newInput;
-      if (client.hasFiles()) {
-        clientFilesTableView.setInput(client.getFirstResultMap());
+   public Object[] getElements(Object var1) {
+      if (var1 instanceof Client) {
+         Client var2 = (Client)var1;
+         if (var2.hasFiles()) {
+            return var2.getFileDirectories();
+         }
       }
-    }
 
-    super.inputChanged(viewer, oldInput, newInput);
-  }
+      return GTableContentProvider.EMPTY_ARRAY;
+   }
 
+   public void setFilesView(ClientFilesTableView var1) {
+      this.clientFilesTableView = var1;
+   }
+
+   public void inputChanged(Viewer var1, Object var2, Object var3) {
+      if (this.clientFilesTableView != null) {
+         this.clientFilesTableView.setInput(null);
+      }
+
+      if (var3 != null) {
+         Client var4 = (Client)var3;
+         if (var4.hasFiles()) {
+            this.clientFilesTableView.setInput(var4.getFirstResultMap());
+         }
+      }
+
+      super.inputChanged(var1, var2, var3);
+   }
 }

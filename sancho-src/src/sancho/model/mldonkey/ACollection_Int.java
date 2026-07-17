@@ -1,91 +1,74 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
-import gnu.trove.TIntArrayList;
 import gnu.trove.TIntObjectHashMap;
 import gnu.trove.TIntObjectIterator;
 import gnu.trove.TIntObjectProcedure;
 import gnu.trove.TObjectProcedure;
-
-import java.util.Observable;
-
 import sancho.core.ICore;
+import sancho.utility.MyObservable;
 
-public abstract class ACollection_Int extends Observable implements ICollection {
-  protected ICore core;
-  private TIntObjectHashMap intObjectMap;
+public abstract class ACollection_Int extends MyObservable implements ICollection {
+   protected ICore core;
+   private TIntObjectHashMap intObjectMap;
 
-  ACollection_Int() {
-    this(null);
-  }
+   ACollection_Int() {
+      this(null);
+   }
 
-  ACollection_Int(ICore core) {
-    this.core = core;
-    this.intObjectMap = new TIntObjectHashMap();
-  }
+   ACollection_Int(ICore var1) {
+      this.core = var1;
+      this.intObjectMap = new TIntObjectHashMap();
+   }
 
-  public synchronized void clear() {
-    this.intObjectMap.clear();
-  }
+   public final synchronized void clear() {
+      this.intObjectMap.clear();
+   }
 
-  public synchronized boolean containsKey(int key) {
-    return this.intObjectMap.contains(key);
-  }
+   public final synchronized boolean containsKey(int var1) {
+      return this.intObjectMap.contains(var1);
+   }
 
-  public void dispose() {
-    deleteObservers();
-  }
+   public void dispose() {
+      this.deleteObservers();
+   }
 
-  public synchronized boolean forEachValue(TObjectProcedure procedure) {
-    return intObjectMap.forEachValue(procedure);
-  }
+   public final synchronized boolean forEachValue(TObjectProcedure var1) {
+      return this.intObjectMap.forEachValue(var1);
+   }
 
-  public synchronized Object get(int key) {
-    return intObjectMap.get(key);
-  }
+   public final synchronized boolean forEachEntry(TIntObjectProcedure var1) {
+      return this.intObjectMap.forEachEntry(var1);
+   }
 
-  public ICore getCore() {
-    return this.core;
-  }
+   public final synchronized Object get(int var1) {
+      return this.intObjectMap.get(var1);
+   }
 
-  public synchronized Object[] getValues() {
-    return this.intObjectMap.getValues();
-  }
+   public final ICore getCore() {
+      return this.core;
+   }
 
-  public TIntObjectIterator iterator() {
-    return this.intObjectMap.iterator();
-  }
+   public final synchronized Object[] getValues() {
+      return this.intObjectMap.getValues();
+   }
 
-  public synchronized Object put(int key, Object value) {
-    return intObjectMap.put(key, value);
-  }
+   public final TIntObjectIterator iterator() {
+      return this.intObjectMap.iterator();
+   }
 
-  public synchronized Object remove(int key) {
-    return intObjectMap.remove(key);
-  }
+   public final synchronized Object put(int var1, Object var2) {
+      return this.intObjectMap.put(var1, var2);
+   }
 
-  public synchronized boolean retainEntries(TIntObjectProcedure procedure) {
-    return intObjectMap.retainEntries(procedure);
-  }
+   public synchronized Object remove(int var1) {
+      return this.intObjectMap.remove(var1);
+   }
 
-  public synchronized int size() {
-    return this.intObjectMap.size();
-  }
+   public final synchronized boolean retainEntries(TIntObjectProcedure var1) {
+      return this.intObjectMap.retainEntries(var1);
+   }
 
-  static class CleanIntMap implements TIntObjectProcedure {
-    TIntArrayList retainIntList;
-
-    public CleanIntMap(TIntArrayList retainIntList) {
-      this.retainIntList = retainIntList;
-    }
-
-    public boolean execute(int i, Object object) {
-      return retainIntList.contains(i);
-    }
-  }
-
+   public final synchronized int size() {
+      return this.intObjectMap.size();
+   }
 }

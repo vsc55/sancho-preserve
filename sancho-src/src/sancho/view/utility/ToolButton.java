@@ -1,122 +1,119 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.utility;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
 public class ToolButton {
-  private boolean active;
-  private Image bigActiveImage;
-  private Image bigInactiveImage;
-  private SelectionListener listener;
-  private Image smallActiveImage;
-  private Image smallInactiveImage;
-  private String text;
-  private ToolItem toolItem;
-  private int toolItemStyle;
-  private String toolTipText;
-  private boolean useSmallButtons;
+   private boolean active;
+   private Image bigActiveImage;
+   private Image bigInactiveImage;
+   private SelectionListener listener;
+   private Image smallActiveImage;
+   private Image smallInactiveImage;
+   private String text;
+   private ToolItem toolItem;
+   private int toolItemStyle = 16;
+   private String toolTipText;
+   private boolean useSmallButtons;
 
-  public ToolButton(ToolBar parent, int style) {
-    this(parent, style, -1);
-  }
+   public ToolButton(ToolBar var1, int var2) {
+      this(var1, var2, -1);
+   }
 
-  public ToolButton(ToolBar parent, int style, int index) {
-    this.toolItemStyle = SWT.RADIO;
+   public ToolButton(ToolBar var1, int var2, int var3) {
+      if (var3 < 0) {
+         this.toolItem = new ToolItem(var1, this.toolItemStyle);
+      } else {
+         this.toolItem = new ToolItem(var1, var2, this.toolItemStyle);
+      }
+   }
 
-    if (index < 0)
-      toolItem = new ToolItem(parent, toolItemStyle);
-    else
-      toolItem = new ToolItem(parent, style, toolItemStyle);
-  }
+   public void addSelectionListener(SelectionListener var1) {
+      this.listener = var1;
+      this.toolItem.addSelectionListener(var1);
+   }
 
-  public void addSelectionListener(SelectionListener listener) {
-    this.listener = listener;
-    toolItem.addSelectionListener(listener);
-  }
+   public void dispose() {
+      this.toolItem.dispose();
+   }
 
-  public void dispose() {
-    toolItem.dispose();
-  }
+   public ToolBar getParent() {
+      return this.toolItem.getParent();
+   }
 
-  public ToolBar getParent() {
-    return toolItem.getParent();
-  }
+   public Image getSmallActiveImage() {
+      return this.smallActiveImage;
+   }
 
-  public Image getSmallActiveImage() {
-    return this.smallActiveImage;
-  }
+   public Image getSmallInActiveImage() {
+      return this.smallInactiveImage;
+   }
 
-  public String getText() {
-    return this.text;
-  }
+   public String getText() {
+      return this.text;
+   }
 
-  public ToolItem getToolItem() {
-    return toolItem;
-  }
+   public ToolItem getToolItem() {
+      return this.toolItem;
+   }
 
-  public void resetImage() {
-    setHotImage(useSmallButtons ? smallActiveImage : bigActiveImage);
-    setImage(useSmallButtons ? smallInactiveImage : bigInactiveImage);
-  }
+   public void resetImage() {
+      this.setHotImage(this.useSmallButtons ? this.smallActiveImage : this.bigActiveImage);
+      this.setImage(this.useSmallButtons ? this.smallInactiveImage : this.bigInactiveImage);
+   }
 
-  public void resetItem(ToolBar newtoolbar) {
-    toolItem.dispose();
-    toolItem = new ToolItem(newtoolbar, toolItemStyle);
-    setText(text);
-    setToolTipText(toolTipText);
-    setActive(active);
-    addSelectionListener(listener);
-    resetImage();
-  }
+   public void resetItem(ToolBar var1) {
+      this.toolItem.dispose();
+      this.toolItem = new ToolItem(var1, this.toolItemStyle);
+      this.setText(this.text);
+      this.setToolTipText(this.toolTipText);
+      this.setActive(this.active);
+      this.addSelectionListener(this.listener);
+      this.resetImage();
+   }
 
-  public void setActive(boolean toggle) {
-    toolItem.setSelection(toggle);
-    active = toggle;
-  }
+   public void setActive(boolean var1) {
+      this.toolItem.setSelection(var1);
+      this.active = var1;
+   }
 
-  public void setBigActiveImage(Image image) {
-    bigActiveImage = image;
-  }
+   public void setBigActiveImage(Image var1) {
+      this.bigActiveImage = var1;
+   }
 
-  public void setBigInactiveImage(Image image) {
-    bigInactiveImage = image;
-  }
+   public void setBigInactiveImage(Image var1) {
+      this.bigInactiveImage = var1;
+   }
 
-  public void setHotImage(Image image) {
-    toolItem.setHotImage(image);
-  }
+   public void setHotImage(Image var1) {
+      this.toolItem.setHotImage(var1);
+   }
 
-  public void setImage(Image image) {
-    toolItem.setImage(image);
-  }
+   public void setImage(Image var1) {
+      this.toolItem.setImage(var1);
+   }
 
-  public void setSmallActiveImage(Image image) {
-    smallActiveImage = image;
-  }
+   public void setSmallActiveImage(Image var1) {
+      this.smallActiveImage = var1;
+   }
 
-  public void setSmallInactiveImage(Image image) {
-    smallInactiveImage = image;
-  }
+   public void setSmallInactiveImage(Image var1) {
+      this.smallInactiveImage = var1;
+   }
 
-  public void setText(String text) {
-    this.text = text;
-    toolItem.setText(text);
-  }
+   public void setText(String var1) {
+      this.text = var1;
+      this.toolItem.setText(var1);
+   }
 
-  public void setToolTipText(String text) {
-    this.toolTipText = text;
-    toolItem.setToolTipText(text);
-  }
+   public void setToolTipText(String var1) {
+      this.toolTipText = var1;
+      this.toolItem.setToolTipText(var1);
+   }
 
-  public void useSmallButtons(boolean useSmall) {
-    useSmallButtons = useSmall;
-  }
+   public void useSmallButtons(boolean var1) {
+      this.useSmallButtons = var1;
+   }
 }

@@ -1,85 +1,95 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.downloadComplete;
 
 import java.util.Date;
-
+import sancho.model.mldonkey.IObject_UID;
 import sancho.utility.SwissArmy;
-import sancho.view.utility.SResources;
 
-public class DownloadCompleteItem {
-  long dateLong;
-  String dateString;
-  String hash;
-  String name;
-  long size;
-  String sizeString;
+public class DownloadCompleteItem implements IObject_UID {
+   long dateLong;
+   String dateString;
+   String hash;
+   String name;
+   long size;
+   String sizeString;
 
-  public long getDateLong() {
-    return dateLong;
-  }
+   public long getDateLong() {
+      return this.dateLong;
+   }
 
-  public String getDateString() {
-    return (dateString == null) ? SResources.S_ES : dateString;
-  }
+   public String getDateString() {
+      return this.dateString == null ? "" : this.dateString;
+   }
 
-  public String getHash() {
-    return (hash == null) ? SResources.S_ES : hash;
-  }
+   public String getMD4() {
+      return this.getHash();
+   }
 
-  public String getLink() {
-    return "ed2k://|" + getName() + "|" + getSize() + "|" + getHash() + "|";
-  }
+   public String[] getUIDs() {
+      return new String[]{"urn:ed2k:" + this.getHash()};
+   }
 
-  public String getName() {
-    return (name == null) ? SResources.S_ES : name;
-  }
+   public String getHash() {
+      return this.hash == null ? "" : this.hash;
+   }
 
-  public long getSize() {
-    return size;
-  }
+   public String getED2K() {
+      return this.getLink();
+   }
 
-  public String getSizeString() {
-    return (sizeString == null) ? SResources.S_ES : sizeString;
-  }
+   public String getLink() {
+      return "ed2k://|file|" + this.getName() + "|" + this.getSize() + "|" + this.getHash() + "|/";
+   }
 
-  public boolean parseLine(String line) {
+   public String getName() {
+      return this.name == null ? "" : this.name;
+   }
 
-    int space = line.indexOf(" ");
-    if (space == -1)
-      return false;
+   public long getSize() {
+      return this.size;
+   }
 
-    String timeStamp = line.substring(0, space);
+   public String getSizeString() {
+      return this.sizeString == null ? "" : this.sizeString;
+   }
 
-    try {
-      dateLong = Long.parseLong(timeStamp);
-      dateString = new Date(dateLong).toString();
-    } catch (Exception e) {
-      // bla
-    }
+   public boolean parseLine(String var1) {
+      int var2 = var1.indexOf(" ");
+      if (var2 == -1) {
+         return false;
+      } else {
+         String var3 = var1.substring(0, var2);
 
-    String ed2kLink = line.substring(space + 1);
+         try {
+            this.dateLong = Long.parseLong(var3);
+            this.dateString = new Date(this.dateLong).toString();
+         } catch (Exception var9) {
+         }
 
-    if (ed2kLink.startsWith("ed2k://|file|")) {
-      int end = ed2kLink.indexOf("|", 13);
-      name = ed2kLink.substring(13, ed2kLink.indexOf("|", 13));
-      int start = end + 1;
-      end = ed2kLink.indexOf("|", start);
-      try {
-        size = Long.parseLong(ed2kLink.substring(start, end));
-        sizeString = SwissArmy.calcStringSize(size);
-      } catch (NumberFormatException e) {
-        size = 0;
+         String var4 = var1.substring(var2 + 1);
+         if (var4.startsWith("ed2k://|file|")) {
+            int var5 = var4.indexOf("|", 13);
+            if (var5 < 13) {
+               return false;
+            } else {
+               this.name = var4.substring(13, var5);
+               int var6 = var5 + 1;
+               var5 = var4.indexOf("|", var6);
+
+               try {
+                  this.size = Long.parseLong(var4.substring(var6, var5));
+                  this.sizeString = SwissArmy.calcStringSize(this.size);
+               } catch (NumberFormatException var8) {
+                  this.size = 0L;
+               }
+
+               var6 = var5 + 1;
+               var5 = var4.indexOf("|", var6);
+               this.hash = var4.substring(var6, var5).toUpperCase();
+               return true;
+            }
+         } else {
+            return false;
+         }
       }
-      start = end + 1;
-      end = ed2kLink.indexOf("|", start);
-      hash = ed2kLink.substring(start, end).toUpperCase();
-      return true;
-    }
-    return false;
-  }
-
+   }
 }

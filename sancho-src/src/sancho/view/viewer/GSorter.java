@@ -1,148 +1,190 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.viewer;
 
 import org.eclipse.jface.preference.PreferenceStore;
+import org.eclipse.jface.viewers.ICustomViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-
 import sancho.model.mldonkey.Client;
 import sancho.model.mldonkey.enums.EnumHostState;
 import sancho.model.mldonkey.utility.Addr;
 import sancho.view.preferences.PreferenceLoader;
-import sancho.view.utility.SResources;
 import sancho.view.viewer.table.GTableLabelProvider;
 
 public abstract class GSorter extends ViewerSorter implements DisposeListener {
-  protected int columnIndex;
-  protected ICustomViewer cViewer;
-  protected GView gViewer;
-  protected int lastColumnIndex;
-  protected boolean lastSort;
-  protected PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+   protected int columnIndex;
+   protected ICustomViewer cViewer;
+   protected GView gView;
+   protected int lastColumnIndex;
+   protected boolean direction;
+   protected boolean prevDirection;
+   protected int prevColumnIndex;
+   protected PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+   protected boolean workingDirection;
+   protected static final boolean UP = true;
+   protected static final boolean DOWN = false;
 
-  public GSorter(GView gViewer) {
-    this.gViewer = gViewer;
-  }
+   public GSorter(GView var1) {
+      this.gView = var1;
+   }
 
-  public int compare(Viewer viewer, Object obj1, Object obj2) {
-    return 0;
-  }
+   public int compare(Viewer var1, Object var2, Object var3) {
+      this.workingDirection = this.direction;
+      int var4 = this._compare(var1, var2, var3, this.cViewer.getColumnIDs()[this.columnIndex]);
+      if (var4 == 0) {
+         this.workingDirection = this.prevDirection;
+         var4 = this._compare(var1, var2, var3, this.cViewer.getColumnIDs()[this.prevColumnIndex]);
+      }
 
-  protected int compareAddrs(Addr addr1, Addr addr2) {
-    return lastSort ? addr1.compareTo(addr2) : addr2.compareTo(addr1);
-  }
+      return var4;
+   }
 
-  protected int compareBooleans(boolean b1, boolean b2) {
-    return lastSort ? (b1 ? b2 ? 0 : 1 : b2 ? -1 : 0) : (b2 ? b1 ? 0 : 1 : b1 ? -1 : 0);
-  }
-
-  protected int compareClientStates(Client client1, Client client2) {
-    if (client1.getStateEnum() == EnumHostState.CONNECTED_DOWNLOADING)
-      return -1;
-    else if (client2.getStateEnum() == EnumHostState.CONNECTED_DOWNLOADING)
-      return 1;
-    else {
-      int rank1 = client1.getState().getRank();
-      int rank2 = client2.getState().getRank();
-      if (rank1 != 0 && rank2 != 0)
-        return compareInts(rank1, rank2);
-      else if (rank1 != 0)
-        return -1;
-      else if (rank2 != 0)
-        return 1;
-      else
-        return 0;
-    }
-  }
-
-  protected int compareDefault(TableViewer tableViewer, int columnIndex, Object object1, Object object2) {
-    GTableLabelProvider gTLP = (GTableLabelProvider) tableViewer.getLabelProvider();
-    String s1 = gTLP.getColumnText(object1, columnIndex);
-    String s2 = gTLP.getColumnText(object2, columnIndex);
-    return compareStrings(s1, s2);
-  }
-
-  protected int compareFloats(float float1, float float2) {
-    if (float1 == float2)
+   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
       return 0;
-    return lastSort ? (float1 - float2 > 0f ? 1 : -1) : (float2 - float1 > 0f ? 1 : -1);
-  }
+   }
 
-  protected int compareInts(int int1, int int2) {
-    return lastSort ? (int1 - int2) : (int2 - int1);
-  }
+   protected int compareAddrs(Addr var1, Addr var2) {
+      return this.workingDirection ? var1.compareTo(var2) : var2.compareTo(var1);
+   }
 
-  protected int compareLongs(long long1, long long2) {
-    if (long1 == long2)
-      return 0;
-    return lastSort ? (long1 - long2 > 0L ? 1 : -1) : (long2 - long1 > 0L ? 1 : -1);
-  }
+   protected int compareBooleans(boolean var1, boolean var2) {
+      return this.workingDirection ? (var1 ? (var2 ? 0 : 1) : (var2 ? -1 : 0)) : (var2 ? (var1 ? 0 : 1) : (var1 ? -1 : 0));
+   }
 
-  protected int compareStrings(String aString1, String aString2) {
-    if (aString1.equals(SResources.S_ES))
-      return 1;
+   protected int compareClientStates(Client var1, Client var2) {
+      if (var1.getStateEnum() == EnumHostState.CONNECTED_DOWNLOADING) {
+         return -1;
+      } else if (var2.getStateEnum() == EnumHostState.CONNECTED_DOWNLOADING) {
+         return 1;
+      } else {
+         int var3 = var1.getState().getRank();
+         int var4 = var2.getState().getRank();
+         return var3 <= 0 && var4 <= 0 ? this.compareStrings(var1.getDetailedClientActivity(), var2.getDetailedClientActivity()) : this.compareInts(var3, var4);
+      }
+   }
 
-    if (aString2.equals(SResources.S_ES))
-      return -1;
+   protected int compareDefault(TableViewer var1, int var2, Object var3, Object var4) {
+      GTableLabelProvider var5 = (GTableLabelProvider)var1.getLabelProvider();
+      String var6 = var5.getColumnText(var3, var2);
+      String var7 = var5.getColumnText(var4, var2);
+      return this.compareStrings(var6, var7);
+   }
 
-    return (lastSort ? aString1.compareToIgnoreCase(aString2) : aString2.compareToIgnoreCase(aString1));
-  }
+   protected int comparePercents(float var1, float var2) {
+      if (var1 == var2) {
+         return 0;
+      } else {
+         var1 *= 100000.0F;
+         var2 *= 100000.0F;
+         float var3 = this.workingDirection ? var1 - var2 : var2 - var1;
+         int var4 = (int)var3;
+         if (var3 >= 2.1474836E9F) {
+            var4 = Integer.MAX_VALUE;
+         }
 
-  protected int getLastColumnIndex() {
-    return lastColumnIndex;
-  }
+         if (var3 <= -2.1474836E9F) {
+            var4 = Integer.MIN_VALUE;
+         }
 
-  protected boolean getLastSort() {
-    return lastSort;
-  }
+         return var4;
+      }
+   }
 
-  public void initialize() {
-    cViewer = (ICustomViewer) gViewer.getViewer();
-    gViewer.getTable().addDisposeListener(this);
+   protected int compareInts(int var1, int var2) {
+      return this.workingDirection ? var1 - var2 : var2 - var1;
+   }
 
-    String savedSort = PreferenceLoader.loadString(gViewer.getPreferenceString() + "LastSortColumn");
-    if (!savedSort.equals(SResources.S_ES) && (gViewer.getColumnIDs().indexOf(savedSort) != -1)) {
-      setColumnIndex(gViewer.getColumnIDs().indexOf(savedSort));
-      setLastSort(PreferenceLoader.loadBoolean(gViewer.getPreferenceString() + "LastSortOrder"));
-    }
-  }
+   protected int compareLongs(long var1, long var3) {
+      if (var1 == var3) {
+         return 0;
+      } else {
+         long var5 = this.workingDirection ? var1 - var3 : var3 - var1;
+         int var7 = (int)var5;
+         if (var5 >= 2147483647L) {
+            var7 = Integer.MAX_VALUE;
+         }
 
-  public boolean isSorterProperty(Object element, String property) {
-    return true;
-  }
+         if (var5 <= -2147483648L) {
+            var7 = Integer.MIN_VALUE;
+         }
 
-  public void setColumnIndex(int i) {
-    columnIndex = i;
-    lastSort = (columnIndex == lastColumnIndex) ? (!lastSort) : sortOrder(columnIndex);
-    lastColumnIndex = columnIndex;
-  }
+         return var7;
+      }
+   }
 
-  public void setLastColumnIndex(int i) {
-    lastColumnIndex = i;
-  }
+   protected int compareStrings(String var1, String var2) {
+      if (var1.equals(var2)) {
+         return 0;
+      } else if (var1.equals("")) {
+         return 1;
+      } else if (var2.equals("")) {
+         return -1;
+      } else {
+         return this.direction ? var1.compareToIgnoreCase(var2) : var2.compareToIgnoreCase(var1);
+      }
+   }
 
-  public void setLastSort(boolean b) {
-    lastSort = b;
-  }
+   public int getLastColumnIndex() {
+      return this.lastColumnIndex;
+   }
 
-  public boolean sortOrder(int columnIndex) {
-    return true;
-  }
+   public boolean getDirection() {
+      return this.direction;
+   }
 
-  public void updateDisplay() {
-  }
+   public void initialize() {
+      this.cViewer = (ICustomViewer)this.gView.getViewer();
+      this.gView.getComposite().addDisposeListener(this);
+      String var1 = PreferenceLoader.loadString(this.gView.getPreferenceString() + "LastSortColumn");
+      String var2 = PreferenceLoader.loadString(this.gView.getPreferenceString() + "PrevSortColumn");
+      if (!var1.equals("") && this.gView.getColumnIDs().indexOf(var1) != -1) {
+         this.setColumnIndex(this.gView.getColumnIDs().indexOf(var1));
+         this.setDirection(PreferenceLoader.loadBoolean(this.gView.getPreferenceString() + "LastSortOrder"));
+      }
 
-  public void widgetDisposed(DisposeEvent e) {
-    preferenceStore.setValue(gViewer.getPreferenceString() + "LastSortColumn", String.valueOf(gViewer
-        .getColumnIDs().charAt(columnIndex)));
-    preferenceStore.setDefault(gViewer.getPreferenceString() + "LastSortOrder", true);
-    preferenceStore.setValue(gViewer.getPreferenceString() + "LastSortOrder", lastSort);
-  }
+      if (!var2.equals("") && this.gView.getColumnIDs().indexOf(var2) != -1) {
+         this.prevColumnIndex = this.gView.getColumnIDs().indexOf(var2);
+         this.prevDirection = PreferenceLoader.loadBoolean(this.gView.getPreferenceString() + "PrevSortOrder");
+      }
+   }
+
+   public boolean isSorterProperty(Object var1, String var2) {
+      return true;
+   }
+
+   public void setColumnIndex(int var1) {
+      if (var1 != this.lastColumnIndex) {
+         this.prevDirection = this.direction;
+         this.prevColumnIndex = this.columnIndex;
+      } else {
+         this.prevDirection = !this.prevDirection;
+      }
+
+      this.columnIndex = var1;
+      this.direction = this.columnIndex == this.lastColumnIndex ? !this.direction : this.sortOrder(this.columnIndex);
+      this.lastColumnIndex = this.columnIndex;
+   }
+
+   public void setDirection(boolean var1) {
+      this.direction = var1;
+   }
+
+   public boolean sortOrder(int var1) {
+      return true;
+   }
+
+   public void updateDisplay() {
+   }
+
+   public void widgetDisposed(DisposeEvent var1) {
+      String var2 = this.gView.getPreferenceString();
+      this.preferenceStore.setValue(var2 + "LastSortColumn", String.valueOf(this.gView.getColumnIDs().charAt(this.columnIndex)));
+      this.preferenceStore.setDefault(var2 + "LastSortOrder", true);
+      this.preferenceStore.setValue(var2 + "LastSortOrder", this.direction);
+      this.preferenceStore.setValue(var2 + "PrevSortColumn", String.valueOf(this.gView.getColumnIDs().charAt(this.prevColumnIndex)));
+      this.preferenceStore.setDefault(var2 + "PrevSortOrder", true);
+      this.preferenceStore.setValue(var2 + "PrevSortOrder", this.prevDirection);
+   }
 }

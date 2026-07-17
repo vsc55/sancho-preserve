@@ -1,48 +1,48 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.shares;
 
 import org.eclipse.jface.viewers.Viewer;
-
 import sancho.model.mldonkey.SharedFile;
 import sancho.view.viewer.GSorter;
 
 public class UploadTableSorter extends GSorter {
-  public UploadTableSorter(UploadTableView uTableViewer) {
-    super(uTableViewer);
-  }
+   public UploadTableSorter(UploadTableView var1) {
+      super(var1);
+   }
 
-  public boolean sortOrder(int columnIndex) {
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case UploadTableView.BYTES :
-      case UploadTableView.REQUESTS :
-        return false;
-      default :
-        return true;
-    }
-  }
+   public boolean sortOrder(int var1) {
+      switch (this.cViewer.getColumnIDs()[var1]) {
+         case 1:
+         case 2:
+            return false;
+         default:
+            return true;
+      }
+   }
 
-  public int compare(Viewer viewer, Object obj1, Object obj2) {
-    SharedFile sharedFile1 = (SharedFile) obj1;
-    SharedFile sharedFile2 = (SharedFile) obj2;
-
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case UploadTableView.NETWORK :
-        return compareStrings(sharedFile1.getNetworkName(), // NPE?
-            sharedFile2.getNetworkName());
-      case UploadTableView.BYTES :
-        return compareLongs(sharedFile1.getBytesUploaded(), sharedFile2.getBytesUploaded());
-      case UploadTableView.REQUESTS :
-        return compareLongs(sharedFile1.getRequests(), sharedFile2.getRequests());
-      case UploadTableView.NAME :
-        return compareStrings(sharedFile1.getName(), sharedFile2.getName());
-      case UploadTableView.SIZE :
-        return compareLongs(sharedFile1.getSize(), sharedFile2.getSize());
-      default :
-        return 0;
-    }
-  }
+   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
+      if (var2 == null) {
+         return 1;
+      } else if (var3 == null) {
+         return -1;
+      } else {
+         SharedFile var5 = (SharedFile)var2;
+         SharedFile var6 = (SharedFile)var3;
+         switch (var4) {
+            case 0:
+               return this.compareStrings(var5.getNetworkName(), var6.getNetworkName());
+            case 1:
+               return this.compareLongs(var5.getBytesUploaded(), var6.getBytesUploaded());
+            case 2:
+               return this.compareLongs((long)var5.getRequests(), (long)var6.getRequests());
+            case 3:
+               return this.compareStrings(var5.getName(), var6.getName());
+            case 4:
+               return this.compareLongs(var5.getSize(), var6.getSize());
+            case 5:
+               return this.compareStrings(var5.getMagic(), var6.getMagic());
+            default:
+               return 0;
+         }
+      }
+   }
 }

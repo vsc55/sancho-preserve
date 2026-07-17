@@ -1,224 +1,220 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
 import gnu.trove.TIntArrayList;
-import gnu.trove.TIntObjectProcedure;
 import gnu.trove.TLongIntHashMap;
-import gnu.trove.TObjectProcedure;
-
 import java.net.InetAddress;
-
 import sancho.core.ICore;
 import sancho.core.Sancho;
 import sancho.model.mldonkey.enums.EnumHostState;
 import sancho.model.mldonkey.enums.EnumNetwork;
 import sancho.model.mldonkey.utility.MessageBuffer;
-import sancho.model.mldonkey.utility.OpCodes;
+import sancho.utility.SwissArmy;
 import sancho.view.preferences.PreferenceLoader;
+import sancho.view.utility.SResources;
 
 public class ServerCollection extends ACollection_Int2 {
+   private static final String RS_SERVERS = SResources.getString("tab.servers");
+   private static final String RS_CONNECTED = SResources.getString("l.connected");
+   private TLongIntHashMap cleanHistoryMap = new TLongIntHashMap();
+   private boolean displayNodes;
+   protected int numConnected;
+   protected long donkeyNumServers;
+   protected long donkeyNumUsers;
+   protected long donkeyNumFiles;
 
-  private TLongIntHashMap cleanHistoryMap = new TLongIntHashMap();
-  private boolean displayNodes;
-  protected int numConnected;
+   ServerCollection(ICore var1) {
+      super(var1);
+      this.updatePreferences();
+   }
 
-  ServerCollection(ICore core) {
-    super(core);
-    updatePreferences();
-  }
+   public long getDonkeyNumServers() {
+      return this.donkeyNumServers;
+   }
 
-  public void addServer(Network network, InetAddress iNetAddress, short port) {
-    if (iNetAddress == null || network == null)
-      return;
+   public String getDonkeyNumServersString() {
+      return SwissArmy.calcStringSizeGrouped(this.donkeyNumServers);
+   }
 
-    Object[] oArray = new Object[3];
-    oArray[0] = new Integer(network.getId());
-    oArray[1] = iNetAddress.getAddress();
-    oArray[2] = new Short(port);
+   public String getDonkeyNumFilesString() {
+      return SwissArmy.calcStringSizeGrouped(this.donkeyNumFiles);
+   }
 
-    core.send(OpCodes.S_ADD_SERVER, oArray);
-  }
+   public String getDonkeyNumUsersString() {
+      return SwissArmy.calcStringSizeGrouped(this.donkeyNumUsers);
+   }
 
-  public void addServerList(String url) {
-    String type = url.toLowerCase().endsWith(".met") ? "server.met" : "ocl";
-    core.send(OpCodes.S_CONSOLE_MESSAGE, "add_url " + type + " " + url);
-  }
+   public void addServer(Network var1, InetAddress var2, short var3) {
+      if (var2 != null && var1 != null) {
+         Object[] var4 = new Object[]{new Integer(var1.getId()), var2.getAddress(), new Short(var3)};
+         this.core.send((short)54, var4);
+      }
+   }
 
-  public void clean(MessageBuffer messageBuffer) {
-    int[] iList = messageBuffer.getInt32List();
-    synchronized (this) {
-      cleanHistoryMap.put(System.currentTimeMillis(), iList.length);
-    }
-    retainEntries(new CleanIntMap(new TIntArrayList(iList)));
-    this.setChanged();
-    this.notifyObservers(this);
-  }
+   public void addServerList(String var1) {
+      String var2 = var1.toLowerCase().endsWith(".met") ? "server.met" : "ocl";
+      this.core.send((short)29, "urladd " + var2 + " " + var1);
+   }
 
-  public void cleanOldServers() {
-    core.send(OpCodes.S_CLEAN_OLD_SERVERS);
-  }
-
-  public void connectMore() {
-    core.send(OpCodes.S_CONNECT_MORE);
-  }
-
-  public int getConnected() {
-    return numConnected;
-  }
-
-  public int getConnected(EnumNetwork networkEnum) {
-    CountNetworkConnected countNetworkConnected = new CountNetworkConnected(networkEnum);
-    forEachValue(countNetworkConnected);
-    return countNetworkConnected.getCount();
-  }
-
-  public synchronized TLongIntHashMap getHistoryMap() {
-    return cleanHistoryMap;
-  }
-
-  public Object[] getServers() {
-    return getValues();
-  }
-
-  private void put(int id, Server server) {
-    if (server == null)
-      return;
-
-    super.put(id, server);
-    addToAdded(server);
-    if (server.isConnected())
-      setConnected(+1);
-  }
-
-  // guiEncoding#buf_server
-  public void read(MessageBuffer messageBuffer) {
-    int id = messageBuffer.getInt32();
-    int networkID = messageBuffer.getInt32();
-
-    Network network = (Network) this.core.getNetworkCollection().get(networkID);
-    if (network == null)
-      return;
-
-    if (!displayNodes && !network.hasServers())
-      return;
-
-    Server server = (Server) get(id);
-
-    if (server != null) {
-      server.read(id, networkID, messageBuffer);
-      if (server.getStateEnum() != EnumHostState.REMOVE_HOST)
-        addToUpdated(server);
-    } else {
-      server = core.getCollectionFactory().getServer();
-      server.read(id, networkID, messageBuffer);
-      if (server.getStateEnum() != EnumHostState.REMOVE_HOST)
-        this.put(server.getId(), server);
-    }
-
-    this.setChanged();
-    this.notifyObservers();
-  }
-
-  public void readUpdate(MessageBuffer messageBuffer) {
-    Server server = (Server) get(messageBuffer.getInt32());
-    if (server != null) {
-      server.readUpdate(messageBuffer);
-      if (server.getStateEnum() != EnumHostState.REMOVE_HOST) {
-        addToUpdated(server);
-        this.setChanged();
-        this.notifyObservers();
+   public void clean(MessageBuffer var1) {
+      int[] var2 = var1.getInt32List();
+      synchronized (this) {
+         this.cleanHistoryMap.put(System.currentTimeMillis(), var2.length);
       }
 
-    }
-  }
+      this.retainEntries(new ACollection_Int$CleanIntMap(new TIntArrayList(var2)));
+      this.setChanged();
+      this.notifyObservers();
+   }
 
-  public Object remove(int key) {
-    Server server = (Server) super.get(key);
-    if (server != null && server.isConnected())
-      setConnected(-1);
-    return super.remove(key);
-  }
+   public void cleanOldServers() {
+      this.core.send((short)2);
+   }
 
-  public void remove(Server server) {
-    super.remove(server.getId());
-    addToRemoved(server);
-    this.setChanged();
-    this.notifyObservers();
-  }
+   public void connectMore() {
+      this.core.send((short)1);
+   }
 
-  public void removeAll(EnumNetwork enumNetwork) {
-    this.retainEntries(new RemoveNetworkServers(enumNetwork));
-    this.setChanged();
-    this.notifyObservers();
-  }
+   public int getConnected() {
+      return this.numConnected;
+   }
 
-  public boolean removeServerInfo(int key) {
-    if (!containsKey(key))
-      return false;
-    else {
-      ((Server) get(key)).setState(EnumHostState.REMOVE_HOST);
-      return true;
-    }
-  }
+   public int getConnected(EnumNetwork var1) {
+      ServerCollection$CountNetworkConnected var2 = new ServerCollection$CountNetworkConnected(var1);
+      this.forEachValue(var2);
+      return var2.getCount();
+   }
 
-  public void serverUser(MessageBuffer messageBuffer) {
-    int id = messageBuffer.getInt32();
+   public synchronized TLongIntHashMap getHistoryMap() {
+      return this.cleanHistoryMap;
+   }
 
-    Server server = (Server) get(id);
-    if (server != null) {
-      server.serverUser(messageBuffer);
-      addToUpdated(server);
-    } else {
-      if (Sancho.debug)
-        Sancho.pDebug("su-nf:" + id);
-    }
-  }
+   public Object[] getServers() {
+      return this.getValues();
+   }
 
-  public void setConnected(int i) {
-    numConnected += i;
-  }
+   private void put(int var1, Server var2) {
+      if (var2 != null) {
+         super.put(var1, var2);
+         this.addToAdded(var2);
+         if (var2.isConnected()) {
+            this.setConnected(1);
+         }
+      }
+   }
 
-  public void updatePreferences() {
-    displayNodes = PreferenceLoader.loadBoolean("displayNodes");
-  }
+   public void read(MessageBuffer var1) {
+      int var2 = var1.getInt32();
+      int var3 = var1.getInt32();
+      Network var4 = (Network)this.core.getNetworkCollection().get(var3);
+      if (var4 != null) {
+         if (this.displayNodes || var4.hasServers()) {
+            Server var5 = (Server)this.get(var2);
+            if (var5 != null) {
+               var5.read(var2, var3, var1);
+               if (var5.getStateEnum() != EnumHostState.REMOVE_HOST) {
+                  this.addToUpdated(var5);
+               }
+            } else {
+               var5 = this.core.getCollectionFactory().getServer();
+               var5.read(var2, var3, var1);
+               if (var5.getStateEnum() != EnumHostState.REMOVE_HOST) {
+                  this.put(var5.getId(), var5);
+               }
+            }
 
-  static class CountNetworkConnected implements TObjectProcedure {
-    private int counter;
+            this.setChanged();
+            this.notifyObservers();
+         }
+      }
+   }
 
-    private EnumNetwork networkEnum;
+   public void readUpdate(MessageBuffer var1) {
+      Server var2 = (Server)this.get(var1.getInt32());
+      if (var2 != null) {
+         var2.readUpdate(var1);
+         if (var2.getStateEnum() != EnumHostState.REMOVE_HOST) {
+            this.addToUpdated(var2);
+            this.setChanged();
+            this.notifyObservers();
+         }
+      }
+   }
 
-    public CountNetworkConnected(EnumNetwork networkEnum) {
-      this.networkEnum = networkEnum;
-    }
+   public synchronized String getHeaderString() {
+      StringBuffer var1 = new StringBuffer(64);
+      var1.append(RS_SERVERS);
+      var1.append(": ");
+      var1.append(this.getConnected());
+      var1.append(" / ");
+      var1.append(this.size());
+      var1.append(" ");
+      var1.append(RS_CONNECTED);
+      this.updateDonkeyTotals();
+      if (this.getDonkeyNumServers() > 0L) {
+         var1.append(" ");
+         var1.append(" ");
+         var1.append(" ");
+         var1.append(" ");
+         var1.append("(");
+         var1.append(EnumNetwork.DONKEY.getName());
+         var1.append(": ");
+         var1.append(this.getDonkeyNumServersString());
+         var1.append("/");
+         var1.append(this.getDonkeyNumUsersString());
+         var1.append("/");
+         var1.append(this.getDonkeyNumFilesString());
+         var1.append(")");
+      }
 
-    public boolean execute(Object object) {
-      Server server = (Server) object;
-      if (server.isConnected() && server.getEnumNetwork() == networkEnum)
-        counter++;
-      return true;
-    }
+      return var1.toString();
+   }
 
-    public int getCount() {
-      return counter;
-    }
-  }
+   public synchronized void updateDonkeyTotals() {
+      ServerCollection$CountDonkeyTotals var1 = new ServerCollection$CountDonkeyTotals();
+      this.forEachValue(var1);
+      this.donkeyNumFiles = var1.getNumFiles();
+      this.donkeyNumUsers = var1.getNumUsers();
+      this.donkeyNumServers = var1.getNumServers();
+   }
 
-  static class RemoveNetworkServers implements TIntObjectProcedure {
-    private EnumNetwork enumNetwork;
+   public Object remove(int var1) {
+      Server var2 = (Server)super.get(var1);
+      if (var2 != null && var2.isConnected()) {
+         this.setConnected(-1);
+      }
 
-    public RemoveNetworkServers(EnumNetwork enumNetwork) {
-      this.enumNetwork = enumNetwork;
-    }
+      return super.remove(var1);
+   }
 
-    public boolean execute(int i, Object object) {
-      Server server = (Server) object;
-      if (enumNetwork == server.getEnumNetwork())
-        return false;
-      return true;
-    }
-  }
+   public void remove(Server var1) {
+      super.remove(var1.getId());
+      this.addToRemoved(var1);
+      this.setChanged();
+      this.notifyObservers();
+   }
+
+   public void removeAll(EnumNetwork var1) {
+      this.retainEntries(new ServerCollection$RemoveNetworkServers(var1));
+      this.setChanged();
+      this.notifyObservers();
+   }
+
+   public void serverUser(MessageBuffer var1) {
+      int var2 = var1.getInt32();
+      Server var3 = (Server)this.get(var2);
+      if (var3 != null) {
+         var3.serverUser(var1);
+         this.addToUpdated(var3);
+      } else if (Sancho.debug) {
+         Sancho.pDebug("su-nf:" + var2);
+      }
+   }
+
+   public void setConnected(int var1) {
+      this.numConnected += var1;
+   }
+
+   public void updatePreferences() {
+      this.displayNodes = PreferenceLoader.loadBoolean("displayNodes");
+   }
 }

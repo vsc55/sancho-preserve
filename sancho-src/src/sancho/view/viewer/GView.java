@@ -1,37 +1,27 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.viewer;
 
 import java.util.StringTokenizer;
-
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.preference.PreferenceStore;
+import org.eclipse.jface.viewers.ICustomViewer;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.MenuAdapter;
-import org.eclipse.swt.events.MenuEvent;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-
+import org.eclipse.swt.widgets.Tree;
 import sancho.core.ICore;
 import sancho.core.Sancho;
 import sancho.model.mldonkey.enums.AbstractEnum;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.IDSelector;
-import sancho.view.utility.SResources;
 import sancho.view.viewFrame.ViewFrame;
 import sancho.view.viewer.filters.AbstractViewerFilter;
 import sancho.view.viewer.filters.ExclusionStateViewerFilter;
@@ -39,575 +29,632 @@ import sancho.view.viewer.filters.FileExtensionViewerFilter;
 import sancho.view.viewer.filters.NetworkViewerFilter;
 import sancho.view.viewer.filters.RefineFilter;
 import sancho.view.viewer.filters.StateViewerFilter;
-import sancho.view.viewer.table.GTableContentProvider;
 import sancho.view.viewer.table.GTableLabelProvider;
 import sancho.view.viewer.table.GTableMenuListener;
 
 public abstract class GView implements DisposeListener {
+   public static final String S_GVIEW = "gView";
+   public static final int STATE_FILTER = 1;
+   public static final int EXCLUSION_STATE_FILTER = 2;
+   public static final int NETWORK_FILTER = 3;
+   public static final int FILE_EXTENSION_FILTER = 4;
+   public static final int REFINE_FILTER = 5;
+   protected boolean active;
+   protected String allColumns;
+   protected int[] columnAlignment;
+   protected int[] columnDefaultWidths;
+   protected String columnIDs;
+   protected String[] columnLabels;
+   protected ControlAdapter controlAdapter;
+   protected String dynamicColumn = "";
+   protected boolean forceRedraw = SWT.getPlatform().equals("win32") || SWT.getPlatform().equals("gtk");
+   protected GSorter gSorter;
+   protected int minDynamicColumnWidth = 100;
+   protected boolean oldTableScrollBar;
+   protected int oldTableWidth;
+   protected String preferenceString;
+   protected RefineFilter refineFilter;
+   protected String refineString = "";
+   protected boolean saveExclusionStateFilters;
+   protected boolean saveNetworkFilters;
+   protected boolean saveStateFilters;
+   protected StructuredViewer sViewer;
+   protected GTableLabelProvider tableLabelProvider;
+   protected AbstractEnum[] validExtensions;
+   protected AbstractEnum[] validStates;
+   protected ViewFrame viewFrame;
+   protected boolean visible;
+   protected MenuManager popupMenu;
+   protected Object input;
+   // $VF: synthetic field
+   static Class class$sancho$view$viewer$filters$StateViewerFilter;
+   // $VF: synthetic field
+   static Class class$sancho$view$viewer$filters$ExclusionStateViewerFilter;
+   // $VF: synthetic field
+   static Class class$sancho$view$viewer$filters$NetworkViewerFilter;
 
-  public static final String S_GVIEW = "gView";
+   public void setInput(Object var1) {
+      this.getViewer().setInput(var1);
+   }
 
-  public static final int STATE_FILTER = 1;
-  public static final int EXCLUSION_STATE_FILTER = 2;
-  public static final int NETWORK_FILTER = 3;
-  public static final int FILE_EXTENSION_FILTER = 4;
-  public static final int REFINE_FILTER = 5;
+   public void addFilter(ViewerFilter var1) {
+      this.setRedraw(false);
+      this.sViewer.addFilter(var1);
+      this.setRedraw(true);
+   }
 
-  protected boolean active;
-  protected String allColumns;
-  protected int[] columnAlignment;
-  protected int[] columnDefaultWidths;
-  protected String columnIDs;
-  protected String[] columnLabels;
-  protected ControlAdapter controlAdapter;
-  protected String dynamicColumn = SResources.S_ES;
-  protected boolean forceRedraw = SWT.getPlatform().equals("win32") || SWT.getPlatform().equals("gtk");
-  protected GSorter gSorter;
-  protected int minDynamicColumnWidth = 100;
-  protected boolean oldTableScrollBar;
-  protected int oldTableWidth;
-  protected String preferenceString;
-  protected RefineFilter refineFilter;
-  protected String refineString = SResources.S_ES;
-  protected boolean saveExclusionStateFilters;
-  protected boolean saveNetworkFilters;
-  protected boolean saveStateFilters;
-  protected StructuredViewer sViewer;
-  protected GTableLabelProvider tableLabelProvider;
-  protected AbstractEnum[] validExtensions;
-  protected AbstractEnum[] validStates;
-  protected ViewFrame viewFrame;
-  protected boolean visible;
-
-  public void addFilter(ViewerFilter viewerFilter) {
-    redrawTable(false);
-    sViewer.addFilter(viewerFilter);
-    redrawTable(true);
-  }
-
-  protected void addMenuListener() {
-    Menu menu = getTable().getMenu();
-    menu.addMenuListener(new MenuAdapter() {
-      public void menuShown(MenuEvent e) {
-        Menu aMenu = getTable().getMenu();
-        if (!((StructuredViewer) getViewer()).getSelection().isEmpty())
-          if (aMenu.getItemCount() > 0)
-            aMenu.setDefaultItem(aMenu.getItem(0));
+   protected void addMenuListener() {
+      Menu var1 = this.getComposite().getMenu();
+      if (var1 != null) {
+         var1.addMenuListener(new GView$1(this));
       }
-    });
-  }
+   }
 
-  protected void createColumns() {
-    columnIDs = IDSelector.loadIDs(preferenceString + "TableColumns", allColumns);
-    ((ICustomViewer) getViewer()).setColumnIDs(columnIDs);
-    final PreferenceStore p = PreferenceLoader.getPreferenceStore();
-    Table table = getTable();
-    table.setHeaderVisible(true);
-    TableColumn[] tableColumns = table.getColumns();
-    for (int i = tableColumns.length - 1; i > -1; i--)
-      tableColumns[i].dispose();
+   public abstract int getItemCount();
 
-    for (int i = 0; i < columnIDs.length(); i++) {
-      final int columnIndex = i;
-      final int arrayItem = columnIDs.charAt(i) - IDSelector.MAGIC_NUMBER;
-      TableColumn tableColumn = new TableColumn(table, columnAlignment[arrayItem]);
-      p.setDefault(columnLabels[arrayItem], columnDefaultWidths[arrayItem]);
-      tableColumn.setText(SResources.getString(columnLabels[arrayItem]));
-      int oldWidth = p.getInt(columnLabels[arrayItem]);
-      tableColumn.setWidth((oldWidth > 0) ? oldWidth : columnDefaultWidths[arrayItem]);
+   public abstract String getColumnText(int var1);
 
-      tableColumn.addDisposeListener(new DisposeListener() {
-        public synchronized void widgetDisposed(DisposeEvent e) {
-          TableColumn thisColumn = (TableColumn) e.widget;
-          if (thisColumn.getWidth() > 0)
-            p.setValue(columnLabels[arrayItem], thisColumn.getWidth());
-        }
-      });
+   public abstract int getColumnCount();
 
-      if (preferenceString.equals("result"))
-        tableColumn.addControlListener(new ControlAdapter() {
-          public void controlResized(ControlEvent e) {
-            TableColumn tableColumn = (TableColumn) e.widget;
-            if (tableColumn.getWidth() > 0)
-              p.setValue(columnLabels[arrayItem], tableColumn.getWidth());
-          }
-        });
+   public abstract void deselectAll();
 
-      tableColumn.addListener(SWT.Selection, new Listener() {
-        public void handleEvent(Event e) {
-          sortByColumn(columnIndex);
-        }
-      });
-    }
-  }
+   public abstract void selectAll();
 
-  protected void createContents() {
-    sViewer.setUseHashlookup(true);
-    allColumns = IDSelector.createIDString(columnLabels);
-    Table table = getTable();
-    table.setRedraw(false);
-    table.setLayoutData(new GridData(GridData.FILL_BOTH));
-    createColumns();
-    getTableContentProvider().initialize();
-    getTableLabelProvider().initialize();
-    gSorter.initialize();
-    getTableMenuListener().initialize();
+   public abstract Item getItemAt(int var1, int var2);
 
-    sViewer.setContentProvider(getTableContentProvider());
-    sViewer.setLabelProvider(getTableLabelProvider());
-    updateDisplay();
-    MenuManager popupMenu = new MenuManager(SResources.S_ES);
-    popupMenu.setRemoveAllWhenShown(true);
-    popupMenu.addMenuListener(getTableMenuListener());
-    table.setMenu(popupMenu.createContextMenu(getTable()));
-    sViewer.setSorter(gSorter);
-    loadDynamicColumn();
-    getTable().addDisposeListener(this);
-    loadFilters();
-    setInput();
-    table.setRedraw(true);
+   protected abstract void disposeAllColumns();
 
-  }
+   protected abstract void createColumns();
 
-  public String getAllColumnIDs() {
-    return allColumns;
-  }
+   public abstract IGContentProvider getContentProvider();
 
-  public String getColumnIDs() {
-    return columnIDs;
-  }
+   protected void createContents() {
+      this.sViewer.setUseHashlookup(true);
+      this.allColumns = IDSelector.createIDString(this.columnLabels);
+      Composite var1 = this.getComposite();
+      var1.setRedraw(false);
+      this.createColumns();
+      this.getContentProvider().initialize();
+      this.getTableLabelProvider().initialize();
+      this.gSorter.initialize();
+      this.getTableMenuListener().initialize();
+      this.sViewer.setContentProvider(this.getContentProvider());
+      this.sViewer.setLabelProvider(this.getTableLabelProvider());
+      this.updateDisplay();
+      this.createMenu();
+      this.sViewer.setSorter(this.gSorter);
+      this.loadDynamicColumn();
+      this.setSortIndicator();
+      this.getComposite().addDisposeListener(this);
+      this.loadFilters();
+      this.setInput();
+      var1.setRedraw(true);
+   }
 
-  public String[] getColumnLabels() {
-    return columnLabels;
-  }
+   public String getAllColumnIDs() {
+      return this.allColumns;
+   }
 
-  public ICore getCore() {
-    return Sancho.getCoreFactory().getCore();
-  }
+   public String getColumnIDs() {
+      return this.columnIDs;
+   }
 
-  public int getDynamicColumn() {
-    if (dynamicColumn.equals(SResources.S_ES))
-      return -1;
-    else
-      return columnIDs.indexOf(dynamicColumn); // dynamicCOlumn.charAt(0) - IDSelector.MAGIC_NUMBER;
-  }
+   public String[] getColumnLabels() {
+      return this.columnLabels;
+   }
 
-  public AbstractViewerFilter getFilter(Class aClass) {
+   public int[] getColumnAlignment() {
+      return this.columnAlignment;
+   }
 
-    for (int i = 0; i < getFilters().length; i++) {
-      if (aClass.isInstance(getFilters()[i]))
-        return (AbstractViewerFilter) getFilters()[i];
-    }
-    return null;
-  }
+   public ICore getCore() {
+      return Sancho.getCoreFactory().getCore();
+   }
 
-  public ViewerFilter[] getFilters() {
-    return sViewer.getFilters();
-  }
+   public int getDynamicColumn() {
+      return this.dynamicColumn.equals("") ? -1 : this.columnIDs.indexOf(this.dynamicColumn);
+   }
 
-  public int getMinDynamicColumnWidth() {
-    return minDynamicColumnWidth;
-  }
+   public AbstractViewerFilter getFilter(Class var1) {
+      for (int var2 = 0; var2 < this.getFilters().length; var2++) {
+         if (var1.isInstance(this.getFilters()[var2])) {
+            return (AbstractViewerFilter)this.getFilters()[var2];
+         }
+      }
 
-  public String getPreferenceString() {
-    return preferenceString;
-  }
+      return null;
+   }
 
-  public String getRefineString() {
-    return refineString;
-  }
+   public ViewerFilter[] getFilters() {
+      return this.sViewer.getFilters();
+   }
 
-  public Shell getShell() {
-    return getTable().getShell();
-  }
+   public int getMinDynamicColumnWidth() {
+      return this.minDynamicColumnWidth;
+   }
 
-  public int getSortColumn() {
-    return gSorter.getLastColumnIndex();
-  }
+   public String getPreferenceString() {
+      return this.preferenceString;
+   }
 
-  public abstract Table getTable();
+   public String getRefineString() {
+      return this.refineString;
+   }
 
-  public abstract GTableContentProvider getTableContentProvider();
+   public Shell getShell() {
+      return this.getComposite().getShell();
+   }
 
-  public GTableLabelProvider getTableLabelProvider() {
-    return tableLabelProvider;
-  }
+   public int getSortColumn() {
+      return this.gSorter.getLastColumnIndex();
+   }
 
-  public abstract GTableMenuListener getTableMenuListener();
+   public abstract Composite getComposite();
 
-  public AbstractEnum[] getValidExtensions() {
-    return validExtensions;
-  }
+   public GTableLabelProvider getTableLabelProvider() {
+      return this.tableLabelProvider;
+   }
 
-  public AbstractEnum[] getValidStates() {
-    return validStates;
-  }
+   public abstract GTableMenuListener getTableMenuListener();
 
-  public StructuredViewer getViewer() {
-    return this.sViewer;
-  }
+   public AbstractEnum[] getValidExtensions() {
+      return this.validExtensions;
+   }
 
-  public ViewFrame getViewFrame() {
-    return viewFrame;
-  }
+   public AbstractEnum[] getValidStates() {
+      return this.validStates;
+   }
 
-  public boolean isActive() {
-    return active;
-  }
+   public StructuredViewer getViewer() {
+      return this.sViewer;
+   }
 
-  public boolean isDisposed() {
-    return ((getViewer() == null) || (getTable() == null) || getTable().isDisposed());
-  }
+   public ViewFrame getViewFrame() {
+      return this.viewFrame;
+   }
 
-  public boolean isVisible() {
-    return visible;
-  }
+   public boolean isActive() {
+      return this.active;
+   }
 
-  public void loadDynamicColumn() {
-    String tmp = PreferenceLoader.loadString(preferenceString + "DynamicColumn");
-    if (!tmp.equals(SResources.S_ES))
-      setDynamicColumn(tmp);
+   public boolean isDisposed() {
+      return this.getViewer() == null || this.getComposite() == null || this.getComposite().isDisposed();
+   }
 
-    int minWidth = PreferenceLoader.loadInt(preferenceString + "MinDynamicColumnWidth");
-    if (minWidth > 0)
-      setMinDynamicColumnWidth(minWidth);
-  }
+   public boolean isVisible() {
+      return this.visible;
+   }
 
-  public void loadExclusionStateFilters() {
-    int tmp = PreferenceLoader.loadInt(preferenceString + "ExclusionStateFilters");
-    if (tmp > 0) {
-      ExclusionStateViewerFilter s = new ExclusionStateViewerFilter(this);
-      s.setFiltered(tmp);
-      addFilter(s);
-    }
-  }
+   public void loadDynamicColumn() {
+      String var1 = PreferenceLoader.loadString(this.preferenceString + "DynamicColumn");
+      if (!var1.equals("")) {
+         this.setDynamicColumn(var1);
+      }
 
-  public void swapFilters(String string) {
-    redrawTable(false);
-    resetFilters();
-    if (string != null)
-      addFilters(string);
-    redrawTable(true);
-  }
+      int var2 = PreferenceLoader.loadInt(this.preferenceString + "MinDynamicColumnWidth");
+      if (var2 > 0) {
+         this.setMinDynamicColumnWidth(var2);
+      }
+   }
 
-  public String filtersToString() {
-    String result = SResources.S_ES;
+   public void loadExclusionStateFilters() {
+      int var1 = PreferenceLoader.loadInt(this.preferenceString + "ExclusionStateFilters");
+      if (var1 > 0) {
+         ExclusionStateViewerFilter var2 = new ExclusionStateViewerFilter(this);
+         var2.setFiltered(var1);
+         this.addFilter(var2);
+      }
+   }
 
-    ViewerFilter[] filters = getFilters();
-    for (int i = 0; i < filters.length; i++)
-      result += filters[i].toString();
-    return result;
-  }
+   public void swapFilters(String var1) {
+      this.setRedraw(false);
+      this.resetFilters();
+      if (var1 != null) {
+         this.addFilters(var1);
+      }
 
-  public void addFilters(String string) {
-    StringTokenizer st = new StringTokenizer(string, ",");
+      this.setRedraw(true);
+   }
 
-    String s1, s2;
-    int filterType;
-    while (st.hasMoreTokens()) {
-      s1 = st.nextToken();
-      s2 = st.nextToken();
+   public String filtersToString() {
+      String var1 = "";
+      ViewerFilter[] var2 = this.getFilters();
+
+      for (int var3 = 0; var3 < var2.length; var3++) {
+         var1 = var1 + var2[var3].toString();
+      }
+
+      return var1;
+   }
+
+   public void addFilters(String var1) {
+      StringTokenizer var2 = new StringTokenizer(var1, ",");
+
+      while (var2.hasMoreTokens()) {
+         String var3 = var2.nextToken();
+         String var4;
+         if (var2.hasMoreTokens()) {
+            var4 = var2.nextToken();
+         } else {
+            var4 = "";
+         }
+
+         int var5;
+         try {
+            var5 = Integer.parseInt(var3);
+         } catch (NumberFormatException var7) {
+            var5 = 0;
+         }
+
+         this.loadFilter(var5, var4);
+      }
+   }
+
+   public static int filterToInt(ViewerFilter var0) {
+      if (var0 instanceof StateViewerFilter) {
+         return 1;
+      } else if (var0 instanceof ExclusionStateViewerFilter) {
+         return 2;
+      } else if (var0 instanceof NetworkViewerFilter) {
+         return 3;
+      } else if (var0 instanceof RefineFilter) {
+         return 5;
+      } else {
+         return var0 instanceof FileExtensionViewerFilter ? 4 : 0;
+      }
+   }
+
+   public void loadFilter(int var1, String var2) {
+      int var3 = 0;
+
       try {
-        filterType = Integer.parseInt(s1);
-      } catch (NumberFormatException e) {
-        filterType = 0;
+         var3 = Integer.parseInt(var2);
+      } catch (NumberFormatException var8) {
       }
-      loadFilter(filterType, s2);
-    }
-  }
 
-  public static int filterToInt(ViewerFilter viewerFilter) {
-    if (viewerFilter instanceof StateViewerFilter)
-      return STATE_FILTER;
-    else if (viewerFilter instanceof ExclusionStateViewerFilter)
-      return EXCLUSION_STATE_FILTER;
-    else if (viewerFilter instanceof NetworkViewerFilter)
-      return NETWORK_FILTER;
-    else if (viewerFilter instanceof RefineFilter)
-      return REFINE_FILTER;
-    else if (viewerFilter instanceof FileExtensionViewerFilter)
-      return FILE_EXTENSION_FILTER;
-    return 0;
-  }
-
-  public void loadFilter(int filterType, String filter) {
-
-    int filterValue = 0;
-
-    try {
-      filterValue = Integer.parseInt(filter);
-    } catch (NumberFormatException e) {
-    }
-
-    switch (filterType) {
-      case STATE_FILTER :
-        StateViewerFilter f = new StateViewerFilter(this);
-        f.setFiltered(filterValue);
-        addFilter(f);
-        break;
-      case EXCLUSION_STATE_FILTER :
-        ExclusionStateViewerFilter e = new ExclusionStateViewerFilter(this);
-        e.setFiltered(filterValue);
-        addFilter(e);
-        break;
-      case NETWORK_FILTER :
-        NetworkViewerFilter n = new NetworkViewerFilter(this);
-        n.setFiltered(filterValue);
-        addFilter(n);
-        break;
-      case FILE_EXTENSION_FILTER :
-        FileExtensionViewerFilter fe = new FileExtensionViewerFilter(this);
-        fe.setFiltered(filterValue);
-        addFilter(fe);
-        break;
-      case REFINE_FILTER :
-        refineString = filter;
-        viewFrame.setRefineText(filter);
-        updateRefineFilter();
-        break;
-    }
-
-  }
-
-  public void loadFilters() {
-    if (saveStateFilters)
-      loadStateFilters();
-    if (saveExclusionStateFilters)
-      loadExclusionStateFilters();
-    if (saveNetworkFilters)
-      loadNetworkFilters();
-  }
-
-  public void loadNetworkFilters() {
-    int tmp = PreferenceLoader.loadInt(preferenceString + "NetworkFilters");
-    if (tmp > 0) {
-      NetworkViewerFilter n = new NetworkViewerFilter(this);
-      n.setFiltered(tmp);
-      addFilter(n);
-    }
-  }
-
-  public void loadStateFilters() {
-    int tmp = PreferenceLoader.loadInt(preferenceString + "StateFilters");
-    if (tmp > 0) {
-      StateViewerFilter s = new StateViewerFilter(this);
-      s.setFiltered(tmp);
-      addFilter(s);
-    }
-  }
-
-  public void redrawTable(boolean b) {
-    if (forceRedraw)
-      getTable().setRedraw(b);
-  }
-
-  public void refresh() {
-    sViewer.refresh();
-  }
-  
-  public void refresh(boolean b) {
-   if (b)
-     redrawTable(false);
-     refresh();
-   if (b)
-     redrawTable(true);
-    
-  }
-
-  public void removeDynamicColumn() {
-    dynamicColumn = SResources.S_ES;
-    if (controlAdapter != null) {
-      getTable().removeControlListener(controlAdapter);
-      controlAdapter = null;
-    }
-  }
-
-  public void removeFilter(ViewerFilter viewerFilter) {
-    redrawTable(false);
-    sViewer.removeFilter(viewerFilter);
-    redrawTable(true);
-  }
-
-  public void resetColumns() {
-    ICustomViewer cViewer = (ICustomViewer) getViewer();
-    Object o = cViewer.getInput();
-    cViewer.setInput(null);
-    cViewer.setEditors(false);
-    gSorter.setColumnIndex(0);
-    cViewer.closeAllTTE();
-    createColumns();
-    cViewer.setInput(o);
-    resetDynamicColumn();
-    updateDisplay();
-  }
-
-  public void resetFilters() {
-    redrawTable(false);
-    this.sViewer.resetFilters();
-    refineFilter = null;
-    viewFrame.setRefineText(SResources.S_ES);
-    redrawTable(true);
-  }
-
-  public void resizeColumns() {
-    Table table = getTable();
-    if ((table == null) || table.isDisposed())
-      return;
-    int width = table.getBounds().width;
-    boolean scrollBar = table.getVerticalBar().getThumb() < table.getVerticalBar().getMaximum();
-    if ((oldTableWidth == width) && (scrollBar == oldTableScrollBar))
-      return;
-    oldTableWidth = width;
-    oldTableScrollBar = scrollBar;
-    ICustomViewer customViewer = ((ICustomViewer) getViewer());
-    int otherColumns = 0;
-    TableColumn dynamicTableColumn = null;
-    int columnNum = dynamicColumn.charAt(0) - IDSelector.MAGIC_NUMBER;
-    TableColumn tableColumn;
-    if (table.getColumns() == null)
-      return;
-    TableColumn[] tableColumns = table.getColumns();
-    for (int i = 0; i < tableColumns.length; i++) {
-      tableColumn = tableColumns[i];
-      if (columnNum == customViewer.getColumnIDs()[i])
-        dynamicTableColumn = tableColumn;
-      else
-        otherColumns += tableColumn.getWidth();
-    }
-    if (dynamicTableColumn != null) {
-      if (scrollBar)
-        otherColumns += table.getVerticalBar().getSize().x;
-      if ((dynamicTableColumn != null) && !dynamicTableColumn.isDisposed()) {
-        try {
-          if (forceRedraw)
-            getTable().setRedraw(false);
-          dynamicTableColumn.setWidth(Math.max(minDynamicColumnWidth, width - otherColumns));
-          if (forceRedraw)
-            getTable().setRedraw(true);
-        } catch (Exception e) {
-          // Some SWT thing ?
-        }
+      switch (var1) {
+         case 1:
+            StateViewerFilter var4 = new StateViewerFilter(this);
+            var4.setFiltered(var3);
+            this.addFilter(var4);
+            break;
+         case 2:
+            ExclusionStateViewerFilter var5 = new ExclusionStateViewerFilter(this);
+            var5.setFiltered(var3);
+            this.addFilter(var5);
+            break;
+         case 3:
+            NetworkViewerFilter var6 = new NetworkViewerFilter(this);
+            var6.setFiltered(var3);
+            this.addFilter(var6);
+            break;
+         case 4:
+            FileExtensionViewerFilter var7 = new FileExtensionViewerFilter(this);
+            var7.setFiltered(var3);
+            this.addFilter(var7);
+            break;
+         case 5:
+            this.refineString = var2;
+            this.viewFrame.setRefineText(var2);
+            this.updateRefineFilter();
       }
-    }
-  }
+   }
 
-  public void saveEmptyGViewerFilter(String prefName) {
-    PreferenceLoader.getPreferenceStore().setValue(preferenceString + prefName, 0);
-  }
-
-  public void saveFilters() {
-    if (saveStateFilters)
-      saveFilters("StateFilters", StateViewerFilter.class);
-    if (saveExclusionStateFilters)
-      saveFilters("ExclusionStateFilters", ExclusionStateViewerFilter.class);
-    if (saveNetworkFilters)
-      saveFilters("NetworkFilters", NetworkViewerFilter.class);
-  }
-
-  public void saveFilters(String filterString, Class filterClass) {
-    boolean found = false;
-    for (int i = 0; i < getFilters().length; i++) {
-      if (filterClass.isInstance(getFilters()[i])) {
-        saveGViewerFilter((AbstractViewerFilter) getFilters()[i], filterString);
-        found = true;
+   public void loadFilters() {
+      if (this.saveStateFilters) {
+         this.loadStateFilters();
       }
-    }
-    if (!found)
-      saveEmptyGViewerFilter(filterString);
-  }
 
-  public void saveGViewerFilter(AbstractViewerFilter gViewerFilter, String prefName) {
-    PreferenceLoader.getPreferenceStore().setValue(preferenceString + prefName, gViewerFilter.getFiltered());
-  }
-
-  public void setActive(boolean b) {
-    active = b;
-    getTableContentProvider().setActive(b);
-  }
-
-  
-  public void resetDynamicColumn() {
-    String tmp = dynamicColumn;
-    dynamicColumn = SResources.S_ES;
-    setDynamicColumn(tmp);
-  }
-  
-  public void setDynamicColumn(int columnIndex) {
-    setDynamicColumn(String.valueOf(columnIDs.charAt(columnIndex)));
-        // String.valueOf((char) (IDSelector.MAGIC_NUMBER + columnIndex)));
-  }
-
-  public void setDynamicColumn(String string) {
-    if ("gtk".equals(SWT.getPlatform()) || string == null || string.length() > 1)
-      return;
-
-    if ((columnIDs.indexOf(string) == -1) || dynamicColumn.equals(string)) {
-      removeDynamicColumn();
-      return;
-    } else
-      dynamicColumn = string;
-    if (controlAdapter == null) {
-      controlAdapter = new ControlAdapter() {
-        public void controlResized(ControlEvent e) {
-          resizeColumns();
-        }
-      };
-      getTable().addControlListener(controlAdapter);
-      resizeColumns();
-    }
-  }
-
-  public abstract void setInput();
-
-  public void setMinDynamicColumnWidth(int width) {
-    minDynamicColumnWidth = width;
-  }
-
-  public void setRefineString(String string) {
-    refineString = string;
-    updateRefineFilter();
-  }
-
-  public void setVisible(boolean b) {
-    visible = b;
-    getTableContentProvider().setVisible(b);
-  }
-
-  public void sortByColumn(int column) {
-    gSorter.setColumnIndex(column);
-    refresh();
-  }
-
-  public void unsetInput() {
-    sViewer.setInput(null);
-  }
-
-  public void updateDisplay() {
-    ((ICustomViewer) getViewer()).updateDisplay();
-    getTable().setLinesVisible(PreferenceLoader.loadBoolean("displayGridLines"));
-    getTable().setFont(PreferenceLoader.loadFont("tableFontData"));
-    getTableLabelProvider().updateDisplay();
-  }
-
-  public void updateRefineFilter() {
-    if (refineString.equals(SResources.S_ES)) {
-      if (refineFilter != null) {
-        removeFilter(refineFilter);
-        refineFilter = null;
+      if (this.saveExclusionStateFilters) {
+         this.loadExclusionStateFilters();
       }
-    } else {
-      if (refineFilter == null) {
-        refineFilter = new RefineFilter(this);
-        addFilter(refineFilter);
-      } else
-        refineFilter.update();
-    }
-  }
 
-  public void widgetDisposed(DisposeEvent e) {
-    PreferenceLoader.getPreferenceStore().setValue(preferenceString + "DynamicColumn", dynamicColumn);
-    PreferenceLoader.getPreferenceStore().setValue(preferenceString + "MinDynamicColumnWidth",
-        minDynamicColumnWidth);
-    saveFilters();
-  }
+      if (this.saveNetworkFilters) {
+         this.loadNetworkFilters();
+      }
+   }
+
+   public void loadNetworkFilters() {
+      int var1 = PreferenceLoader.loadInt(this.preferenceString + "NetworkFilters");
+      if (var1 > 0) {
+         NetworkViewerFilter var2 = new NetworkViewerFilter(this);
+         var2.setFiltered(var1);
+         this.addFilter(var2);
+      }
+   }
+
+   public void loadStateFilters() {
+      int var1 = PreferenceLoader.loadInt(this.preferenceString + "StateFilters");
+      if (var1 > 0) {
+         StateViewerFilter var2 = new StateViewerFilter(this);
+         var2.setFiltered(var1);
+         this.addFilter(var2);
+      }
+   }
+
+   public void setRedraw(boolean var1) {
+      if (this.forceRedraw) {
+         this.getComposite().setRedraw(var1);
+      }
+   }
+
+   public void refresh() {
+      this.sViewer.refresh();
+   }
+
+   public void refresh(boolean var1) {
+      if (var1) {
+         this.setRedraw(false);
+      }
+
+      this.refresh();
+      if (var1) {
+         this.setRedraw(true);
+      }
+   }
+
+   public void removeDynamicColumn() {
+      this.dynamicColumn = "";
+      if (this.controlAdapter != null) {
+         this.getComposite().removeControlListener(this.controlAdapter);
+         this.controlAdapter = null;
+      }
+   }
+
+   public void removeFilter(ViewerFilter var1) {
+      this.setRedraw(false);
+      this.sViewer.removeFilter(var1);
+      this.setRedraw(true);
+   }
+
+   public void clearAll() {
+      ICustomViewer var1 = (ICustomViewer)this.getViewer();
+      var1.clearAll();
+   }
+
+   public void resetColumns() {
+      ICustomViewer var1 = (ICustomViewer)this.getViewer();
+      Object var2 = var1.getInput();
+      var1.setInput(null);
+      var1.setEditors(false);
+      this.gSorter.setColumnIndex(0);
+      this.createColumns();
+      var1.setInput(var2);
+      this.resetDynamicColumn();
+      this.setSortIndicator();
+      this.updateDisplay();
+   }
+
+   public abstract void setSortIndicator();
+
+   public void resetFilters() {
+      this.setRedraw(false);
+      this.sViewer.resetFilters();
+      this.refineFilter = null;
+      this.viewFrame.setRefineText("");
+      this.setRedraw(true);
+   }
+
+   public abstract int getColumnWidthsExcept(int var1);
+
+   public abstract void setColumnWidth(int var1, int var2);
+
+   public void resizeColumns() {
+      Composite var1 = this.getComposite();
+      if (var1 != null && !var1.isDisposed() && this.dynamicColumn != null && !this.dynamicColumn.equals("")) {
+         int var2 = var1.getBounds().width;
+         ScrollBar var3 = var1.getVerticalBar();
+         boolean var4 = var3 != null ? var3.getThumb() < var3.getMaximum() : false;
+         if (this.oldTableWidth != var2 || var4 != this.oldTableScrollBar) {
+            this.oldTableWidth = var2;
+            this.oldTableScrollBar = var4;
+            ICustomViewer var5 = (ICustomViewer)this.getViewer();
+            int var6 = 0;
+            int var7 = this.dynamicColumn.charAt(0) - 'A';
+            int[] var8 = var5.getColumnIDs();
+            int var9 = -1;
+
+            for (int var10 = 0; var10 < var8.length; var10++) {
+               if (var7 == var8[var10]) {
+                  var9 = var10;
+               }
+            }
+
+            if (this.getColumnCount() == var8.length && var9 != -1) {
+               var6 = this.getColumnWidthsExcept(var9);
+               if (var1 instanceof Tree) {
+                  var6++;
+               }
+
+               if (var4) {
+                  var6 += var3.getSize().x;
+               }
+
+               try {
+                  this.setColumnWidth(var9, Math.max(this.minDynamicColumnWidth, var2 - var6));
+               } catch (Exception var12) {
+                  var12.printStackTrace();
+               }
+            }
+         }
+      }
+   }
+
+   public void saveEmptyGViewerFilter(String var1) {
+      PreferenceLoader.getPreferenceStore().setValue(this.preferenceString + var1, 0);
+   }
+
+   public void saveFilters() {
+      if (this.saveStateFilters) {
+         this.saveFilters(
+            "StateFilters",
+            class$sancho$view$viewer$filters$StateViewerFilter == null
+               ? (class$sancho$view$viewer$filters$StateViewerFilter = class$("sancho.view.viewer.filters.StateViewerFilter"))
+               : class$sancho$view$viewer$filters$StateViewerFilter
+         );
+      }
+
+      if (this.saveExclusionStateFilters) {
+         this.saveFilters(
+            "ExclusionStateFilters",
+            class$sancho$view$viewer$filters$ExclusionStateViewerFilter == null
+               ? (class$sancho$view$viewer$filters$ExclusionStateViewerFilter = class$("sancho.view.viewer.filters.ExclusionStateViewerFilter"))
+               : class$sancho$view$viewer$filters$ExclusionStateViewerFilter
+         );
+      }
+
+      if (this.saveNetworkFilters) {
+         this.saveFilters(
+            "NetworkFilters",
+            class$sancho$view$viewer$filters$NetworkViewerFilter == null
+               ? (class$sancho$view$viewer$filters$NetworkViewerFilter = class$("sancho.view.viewer.filters.NetworkViewerFilter"))
+               : class$sancho$view$viewer$filters$NetworkViewerFilter
+         );
+      }
+   }
+
+   public void saveFilters(String var1, Class var2) {
+      boolean var3 = false;
+
+      for (int var4 = 0; var4 < this.getFilters().length; var4++) {
+         if (var2.isInstance(this.getFilters()[var4])) {
+            this.saveGViewerFilter((AbstractViewerFilter)this.getFilters()[var4], var1);
+            var3 = true;
+         }
+      }
+
+      if (!var3) {
+         this.saveEmptyGViewerFilter(var1);
+      }
+   }
+
+   public void saveGViewerFilter(AbstractViewerFilter var1, String var2) {
+      PreferenceLoader.getPreferenceStore().setValue(this.preferenceString + var2, var1.getFiltered());
+   }
+
+   public void setActive(boolean var1) {
+      this.active = var1;
+      this.getContentProvider().setActive(var1);
+   }
+
+   public void resetDynamicColumn() {
+      String var1 = this.dynamicColumn;
+      this.dynamicColumn = "";
+      this.setDynamicColumn(var1);
+   }
+
+   public void setDynamicColumn(int var1) {
+      this.setDynamicColumn(String.valueOf(this.columnIDs.charAt(var1)));
+   }
+
+   public void setDynamicColumn(String var1) {
+      if (!"gtk".equals(SWT.getPlatform()) && var1 != null && var1.length() <= 1) {
+         if (this.columnIDs.indexOf(var1) != -1 && !this.dynamicColumn.equals(var1)) {
+            this.dynamicColumn = var1;
+            if (this.controlAdapter == null) {
+               this.controlAdapter = new GView$2(this);
+               this.getComposite().addControlListener(this.controlAdapter);
+               this.resizeColumns();
+            }
+         } else {
+            this.removeDynamicColumn();
+         }
+      }
+   }
+
+   public abstract void setInput();
+
+   public void setMinDynamicColumnWidth(int var1) {
+      this.minDynamicColumnWidth = var1;
+   }
+
+   public void setRefineString(String var1) {
+      this.refineString = var1;
+      this.updateRefineFilter();
+   }
+
+   public void setVisible(boolean var1) {
+      this.visible = var1;
+      this.getContentProvider().setVisible(var1);
+   }
+
+   public boolean sortByColumn(int var1) {
+      this.gSorter.setColumnIndex(var1);
+      this.refresh();
+      return this.gSorter.getDirection();
+   }
+
+   public void unsetInput() {
+      this.sViewer.setInput(null);
+   }
+
+   public abstract void setLinesVisible(boolean var1);
+
+   public abstract void setFont(Font var1);
+
+   public void updateDisplay() {
+      ((ICustomViewer)this.getViewer()).updateDisplay();
+      this.setLinesVisible(PreferenceLoader.loadBoolean("displayGridLines"));
+      this.setFont(PreferenceLoader.loadFont("tableFontData"));
+      this.getTableLabelProvider().updateDisplay();
+   }
+
+   public void updateRefineFilter() {
+      if (this.refineString.equals("")) {
+         if (this.refineFilter != null) {
+            this.removeFilter(this.refineFilter);
+            this.refineFilter = null;
+         }
+      } else if (this.refineFilter == null) {
+         this.refineFilter = new RefineFilter(this);
+         this.addFilter(this.refineFilter);
+      } else {
+         this.refineFilter.update();
+         this.refresh(true);
+      }
+   }
+
+   public void onDisconnect() {
+      this.getComposite().setMenu(null);
+      if (this.popupMenu != null) {
+         IContributionItem[] var1 = this.popupMenu.getItems();
+
+         for (int var2 = 0; var2 < var1.length; var2++) {
+            var1[var2].dispose();
+         }
+
+         this.popupMenu.removeAll();
+         this.popupMenu.dispose();
+         this.popupMenu = null;
+      }
+   }
+
+   public void createMenu() {
+      Composite var1 = this.getComposite();
+      if (var1.getMenu() == null) {
+         this.popupMenu = new MenuManager("");
+         this.popupMenu.setRemoveAllWhenShown(true);
+         this.popupMenu.addMenuListener(this.getTableMenuListener());
+         var1.setMenu(this.popupMenu.createContextMenu(var1));
+      }
+   }
+
+   public void onConnect() {
+      this.createMenu();
+   }
+
+   public void widgetDisposed(DisposeEvent var1) {
+      PreferenceLoader.getPreferenceStore().setValue(this.preferenceString + "DynamicColumn", this.dynamicColumn);
+      PreferenceLoader.getPreferenceStore().setValue(this.preferenceString + "MinDynamicColumnWidth", this.minDynamicColumnWidth);
+      this.saveFilters();
+   }
+
+   // $VF: synthetic method
+   static Class class$(String var0) {
+      try {
+         return Class.forName(var0);
+      } catch (ClassNotFoundException var2) {
+         throw new NoClassDefFoundError(var2.getMessage());
+      }
+   }
 }

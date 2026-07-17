@@ -1,22 +1,10 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.viewFrame;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -24,7 +12,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
-
 import sancho.core.ICore;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.AbstractTab;
@@ -36,313 +23,277 @@ import sancho.view.utility.WidgetFactory;
 import sancho.view.viewer.GView;
 
 public class ViewFrame {
-  protected boolean active;
-  protected AbstractTab aTab;
-  protected Composite childComposite;
-  protected CLabel cLabel;
-  protected ToolItem clearRefineToolItem;
-  protected GView gView;
-  protected MenuManager menuManager;
-  protected Composite parent;
-  protected String prefString;
-  protected Combo refineText;
-  protected ToolBar toolBar;
-  protected MyViewForm viewForm;
-  protected boolean visible;
+   protected boolean active;
+   protected AbstractTab aTab;
+   protected Composite childComposite;
+   protected CLabel cLabel;
+   protected ToolItem clearRefineToolItem;
+   protected GView gView;
+   protected MenuManager menuManager;
+   protected Composite parent;
+   protected String prefString;
+   protected Combo refineText;
+   protected ToolBar toolBar;
+   protected MyViewForm viewForm;
+   protected boolean visible;
 
-  public ViewFrame(Composite composite, String prefString, String prefImageString, AbstractTab aTab) {
-    this(composite, prefString, prefImageString, aTab, false);
-  }
+   public ViewFrame(Composite var1, String var2, String var3, AbstractTab var4) {
+      this(var1, var2, var3, var4, false);
+   }
 
-  public ViewFrame(Composite composite, String prefString, String prefImageString, AbstractTab aTab,
-      boolean forceFlat) {
-    this.parent = composite;
-    this.aTab = aTab;
-    this.prefString = prefString;
+   public ViewFrame(Composite var1, String var2, String var3, AbstractTab var4, boolean var5) {
+      this.parent = var1;
+      this.aTab = var4;
+      this.prefString = var2;
+      this.viewForm = WidgetFactory.createViewForm(this.parent, var5);
+      this.childComposite = new Composite(this.viewForm, 0);
+      this.childComposite.setLayout(new FillLayout());
+      this.cLabel = WidgetFactory.createCLabel(this.viewForm, var2, var3);
+      this.viewForm.setContent(this.childComposite);
+      this.viewForm.setTopLeft(this.cLabel);
+      this.cLabel.addMouseTrackListener(new ViewFrame$1(this, var3));
+   }
 
-    viewForm = WidgetFactory.createViewForm(parent, forceFlat);
+   public void addPopupMenu(ToolBar var1) {
+      MenuManager var2 = new MenuManager();
+      var2.setRemoveAllWhenShown(true);
+      var2.addMenuListener(new ViewFrame$RefineMenuListener());
+      var1.setMenu(var2.createContextMenu(var1));
+   }
 
-    childComposite = new Composite(viewForm, SWT.NONE);
-    childComposite.setLayout(new FillLayout());
-
-    cLabel = WidgetFactory.createCLabel(viewForm, prefString, prefImageString);
-
-    viewForm.setContent(childComposite);
-    viewForm.setTopLeft(cLabel);
-  }
-
-  public void addPopupMenu(ToolBar toolBar) {
-    final MenuManager popupMenu = new MenuManager();
-    popupMenu.setRemoveAllWhenShown(true);
-    popupMenu.addMenuListener(new RefineMenuListener());
-    toolBar.setMenu(popupMenu.createContextMenu(toolBar));
-  }
-
-  public void setRefineText(String string) {
-    if (refineText != null)
-      refineText.setText(string);
-  }
-
-  public void addRefine() {
-
-    clearRefineToolItem = new ToolItem(toolBar, SWT.NONE);
-    clearRefineToolItem.setImage(SResources.getImage("refine"));
-    clearRefineToolItem.setToolTipText(SResources.getString("ti.clearRefine"));
-    clearRefineToolItem.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent s) {
-        if (refineText != null) {
-          refineText.add(refineText.getText(), 0);
-          refineText.setText(SResources.S_ES);
-        }
-
-        if (getGView() != null)
-          getGView().setRefineString(SResources.S_ES);
+   public void setRefineText(String var1) {
+      if (this.refineText != null) {
+         this.refineText.setText(var1);
       }
-    });
-    addPopupMenu(toolBar);
+   }
 
-    ToolItem sep = new ToolItem(toolBar, SWT.SEPARATOR);
-
-    refineText = new NoDuplicatesCombo(toolBar, SWT.BORDER);
-    refineText.setItems(PreferenceLoader.loadStringArray(prefString + ".refineSArray"));
-    refineText.addDisposeListener(new DisposeListener() {
-      public void widgetDisposed(DisposeEvent e) {
-        NoDuplicatesCombo combo = (NoDuplicatesCombo) e.widget;
-        PreferenceLoader.setValue(prefString + ".refineSArray", combo.getItems(), 25);
+   public void addRefine() {
+      this.clearRefineToolItem = new ToolItem(this.toolBar, 0);
+      this.clearRefineToolItem.setImage(SResources.getImage("refine"));
+      this.clearRefineToolItem.setToolTipText(SResources.getString("ti.clearRefine"));
+      this.clearRefineToolItem.addSelectionListener(new ViewFrame$2(this));
+      this.addPopupMenu(this.toolBar);
+      ToolItem var1 = new ToolItem(this.toolBar, 2);
+      this.refineText = new NoDuplicatesCombo(this.toolBar, 2048);
+      this.refineText.setItems(PreferenceLoader.loadStringArray(this.prefString + ".refineSArray"));
+      this.refineText.addDisposeListener(new ViewFrame$3(this));
+      this.refineText.setToolTipText(SResources.getString("ti.refine"));
+      this.refineText.setSize(75, -1);
+      if (SWT.getPlatform().equals("fox")) {
+         var1.setControl(this.refineText);
       }
-    });
 
-    refineText.setToolTipText(SResources.getString("ti.refine"));
-    refineText.setSize(75, SWT.DEFAULT);
-    
-    if (SWT.getPlatform().equals("fox"))
-      sep.setControl(refineText);
-    
-    sep.setWidth(75);
-    refineText.pack();
-    
-    if (!SWT.getPlatform().equals("fox"))
-      sep.setControl(refineText);
-
-    refineText.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        NoDuplicatesCombo combo = (NoDuplicatesCombo) e.widget;
-
-        if (combo.getSelectionIndex() > -1)
-          refineText.setText(combo.getItem(combo.getSelectionIndex()));
-
-        if (getGView() != null)
-          getGView().setRefineString(refineText.getText());
+      var1.setWidth(75);
+      this.refineText.pack();
+      if (!SWT.getPlatform().equals("fox")) {
+         var1.setControl(this.refineText);
       }
-    });
 
-    if (SWT.getPlatform().equals("fox")) {
-      refineText.setSize(75, refineText.getSize().y);
-      refineText.addKeyListener(new KeyAdapter() {
-        public void keyPressed(KeyEvent e) {
-          updateRefine(e);
-        }
-      });
-    } else {
-      refineText.addKeyListener(new KeyAdapter() {
-        public void keyReleased(KeyEvent e) {
-          updateRefine(e);
-        }
-      });
-    }
-    if (getGView() == null) {
-      refineText.setEnabled(false);
-      clearRefineToolItem.setEnabled(false);
-    }
-  }
-
-  public ToolItem addToolItem(String resToolTipString, String resImageString,
-      SelectionListener selectionListener) {
-    ToolItem toolItem = new ToolItem(toolBar, SWT.NONE);
-    toolItem.setToolTipText(SResources.getString(resToolTipString));
-    toolItem.setImage(SResources.getImage(resImageString));
-    toolItem.addSelectionListener(selectionListener);
-    return toolItem;
-  }
-
-  public void addToolSeparator() {
-    ToolItem toolItem = new ToolItem(toolBar, SWT.SEPARATOR);
-  }
-
-  public void createViewListener(ViewListener viewFrameListener) {
-    setupViewListener(viewFrameListener);
-    cLabel.addMouseListener(new HeaderBarMouseAdapter(cLabel, menuManager));
-  }
-
-  public void createViewToolBar() {
-    Composite tComposite = new Composite(viewForm, SWT.NONE);
-    tComposite.setLayout(WidgetFactory.createGridLayout(1, 1, 1, 0, 0, false));
-
-    toolBar = new ToolBar(tComposite, SWT.RIGHT | SWT.FLAT);
-    //toolBar.setBackground(toolBar.getDisplay().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
-    viewForm.setTopRight(tComposite);
-  }
-
-  public Composite getChildComposite() {
-    return childComposite;
-  }
-
-  public CLabel getCLabel() {
-    return cLabel;
-  }
-
-  public Control getControl() {
-    return getViewForm();
-  }
-
-  public ICore getCore() {
-    return getGuiTab().getMainWindow().getCore();
-  }
-
-  public AbstractTab getGuiTab() {
-    return aTab;
-  }
-
-  public GView getGView() {
-    return gView;
-  }
-
-  public Composite getParent() {
-    return parent;
-  }
-
-  public MyViewForm getViewForm() {
-    return viewForm;
-  }
-
-  public boolean isActive() {
-    return active;
-  }
-
-  public boolean isVisible() {
-    return visible;
-  }
-
-  public void onConnect() {
-    if (gView != null)
-      gView.setInput();
-  }
-
-  public void onDisconnect() {
-    if (gView != null)
-      gView.unsetInput();
-
-    resetLabel();
-  }
-
-  public void resetLabel() {
-    if (cLabel != null)
-      cLabel.setText(SResources.getString(prefString));
-  }
-
-  public void setActive(boolean b) {
-    active = b;
-    if (gView != null)
-      gView.setActive(b);
-  }
-
-  protected void setupViewListener(ViewListener viewFrameListener) {
-    menuManager = new MenuManager(SResources.S_ES);
-    menuManager.setRemoveAllWhenShown(true);
-    menuManager.addMenuListener(viewFrameListener);
-
-    cLabel.addDisposeListener(new DisposeListener() {
-      public void widgetDisposed(DisposeEvent e) {
-        menuManager.dispose();
+      this.refineText.addSelectionListener(new ViewFrame$4(this));
+      if (SWT.getPlatform().equals("fox")) {
+         this.refineText.setSize(75, this.refineText.getSize().y);
+         this.refineText.addKeyListener(new ViewFrame$5(this));
+      } else {
+         this.refineText.addKeyListener(new ViewFrame$6(this));
       }
-    });
-  }
 
-  public void setVisible(boolean b) {
-    visible = b;
-    if (gView != null)
-      gView.setVisible(b);
-  }
+      if (this.getGView() == null) {
+         this.refineText.setEnabled(false);
+         this.clearRefineToolItem.setEnabled(false);
+      }
+   }
 
-  public void updateCLabelText(String string) {
-    if ((cLabel != null) && !cLabel.isDisposed())
-      if (!cLabel.getText().equals(string))
-        cLabel.setText(string);
-  }
+   public ToolItem addToolItem(String var1, String var2, SelectionListener var3) {
+      ToolItem var4 = new ToolItem(this.toolBar, 0);
+      var4.setToolTipText(SResources.getString(var1));
+      var4.setImage(SResources.getImage(var2));
+      var4.addSelectionListener(var3);
+      return var4;
+   }
 
-  public void updateCLabelTextInGuiThread(final String string) {
-    if ((cLabel != null) && !cLabel.isDisposed())
-      cLabel.getDisplay().asyncExec(new Runnable() {
-        public void run() {
-          updateCLabelText(string);
-        }
-      });
+   public void addToolSeparator() {
+      new ToolItem(this.toolBar, 2);
+   }
 
-  }
+   public void createViewListener(ViewListener var1) {
+      this.setupViewListener(var1);
+      this.cLabel.addMouseListener(new HeaderBarMouseAdapter(this.cLabel, this.menuManager));
+   }
 
-  public void updateCLabelToolTip(String string) {
-    if ((cLabel != null) && !cLabel.isDisposed())
-      cLabel.setToolTipText(string);
-  }
+   public void createViewToolBar() {
+      Composite var1 = new Composite(this.viewForm, 0);
+      var1.setLayout(WidgetFactory.createGridLayout(1, 1, 1, 0, 0, false));
+      this.toolBar = new ToolBar(var1, 8519680);
+      this.toolBar.setBackground(this.toolBar.getDisplay().getSystemColor(22));
+      this.viewForm.setTopRight(var1);
+   }
 
-  public void updateCLabelToolTipInGuiThread(final String string) {
-    if ((cLabel != null) && !cLabel.isDisposed())
-      cLabel.getDisplay().asyncExec(new Runnable() { // was sync
-        public void run() {
-          updateCLabelToolTip(string);
-        }
-      });
+   public Composite getChildComposite() {
+      return this.childComposite;
+   }
 
-  }
+   public CLabel getCLabel() {
+      return this.cLabel;
+   }
 
-  public void updateDisplay() {
-    cLabel.setFont(PreferenceLoader.loadFont("headerFontData"));
+   public Control getControl() {
+      return this.getViewForm();
+   }
 
-    if (gView != null)
-      gView.updateDisplay();
-  }
+   public ICore getCore() {
+      return this.getATab().getMainWindow().getCore();
+   }
 
-  public void updateRefine(KeyEvent e) {
-    switch (e.keyCode) {
-      case SWT.ARROW_DOWN :
-      case SWT.ARROW_UP :
-      case SWT.ARROW_LEFT :
-      case SWT.ARROW_RIGHT :
-      case SWT.PAGE_DOWN :
-      case SWT.PAGE_UP :
-      case SWT.CR :
-        break;
+   public AbstractTab getATab() {
+      return this.aTab;
+   }
 
-      default :
+   public GView getGView() {
+      return this.gView;
+   }
 
-        if (getGView() != null)
-          getGView().setRefineString(refineText.getText());
-    }
-  }
+   public Composite getParent() {
+      return this.parent;
+   }
 
-  static class RefineMenuListener implements IMenuListener {
-    public void menuAboutToShow(IMenuManager menuManager) {
-      menuManager.add(new ToggleRefineAction("mi.refineFilterNegation", "refineFilterNegation"));
-      menuManager.add(new ToggleRefineAction("mi.refineFilterAlternates", "refineFilterAlternates"));
-    }
-  }
+   public MyViewForm getViewForm() {
+      return this.viewForm;
+   }
 
-  static class ToggleRefineAction extends Action {
+   public boolean isActive() {
+      return this.active;
+   }
 
-    String prefString;
+   public boolean isVisible() {
+      return this.visible;
+   }
 
-    public ToggleRefineAction(String resString, String prefString) {
-      super(SResources.getString(resString), Action.AS_CHECK_BOX);
-      this.prefString = prefString;
-    }
+   public void onConnect() {
+      if (this.gView != null) {
+         this.gView.setInput();
+         this.gView.onConnect();
+      }
+   }
 
-    public boolean isChecked() {
-      return PreferenceLoader.loadBoolean(prefString);
-    }
+   public void onDisconnect() {
+      if (this.gView != null) {
+         this.gView.unsetInput();
+         this.gView.onDisconnect();
+      }
 
-    public void run() {
-      PreferenceLoader.getPreferenceStore().setValue(prefString, !isChecked());
-      PreferenceLoader.saveStore();
-    }
-  }
+      this.resetLabel();
+   }
+
+   public void resetLabel() {
+      if (this.cLabel != null) {
+         this.cLabel.setText(SResources.getString(this.prefString));
+      }
+   }
+
+   public void setActive(boolean var1) {
+      this.active = var1;
+      if (this.gView != null) {
+         this.gView.setActive(var1);
+      }
+   }
+
+   protected void setupViewListener(ViewListener var1) {
+      this.menuManager = new MenuManager("");
+      this.menuManager.setRemoveAllWhenShown(true);
+      this.menuManager.addMenuListener(var1);
+      this.cLabel.addDisposeListener(new ViewFrame$7(this));
+   }
+
+   public void setVisible(boolean var1) {
+      this.visible = var1;
+      if (this.gView != null) {
+         this.gView.setVisible(var1);
+      }
+   }
+
+   public void updateCLabelText(String var1) {
+      if (this.cLabel != null && !this.cLabel.isDisposed() && !this.cLabel.getText().equals(var1)) {
+         this.cLabel.setText(var1);
+      }
+   }
+
+   public void updateCLabelTextInGuiThread(String var1) {
+      if (this.cLabel != null && !this.cLabel.isDisposed()) {
+         this.cLabel.getDisplay().asyncExec(new ViewFrame$8(this, var1));
+      }
+   }
+
+   public void updateCLabelToolTip(String var1) {
+      if (this.cLabel != null && !this.cLabel.isDisposed()) {
+         this.cLabel.setToolTipText(var1);
+      }
+   }
+
+   public void updateCLabelToolTipInGuiThread(String var1) {
+      if (this.cLabel != null && !this.cLabel.isDisposed()) {
+         this.cLabel.getDisplay().asyncExec(new ViewFrame$9(this, var1));
+      }
+   }
+
+   public void dispose() {
+      this.aTab = null;
+      if (this.cLabel != null && !this.cLabel.isDisposed()) {
+         this.cLabel.dispose();
+         this.cLabel = null;
+      }
+
+      if (this.menuManager != null) {
+         IContributionItem[] var1 = this.menuManager.getItems();
+
+         for (int var2 = 0; var2 < var1.length; var2++) {
+            var1[var2].dispose();
+         }
+
+         this.menuManager.removeAll();
+         this.menuManager.dispose();
+         this.menuManager = null;
+      }
+
+      if (this.toolBar != null) {
+         ToolItem[] var3 = this.toolBar.getItems();
+
+         for (int var5 = 0; var5 < var3.length; var5++) {
+            var3[var5].dispose();
+         }
+
+         this.toolBar.dispose();
+         this.toolBar = null;
+      }
+
+      if (this.gView != null) {
+         Composite var4 = this.gView.getComposite();
+         if (var4 != null && !var4.isDisposed()) {
+            var4.dispose();
+         }
+      }
+   }
+
+   public void updateDisplay() {
+      this.cLabel.setFont(PreferenceLoader.loadFont("headerFontData"));
+      if (this.gView != null) {
+         this.gView.updateDisplay();
+      }
+   }
+
+   public void updateRefine(KeyEvent var1) {
+      switch (var1.keyCode) {
+         default:
+            if (this.getGView() != null) {
+               this.getGView().setRefineString(this.refineText.getText());
+            }
+         case 13:
+         case 16777217:
+         case 16777218:
+         case 16777219:
+         case 16777220:
+         case 16777221:
+         case 16777222:
+         case 16777296:
+      }
+   }
 }

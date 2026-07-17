@@ -1,27 +1,13 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.utility;
 
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.preference.PreferenceStore;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
-import org.eclipse.swt.dnd.DropTargetAdapter;
-import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
@@ -31,325 +17,201 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-
-import sancho.core.Sancho;
-import sancho.utility.SwissArmy;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.transfer.UniformResourceLocator;
-import sancho.view.viewer.actions.CTabFolderTabsAction;
 
 public class WidgetFactory {
-  public static CTabFolder createCTabFolder(Composite parent) {
-    return createCTabFolder(parent, SWT.NONE);
-  }
+   public static CTabFolder createCTabFolder(Composite var0) {
+      return createCTabFolder(var0, 0);
+   }
 
-  public static CTabFolder createCTabFolder(Composite parent, int style) {
-    CTabFolder cTabFolder = new CTabFolder(parent, style | SWT.FLAT);
-    Display display = cTabFolder.getDisplay();
-
-    Color titleBackground = display.getSystemColor(SWT.COLOR_TITLE_BACKGROUND);
-    Color lightTitleBackground = changeColor(titleBackground.getRGB(), 20);
-
-    if (PreferenceLoader.loadBoolean("useGradient")) {
-      cTabFolder.setSelectionBackground(new Color[]{titleBackground, lightTitleBackground}, new int[]{100});
-      cTabFolder.setSelectionForeground(display.getSystemColor(SWT.COLOR_TITLE_FOREGROUND));
-    }
-
-    return cTabFolder;
-  }
-
-  public static Color changeColor(RGB color, int num) {
-    int r = modifyIntColor(color.red, num);
-    int g = modifyIntColor(color.green, num);
-    int b = modifyIntColor(color.blue, num);
-
-    return new Color(null, r, g, b);
-  }
-
-  public static Color changeColor(RGB color, int num, int def) {
-
-    int r = modifyIntColor(color.red, num, def);
-    int g = modifyIntColor(color.green, num, def);
-    int b = modifyIntColor(color.blue, num, def);
-
-    return new Color(null, r, g, b);
-  }
-
-  public static int modifyIntColor(int i, int num) {
-    return modifyIntColor(i, num, i);
-  }
-
-  public static int modifyIntColor(int i, int num, int def) {
-    return (((i + num) >= 0) && ((i + num) <= 255)) ? (i + num) : def;
-  }
-
-  /**
-   * @param parent
-   * @return ViewForm
-   */
-  public static MyViewForm createViewForm(Composite parent, boolean forceFlat) {
-    return new MyViewForm(parent, SWT.BORDER
-        | (PreferenceLoader.loadBoolean("flatInterface") || forceFlat ? SWT.FLAT : SWT.NONE));
-  }
-
-  /**
-   * @param numColumns
-   * @param marginWidth
-   * @param marginHeight
-   * @param horizontalSpacing
-   * @param verticalSpacing
-   * @param makeColumnsEqualWidth
-   * @return GridLayout
-   */
-  public static GridLayout createGridLayout(int numColumns, int marginWidth, int marginHeight,
-      int horizontalSpacing, int verticalSpacing, boolean makeColumnsEqualWidth) {
-    GridLayout gridLayout = new GridLayout();
-    gridLayout.numColumns = numColumns;
-    gridLayout.marginWidth = marginWidth;
-    gridLayout.marginHeight = marginHeight;
-    gridLayout.horizontalSpacing = horizontalSpacing;
-    gridLayout.verticalSpacing = verticalSpacing;
-    gridLayout.makeColumnsEqualWidth = makeColumnsEqualWidth;
-
-    return gridLayout;
-  }
-
-  public static GridData createGridData(int style, int widthHint, int heightHint) {
-    GridData gridData = style == SWT.NONE ? new GridData() : new GridData(style);
-    gridData.widthHint = widthHint;
-    gridData.heightHint = heightHint;
-    return gridData;
-  }
-
-  public static RowLayout createRowLayout(boolean wrap, boolean pack, boolean justify, int type,
-      int marginLeft, int marginTop, int marginRight, int marginBottom, int spacing) {
-    RowLayout rowLayout = new RowLayout();
-    rowLayout.wrap = wrap;
-    rowLayout.pack = pack;
-    rowLayout.justify = justify;
-    rowLayout.type = type;
-    rowLayout.marginLeft = marginLeft;
-    rowLayout.marginTop = marginTop;
-    rowLayout.marginRight = marginRight;
-    rowLayout.marginBottom = marginBottom;
-    rowLayout.spacing = spacing;
-
-    return rowLayout;
-  }
-
-  /**
-   * @param parent
-   * @param text
-   * @param image
-   * @return CLabel
-   */
-  public static CLabel createCLabel(Composite parent, String text, String image) {
-    // GTK/SWT3-M4: (<unknown>:5346): GLib-GObject-CRITICAL **: file
-    // gtype.c: line 1942 (g_type_add_interface_static): assertion
-    // `g_type_parent (interface_type) == G_TYPE_INTERFACE' failed
-    CLabel cLabel = new CLabel(parent, SWT.LEFT);
-    cLabel.setFont(PreferenceLoader.loadFont("headerFontData"));
-    cLabel.setText(SResources.getString(text));
-
-    cLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    cLabel.setImage(SResources.getImage(image));
-    // cLabel.setBackground(cLabel.getDisplay().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
-    // cLabel.setForeground(cLabel.getDisplay().getSystemColor(SWT.COLOR_TITLE_FOREGROUND));
-
-    if (PreferenceLoader.loadBoolean("useGradient")) {
-      cLabel.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_TITLE_FOREGROUND));
-      cLabel.setBackground(new Color[]{parent.getDisplay().getSystemColor(SWT.COLOR_TITLE_BACKGROUND),
-          parent.getBackground()}, new int[]{100});
-    }
-
-    return cLabel;
-  }
-
-  /**
-   * Create a sashForm, restoring its preferences
-   * 
-   * @param parent
-   * @param prefString
-   * @return SashForm
-   */
-  public static SashForm createSashForm(Composite parent, String prefString) {
-    final String orientationPrefString = prefString + "Orientation";
-
-    int orientation = PreferenceLoader.loadInt(orientationPrefString);
-
-    if ((orientation != SWT.HORIZONTAL) && (orientation != SWT.VERTICAL)) {
-      PreferenceStore p = PreferenceLoader.getPreferenceStore();
-      orientation = p.getDefaultInt(orientationPrefString);
-    }
-
-    final SashForm sashForm = new SashForm(parent, orientation);
-    sashForm.setData("prefString", prefString);
-
-    sashForm.addDisposeListener(new DisposeListener() {
-      public void widgetDisposed(DisposeEvent e) {
-        PreferenceStore p = PreferenceLoader.getPreferenceStore();
-        p.setValue(orientationPrefString, sashForm.getOrientation());
-      }
-    });
-
-    return sashForm;
-  }
-
-  /**
-   * Load the weights & maximized control # of a sash (call after the sash has
-   * children)
-   * 
-   * @param sashForm
-   * @param prefString
-   */
-  public static void loadSashForm(SashForm sashForm, String prefString) {
-    final String sashChildPrefString = prefString + "Child";
-    int maximizeControl = PreferenceLoader.loadInt(prefString + "Maximized");
-
-    // First set the sash weights if available
-    if (sashPrefsExist(sashForm, prefString)) {
-      int[] weights = new int[sashForm.getChildren().length];
-
-      for (int i = 0; i < sashForm.getChildren().length; i++) {
-        Rectangle bounds = PreferenceLoader.loadRectangle(sashChildPrefString + i);
-        weights[i] = (sashForm.getOrientation() == SWT.HORIZONTAL) ? bounds.width : bounds.height;
+   public static CTabFolder createCTabFolder(Composite var0, int var1) {
+      CTabFolder var2 = new CTabFolder(var0, var1 | 8388608);
+      Display var3 = var2.getDisplay();
+      Color var4 = var3.getSystemColor(31);
+      if (PreferenceLoader.loadBoolean("useGradient")) {
+         var2.setSelectionBackground(var4);
+         var2.setSelectionForeground(var3.getSystemColor(30));
       }
 
-      // Weights can not be all 0
-      for (int i = 0; i < weights.length; i++) {
-        if (weights[i] > 0) {
-          sashForm.setWeights(weights);
+      return var2;
+   }
 
-          break;
-        }
+   public static Color changeColor(RGB var0, int var1) {
+      int var2 = modifyIntColor(var0.red, var1);
+      int var3 = modifyIntColor(var0.green, var1);
+      int var4 = modifyIntColor(var0.blue, var1);
+      return new Color(null, var2, var3, var4);
+   }
+
+   public static Color changeColor(RGB var0, int var1, int var2) {
+      int var3 = modifyIntColor(var0.red, var1, var2);
+      int var4 = modifyIntColor(var0.green, var1, var2);
+      int var5 = modifyIntColor(var0.blue, var1, var2);
+      return new Color(null, var3, var4, var5);
+   }
+
+   public static int modifyIntColor(int var0, int var1) {
+      return modifyIntColor(var0, var1, var0);
+   }
+
+   public static int modifyIntColor(int var0, int var1, int var2) {
+      return var0 + var1 >= 0 && var0 + var1 <= 255 ? var0 + var1 : var2;
+   }
+
+   public static MyViewForm createViewForm(Composite var0, boolean var1) {
+      return new MyViewForm(var0, 2048 | (!PreferenceLoader.loadBoolean("flatInterface") && !var1 ? 0 : 8388608));
+   }
+
+   public static GridLayout createGridLayout(int var0, int var1, int var2, int var3, int var4, boolean var5) {
+      GridLayout var6 = new GridLayout();
+      var6.numColumns = var0;
+      var6.marginWidth = var1;
+      var6.marginHeight = var2;
+      var6.horizontalSpacing = var3;
+      var6.verticalSpacing = var4;
+      var6.makeColumnsEqualWidth = var5;
+      return var6;
+   }
+
+   public static GridData createGridData(int var0, int var1, int var2) {
+      GridData var3 = var0 == 0 ? new GridData() : new GridData(var0);
+      var3.widthHint = var1;
+      var3.heightHint = var2;
+      return var3;
+   }
+
+   public static RowLayout createRowLayout(boolean var0, boolean var1, boolean var2, int var3, int var4, int var5, int var6, int var7, int var8) {
+      RowLayout var9 = new RowLayout();
+      var9.wrap = var0;
+      var9.pack = var1;
+      var9.justify = var2;
+      var9.type = var3;
+      var9.marginLeft = var4;
+      var9.marginTop = var5;
+      var9.marginRight = var6;
+      var9.marginBottom = var7;
+      var9.spacing = var8;
+      return var9;
+   }
+
+   public static CLabel createCLabel(Composite var0, String var1, String var2) {
+      CLabel var3 = new CLabel(var0, 16384);
+      var3.setFont(PreferenceLoader.loadFont("headerFontData"));
+      var3.setText(SResources.getString(var1));
+      var3.setLayoutData(new GridData(768));
+      var3.setImage(SResources.getImage(var2));
+      if (PreferenceLoader.loadBoolean("useGradient")) {
+         var3.setForeground(var0.getDisplay().getSystemColor(30));
+         Color var4 = PreferenceLoader.loadColor("viewGradientColor");
+         var3.setBackground(new Color[]{var4, var0.getBackground()}, new int[]{100});
       }
-    }
 
-    // Then check for maximize (weights still in effect)
-    if ((maximizeControl > -1) && (maximizeControl <= sashForm.getChildren().length))
-      sashForm.setMaximizedControl(sashForm.getChildren()[maximizeControl]);
+      return var3;
+   }
 
-    final PreferenceStore p = PreferenceLoader.getPreferenceStore();
-
-    // Save the control size
-    for (int i = 0; i < sashForm.getChildren().length; i++) {
-      final Control control = sashForm.getChildren()[i];
-      final int childNumber = i;
-      control.addDisposeListener(new DisposeListener() {
-        public void widgetDisposed(DisposeEvent e) {
-          Control aControl = (Control) e.widget;
-          if ((aControl.getBounds().width > 10) && (aControl.getBounds().height > 10))
-            PreferenceConverter.setValue(p, sashChildPrefString + childNumber, aControl.getBounds());
-        }
-      });
-
-    }
-  }
-
-  /**
-   * @param sashForm
-   * @param prefString
-   * @return true if all sashChildren preferences exist
-   */
-  public static boolean sashPrefsExist(SashForm sashForm, String prefString) {
-    PreferenceStore p = PreferenceLoader.getPreferenceStore();
-
-    for (int i = 0; i < sashForm.getChildren().length; i++) {
-      if (!p.contains(prefString + "Child" + i))
-        return false;
-    }
-
-    return true;
-  }
-
-  /**
-   * Save the maximized control # of a sash
-   * 
-   * @param sashForm
-   * @param control
-   */
-
-  public static boolean setMaximizedSashFormControl(SashForm sashForm, int controlNumber) {
-    if (controlNumber > sashForm.getChildren().length)
-      return false;
-    return (setMaximizedSashFormControl(sashForm, sashForm.getChildren()[controlNumber]));
-  }
-
-  public static boolean setMaximizedSashFormControl(SashForm sashForm, Control control) {
-    PreferenceStore p = PreferenceLoader.getPreferenceStore();
-    String maximizedPrefString = null;
-
-    if (sashForm.getData("prefString") != null)
-      maximizedPrefString = (String) sashForm.getData("prefString") + "Maximized";
-
-    if (sashForm.getMaximizedControl() == null) {
-      sashForm.setMaximizedControl(control);
-
-      if (maximizedPrefString != null) {
-        for (int i = 0; i < sashForm.getChildren().length; i++) {
-          if (control == sashForm.getChildren()[i]) {
-            p.setValue(maximizedPrefString, i);
-
-            break;
-          }
-        }
+   public static SashForm createSashForm(Composite var0, String var1) {
+      String var2 = var1 + "Orientation";
+      int var3 = PreferenceLoader.loadInt(var2);
+      if (var3 != 256 && var3 != 512) {
+         PreferenceStore var4 = PreferenceLoader.getPreferenceStore();
+         var3 = var4.getDefaultInt(var2);
       }
+
+      SashForm var5 = new SashForm(var0, var3);
+      var5.setData("prefString", var1);
+      var5.addDisposeListener(new WidgetFactory$1(var2, var5));
+      return var5;
+   }
+
+   public static void loadSashForm(SashForm var0, String var1) {
+      String var2 = var1 + "Child";
+      int var3 = PreferenceLoader.loadIntOrN1(var1 + "Maximized");
+      if (sashPrefsExist(var0, var1)) {
+         int[] var4 = new int[var0.getChildren().length];
+
+         for (int var5 = 0; var5 < var0.getChildren().length; var5++) {
+            Rectangle var6 = PreferenceLoader.loadRectangle(var2 + var5);
+            var4[var5] = var0.getOrientation() == 256 ? var6.width : var6.height;
+         }
+
+         for (int var10 = 0; var10 < var4.length; var10++) {
+            if (var4[var10] > 0) {
+               var0.setWeights(var4);
+               break;
+            }
+         }
+      }
+
+      if (var3 > -1 && var3 <= var0.getChildren().length) {
+         var0.setMaximizedControl(var0.getChildren()[var3]);
+      }
+
+      PreferenceStore var8 = PreferenceLoader.getPreferenceStore();
+
+      for (int var9 = 0; var9 < var0.getChildren().length; var9++) {
+         Control var11 = var0.getChildren()[var9];
+         var11.addDisposeListener(new WidgetFactory$2(var8, var2, var9));
+      }
+   }
+
+   public static boolean sashPrefsExist(SashForm var0, String var1) {
+      PreferenceStore var2 = PreferenceLoader.getPreferenceStore();
+
+      for (int var3 = 0; var3 < var0.getChildren().length; var3++) {
+         if (!var2.contains(var1 + "Child" + var3)) {
+            return false;
+         }
+      }
+
       return true;
-    } else {
-      sashForm.setMaximizedControl(null);
+   }
 
-      if (maximizedPrefString != null)
-        p.setValue(maximizedPrefString, -1);
-      return false;
-    }
-  }
+   public static boolean setMaximizedSashFormControl(SashForm var0, int var1) {
+      return var1 > var0.getChildren().length ? false : toggleMaximizedSashFormControl(var0, var0.getChildren()[var1]);
+   }
 
-  public static void createLinkDropTarget(Control control) {
-    DropTarget dropTarget = new DropTarget(control, DND.DROP_COPY | DND.DROP_DEFAULT | DND.DROP_LINK);
-    final UniformResourceLocator uRL = UniformResourceLocator.getInstance();
-    final TextTransfer textTransfer = TextTransfer.getInstance();
-    dropTarget.setTransfer(new Transfer[]{uRL, textTransfer});
-    dropTarget.addDropListener(new DropTargetAdapter() {
-      public void dragEnter(DropTargetEvent event) {
-        event.detail = DND.DROP_COPY;
-
-        for (int i = 0; i < event.dataTypes.length; i++) {
-          if (uRL.isSupportedType(event.dataTypes[i])) {
-            event.detail = DND.DROP_LINK;
-            break;
-          }
-        }
+   public static boolean toggleMaximizedSashFormControl(SashForm var0, Control var1) {
+      PreferenceStore var2 = PreferenceLoader.getPreferenceStore();
+      String var3 = null;
+      if (var0.getData("prefString") != null) {
+         var3 = (String)var0.getData("prefString") + "Maximized";
       }
 
-      public void drop(DropTargetEvent event) {
-        if ((event.data == null))
-          return;
+      if (var0.getMaximizedControl() != null) {
+         var0.setMaximizedControl(null);
+         if (var3 != null) {
+            var2.setValue(var3, -1);
+         }
 
-        SwissArmy.sendLink(Sancho.getCore(), (String) event.data);
+         return false;
+      } else {
+         var0.setMaximizedControl(var1);
+         if (var3 != null) {
+            for (int var4 = 0; var4 < var0.getChildren().length; var4++) {
+               if (var1 == var0.getChildren()[var4]) {
+                  var2.setValue(var3, var4);
+                  break;
+               }
+            }
+         }
+
+         return true;
       }
-    });
-  }
+   }
 
-  public static void addCTabFolderMenu(CTabFolder cTabFolder, String prefString) {
+   public static void createLinkDropTarget(Control var0) {
+      DropTarget var1 = new DropTarget(var0, 21);
+      UniformResourceLocator var2 = UniformResourceLocator.getInstance();
+      TextTransfer var3 = TextTransfer.getInstance();
+      var1.setTransfer(new Transfer[]{var2, var3});
+      var1.addDropListener(new WidgetFactory$3(var2));
+   }
 
-    MenuManager popupMenu = new MenuManager();
-    popupMenu.setRemoveAllWhenShown(true);
-    popupMenu.addMenuListener(new CTabFolderMenuListener(cTabFolder, prefString));
-    cTabFolder.setMenu(popupMenu.createContextMenu(cTabFolder));
-  }
-
-  static class CTabFolderMenuListener implements IMenuListener {
-
-    CTabFolder cTabFolder;
-    String prefString;
-
-    public CTabFolderMenuListener(CTabFolder cTabFolder, String prefString) {
-      this.cTabFolder = cTabFolder;
-      this.prefString = prefString;
-    }
-
-    public void menuAboutToShow(IMenuManager manager) {
-      manager.add(new CTabFolderTabsAction(cTabFolder, prefString));
-    }
-  }
+   public static void addCTabFolderMenu(CTabFolder var0, String var1) {
+      MenuManager var2 = new MenuManager();
+      var2.setRemoveAllWhenShown(true);
+      var2.addMenuListener(new WidgetFactory$CTabFolderMenuListener(var0, var1));
+      var0.setMenu(var2.createContextMenu(var0));
+   }
 }

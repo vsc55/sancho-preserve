@@ -1,16 +1,10 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view;
 
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.widgets.Composite;
-
 import sancho.view.transfer.clients.ClientTableView;
 import sancho.view.transfer.clients.ClientViewFrame;
-import sancho.view.transfer.downloads.DownloadTableTreeView;
+import sancho.view.transfer.downloads.DownloadTreeView;
 import sancho.view.transfer.downloads.DownloadViewFrame;
 import sancho.view.transfer.pending.PendingViewFrame;
 import sancho.view.transfer.uploaders.UploadersViewFrame;
@@ -19,51 +13,46 @@ import sancho.view.utility.WidgetFactory;
 import sancho.view.viewFrame.ViewFrame;
 
 public class TransferTab extends AbstractTab {
-  public TransferTab(MainWindow mainWindow, String prefString) {
-    super(mainWindow, prefString);
-  }
+   public TransferTab(MainWindow var1, String var2) {
+      super(var1, var2);
+   }
 
-  protected void createContents(Composite composite) {
-    String sashPrefString = "transferSash";
-    SashForm sashForm = WidgetFactory.createSashForm(composite, sashPrefString);
-    createDownloadsViews(sashForm);
-    createUploadsView(sashForm);
-    WidgetFactory.loadSashForm(sashForm, sashPrefString);
-  }
+   protected void createContents(Composite var1) {
+      String var2 = "transferSash";
+      SashForm var3 = WidgetFactory.createSashForm(var1, var2);
+      this.createDownloadsViews(var3);
+      this.createUploadsView(var3);
+      WidgetFactory.loadSashForm(var3, var2);
+   }
 
-  private void createDownloadsViews(SashForm sashForm) {
-    String sashPrefString = "clientSash";
-    SashForm sashForm2 = WidgetFactory.createSashForm(sashForm, sashPrefString);
-    createDownloadsView(sashForm2);
-    createClientsView(sashForm2);
-    WidgetFactory.loadSashForm(sashForm2, sashPrefString);
+   private void createDownloadsViews(SashForm var1) {
+      String var2 = "clientSash";
+      SashForm var3 = WidgetFactory.createSashForm(var1, var2);
+      this.createDownloadsView(var3);
+      this.createClientsView(var3);
+      WidgetFactory.loadSashForm(var3, var2);
+      if (var3.getMaximizedControl() == null) {
+         DownloadTreeView var4 = (DownloadTreeView)((ViewFrame)this.getViewFrameList().get(0)).getGView();
+         var4.updateClientsTable(true);
+      }
+   }
 
-    if (sashForm2.getMaximizedControl() == null) {
-      DownloadTableTreeView downloadTableTreeView = (DownloadTableTreeView) ((ViewFrame) getViewFrameList()
-          .get(0)).getGView();
-      downloadTableTreeView.updateClientsTable(true);
-    }
-  }
+   private void createUploadsView(SashForm var1) {
+      String var2 = "uploadsSash";
+      SashForm var3 = WidgetFactory.createSashForm(var1, var2);
+      this.addViewFrame(new UploadersViewFrame(var3, "l.uploaders", "up_arrow_blue", this));
+      this.addViewFrame(new PendingViewFrame(var3, "l.pending", "up_arrow_blue", this));
+      WidgetFactory.loadSashForm(var3, var2);
+   }
 
-  private void createUploadsView(SashForm sashForm) {
-    String sashPrefString = "uploadsSash";
-    SashForm sashForm2 = WidgetFactory.createSashForm(sashForm, sashPrefString);
+   private void createDownloadsView(SashForm var1) {
+      this.addViewFrame(new DownloadViewFrame(var1, "l.downloads", "tab.transfers.buttonSmall", this));
+   }
 
-    addViewFrame(new UploadersViewFrame(sashForm2, "l.uploaders", "up_arrow_blue", this));
-    addViewFrame(new PendingViewFrame(sashForm2, "l.pending", "up_arrow_blue", this));
-    WidgetFactory.loadSashForm(sashForm2, sashPrefString);
-  }
-
-  private void createDownloadsView(SashForm sashForm) {
-    addViewFrame(new DownloadViewFrame(sashForm, "l.downloads", "tab.transfers.buttonSmall", this));
-  }
-
-  private void createClientsView(SashForm sashForm) {
-    DownloadTableTreeView downloadTableTreeView = (DownloadTableTreeView) ((ViewFrame) getViewFrameList()
-        .get(0)).getGView();
-    ClientViewFrame clientViewFrame = new ClientViewFrame(sashForm, "l.clients", "tab.transfers.buttonSmall",
-        this, downloadTableTreeView);
-    downloadTableTreeView.setClientTableView((ClientTableView) clientViewFrame.getGView());
-    addViewFrame(clientViewFrame);
-  }
+   private void createClientsView(SashForm var1) {
+      DownloadTreeView var2 = (DownloadTreeView)((ViewFrame)this.getViewFrameList().get(0)).getGView();
+      ClientViewFrame var3 = new ClientViewFrame(var1, "l.clients", "tab.transfers.buttonSmall", this, var2);
+      var2.setClientTableView((ClientTableView)var3.getGView());
+      this.addViewFrame(var3);
+   }
 }

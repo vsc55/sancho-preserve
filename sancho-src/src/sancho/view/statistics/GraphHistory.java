@@ -1,153 +1,147 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.statistics;
 
 import gnu.trove.TIntArrayList;
-
-import org.eclipse.jface.preference.PreferenceConverter;
-import org.eclipse.jface.preference.PreferenceStore;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
-
+import sancho.utility.VersionInfo;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.SResources;
 
 public class GraphHistory implements PaintListener {
-  private Shell shell;
-  private Graph graph;
-  private TIntArrayList maxList;
-  private TIntArrayList avgList;
-  private Color gridColor = PreferenceLoader.loadColor("graphGridColor");
-  private Color backgroundColor = PreferenceLoader.loadColor("graphBackgroundColor");
-  private Color textColor = PreferenceLoader.loadColor("graphTextColor");
+   private Shell shell;
+   private GraphData graph;
+   private TIntArrayList maxList;
+   private TIntArrayList avgList;
+   private Color gridColor = PreferenceLoader.loadColor("graphGridColor");
+   private Color backgroundColor = PreferenceLoader.loadColor("graphBackgroundColor");
+   private Color textColor = PreferenceLoader.loadColor("graphTextColor");
+   private ScrollBar hScrollBar;
+   private static String RS_HOUR = SResources.getString("graph.historyHour");
+   private static String RS_AVG = SResources.getString("graph.historyAvg");
+   private static String RS_MAX = SResources.getString("graph.historyMax");
+   private static String RS_KBS = SResources.getString("graph.historyKBS");
+   private static int BAR_WIDTH = 100;
 
-  private static String RS_HOUR = SResources.getString("graph.historyHour");
-  private static String RS_AVG = SResources.getString("graph.historyAvg");
-  private static String RS_MAX = SResources.getString("graph.historyMax");
-  private static String RS_KBS = SResources.getString("graph.historyKBS");
+   public GraphHistory(GraphData var1) {
+      this.graph = var1;
+      this.maxList = var1.getMaxList();
+      this.avgList = var1.getAvgList();
+      this.createContents();
+   }
 
-  public GraphHistory(Graph graph) {
-    this.graph = graph;
-    this.maxList = graph.getMaxList();
-    this.avgList = graph.getAvgList();
+   public void createContents() {
+      this.shell = new Shell(331120);
+      this.hScrollBar = this.shell.getHorizontalBar();
+      this.hScrollBar.setVisible(false);
+      this.hScrollBar.addSelectionListener(new GraphHistory$1(this));
+      this.shell.setImage(VersionInfo.getProgramIcon());
+      this.shell.setText(this.graph.getTitle());
+      this.shell.setLayout(new FillLayout());
+      this.shell.addDisposeListener(new GraphHistory$2(this));
+      this.shell.addControlListener(new GraphHistory$3(this));
+      this.shell.addPaintListener(this);
+      this.shell.setBounds(PreferenceLoader.loadRectangle("graphHistoryWindowBounds"));
+      this.adjustScrollBar();
+      this.shell.open();
+   }
 
-    createContents();
-  }
-
-  public void createContents() {
-    shell = new Shell(SWT.NO_BACKGROUND | SWT.MAX | SWT.CLOSE | SWT.TITLE | SWT.RESIZE | SWT.BORDER
-        | SWT.APPLICATION_MODAL);
-    shell.setImage(SResources.getImage("ProgramIcon"));
-    shell.setText(graph.getName());
-    shell.setLayout(new FillLayout());
-    shell.addDisposeListener(new DisposeListener() {
-      public synchronized void widgetDisposed(DisposeEvent e) {
-        PreferenceStore p = PreferenceLoader.getPreferenceStore();
-        PreferenceConverter.setValue(p, "graphHistoryWindowBounds", shell.getBounds());
+   public void adjustScrollBar() {
+      int var1 = this.shell.getClientArea().width;
+      int var2 = this.maxList.size();
+      if (var1 >= BAR_WIDTH * var2) {
+         this.hScrollBar.setVisible(false);
+      } else {
+         this.hScrollBar.setVisible(true);
+         this.hScrollBar.setMinimum(0);
+         this.hScrollBar.setMaximum(var2);
+         this.hScrollBar.setIncrement(1);
+         this.hScrollBar.setPageIncrement(1);
+         this.hScrollBar.setSelection(0);
+         this.hScrollBar.setThumb(var1 / BAR_WIDTH);
       }
-    });
+   }
 
-    shell.addPaintListener(this);
-    shell.setBounds(PreferenceLoader.loadRectangle("graphHistoryWindowBounds"));
-    shell.open();
-  }
+   public int getStart() {
+      return !this.hScrollBar.isVisible() ? 0 : this.hScrollBar.getSelection();
+   }
 
-  public void paintControl(PaintEvent e) {
-    if ((shell.getClientArea().width < 5) || (shell.getClientArea().height < 5))
-      return;
+   public void paintControl(PaintEvent var1) {
+      if (this.shell.getClientArea().width >= 5 && this.shell.getClientArea().height >= 5) {
+         int var2 = this.shell.getClientArea().height;
+         int var3 = this.shell.getClientArea().width;
+         Image var4 = new Image(this.shell.getDisplay(), this.shell.getClientArea());
+         GC var5 = new GC(var4);
+         var5.setBackground(this.backgroundColor);
+         var5.fillRectangle(0, 0, this.shell.getClientArea().width, this.shell.getClientArea().height);
+         var5.setForeground(this.gridColor);
 
-    int height = shell.getClientArea().height;
-    int width = shell.getClientArea().width;
+         for (byte var6 = 0; var6 < var3; var6 += 20) {
+            var5.drawLine(var6, 0, var6, var2 + 1);
+         }
 
-    Image imageBuffer = new Image(shell.getDisplay(), shell.getClientArea());
-    GC gc = new GC(imageBuffer);
+         for (int var7 = var2 + 1; var7 > 0; var7 -= 20) {
+            var5.drawLine(0, var7, var3 + 1, var7);
+         }
 
-    gc.setBackground(backgroundColor);
-    gc.fillRectangle(0, 0, shell.getClientArea().width, shell.getClientArea().height);
+         this.drawGraph(var5);
+         var1.gc.drawImage(var4, 0, 0);
+         var5.dispose();
+         var4.dispose();
+      }
+   }
 
-    // draw grid
-    gc.setForeground(gridColor);
+   private void drawGraph(GC var1) {
+      if (this.maxList.size() == 0) {
+         var1.setForeground(this.textColor);
+         var1.drawText(SResources.getString("graph.noHistory"), 0, 0);
+      } else {
+         int var2 = var1.getFontMetrics().getHeight() + 2;
+         float var3 = (float)this.shell.getClientArea().height - (float)(var2 * 3);
+         float var8 = 2.0F;
 
-    // vertical lines
-    for (int i = 0; i < width; i += 20)
-      gc.drawLine(i, 0, i, height + 1);
+         for (int var9 = 0; var9 < this.maxList.size(); var9++) {
+            if ((float)(this.maxList.getQuick(var9) / 10) > var8) {
+               var8 = (float)this.maxList.getQuick(var9) / 10.0F;
+            }
+         }
 
-    // horizontal lines
-    for (int i = height + 1; i > 0; i -= 20)
-      gc.drawLine(0, i, width + 1, i);
+         float var10 = (var3 - 10.0F) / var8;
+         int var11 = 0;
+         var1.setForeground(this.textColor);
+         Color var12 = PreferenceLoader.loadColor("graph" + this.graph.getGraphName() + "Color1");
+         Color var13 = PreferenceLoader.loadColor("graph" + this.graph.getGraphName() + "Color2");
+         int var14 = this.shell.getClientArea().height;
+         int var15 = this.getStart();
+         int var16 = 0;
 
-    // looks worse when under the grid
-    drawGraph(gc);
+         for (int var17 = var15; var17 < this.maxList.size(); var16++) {
+            int var6 = this.maxList.getQuick(var17);
+            int var7 = this.avgList.getQuick(var17);
+            var11 = var16 * BAR_WIDTH;
+            float var4 = (float)(var6 / 10);
+            float var5 = (float)(var7 / 10);
+            var4 *= var10;
+            var5 *= var10;
+            var1.setBackground(var13);
+            var1.fillRectangle(var11, var14 + 1, BAR_WIDTH - 2, -((int)var4));
+            var1.setBackground(var12);
+            var1.fillRectangle(var11, var14 + 1, BAR_WIDTH - 2, -((int)var5));
+            var1.drawText(RS_HOUR + (var17 + 1), var11, 0, true);
+            var1.drawText(RS_AVG + (double)var7 / 100.0 + RS_KBS, var11, var2, true);
+            var1.drawText(RS_MAX + (double)var6 / 100.0 + RS_KBS, var11, 2 * var2, true);
+            var17++;
+         }
+      }
+   }
 
-    e.gc.drawImage(imageBuffer, 0, 0);
-    gc.dispose();
-    imageBuffer.dispose();
-  }
-
-  private void drawGraph(GC gc) {
-    if (maxList.size() == 0) {
-      gc.setForeground(textColor);
-      gc.drawText(SResources.getString("graph.noHistory"), 0, 0);
-
-      return;
-    }
-
-    int lineHeight = gc.getFontMetrics().getHeight() + 2;
-
-    int width = shell.getClientArea().width;
-    int barWidth = width / maxList.size();
-    float height = (float) shell.getClientArea().height - (lineHeight * 3);
-
-    float maxValueY;
-    float avgValueY;
-    int maxValue;
-    int avgValue;
-
-    float maximum = 2;
-
-    // maxList.max() crashes..
-    for (int i = 0; i < maxList.size(); i++) {
-      if ((maxList.getQuick(i) / 10) > maximum)
-        maximum = (float) maxList.getQuick(i) / 10;
-    }
-
-    float zoom = (height - 10f) / maximum;
-    int xCoord = 0;
-
-    gc.setForeground(textColor);
-
-    for (int i = 0; i < maxList.size(); i++) {
-      maxValue = maxList.getQuick(i);
-      avgValue = avgList.getQuick(i);
-
-      xCoord = i * barWidth;
-
-      maxValueY = maxValue / 10;
-      avgValueY = avgValue / 10;
-
-      maxValueY = maxValueY * zoom;
-      avgValueY = avgValueY * zoom;
-
-      gc.setBackground(graph.getColor2());
-      gc.fillRectangle(xCoord, shell.getClientArea().height + 1, barWidth - 2, -(int) maxValueY);
-
-      gc.setBackground(graph.getColor1());
-      gc.fillRectangle(xCoord, shell.getClientArea().height + 1, barWidth - 2, -(int) avgValueY);
-
-      gc.drawText(RS_HOUR + (i + 1), xCoord, 0, true);
-      gc.drawText(RS_AVG + ((double) avgValue / 100) + RS_KBS, xCoord, lineHeight, true);
-      gc.drawText(RS_MAX + ((double) maxValue / 100) + RS_KBS, xCoord, (2 * lineHeight), true);
-    }
-  }
+   // $VF: synthetic method
+   static Shell access$000(GraphHistory var0) {
+      return var0.shell;
+   }
 }

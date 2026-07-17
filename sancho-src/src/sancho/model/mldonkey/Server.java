@@ -1,286 +1,363 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
-
 import org.eclipse.swt.graphics.Image;
-
 import sancho.core.ICore;
 import sancho.model.mldonkey.enums.EnumHostState;
 import sancho.model.mldonkey.enums.EnumNetwork;
 import sancho.model.mldonkey.utility.Addr;
 import sancho.model.mldonkey.utility.HostState;
 import sancho.model.mldonkey.utility.MessageBuffer;
-import sancho.model.mldonkey.utility.OpCodes;
 import sancho.model.mldonkey.utility.Tag;
 import sancho.model.mldonkey.utility.UtilityFactory;
 import sancho.utility.SwissArmy;
 import sancho.view.utility.SResources;
 
 public class Server extends AObject {
-  private static final String RS_UNKNOWN = SResources.getString("l.unknown");
-  private static final String RS_HIGH_ID = SResources.getString("l.highID");
-  private static final String RS_LOW_ID = SResources.getString("l.lowID");
-  private static final String RS_TRUE = SResources.getString("l.true");
-  private static final String RS_FALSE = SResources.getString("l.false");
+   private static final String RS_UNKNOWN = SResources.getString("l.unknown");
+   private static final String RS_HIGH_ID = SResources.getString("l.highID");
+   private static final String RS_LOW_ID = SResources.getString("l.lowID");
+   private static final String RS_TRUE = SResources.getString("l.true");
+   private static final String RS_FALSE = SResources.getString("l.false");
+   private Addr addr;
+   private String description;
+   private boolean preferred;
+   private int id;
+   private String name;
+   private long numFiles;
+   private long numUsers;
+   private int port;
+   private int score;
+   private HostState state;
+   private EnumHostState stateEnum;
+   private Tag[] tagList;
+   private Map userMap;
+   private EnumNetwork networkEnum;
 
-  private Addr addr;
-  private String description;
-  private boolean preferred;
-  private int id;
-  private String name;
-  private long numFiles;
-  private long numUsers;
-  private int port;
-  private int score;
-  private HostState state;
-  private EnumHostState stateEnum;
-  private Tag[] tagList;
-  private Map userMap;
-  private EnumNetwork networkEnum;
+   Server(ICore var1) {
+      super(var1);
+      this.state = UtilityFactory.getHostState(var1);
+      this.addr = UtilityFactory.getAddr(var1);
+   }
 
-  Server(ICore core) {
-    super(core);
-    state = UtilityFactory.getHostState(core);
-    addr = UtilityFactory.getAddr();
-  }
+   public synchronized void addUserInfo(User var1) {
+      this.getUserMap().put(var1, null);
+   }
 
-  public synchronized void addUserInfo(User user) {
-    getUserMap().put(user, null);
-  }
+   public void blacklist() {
+      this.core.send((short)29, "bs " + this.getAddr().toString());
+   }
 
-  public void blacklist() {
-    core.send(OpCodes.S_CONSOLE_MESSAGE, "bs " + getAddr().toString());
-  }
+   public void checkConnected(EnumHostState var1) {
+      EnumHostState var2 = this.getStateEnum();
+      if (var1 != null && var1 != var2) {
+         if (var2 == EnumHostState.CONNECTED) {
+            this.core.getServerCollection().setConnected(1);
+         } else if (var1 == EnumHostState.CONNECTED) {
+            this.core.getServerCollection().setConnected(-1);
+         }
+      }
+   }
 
-  public void checkConnected(EnumHostState oldState) {
-    EnumHostState newState = getStateEnum();
-    if (oldState != null && oldState != newState) {
-      if (newState == EnumHostState.CONNECTED)
-        core.getServerCollection().setConnected(+1);
-      else if (oldState == EnumHostState.CONNECTED)
-        core.getServerCollection().setConnected(-1);
-    }
-  }
+   private void checkRemovedState() {
+      if (this.getStateEnum() == EnumHostState.REMOVE_HOST) {
+         this.core.getServerCollection().remove(this);
+      }
+   }
 
-  private void checkRemovedState() {
-    if (this.getStateEnum() == EnumHostState.REMOVE_HOST)
-      core.getServerCollection().remove(this);
-  }
+   public void connect() {
+      this.setState(EnumHostState.CONNECTING);
+   }
 
-  public void connect() {
-    setState(EnumHostState.CONNECTING);
-  }
+   public void disconnect() {
+      this.setState(EnumHostState.NOT_CONNECTED);
+   }
 
-  public void disconnect() {
-    setState(EnumHostState.NOT_CONNECTED);
-  }
+   public boolean equals(Object var1) {
+      return var1 instanceof Server && this.getId() == ((Server)var1).getId();
+   }
 
-  public boolean equals(Object obj) {
-    return (obj instanceof Server && getId() == ((Server) obj).getId());
-  }
+   public Addr getAddr() {
+      return this.addr;
+   }
 
-  public Addr getAddr() {
-    return addr;
-  }
+   public synchronized String getDescription() {
+      return this.description != null && this.name != null && !this.name.equals("") ? this.description : "";
+   }
 
-  public synchronized String getDescription() {
-    if (description == null || name == null || name.equals(SResources.S_ES))
-      return SResources.S_ES;
-    else
-      return description;
-  }
+   public String getHighLowIDString() {
+      if (this.getEnumNetwork() == EnumNetwork.DONKEY && this.isConnected()) {
+         return this.getState().getRank() == -2 ? RS_HIGH_ID : RS_LOW_ID;
+      } else {
+         return "";
+      }
+   }
 
-  public String getHighLowIDString() {
-    if (this.getEnumNetwork() == EnumNetwork.DONKEY && isConnected())
-      return getState().getRank() == -2 ? RS_HIGH_ID : RS_LOW_ID;
-    return SResources.S_ES;
-  }
+   public Image getHighLowImage() {
+      if (this.getEnumNetwork() == EnumNetwork.DONKEY && this.isConnected()) {
+         boolean var1 = this.getState().getRank() == -2;
+         return SResources.getImage(var1 ? "bulb-green" : "bulb-red");
+      } else {
+         return null;
+      }
+   }
 
-  public synchronized int getId() {
-    return id;
-  }
+   public synchronized int getId() {
+      return this.id;
+   }
 
-  public String getLink() {
-    if (this.getEnumNetwork() == EnumNetwork.DONKEY)
-      return "ed2k://|" + this.getName() + "|" + this.getAddr().toString() + "|" + this.getPort();
+   public String getLink() {
+      return this.getEnumNetwork() == EnumNetwork.DONKEY
+         ? "ed2k://|server|" + this.getAddr().toString() + "|" + this.getPort()
+         : this.getAddr().toString() + ":" + this.getPort();
+   }
 
-    return this.getAddr().toString() + ":" + this.getPort();
-  }
+   public synchronized String getName() {
+      return this.name != null && !this.name.equals("") ? this.name : RS_UNKNOWN;
+   }
 
-  public synchronized String getName() {
-    return name == null || name.equals(SResources.S_ES) ? RS_UNKNOWN : name;
-  }
+   public synchronized long getNumFiles() {
+      return this.numFiles;
+   }
 
-  public synchronized long getNumFiles() {
-    return numFiles;
-  }
+   public synchronized String getNumFilesString() {
+      return SwissArmy.calcStringSizeGrouped(this.numFiles);
+   }
 
-  public synchronized long getNumUsers() {
-    return numUsers;
-  }
+   public synchronized long getNumUsers() {
+      return this.numUsers;
+   }
 
-  public synchronized int getPort() {
-    return port;
-  }
+   public synchronized String getNumUsersString() {
+      return SwissArmy.calcStringSizeGrouped(this.numUsers);
+   }
 
-  public synchronized int getScore() {
-    return score;
-  }
+   public synchronized int getPort() {
+      return this.port;
+   }
 
-  public void getServerUsers() {
-    core.send(OpCodes.S_GET_SERVER_USERS, new Integer(getId()));
-  }
+   public synchronized int getScore() {
+      return this.score;
+   }
 
-  public HostState getState() {
-    return state;
-  }
+   public void getServerUsers() {
+      this.core.send((short)32, new Integer(this.getId()));
+   }
 
-  public synchronized EnumHostState getStateEnum() {
-    return stateEnum;
-  }
+   public HostState getState() {
+      return this.state;
+   }
 
-  public Tag[] getTagList() {
-    return tagList;
-  }
+   public synchronized EnumHostState getStateEnum() {
+      return this.stateEnum;
+   }
 
-  protected synchronized Map getUserMap() {
-    if (userMap == null)
-      userMap = Collections.synchronizedMap(new WeakHashMap());
-    return userMap;
-  }
+   public synchronized String getStateString() {
+      return this.getAddr().isBlocked() ? SResources.getString("e.state.blocked") : this.getStateEnum().getName();
+   }
 
-  public synchronized Object[] getUsers() {
-    return SwissArmy.toArray(getUserMap().keySet());
-  }
+   public synchronized Tag[] getTagList() {
+      if (this.tagList != null && this.tagList.length != 0) {
+         Tag[] var1 = new Tag[this.tagList.length];
+         System.arraycopy(this.tagList, 0, var1, 0, this.tagList.length);
+         return var1;
+      } else {
+         return new Tag[0];
+      }
+   }
 
-  public int hashCode() {
-    return getId();
-  }
+   protected synchronized Map getUserMap() {
+      if (this.userMap == null) {
+         this.userMap = Collections.synchronizedMap(new WeakHashMap());
+      }
 
-  public synchronized boolean hasUsers() {
-    return !(userMap == null);
-  }
+      return this.userMap;
+   }
 
-  public boolean isConnected() {
-    return this.getStateEnum() == EnumHostState.CONNECTED;
-  }
+   public synchronized Object[] getUsers() {
+      return SwissArmy.toArray(this.getUserMap().keySet());
+   }
 
-  public boolean isDisconnected() {
-    return this.getStateEnum() == EnumHostState.NOT_CONNECTED;
-  }
+   public int hashCode() {
+      return this.getId();
+   }
 
-  public synchronized boolean isPreferred() {
-    return this.preferred;
-  }
+   public synchronized boolean hasUsers() {
+      return this.userMap != null;
+   }
 
-  public synchronized EnumNetwork getEnumNetwork() {
-    return networkEnum;
-  }
+   public boolean isConnected() {
+      return this.getStateEnum() == EnumHostState.CONNECTED;
+   }
 
-  public synchronized String getNetworkName() {
-    return networkEnum.getName();
-  }
+   public boolean isDisconnected() {
+      return this.getStateEnum() == EnumHostState.NOT_CONNECTED;
+   }
 
-  public synchronized Image getNetworkImage() {
-    return networkEnum.getImage();
-  }
+   public synchronized boolean isPreferred() {
+      return this.preferred;
+   }
 
-  public String getPreferredString() {
-    if (getEnumNetwork() == EnumNetwork.DONKEY)
-      return isPreferred() ? RS_TRUE : RS_FALSE;
-    return SResources.S_ES;
-  }
+   public synchronized EnumNetwork getEnumNetwork() {
+      return this.networkEnum;
+   }
 
-  public void togglePreferred() {
-    String msg = "preferred " + (isPreferred() ? "false" : "true") + " " + getAddr().toString();
-    core.send(OpCodes.S_CONSOLE_MESSAGE, msg);
-  }
+   public synchronized String getNetworkName() {
+      return this.networkEnum.getName();
+   }
 
-  public void read(int serverID, int networkID, MessageBuffer messageBuffer) {
-    EnumHostState oldState = getStateEnum();
-    synchronized (this) {
-      this.id = serverID;
-      this.networkEnum = readNetworkEnum(networkID);
-      this.addr.read(messageBuffer);
-      this.port = readPort(messageBuffer);
-      this.score = messageBuffer.getInt32();
-      this.tagList = messageBuffer.getTagList();
-      this.numUsers = readNUsers(messageBuffer);
-      this.numFiles = readNFiles(messageBuffer);
+   public synchronized Image getNetworkImage() {
+      return this.networkEnum.getImage();
+   }
 
-      this.stateEnum = this.state.read(messageBuffer);
-      this.name = messageBuffer.getString();
-      this.description = messageBuffer.getString();
-      this.preferred = readPreferred(messageBuffer);
-    }
-    this.checkConnected(oldState);
-    this.checkRemovedState();
-  }
+   public String getPreferredString() {
+      if (this.getEnumNetwork() == EnumNetwork.DONKEY) {
+         return this.isPreferred() ? RS_TRUE : RS_FALSE;
+      } else {
+         return "";
+      }
+   }
 
-  // guiEncoding#buf_server
-  public void read(MessageBuffer messageBuffer) {
-    read(messageBuffer.getInt32(), messageBuffer.getInt32(), messageBuffer);
-  }
+   public Image getPreferredImage() {
+      return this.getEnumNetwork() == EnumNetwork.DONKEY ? SResources.getImage(this.isPreferred() ? "bulb-green" : "bulb-red") : null;
+   }
 
-  protected EnumNetwork readNetworkEnum(int networkID) {
-    return core.getNetworkCollection().getNetworkEnum(networkID);
-  }
+   public void togglePreferred() {
+      String var1 = "preferred " + (this.isPreferred() ? "false" : "true") + " " + this.getAddr().toString();
+      this.core.send((short)29, var1);
+   }
 
-  protected boolean readPreferred(MessageBuffer messageBuffer) {
-    return false;
-  }
+   public void rename(String var1) {
+   }
 
-  protected long readNUsers(MessageBuffer messageBuffer) {
-    return messageBuffer.getInt32();
-  }
+   protected void read40(MessageBuffer var1) {
+   }
 
-  protected long readNFiles(MessageBuffer messageBuffer) {
-    return messageBuffer.getInt32();
-  }
+   public synchronized String getVersion() {
+      return "";
+   }
 
-  protected int readPort(MessageBuffer messageBuffer) {
-    return (int) (messageBuffer.getUInt16() & 0xFFFFL);
-  }
+   public synchronized long getMaxUsers() {
+      return 0L;
+   }
 
-  public void readUpdate(MessageBuffer messageBuffer) {
-    EnumHostState oldState = getStateEnum();
-    synchronized (this) {
-      this.stateEnum = this.state.read(messageBuffer);
-    }
-    this.checkConnected(oldState);
-    this.checkRemovedState();
-  }
+   public String getMaxUsersString() {
+      return SwissArmy.calcStringSizeGrouped(this.getMaxUsers());
+   }
 
-  public void remove() {
-    setState(EnumHostState.REMOVE_HOST);
-  }
+   public synchronized long getSoftLimit() {
+      return 0L;
+   }
 
-  public void serverUser(MessageBuffer messageBuffer) {
-    User user = (User) core.getUserCollection().get(messageBuffer.getInt32());
-    if (user != null)
-      addUserInfo(user);
-  }
+   public String getSoftLimitString() {
+      return SwissArmy.calcStringSizeGrouped(this.getSoftLimit());
+   }
 
-  public void setState(EnumHostState enumState) {
-    short opCode = 0;
+   public synchronized long getHardLimit() {
+      return 0L;
+   }
 
-    if (enumState == EnumHostState.NOT_CONNECTED) {
-      opCode = OpCodes.S_DISCONNECT_SERVER;
-    } else if (enumState == EnumHostState.REMOVE_HOST) {
-      opCode = OpCodes.S_REMOVE_SERVER;
-    } else if (enumState == EnumHostState.CONNECTING || enumState == EnumHostState.CONNECTED) {
-      opCode = OpCodes.S_CONNECT_SERVER;
-    }
+   public String getHardLimitString() {
+      return SwissArmy.calcStringSizeGrouped(this.getHardLimit());
+   }
 
-    if (opCode != 0)
-      core.send(opCode, new Integer(this.getId()));
+   public synchronized long getLowIDUsers() {
+      return 0L;
+   }
 
-  }
+   public String getLowIDUsersString() {
+      return SwissArmy.calcStringSizeGrouped(this.getLowIDUsers());
+   }
+
+   public synchronized int getPing() {
+      return 0;
+   }
+
+   public String getPingString() {
+      return SwissArmy.calcStringSizeGrouped((long)this.getPing());
+   }
+
+   public void read(int var1, int var2, MessageBuffer var3) {
+      EnumHostState var4 = this.getStateEnum();
+      synchronized (this) {
+         this.id = var1;
+         this.networkEnum = this.readNetworkEnum(var2);
+         this.addr.read(var3);
+         this.port = this.readPort(var3);
+         this.score = var3.getInt32();
+         this.tagList = var3.getTagList();
+         this.numUsers = this.readNUsers(var3);
+         this.numFiles = this.readNFiles(var3);
+         this.stateEnum = this.state.read(var3);
+         this.name = var3.getString();
+         this.description = var3.getString();
+         this.preferred = this.readPreferred(var3);
+         this.read40(var3);
+      }
+
+      this.checkConnected(var4);
+      this.checkRemovedState();
+   }
+
+   public void read(MessageBuffer var1) {
+      this.read(var1.getInt32(), var1.getInt32(), var1);
+   }
+
+   protected EnumNetwork readNetworkEnum(int var1) {
+      return this.core.getNetworkCollection().getNetworkEnum(var1);
+   }
+
+   protected boolean readPreferred(MessageBuffer var1) {
+      return false;
+   }
+
+   protected long readNUsers(MessageBuffer var1) {
+      return (long)var1.getInt32();
+   }
+
+   protected long readNFiles(MessageBuffer var1) {
+      return (long)var1.getInt32();
+   }
+
+   protected int readPort(MessageBuffer var1) {
+      return (int)((long)var1.getUInt16() & 65535L);
+   }
+
+   public void readUpdate(MessageBuffer var1) {
+      EnumHostState var2 = this.getStateEnum();
+      synchronized (this) {
+         this.stateEnum = this.state.read(var1);
+      }
+
+      this.checkConnected(var2);
+      this.checkRemovedState();
+   }
+
+   public void remove() {
+      this.setState(EnumHostState.REMOVE_HOST);
+   }
+
+   public void serverUser(MessageBuffer var1) {
+      User var2 = (User)this.core.getUserCollection().get(var1.getInt32());
+      if (var2 != null) {
+         this.addUserInfo(var2);
+      }
+   }
+
+   public void setState(EnumHostState var1) {
+      byte var2 = 0;
+      if (var1 == EnumHostState.NOT_CONNECTED) {
+         var2 = 22;
+      } else if (var1 == EnumHostState.REMOVE_HOST) {
+         var2 = 9;
+      } else if (var1 == EnumHostState.CONNECTING || var1 == EnumHostState.CONNECTED) {
+         var2 = 21;
+      }
+
+      if (var2 != 0) {
+         this.core.send(var2, new Integer(this.getId()));
+      }
+   }
 }

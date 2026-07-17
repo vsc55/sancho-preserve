@@ -1,84 +1,75 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.search;
 
 import java.util.StringTokenizer;
-
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-
 import sancho.model.mldonkey.utility.SearchQuery;
 import sancho.utility.SwissArmy;
 import sancho.view.SearchTab;
 import sancho.view.search.result.ResultViewFrame;
-import sancho.view.utility.SResources;
 
 public abstract class ASearchTab2 extends ASearchTab {
-  protected Combo formatCombo;
-  protected Combo maxCombo;
-  protected Combo minAvailCombo;
-  protected Combo minCombo;
-  protected Combo resultCombo;
+   protected Combo formatCombo;
+   protected Combo maxCombo;
+   protected Combo minAvailCombo;
+   protected Combo minCombo;
+   protected Combo resultCombo;
 
-  public ASearchTab2(ResultViewFrame viewFrame, SearchTab tab) {
-    super(viewFrame, tab);
-  }
+   public ASearchTab2(ResultViewFrame var1, SearchTab var2) {
+      super(var1, var2);
+   }
 
-  public void addMaxSizeToQuery(SearchQuery query, Combo combo) {
-    if (combo.getText().equals(SResources.S_ES))
-      return;
-    query.setMaxSize(parseSizeCombo(combo));
-  }
-
-  public void addMinSizeToQuery(SearchQuery query, Combo combo) {
-    if (combo.getText().equals(SResources.S_ES))
-      return;
-    query.setMinSize(parseSizeCombo(combo));
-  }
-
-  public void addMaxResultsToQuery(SearchQuery query, Combo combo) {
-    if (!combo.getText().equals(SResources.S_ES)) {
-      int maxResults = 0;
-
-      try {
-        maxResults = Integer.parseInt(resultCombo.getText());
-      } catch (NumberFormatException e) {
-        maxResults = 100;
+   public void addMaxSizeToQuery(SearchQuery var1, Combo var2) {
+      if (!var2.getText().equals("")) {
+         var1.setMaxSize(this.parseSizeCombo(var2));
       }
-      query.setMaxSearchResults(maxResults);
-    }
-  }
+   }
 
-  protected Combo createMinMaxCombo(Composite composite, int style, String resString) {
-    String[] items = {SResources.S_ES, "100 KB", "200 KB", "500 KB", "1 MB", "5 MB", "50 MB", "100 MB", "250 MB",
-        "500 MB", "1 GB", "2 GB", "3 GB"};
+   public void addMinSizeToQuery(SearchQuery var1, Combo var2) {
+      if (!var2.getText().equals("")) {
+         var1.setMinSize(this.parseSizeCombo(var2));
+      }
+   }
 
-    return createCombo(composite, style, resString, items);
-  }
+   public void addMaxResultsToQuery(SearchQuery var1, Combo var2) {
+      if (!var2.getText().equals("")) {
+         int var3 = 0;
 
-  public int parseMinAvail() {
-    int result;
-    try {
-      result = Integer.parseInt(minAvailCombo.getText());
-    } catch (NumberFormatException e) {
-      result = 0;
-    }
-    return result;
-  }
+         try {
+            var3 = Integer.parseInt(this.resultCombo.getText());
+         } catch (NumberFormatException var5) {
+            var3 = 100;
+         }
 
-  public long parseSizeCombo(Combo combo) {
+         var1.setMaxSearchResults(var3);
+      }
+   }
 
-    String value = SResources.S_ES;
-    String unit = "MB";
-    StringTokenizer st = new StringTokenizer(combo.getText());
-    value = st.nextToken();
-    if (st.hasMoreTokens())
-      unit = st.nextToken();
+   protected Combo createMinMaxCombo(Composite var1, int var2, String var3) {
+      String[] var4 = new String[]{"", "100 KB", "200 KB", "500 KB", "1 MB", "5 MB", "50 MB", "100 MB", "250 MB", "500 MB", "1 GB", "2 GB", "3 GB"};
+      return this.createCombo(var1, var2, var3, var4);
+   }
 
-    return SwissArmy.stringSizeToLong(value, unit);
-  }
+   public int parseMinAvail() {
+      int var1;
+      try {
+         var1 = Integer.parseInt(this.minAvailCombo.getText());
+      } catch (NumberFormatException var3) {
+         var1 = 0;
+      }
 
+      return var1;
+   }
+
+   public long parseSizeCombo(Combo var1) {
+      String var2 = "";
+      String var3 = "MB";
+      StringTokenizer var4 = new StringTokenizer(var1.getText());
+      var2 = var4.nextToken();
+      if (var4.hasMoreTokens()) {
+         var3 = var4.nextToken();
+      }
+
+      return SwissArmy.stringSizeToLong(var2, var3);
+   }
 }

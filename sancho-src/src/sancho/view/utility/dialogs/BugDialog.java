@@ -1,119 +1,127 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.utility.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
 import sancho.core.ICore;
 import sancho.core.Sancho;
 import sancho.utility.VersionInfo;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.SResources;
-import sancho.view.utility.WebLauncher;
 import sancho.view.utility.WidgetFactory;
 
 public class BugDialog extends Dialog {
-  String string;
+   String string;
 
-  public BugDialog(Shell shell, String string) {
-    super(shell);
-    this.string = string;
-    setShellStyle(getShellStyle() | SWT.RESIZE);
-  }
+   public BugDialog(Shell var1, String var2) {
+      super(var1);
+      this.string = var2;
+      this.setShellStyle(this.getShellStyle() | 16);
+   }
 
-  protected void configureShell(Shell newShell) {
-    super.configureShell(newShell);
-    newShell.setText("Boog Ditekted!");
-  }
+   protected void configureShell(Shell var1) {
+      super.configureShell(var1);
+      var1.setText("Boog Ditekted!");
+   }
 
-  protected int boolean2Int(boolean b) {
-    return b ? 1 : 0;
-  }
+   protected int boolean2Int(boolean var1) {
+      return var1 ? 1 : 0;
+   }
 
-  protected Control createDialogArea(Composite parent) {
-    Composite composite = (Composite) super.createDialogArea(parent);
-
-    String totals = SResources.S_ES;
-    if (Sancho.getCore() != null) {
-      ICore core = Sancho.getCore();
-      totals = core.getProtocol() + "|" + core.getFileCollection().size() + "|"
-          + core.getClientCollection().size() + "|" + core.getUserCollection().size() + "|"
-          + core.getRoomCollection().size() + "|" + core.getResultCollection().size() + "|"
-          + core.getResultCollection().getNumResults();
-    } else {
-      totals = "No Core";
-    }
-
-    totals += "\nCF:" + Sancho.getCoreFactory().getNumRetries() + ":" + Sancho.getCoreFactory().getUptime()
-        + ":" + Sancho.getCoreFactory().getConnectedString();
-
-    String mem = Runtime.getRuntime().freeMemory() + "/" + Runtime.getRuntime().totalMemory();
-
-    String other = "CG:" + boolean2Int(PreferenceLoader.loadBoolean("displayChunkGraphs")) + "|CE:"
-        + boolean2Int(!PreferenceLoader.loadString("coreExecutable").equals(SResources.S_ES)) + "|KC:"
-        + boolean2Int(PreferenceLoader.loadBoolean("killCoreOnExit")) + "|";
-
-    Text textInfo = new Text(composite, SWT.MULTI | SWT.READ_ONLY | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-    textInfo.setFont(PreferenceLoader.loadFont("consoleFontData"));
-    
-    GridData gd = new GridData(GridData.FILL_BOTH);
-    gd.heightHint = 300;
-    textInfo.setLayoutData(gd);
-    textInfo
-        .setText("Please submit a bug report detailing *exactly* what you were doing when this happened!!!\n"
-            + "(Describe exactly how to _reproduce_ the bug if you can.  Thanks!)\n\n"
-            + "---<snip>--- PLEASE INCLUDE ALL OF THE FOLLOWING ---\n\n"
-            + "1. Are you using the latest version?\n\n"
-            + "2. Can you duplicate the error using the java binary version?\n"
-            + "   (this will report better stackTraces and help locate the bug)\n\n"
-            + "3. Does the bug depend on a certain configuration setting?  Does renaming your\n"
-            + "   ConfigFile and starting with a new one fix the problem? Can you include the\n"
-            + "   ConfigFile that causes the problem with the bug report?\n\n" + "ConfigFile: "
-            + PreferenceLoader.getPrefFile() + "\n" + System.getProperty("os.name") + " "
-            + System.getProperty("java.vm.specification.vendor") + System.getProperty("java.version") + "\n"
-            + "swt-" + VersionInfo.getSWTPlatform() + "-" + SWT.getVersion() + " " + Sancho.getUptime()
-            + "\n" + VersionInfo.getName() + " " + VersionInfo.getVersion() + "\n" + mem + "\n" + totals
-            + "\n" + other + "\n" + string);
-
-    return composite;
-  }
-
-  protected Control createButtonBar(Composite parent) {
-    Composite composite = new Composite(parent, SWT.NONE);
-    composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
-    composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-    Button launch = new Button(composite, SWT.NONE);
-    launch.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    launch.setText(SResources.getString("b.reportBug"));
-    launch.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent s) {
-        WebLauncher.openLink(VersionInfo.getBugPage());
+   protected Control createDialogArea(Composite var1) {
+      Composite var2 = (Composite)super.createDialogArea(var1);
+      String var3 = "";
+      if (Sancho.getCore() != null) {
+         ICore var4 = Sancho.getCore();
+         var3 = var4.getProtocol()
+            + "|"
+            + var4.getFileCollection().size()
+            + "|"
+            + var4.getClientCollection().size()
+            + "|"
+            + var4.getUserCollection().size()
+            + "|"
+            + var4.getRoomCollection().size()
+            + "|"
+            + var4.getResultCollection().size()
+            + "|"
+            + var4.getResultCollection().getNumResults();
+      } else {
+         var3 = "No Core";
       }
-    });
 
-    Button close = new Button(composite, SWT.NONE);
-    close.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-    close.setText(SResources.getString("b.close"));
-    close.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent s) {
-        close();
-      }
-    });
+      var3 = var3
+         + "\nCF:"
+         + Sancho.getCoreFactory().getNumRetries()
+         + ":"
+         + Sancho.getCoreFactory().getUptime()
+         + ":"
+         + Sancho.getCoreFactory().getConnectedString();
+      String var10 = Runtime.getRuntime().freeMemory() + "/" + Runtime.getRuntime().totalMemory();
+      String var5 = "CG:"
+         + this.boolean2Int(PreferenceLoader.loadBoolean("displayChunkGraphs"))
+         + "|CE:"
+         + this.boolean2Int(!PreferenceLoader.loadString("coreExecutable").equals(""))
+         + "|KC:"
+         + this.boolean2Int(PreferenceLoader.loadBoolean("killCoreOnExit"))
+         + "|";
+      Text var6 = new Text(var2, 2826);
+      var6.setFont(PreferenceLoader.loadFont("consoleFontData"));
+      GridData var7 = new GridData(1808);
+      var7.heightHint = 300;
+      var6.setLayoutData(var7);
+      var6.setText(
+         "Please submit a bug report detailing *exactly* what you\nwere doing when this happened!!! Thank you.\n(Describe exactly how to _reproduce_ the bug if you can.)\n\n---<snip>--- PLEASE INCLUDE ALL OF THE FOLLOWING ---\n\n1. Are you using the latest version? (core and gui)\n\n2. Can you duplicate the error using the java binary\n   version? (this will report better stackTraces and\n   help locate the bug)\n\n3. Does the bug depend upon a certain configuration\n   setting?  Does renaming your ConfigFile and starting\n   with a new one fix the problem? Can you include the\n   ConfigFile that causes the problem with the bug report?\n\nConfigFile: "
+            + PreferenceLoader.getPrefFile()
+            + "\n"
+            + System.getProperty("os.name")
+            + " "
+            + System.getProperty("os.version")
+            + " "
+            + System.getProperty("java.vm.specification.vendor")
+            + " "
+            + System.getProperty("java.version")
+            + "\n"
+            + "swt-"
+            + VersionInfo.getSWTPlatform()
+            + "-"
+            + SWT.getVersion()
+            + " "
+            + Sancho.getUptime()
+            + "\n"
+            + VersionInfo.getName()
+            + " "
+            + VersionInfo.getVersion()
+            + VersionInfo.getBrand()
+            + "\n"
+            + var10
+            + "\n"
+            + var3
+            + "\n"
+            + var5
+            + "\n"
+            + this.string
+      );
+      return var2;
+   }
 
-    return composite;
-  }
-
+   protected Control createButtonBar(Composite var1) {
+      Composite var2 = new Composite(var1, 0);
+      var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
+      var2.setLayoutData(new GridData(768));
+      Button var3 = new Button(var2, 0);
+      var3.setLayoutData(new GridData(768));
+      var3.setText(SResources.getString("b.reportBug"));
+      var3.addSelectionListener(new BugDialog$1(this));
+      Button var4 = new Button(var2, 0);
+      var4.setLayoutData(new GridData(128));
+      var4.setText(SResources.getString("b.close"));
+      var4.addSelectionListener(new BugDialog$2(this));
+      return var2;
+   }
 }

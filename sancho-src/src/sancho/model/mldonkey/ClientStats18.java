@@ -1,31 +1,26 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
 import sancho.core.ICore;
 import sancho.model.mldonkey.utility.MessageBuffer;
 
 public class ClientStats18 extends ClientStats {
+   ClientStats18(ICore var1) {
+      super(var1);
+   }
 
-  ClientStats18(ICore core) {
-    super(core);
-  }
+   public void readNetworks(MessageBuffer var1) {
+      int var2 = var1.getUInt16();
+      if (this.connectedNetworks == null || this.connectedNetworks.length != var2) {
+         this.connectedNetworks = new Network[var2];
+      }
 
-  public void readNetworks(MessageBuffer messageBuffer) {
-    int len = messageBuffer.getUInt16();
+      for (int var4 = 0; var4 < var2; var4++) {
+         Network var3 = (Network)this.core.getNetworkCollection().get(var1.getInt32());
+         if (var3 != null) {
+            this.core.getNetworkCollection().setConnectedServers(var3, var1.getInt32());
+         }
 
-    if (connectedNetworks == null || connectedNetworks.length != len)
-      connectedNetworks = new Network[len];
-
-    Network network;
-    for (int i = 0; i < len; i++) {
-      network = (Network) core.getNetworkCollection().get(messageBuffer.getInt32());
-      if (network != null)
-        core.getNetworkCollection().setConnectedServers(network, messageBuffer.getInt32());
-      connectedNetworks[i] = network;
-    }
-  }
+         this.connectedNetworks[var4] = var3;
+      }
+   }
 }

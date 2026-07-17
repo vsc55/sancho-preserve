@@ -1,17 +1,7 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.utility.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseMoveListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -22,165 +12,74 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-
-import sancho.core.Sancho;
 import sancho.utility.VersionInfo;
 import sancho.view.utility.SResources;
-import sancho.view.utility.WebLauncher;
 
 public class AboutDialog extends Dialog {
+   private static final String S_URL = "URL:";
+   private static final String S_HP = "sancho-gui.sf.net";
+   private static final String S_CODE = "Code:";
+   private static final String S_RO = "Rutger Ovidius";
+   private static final String S_GRAPHICS = "Graphics:";
+   private static final String S_BT = "Bruce Thomas";
+   private static final int _X1 = 40;
+   private static final int _X2 = 100;
+   private static final int _X3 = 230;
+   private static final int _X4 = 330;
+   Rectangle btRect = new Rectangle(38, 348, 162, 17);
+   Rectangle roRect = new Rectangle(38, 328, 162, 17);
+   Rectangle urlRect = new Rectangle(38, 309, 162, 17);
+   Cursor cursorOver;
+   boolean mOver;
 
-  private static final String S_URL = "URL:";
-  private static final String S_HP = "sancho-gui.sf.net";
+   public AboutDialog(Shell var1) {
+      super(var1);
+      Window.setDefaultImage(VersionInfo.getProgramIcon());
+      boolean var2 = VersionInfo.getSWTPlatform().equals("win32");
+      this.setShellStyle(278536 | (var2 ? 4 : 0));
+      this.cursorOver = new Cursor(var1.getDisplay(), 21);
+   }
 
-  private static final String S_CODE = "Code:";
-  private static final String S_RO = "Rutger Ovidius";
-
-  private static final String S_GRAPHICS = "Graphics:";
-  private static final String S_BT = "Bruce Thomas";
-
-  private static final int _X1 = 40;
-  private static final int _X2 = 100;
-
-  private static final int _X3 = 230;
-  private static final int _X4 = 330;
-
-  Rectangle btRect = new Rectangle(38, 395, 162, 17);
-  Rectangle roRect = new Rectangle(38, 375, 162, 17);
-  Rectangle urlRect = new Rectangle(38, 356, 162, 17);
-
-  Cursor cursorOver;
-  boolean mOver;
-
-  public AboutDialog(Shell shell) {
-    super(shell);
-    setDefaultImage(SResources.getImage("ProgramIcon"));
-    setShellStyle(SWT.NO_TRIM | SWT.NO_BACKGROUND | SWT.ON_TOP);
-    cursorOver = new Cursor(shell.getDisplay(), SWT.CURSOR_HAND);
-  }
-
-  public boolean close() {
-    if (cursorOver != null)
-      cursorOver.dispose();
-    return super.close();
-  }
-
-  protected void configureShell(Shell newShell) {
-    super.configureShell(newShell);
-    newShell.setText(VersionInfo.getName() + " " + VersionInfo.getVersion());
-  }
-
-  // bla bla bla
-  public Control createContents(Composite parent) {
-
-    final Canvas canvas = new Canvas(parent, SWT.NONE);
-    final Image image = SResources.getImage("about");
-
-    GridData gridData = new GridData();
-    gridData.widthHint = image.getBounds().width;
-    gridData.heightHint = image.getBounds().height;
-    canvas.setLayoutData(gridData);
-    canvas.setLayout(new FillLayout());
-    canvas.addPaintListener(new PaintListener() {
-      public void paintControl(PaintEvent e) {
-
-        int y = 315;
-        int dy = 20;
-
-        e.gc.drawImage(image, e.x, e.y, e.width, e.height, e.x, e.y, e.width, e.height);
-        e.gc.setForeground(canvas.getDisplay().getSystemColor(SWT.COLOR_BLACK));
-
-        drawTextAt(e.gc, "Version:", VersionInfo.getVersion(), "System:", System.getProperty("os.name"), y);
-
-        y += dy;
-
-        drawTextAt(e.gc, "SWT:", VersionInfo.getSWTPlatform() + "-" + SWT.getVersion(), "Processors:", String
-            .valueOf(Runtime.getRuntime().availableProcessors()), y);
-
-        y += dy;
-
-        drawTextAt(e.gc, SResources.S_ES, SResources.S_ES, "Uptime:", Sancho.getUptime(), y);
-        drawTextAt(e.gc, SWT.COLOR_BLACK, S_URL, S_HP, y);
-
-        y += dy;
-
-        drawTextAt(e.gc, SResources.S_ES, SResources.S_ES, "Total Memory:", String.valueOf(Runtime.getRuntime().totalMemory()), y);
-        drawTextAt(e.gc, SWT.COLOR_BLACK, S_CODE, S_RO, y);
-
-        y += dy;
-
-        drawTextAt(e.gc, SResources.S_ES, SResources.S_ES, "Free Memory:", String.valueOf(Runtime.getRuntime().freeMemory()), y);
-        drawTextAt(e.gc, SWT.COLOR_BLACK, S_GRAPHICS, S_BT, y);
-
-      }
-    });
-
-    canvas.addMouseMoveListener(new MouseMoveListener() {
-      public void mouseMove(MouseEvent e) {
-        Canvas canvas = (Canvas) e.widget;
-        if (btRect.contains(e.x, e.y) && !mOver) {
-          canvas.getShell().setCursor(cursorOver);
-          GC gc = new GC(canvas);
-          drawTextAt(gc, SWT.COLOR_WHITE, S_GRAPHICS, S_BT, 395);
-          gc.dispose();
-          mOver = true;
-        } else if (urlRect.contains(e.x, e.y) && !mOver) {
-          canvas.getShell().setCursor(cursorOver);
-          GC gc = new GC(canvas);
-          drawTextAt(gc, SWT.COLOR_WHITE, S_URL, S_HP, 355);
-          gc.dispose();
-          mOver = true;
-        } else if (roRect.contains(e.x, e.y) && !mOver) {
-          canvas.getShell().setCursor(cursorOver);
-          GC gc = new GC(canvas);
-          drawTextAt(gc, SWT.COLOR_WHITE, S_CODE, S_RO, 375);
-          gc.dispose();
-          mOver = true;
-
-        } else if (mOver
-            && (!roRect.contains(e.x, e.y) && !btRect.contains(e.x, e.y) && !urlRect.contains(e.x, e.y))) {
-          canvas.getShell().setCursor(null);
-          GC gc = new GC(canvas);
-          drawTextAt(gc, SWT.COLOR_BLACK, S_URL, S_HP, 355);
-          drawTextAt(gc, SWT.COLOR_BLACK, S_CODE, S_RO, 375);
-          drawTextAt(gc, SWT.COLOR_BLACK, S_GRAPHICS, S_BT, 395);
-          gc.dispose();
-          mOver = false;
-        }
+   public boolean close() {
+      if (this.cursorOver != null) {
+         this.cursorOver.dispose();
       }
 
-    });
+      return super.close();
+   }
 
-    canvas.addMouseListener(new MouseAdapter() {
-      public void mouseDown(MouseEvent e) {
-        if (btRect.contains(e.x, e.y))
-          WebLauncher.openLink(VersionInfo.getBruceHomePage());
-        else if (urlRect.contains(e.x, e.y))
-          WebLauncher.openLink(VersionInfo.getHomePage());
-        else if (roRect.contains(e.x, e.y))
-          WebLauncher.openLink(VersionInfo.getHomePage());
-      }
+   protected void configureShell(Shell var1) {
+      super.configureShell(var1);
+      var1.setText(VersionInfo.getName() + " " + VersionInfo.getVersion());
+   }
 
-      public void mouseUp(MouseEvent e) {
-        AboutDialog.this.close();
-      }
-    });
+   public Control createContents(Composite var1) {
+      Canvas var2 = new Canvas(var1, 536870912);
+      Image var3 = SResources.getImage("about");
+      GridData var4 = new GridData();
+      var4.widthHint = var3.getBounds().width;
+      var4.heightHint = var3.getBounds().height;
+      var2.setLayoutData(var4);
+      var2.setLayout(new FillLayout());
+      var2.addPaintListener(new AboutDialog$1(this, var3, var2));
+      var2.addMouseMoveListener(new AboutDialog$2(this));
+      var2.addMouseListener(new AboutDialog$3(this));
+      var2.update();
+      return var1;
+   }
 
-    canvas.update();
-    return parent;
-  }
+   public void drawTextAt(GC var1, String var2, String var3, String var4, String var5, int var6) {
+      boolean var7 = true;
+      var1.drawText(var2, 40, var6, var7);
+      var1.drawText(var3, 100, var6, var7);
+      var1.drawText(var4, 230, var6, var7);
+      var1.drawText(var5, 330, var6, var7);
+   }
 
-  public void drawTextAt(GC gc, String s1, String s2, String s3, String s4, int y) {
-    gc.drawText(s1, _X1, y, true);
-    gc.drawText(s2, _X2, y, true);
-    gc.drawText(s3, _X3, y, true);
-    gc.drawText(s4, _X4, y, true);
-  }
-
-  public void drawTextAt(GC gc, int color, String s1, String s2, int y) {
-    gc.setForeground(getShell().getDisplay().getSystemColor(color));
-    gc.drawText(s1, _X1, y, true);
-    gc.drawText(s2, _X2, y, true);
-  }
-
+   public void drawTextAt(GC var1, int var2, String var3, String var4, int var5) {
+      var1.setForeground(this.getShell().getDisplay().getSystemColor(var2));
+      boolean var6 = true;
+      var1.drawText(var3, 40, var5, var6);
+      var1.drawText(var4, 100, var5, var6);
+   }
 }

@@ -1,252 +1,227 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.statistics;
 
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-
 import sancho.utility.SwissArmy;
 import sancho.view.preferences.PreferenceLoader;
 
-// Nice and ugly
-public class GraphPainter implements DisposeListener {
+public class GraphPainter {
+   private static final String S_KBS = " KB/s";
+   private static final int START_X = 1;
+   private Color backgroundColor;
+   private GraphData graph;
+   private Color graphColor1;
+   private Color graphColor2;
+   private String graphName;
+   private int graphType;
+   private Color gridColor;
+   private Color labelBackgroundColor;
+   private Color labelLineColor;
+   private Color labelTextColor;
+   private final Composite parent;
+   private boolean reverse;
+   private Color textColor;
+   private int updateDelay;
 
-  private static final int START_X = 1;
-  private static final String S_KBS = " KB/s";
+   public GraphPainter(Composite var1, GraphData var2) {
+      this.parent = var1;
+      this.graph = var2;
+      this.graphName = var2.getGraphName();
+      this.updateDisplay();
+   }
 
-  private Color backgroundColor;
-  private Graph graph;
-  private Color gridColor;
-  private Color labelBackgroundColor;
-  private Color labelLineColor;
-  private Color labelTextColor;
-  final private Composite parent;
-  private Color textColor;
-  private int updateDelay;
+   private void drawBarGraph(GC var1, int var2, float var3, float var4) {
+      int var5 = this.graph.getInsertAt() - 1;
+      int var6 = 1600 > this.graph.getNumPoints() ? this.graph.getNumPoints() : 1600;
+      var1.setForeground(this.graphColor1);
+      int var8 = 1;
+      byte var9 = 1;
+      if (this.reverse) {
+         var8 = var2 - 2;
+         var9 = -1;
+      }
 
-  public GraphPainter(Composite parent) {
-    this.parent = parent;
-    updateDisplay();
-  }
+      for (int var10 = var8; 0 <= var10 && var10 < var2 && var6 > 0; var6--) {
+         if (var5 < 0) {
+            var5 = 1599;
+         }
 
-  private void drawBarGraph(GC gcb, int width, float height, float zoom) {
-    int positionInArray = graph.getInsertAt() - 1;
-    int validPoints = ((Graph.MAX_POINTS > graph.getAmount()) ? graph.getAmount() : Graph.MAX_POINTS);
-    float valueY;
-    gcb.setForeground(graph.getColor1());
+         float var7 = (float)(this.graph.getPointAt(var5) / 10);
+         var7 = var3 - var7 * var4;
+         var1.drawLine(var10, (int)var3 + 1, var10, (int)var7);
+         var5--;
+         var10 += var9;
+      }
+   }
 
-    int first = START_X;
-    int incr = 1;
+   private void drawGradiantGraph(GC var1, int var2, float var3, float var4) {
+      int var5 = this.graph.getInsertAt() - 1;
+      int var6 = 1600 > this.graph.getNumPoints() ? this.graph.getNumPoints() : 1600;
+      var1.setBackground(this.graphColor1);
+      var1.setForeground(this.graphColor2);
+      int var8 = 1;
+      byte var9 = 1;
+      if (this.reverse) {
+         var8 = var2 - 2;
+         var9 = -1;
+      }
 
-    if (graph.getReverse()) {
-      first = width - 2;
-      incr = -1;
-    }
+      for (int var10 = var8; 0 <= var10 && var10 < var2 && var6 > 0; var6--) {
+         if (var5 < 0) {
+            var5 = 1599;
+         }
 
-    for (int k = first; 0 <= k && (k < width) && (validPoints > 0); k += incr, validPoints--) {
-      if (positionInArray < 0)
-        positionInArray = Graph.MAX_POINTS - 1;
+         float var7 = (float)(this.graph.getPointAt(var5) / 10);
+         var7 = var3 - var7 * var4;
+         var1.fillGradientRectangle(var10, (int)var3 + 1, 1, (int)(var7 - var3), true);
+         var5--;
+         var10 += var9;
+      }
+   }
 
-      valueY = graph.getPointAt(positionInArray) / 10;
-      valueY = height - (valueY * zoom);
-      gcb.drawLine(k, (int) height + 1, k, (int) (valueY));
-      positionInArray--;
-    }
-  }
+   private void drawLineGraph(GC var1, int var2, float var3, float var4) {
+      int var5 = this.graph.getInsertAt() - 1;
+      int var6 = 1600 > this.graph.getNumPoints() ? this.graph.getNumPoints() : 1600;
+      float var8 = -1.0F;
+      var1.setForeground(this.graphColor1);
+      var1.setLineWidth(3);
+      int var9 = 1;
+      byte var10 = 1;
+      byte var11 = -1;
+      if (this.reverse) {
+         var9 = var2 - 2;
+         var10 = -1;
+         var11 = 1;
+      }
 
-  private void drawGradiantGraph(GC gcb, int width, float height, float zoom) {
-    int positionInArray = graph.getInsertAt() - 1;
-    int validPoints = ((Graph.MAX_POINTS > graph.getAmount()) ? graph.getAmount() : Graph.MAX_POINTS);
-    float valueY;
+      for (int var12 = var9; 0 <= var12 && var12 < var2 && var6 > 0; var6--) {
+         if (var5 < 0) {
+            var5 = 1599;
+         }
 
-    gcb.setBackground(graph.getColor1());
-    gcb.setForeground(graph.getColor2());
+         float var7 = (float)(this.graph.getPointAt(var5) / 10);
+         var7 = var3 - var7 * var4;
+         if (var8 == -1.0F) {
+            var8 = var7;
+         }
 
-    int first = START_X;
-    int incr = 1;
+         var1.drawLine(var12 + var11, (int)var8, var12, (int)var7);
+         var8 = var7;
+         var5--;
+         var12 += var10;
+      }
 
-    if (graph.getReverse()) {
-      first = width - 2;
-      incr = -1;
-    }
+      var1.setLineWidth(1);
+   }
 
-    for (int k = first; 0 <= k && k < width && validPoints > 0; k += incr, validPoints--) {
-      if (positionInArray < 0)
-        positionInArray = Graph.MAX_POINTS - 1;
+   public void paint(GC var1, Image var2) {
+      GC var3 = new GC(var2);
+      var3.setBackground(this.backgroundColor);
+      var3.setForeground(this.backgroundColor);
+      int var4 = var2.getBounds().width;
+      int var5 = var2.getBounds().height;
+      var3.fillRectangle(0, 0, var4, var5);
+      int var6 = var3.getFontMetrics().getHeight() + 2;
+      int var7 = var5 - var6;
+      int var8 = var4 - 1;
+      float var9 = 0.0F;
+      float var10 = (float)(this.graph.findMax(var4) / 10);
+      var9 = ((float)var7 - 10.0F) / var10;
+      switch (this.graphType) {
+         case 1:
+            this.drawBarGraph(var3, var4, (float)var7, var9);
+            break;
+         case 2:
+            this.drawLineGraph(var3, var4, (float)var7, var9);
+            break;
+         default:
+            this.drawGradiantGraph(var3, var4, (float)var7, var9);
+      }
 
-      valueY = graph.getPointAt(positionInArray) / 10;
-      valueY = height - (valueY * zoom);
-      gcb.fillGradientRectangle(k, (int) height + 1, 1, (int) (valueY - height), true);
-      positionInArray--;
-    }
-  }
+      var3.setForeground(this.gridColor);
+      int var11 = 0;
+      int var12 = 0;
+      int var13 = 1 + var8;
+      int var14 = 20;
+      if (this.reverse) {
+         var12 = var4 - 1;
+         var14 = -var14;
+         var13 = 0;
+      }
 
-  private void drawLineGraph(GC gcb, int width, float height, float zoom) {
-    int positionInArray = graph.getInsertAt() - 1;
-    int validPoints = ((Graph.MAX_POINTS > graph.getAmount()) ? graph.getAmount() : Graph.MAX_POINTS);
-    float valueY;
-    float lastY = -1;
-    gcb.setForeground(graph.getColor1());
-    gcb.setLineWidth(3);
+      int var15 = this.parent.getClientArea().height;
+      int var16 = var3.getFontMetrics().getHeight();
+      int var17 = var15 - var16;
+      int var18 = this.updateDelay > 0 ? this.updateDelay : 1;
 
-    int first = START_X;
-    int incr = 1;
-    int pnt = -1;
+      for (int var19 = var12; this.reverse ? var19 > var13 : var19 < var13; var19 += var14) {
+         var3.drawLine(var19, 0, var19, var7 + 1);
+         if (var11 > 0 && var11 % 3 == 0) {
+            var3.drawText(SwissArmy.calcTimeOfSeconds((long)(var18 * var11 * 20)), var19 - 5, var17, true);
+         }
 
-    boolean reverse = graph.getReverse();
-    if (reverse) {
-      first = width - 2;
-      incr = -1;
-      pnt = 1;
-    }
+         var11++;
+      }
 
-    for (int k = first; 0 <= k && (k < width) && (validPoints > 0); k += incr, validPoints--) {
-      if (positionInArray < 0)
-        positionInArray = Graph.MAX_POINTS - 1;
+      int var20 = 1 + var8;
 
-      valueY = graph.getPointAt(positionInArray) / 10;
-      valueY = height - (valueY * zoom);
+      for (int var21 = var7 + 1; var21 > 0; var21 -= 20) {
+         var3.drawLine(1, var21, var20, var21);
+      }
 
-      if (lastY == -1)
-        lastY = valueY;
+      double var22 = (double)this.graph.getNewestPoint() / 100.0;
+      String var24 = var22 + " KB/s";
+      int var25 = (int)((float)var7 - (float)(this.graph.getNewestPoint() / 10) * var9);
+      int var26 = var25;
+      int var27 = var25 - 6;
+      if (var27 + var6 >= var7) {
+         var27 = var7 - var6 - 3;
+         var26 = var25 - 6;
+      }
 
-      gcb.drawLine(k + pnt, (int) lastY, k, (int) (valueY));
-      lastY = valueY;
-      positionInArray--;
-    }
+      int var28 = var3.textExtent(var24).x + 20;
+      int var29 = var3.textExtent(var24).y + 5;
+      int var30 = 11;
+      int var31 = var30 + 10;
+      int var32 = var30;
+      int var33 = 1;
+      if (this.reverse) {
+         var30 = var4 - var28 - 10;
+         var31 = var30 + 10;
+         var33 = var4 - 1;
+         var32 = var30 + var28;
+      }
 
-    gcb.setLineWidth(1);
-  }
+      var3.setForeground(this.labelTextColor);
+      var3.setBackground(this.labelBackgroundColor);
+      var3.fillRoundRectangle(var30, var27, var28, var29, 18, 18);
+      var3.drawRoundRectangle(var30, var27, var28, var29, 18, 18);
+      var3.drawText(var24, var31, var27 + 2);
+      var3.setForeground(this.labelLineColor);
+      var3.drawLine(var32, var26, var33, var25);
+      var1.drawImage(var2, 0, 0);
+      var3.dispose();
+   }
 
-  public void paint(GC gc, Image image) {
-    GC gcb = new GC(image);
-    gcb.setBackground(backgroundColor);
-    gcb.setForeground(backgroundColor);
+   public void setGraphType(int var1) {
+      this.graphType = var1;
+   }
 
-    int iWidth = image.getBounds().width;
-    int iHeight = image.getBounds().height;
+   public void setReverse(boolean var1) {
+      this.reverse = var1;
+   }
 
-    gcb.fillRectangle(0, 0, iWidth, iHeight);
-
-    int bottomSpace = gcb.getFontMetrics().getHeight() + 2;
-    int height = iHeight - bottomSpace;
-
-    int graphWidth = iWidth - START_X;
-    float zoom = 0;
-    float maximum = graph.findMax(iWidth) / 10;
-    zoom = (height - 10f) / maximum;
-
-    // draw graph gradiant lines (switch outside the for loop)
-    switch (graph.getGraphType()) {
-      case 1 :
-        drawBarGraph(gcb, iWidth, height, zoom);
-        break;
-      case 2 :
-        drawLineGraph(gcb, iWidth, height, zoom);
-        break;
-      default :
-        drawGradiantGraph(gcb, iWidth, height, zoom);
-        break;
-    }
-
-    // draw grid
-    gcb.setForeground(gridColor);
-
-    // vertical lines
-    int cntr = 0;
-
-    int first = START_X - 1;
-    int last = (START_X + graphWidth);
-    int incr = 20;
-
-    if (graph.getReverse()) {
-      first = iWidth - 1;
-      incr = -incr;
-      last = 0;
-    }
-
-    boolean reverse = graph.getReverse();
-    for (int i = first; reverse ? i > last : i < last; i += incr) {
-      gcb.drawLine(i, 0, i, (int) height + 1);
-      if (cntr > 0 && cntr % 3 == 0)
-        gcb.drawText(SwissArmy.calcTimeOfSeconds((updateDelay > 0 ? updateDelay : 1) * (cntr * 20)), i - 5,
-            parent.getClientArea().height - gcb.getFontMetrics().getHeight(), true);
-      cntr++;
-    }
-
-    // horizontal lines
-    for (int i = (int) height + 1; i > 0; i -= 20)
-      gcb.drawLine(START_X, i, START_X + graphWidth, i);
-
-    // draw floating box
-    double value = (double) graph.getNewestPoint() / 100;
-    String boxString = String.valueOf(value) + S_KBS;
-
-    int linePosition = (int) (height - ((graph.getNewestPoint() / 10) * zoom));
-    int linePositionEnd = linePosition;
-    int textPosition = linePosition - 6;
-
-    if ((textPosition + bottomSpace) >= (int) height) {
-      textPosition = (int) height - bottomSpace - 3;
-      linePositionEnd = linePositionEnd - 6;
-    }
-
-    int boxWidth = gcb.textExtent(boxString).x + 20;
-    int boxHeight = gcb.textExtent(boxString).y + 5;
-
-    int box_X = START_X + 10;
-    int text_X = box_X + 10;
-    int line_X1 = box_X;
-    int line_X2 = START_X;
-
-    if (reverse) {
-      box_X = iWidth - boxWidth - 10;
-      text_X = box_X + 10;
-      line_X2 = iWidth - START_X;
-      line_X1 = box_X + boxWidth;
-    }
-    gcb.setForeground(labelTextColor);
-    gcb.setBackground(labelBackgroundColor);
-    gcb.fillRoundRectangle(box_X, textPosition, boxWidth, boxHeight, 18, 18);
-    gcb.drawRoundRectangle(box_X, textPosition, boxWidth, boxHeight, 18, 18);
-    gcb.drawText(boxString, text_X, textPosition + 2);
-    gcb.setForeground(labelLineColor);
-    gcb.drawLine(line_X1, linePositionEnd, line_X2, linePosition);
-
-    gc.drawImage(image, 0, 0);
-    gcb.dispose();
-  }
-
-  public void setGraph(final Graph graph) {
-    this.graph = graph;
-    parent.addDisposeListener(this);
-  }
-
-  public void updateDisplay() {
-    backgroundColor = PreferenceLoader.loadColor("graphBackgroundColor");
-    gridColor = PreferenceLoader.loadColor("graphGridColor");
-    textColor = PreferenceLoader.loadColor("graphTextColor");
-
-    labelBackgroundColor = PreferenceLoader.loadColor("graphLabelBackgroundColor");
-    labelTextColor = PreferenceLoader.loadColor("graphLabelTextColor");
-    labelLineColor = PreferenceLoader.loadColor("graphLabelLineColor");
-
-    updateDelay = PreferenceLoader.loadInt("graphUpdateDelay");
-  }
-
-  public void widgetDisposed(DisposeEvent e) {
-    if (graph != null) {
-      PreferenceLoader.getPreferenceStore()
-          .setValue("graph" + graph.getName() + "Type", graph.getGraphType());
-      PreferenceLoader.getPreferenceStore().setValue("graph" + graph.getName() + "Reverse",
-          graph.getReverse());
-    }
-  }
+   public void updateDisplay() {
+      this.graphColor1 = PreferenceLoader.loadColor("graph" + this.graphName + "Color1");
+      this.graphColor2 = PreferenceLoader.loadColor("graph" + this.graphName + "Color2");
+      this.backgroundColor = PreferenceLoader.loadColor("graphBackgroundColor");
+      this.gridColor = PreferenceLoader.loadColor("graphGridColor");
+      this.textColor = PreferenceLoader.loadColor("graphTextColor");
+      this.labelBackgroundColor = PreferenceLoader.loadColor("graphLabelBackgroundColor");
+      this.labelTextColor = PreferenceLoader.loadColor("graphLabelTextColor");
+      this.labelLineColor = PreferenceLoader.loadColor("graphLabelLineColor");
+      this.updateDelay = PreferenceLoader.loadInt("graphUpdateDelay");
+   }
 }

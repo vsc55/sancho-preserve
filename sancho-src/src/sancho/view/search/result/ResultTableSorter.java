@@ -1,71 +1,52 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.search.result;
 
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
-
 import sancho.model.mldonkey.Result;
 import sancho.view.viewer.GSorter;
 
 public class ResultTableSorter extends GSorter {
-  public ResultTableSorter(ResultTableView rTableViewer) {
-    super(rTableViewer);
-  }
+   public ResultTableSorter(ResultTableView var1) {
+      super(var1);
+   }
 
-  public boolean sortOrder(int columnIndex) {
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case ResultTableView.NETWORK :
-      case ResultTableView.NAME :
-      case ResultTableView.CODEC :
-        return true;
+   public boolean sortOrder(int var1) {
+      switch (this.cViewer.getColumnIDs()[var1]) {
+         case 0:
+         case 1:
+         case 5:
+            return true;
+         default:
+            return false;
+      }
+   }
 
-      default :
-        return false;
-    }
-  }
-
-  public int compare(Viewer viewer, Object obj1, Object obj2) {
-    Result result1 = (Result) obj1;
-    Result result2 = (Result) obj2;
-
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case ResultTableView.NETWORK :
-        return compareStrings(result1.getNetworkName(), result2.getNetworkName());
-
-      case ResultTableView.NAME :
-        return compareStrings(result1.getName(), result2.getName());
-
-      case ResultTableView.SIZE :
-        return compareLongs(result1.getSize(), result2.getSize());
-
-      case ResultTableView.FORMAT :
-        return compareStrings(result1.getFormat(), result2.getFormat());
-
-      case ResultTableView.MEDIA :
-        return compareStrings(result1.getType(), result2.getType());
-
-      case ResultTableView.CODEC :
-        return compareStrings(result1.getCodecTag(), result2.getCodecTag());
-
-      case ResultTableView.BITRATE :
-        return compareInts(result1.getBitrateTag(), result2.getBitrateTag());
-
-      case ResultTableView.LENGTH :
-        return compareStrings(result1.getLengthTag(), result2.getLengthTag());
-
-      case ResultTableView.AVAILABILITY :
-        return compareInts(result1.getAvail(), result2.getAvail());
-
-      case ResultTableView.COMPLETE_SOURCES :
-        return compareInts(result1.getCompleteSources(), result2.getCompleteSources());
-
-      default :
-        return compareDefault((TableViewer) viewer, columnIndex, obj1, obj2);
-
-    }
-  }
+   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
+      Result var5 = (Result)var2;
+      Result var6 = (Result)var3;
+      switch (var4) {
+         case 0:
+            return this.compareStrings(var5.getNetworkName(), var6.getNetworkName());
+         case 1:
+            return this.compareStrings(var5.getName(), var6.getName());
+         case 2:
+            return this.compareLongs(var5.getSize(), var6.getSize());
+         case 3:
+            return this.compareStrings(var5.getFormat(), var6.getFormat());
+         case 4:
+            return this.compareStrings(var5.getType(), var6.getType());
+         case 5:
+            return this.compareStrings(var5.getCodecTag(), var6.getCodecTag());
+         case 6:
+            return this.compareInts(var5.getBitrateTag(), var6.getBitrateTag());
+         case 7:
+            return this.compareStrings(var5.getLengthTag(), var6.getLengthTag());
+         case 8:
+            return this.compareInts(var5.getAvail(), var6.getAvail());
+         case 9:
+            return this.compareInts(var5.getCompleteSources(), var6.getCompleteSources());
+         default:
+            return this.compareDefault((TableViewer)var1, this.columnIndex, var2, var3);
+      }
+   }
 }

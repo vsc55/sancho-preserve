@@ -1,78 +1,74 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.transfer.uploaders;
 
 import org.eclipse.swt.graphics.Image;
-
 import sancho.model.mldonkey.Client;
-import sancho.view.utility.SResources;
 import sancho.view.viewer.table.GTableLabelProvider;
 
 public class UploadersTableLabelProvider extends GTableLabelProvider {
-  public UploadersTableLabelProvider(UploadersTableView uTableViewer) {
-    super(uTableViewer);
-  }
+   public UploadersTableLabelProvider(UploadersTableView var1) {
+      super(var1);
+   }
 
-  public Image getColumnImage(Object element, int columnIndex) {
-    Client client = (Client) element;
+   public Image getColumnImage(Object var1, int var2) {
+      Client var3 = (Client)var1;
+      switch (this.cViewer.getColumnIDs()[var2]) {
+         case 0:
+            return var3.getEnumNetwork().getImage();
+         case 1:
+            return var3.getNameImage();
+         case 2:
+            return var3.getSoftwareImage();
+         case 3:
+         case 4:
+         case 5:
+         case 7:
+         case 10:
+         default:
+            return null;
+         case 6:
+            return var3.getAddr().getImage();
+         case 8:
+            return var3.getClientModeEnum().getImage();
+         case 9:
+            return var3.getStateEnum().getImage();
+         case 11:
+            return var3.getSUIImage();
+      }
+   }
 
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case UploadersTableView.STATE :
-        return client.getStateEnum().getImage();
-
-      case UploadersTableView.NETWORK :
-        return client.getEnumNetwork().getImage();
-
-      case UploadersTableView.SOFTWARE :
-        return client.getSoftwareImage();
-
-      default :
-        return null;
-    }
-  }
-
-  public String getColumnText(Object element, int columnIndex) {
-    Client client = (Client) element;
-
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case UploadersTableView.STATE :
-        return client.getDetailedClientActivity();
-
-      case UploadersTableView.NAME :
-        return client.getName();
-
-      case UploadersTableView.NETWORK :
-        return client.getEnumNetwork().getName();
-
-      case UploadersTableView.KIND :
-        return client.getModeString();
-
-      case UploadersTableView.SOFTWARE :
-        return client.getSoftware();
-
-      case UploadersTableView.UPLOADED :
-        return client.getUploadedString();
-
-      case UploadersTableView.CONNECT_TIME :
-        return client.getConnectedTimeString();
-
-      case UploadersTableView.DOWNLOADED :
-        return client.getDownloadedString();
-
-      case UploadersTableView.SOCK_ADDR :
-        return client.getAddr().toString();
-
-      case UploadersTableView.PORT :
-        return String.valueOf(client.getPort());
-
-      case UploadersTableView.FILENAME :
-        return client.getUploadFilename();
-
-      default :
-        return SResources.S_ES;
-    }
-  }
+   public String getColumnText(Object var1, int var2) {
+      if (var1 == null) {
+         return "NULL";
+      } else {
+         Client var3 = (Client)var1;
+         switch (this.cViewer.getColumnIDs()[var2]) {
+            case 0:
+               return var3.getEnumNetwork().getName();
+            case 1:
+               return var3.getName();
+            case 2:
+               return var3.getSoftware();
+            case 3:
+               return var3.getUploadedString();
+            case 4:
+               return var3.getDownloadedString();
+            case 5:
+               return var3.getConnectedTimeString();
+            case 6:
+               return var3.getAddr().toString();
+            case 7:
+               return String.valueOf(var3.getPort()).intern();
+            case 8:
+               return var3.getModeString();
+            case 9:
+               return var3.getDetailedClientActivity();
+            case 10:
+               return var3.getUploadFilename();
+            case 11:
+               return var3.getSUIString();
+            default:
+               return "";
+         }
+      }
+   }
 }

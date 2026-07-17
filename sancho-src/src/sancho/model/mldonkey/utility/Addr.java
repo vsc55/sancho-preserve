@@ -1,121 +1,118 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey.utility;
 
+import org.eclipse.swt.graphics.Image;
 import sancho.model.mldonkey.enums.EnumClientMode;
 import sancho.view.utility.SResources;
 
 public class Addr {
+   private byte[] byteArray;
+   private String ipString;
 
-  private byte[] byteArray;
-  private String ipString;
+   public int compareTo(Object var1) {
+      if (var1 instanceof Addr) {
+         Addr var2 = (Addr)var1;
+         if (this.hasHostName() && !var2.hasHostName()) {
+            return 1;
+         } else if (!this.hasHostName() && var2.hasHostName()) {
+            return -1;
+         } else if (this.hasHostName() && var2.hasHostName()) {
+            return this.getIpString().compareToIgnoreCase(var2.getIpString());
+         } else if (var2.getByteAddress() == null) {
+            return 1;
+         } else {
+            return this.getByteAddress() == null ? -1 : compare(this.getByteAddress(), var2.getByteAddress());
+         }
+      } else {
+         return -1;
+      }
+   }
 
-  public int compareTo(Object object) {
-    if (object instanceof Addr) {
-      Addr addr = (Addr) object;
-      if (this.hasHostName() && !addr.hasHostName())
-        return 1;
-      else if (!this.hasHostName() && addr.hasHostName())
-        return -1;
-      else if (this.hasHostName() && addr.hasHostName())
-        return this.getIpString().compareToIgnoreCase(addr.getIpString());
-      else if (addr.getByteAddress() == null)
-        return 1;
-      else if (this.getByteAddress() == null)
-        return -1;
-      else
-        return compare(this.getByteAddress(), addr.getByteAddress());
-    } else
-      return -1;
-  }
+   public synchronized byte[] getByteAddress() {
+      return this.byteArray;
+   }
 
-  public synchronized byte[] getByteAddress() {
-    return byteArray;
-  }
+   private synchronized String getIpString() {
+      if (this.ipString != null) {
+         return this.ipString;
+      } else if (this.byteArray != null) {
+         StringBuffer var1 = new StringBuffer(16);
+         var1.append(this.byteArray[0] & 255);
+         var1.append(".");
+         var1.append(this.byteArray[1] & 255);
+         var1.append(".");
+         var1.append(this.byteArray[2] & 255);
+         var1.append(".");
+         var1.append(this.byteArray[3] & 255);
+         return var1.toString().intern();
+      } else {
+         return "";
+      }
+   }
 
-  private synchronized String getIpString() {
-    if (ipString != null)
-      return ipString;
+   public synchronized boolean hasHostName() {
+      return this.byteArray == null && this.ipString != null;
+   }
 
-    if (byteArray != null) {
-      StringBuffer stringBuffer = new StringBuffer(16);
-      stringBuffer.append(byteArray[0] & 0xFF);
-      stringBuffer.append(SResources.S_DOT);
-      stringBuffer.append(byteArray[1] & 0xFF);
-      stringBuffer.append(SResources.S_DOT);
-      stringBuffer.append(byteArray[2] & 0xFF);
-      stringBuffer.append(SResources.S_DOT);
-      stringBuffer.append(byteArray[3] & 0xFF);
-      return stringBuffer.toString();
-    }
+   public synchronized void read(boolean var1, MessageBuffer var2) {
+      if (var1) {
+         this.ipString = var2.getString();
+         this.byteArray = null;
+      } else {
+         if (this.byteArray == null) {
+            this.byteArray = new byte[4];
+         }
 
-    return SResources.S_ES;
-  }
+         var2.getIP(this.byteArray);
+         this.ipString = null;
+      }
 
-  public synchronized boolean hasHostName() {
-    return byteArray == null && ipString != null;
-  }
+      this.readCountryCode(var2);
+   }
 
-  public synchronized void read(boolean isString, MessageBuffer messageBuffer) {
-    if (isString) {
-      this.ipString = messageBuffer.getString();
+   public void readCountryCode(MessageBuffer var1) {
+   }
+
+   public void read(MessageBuffer var1) {
+      this.read(var1.getBool(), var1);
+   }
+
+   public synchronized void setUnknown() {
       this.byteArray = null;
-    } else {
+   }
 
-      if (this.byteArray == null)
-        this.byteArray = new byte[4];
+   public synchronized boolean isBlocked() {
+      return false;
+   }
 
-      messageBuffer.getIP(this.byteArray);
-      ipString = null;
-      
-      /* 
-      StringBuffer stringBuffer = new StringBuffer();
-      stringBuffer.append(byteArray[0] & 0xFF);
-      stringBuffer.append(SResources.S_DOT);
-      stringBuffer.append(byteArray[1] & 0xFF);
-      stringBuffer.append(SResources.S_DOT);
-      stringBuffer.append(byteArray[2] & 0xFF);
-      stringBuffer.append(SResources.S_DOT);
-      stringBuffer.append(byteArray[3] & 0xFF);
-      this.ipString = stringBuffer.toString();
-      
-      */
-    }
-  }
+   public String toString() {
+      return this.getByteAddress() == null && this.getIpString().equals("") ? EnumClientMode.FIREWALLED.getName() : this.getIpString();
+   }
 
-  //guiEncoding.ml#buf_addr
-  public void read(MessageBuffer messageBuffer) {
-    this.read(messageBuffer.getBool(), messageBuffer);
-  }
+   public Image getImage() {
+      return SResources.getImage("f_--");
+   }
 
-  public synchronized void setUnknown() {
-    byteArray = null;
-  }
+   public String getCountry() {
+      return "N/A";
+   }
 
-  public String toString() {
-    if (getByteAddress() == null && getIpString().equals(SResources.S_ES))
-      return EnumClientMode.FIREWALLED.getName();
-    else
-      return this.getIpString();
-  }
+   private static int compare(byte[] var0, byte[] var1) {
+      if (var0 == var1) {
+         return 0;
+      } else if (var0 == null) {
+         return -1;
+      } else if (var1 == null) {
+         return 1;
+      } else {
+         for (int var4 = 0; var4 < var0.length; var4++) {
+            int var2 = var0[var4] & 255;
+            int var3 = var1[var4] & 255;
+            if (var2 != var3) {
+               return var2 - var3;
+            }
+         }
 
-  private static int compare(byte[] byteArray1, byte[] byteArray2) {
-    if (byteArray1 == null)
-      return -1;
-    if (byteArray2 == null)
-      return 1;
-
-    int i1;
-    int i2;
-    for (int i = 0; i < byteArray1.length; i++) {
-      i1 = byteArray1[i] & 0xff;
-      i2 = byteArray2[i] & 0xff;
-      if (i1 != i2)
-        return i1 - i2;
-    }
-    return 0;
-  }
+         return 0;
+      }
+   }
 }

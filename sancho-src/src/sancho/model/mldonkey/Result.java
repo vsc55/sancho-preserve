@@ -1,19 +1,9 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
 import gnu.regexp.RE;
 import gnu.regexp.REException;
-
 import java.util.StringTokenizer;
-
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.program.Program;
-
 import sancho.core.ICore;
 import sancho.model.mldonkey.enums.EnumExtension;
 import sancho.model.mldonkey.enums.EnumNetwork;
@@ -24,418 +14,426 @@ import sancho.model.mldonkey.utility.Tag;
 import sancho.utility.SwissArmy;
 import sancho.view.utility.SResources;
 
-public class Result extends AObject {
+public class Result extends AObject implements IObject_UID {
+   private static final String RS_MD4 = SResources.getString("r.tt.md4");
+   private static final String RS_NETWORK = SResources.getString("r.tt.network");
+   private static final String RS_FORMAT = SResources.getString("r.tt.format");
+   private static final String RS_SIZE = SResources.getString("r.tt.size");
+   private static final String RS_ADOWNLOADED = SResources.getString("r.tt.alreadyDownloaded");
+   private static final String TAG_LENGTH = "length";
+   private static final String TAG_TIME = "time";
+   private static final String TAG_SECONDS = "seconds";
+   private static final String TAG_CODEC = "codec";
+   private static final String TAG_RESOLUTION = "resolution";
+   private static final String TAG_SAMPLE_RATE = "sampleRate";
+   private static final String TAG_BITRATE = "bitrate";
+   private static final String TAG_QUALITY = "quality";
+   private static final String TAG_AVAILABILITY = "availability";
+   private static final String TAG_COMPLETESOURCES = "completesources";
+   private static final String S_NEWLINE = "\n";
+   protected static RE fakeRE;
+   protected static RE pornographyFilterRE;
+   protected static RE profanityFilterRE;
+   protected boolean downloaded;
+   protected boolean containsFake;
+   protected boolean containsPornography;
+   protected boolean containsProfanity;
+   protected EnumExtension extensionEnum;
+   protected String comment;
+   protected String format;
+   protected int id;
+   protected byte[] md4;
+   protected String[] names;
+   protected EnumNetwork networkEnum;
+   protected EnumRating rating;
+   protected long size;
+   protected int tag_availability;
+   protected int tag_bitrate;
+   protected int tag_completesources = -1;
+   protected String tag_codec;
+   protected String tag_length;
+   protected Tag[] tagList;
+   protected String type;
 
-  private static final String RS_MD4 = SResources.getString("r.tt.md4");
-  private static final String RS_NETWORK = SResources.getString("r.tt.network");
-  private static final String RS_FORMAT = SResources.getString("r.tt.format");
-  private static final String RS_SIZE = SResources.getString("r.tt.size");
-  private static final String RS_ADOWNLOADED = SResources.getString("r.tt.alreadyDownloaded");
+   Result(ICore var1) {
+      super(var1);
+   }
 
-  private static final String TAG_LENGTH = "length";
-  private static final String TAG_TIME = "time";
-  private static final String TAG_SECONDS = "seconds";
-  private static final String TAG_CODEC = "codec";
-  private static final String TAG_RESOLUTION = "resolution";
-  private static final String TAG_SAMPLE_RATE = "sampleRate";
-  private static final String TAG_BITRATE = "bitrate";
-  private static final String TAG_QUALITY = "quality";
-  private static final String TAG_AVAILABILITY = "availability";
-  private static final String TAG_COMPLETESOURCES = "completesources";
+   public synchronized boolean downloaded() {
+      return this.downloaded;
+   }
 
-  private static final String S_NEWLINE = "\n";
+   public synchronized boolean containsFake() {
+      return this.containsFake;
+   }
 
-  protected static RE fakeRE;
-  protected static RE pornographyFilterRE;
-  protected static RE profanityFilterRE;
+   public synchronized boolean containsPornography() {
+      return this.containsPornography;
+   }
 
-  protected boolean downloaded;
-  protected boolean containsFake;
-  protected boolean containsPornography;
-  protected boolean containsProfanity;
+   public synchronized boolean containsProfanity() {
+      return this.containsProfanity;
+   }
 
-  protected EnumExtension extensionEnum;
-  protected String comment;
-  protected String format;
-  protected int id;
-  protected String md4;
-  protected String[] names;
-  protected EnumNetwork networkEnum;
-  protected EnumRating rating;
-  protected long size;
+   public boolean equals(Object var1) {
+      return var1 instanceof Result && this.getId() == ((Result)var1).getId();
+   }
 
-  protected int tag_availability;
-  protected int tag_bitrate;
-  protected int tag_completesources = -1;
-  protected String tag_codec;
-  protected String tag_length;
+   public synchronized int getAvail() {
+      return this.tag_availability;
+   }
 
-  protected Tag[] tagList;
-  protected String type;
+   public synchronized int getBitrateTag() {
+      return this.tag_bitrate;
+   }
 
-  Result(ICore core) {
-    super(core);
-  }
+   public synchronized EnumNetwork getEnumNetwork() {
+      return this.networkEnum;
+   }
 
-  public synchronized boolean downloaded() {
-    return downloaded;
-  }
+   public synchronized String getNetworkName() {
+      return this.networkEnum.getName();
+   }
 
-  public synchronized boolean containsFake() {
-    return containsFake;
-  }
+   public synchronized Image getNetworkImage() {
+      return this.networkEnum.getImage();
+   }
 
-  public synchronized boolean containsPornography() {
-    return containsPornography;
-  }
+   public synchronized String getBitrateTagString() {
+      return this.tag_bitrate > 0 ? String.valueOf(this.tag_bitrate).intern() : "";
+   }
 
-  public synchronized boolean containsProfanity() {
-    return containsProfanity;
-  }
+   public synchronized String getCodecTag() {
+      return this.tag_codec != null ? this.tag_codec : "";
+   }
 
-  public boolean equals(Object obj) {
-    return (obj instanceof Result && getId() == ((Result) obj).getId());
-  }
+   public synchronized String getComment() {
+      return this.comment != null ? this.comment : "";
+   }
 
-  public synchronized int getAvail() {
-    return tag_availability;
-  }
+   public synchronized int getCompleteSources() {
+      return this.tag_completesources;
+   }
 
-  public synchronized int getBitrateTag() {
-    return tag_bitrate;
-  }
+   public String getCompleteSourcesString() {
+      int var1 = this.getCompleteSources();
+      return var1 != -1 ? String.valueOf(var1).intern() : "";
+   }
 
-  public synchronized EnumNetwork getEnumNetwork() {
-    return networkEnum;
-  }
+   public String getED2K() {
+      return this.getName() == null || this.getEnumNetwork() != EnumNetwork.DONKEY && this.getEnumNetwork() != EnumNetwork.UNKNOWN
+         ? ""
+         : "ed2k://|file|" + this.getName() + "|" + this.getSize() + "|" + this.getMD4() + "|/";
+   }
 
-  public synchronized String getNetworkName() {
-    return networkEnum.getName();
-  }
+   public synchronized String getFormat() {
+      return this.format != null ? this.format : "";
+   }
 
-  public synchronized Image getNetworkImage() {
-    return networkEnum.getImage();
-  }
-
-  public synchronized String getBitrateTagString() {
-    return tag_bitrate > 0 ? String.valueOf(tag_bitrate).intern() : SResources.S_ES;
-  }
-
-  public synchronized String getCodecTag() {
-    return tag_codec != null ? tag_codec : SResources.S_ES;
-  }
-
-  public synchronized String getComment() {
-    return comment != null ? comment : SResources.S_ES;
-  }
-
-  public synchronized int getCompleteSources() {
-    return tag_completesources;
-  }
-
-  public String getCompleteSourcesString() {
-    int result = getCompleteSources();
-    if (result != -1)
-      return String.valueOf(result).intern();
-    else
-      return SResources.S_ES;
-  }
-
-  // TODO: UNKNOWN network
-  public String getED2K() {
-    if (this.getName() != null
-        && (this.getEnumNetwork() == EnumNetwork.DONKEY || this.getEnumNetwork() == EnumNetwork.UNKNOWN))
-      return "ed2k://|file|" + this.getName() + "|" + this.getSize() + "|" + this.getMd4() + "|/";
-    else
-      return SResources.S_ES;
-  }
-
-  public synchronized String getFormat() {
-    return format != null ? format : SResources.S_ES;
-  }
-
-  protected void calcFormat() {
-    if (format == null || format.equals(SResources.S_ES)) {
-      int index = this.getName().lastIndexOf(".");
-      if (index != -1)
-        format = this.getName().substring(index + 1).toLowerCase().intern();
-    }
-  }
-
-  public synchronized int getId() {
-    return id;
-  }
-
-  public synchronized String getLengthTag() {
-    return tag_length != null ? tag_length : SResources.S_ES;
-  }
-
-  public synchronized String getMd4() {
-    return md4 != null ? md4 : SResources.S_ES;
-  }
-
-  public String getName() {
-    String[] result = this.getNames();
-    return result.length >= 1 ? result[0] : SResources.S_ES;
-  }
-
-  public synchronized String[] getNames() {
-    return names != null ? names : new String[0];
-  }
-
-  public synchronized EnumRating getRating() {
-    return rating;
-  }
-
-  public String getRatingString() {
-    StringBuffer ratingSB = new StringBuffer();
-    ratingSB.append(rating.getName());
-    ratingSB.append(SResources.S_OB);
-    ratingSB.append(getAvail());
-    ratingSB.append(SResources.S_CB);
-    return ratingSB.toString().intern();
-  }
-
-  public synchronized long getSize() {
-    return size;
-  }
-
-  public synchronized String getSizeString() {
-    return SwissArmy.calcStringSize(getSize()).intern();
-  }
-
-  public Tag[] getTagList() {
-    if (tagList == null || tagList.length == 0)
-      return new Tag[0];
-    else
-      return tagList;
-  }
-
-  public String getToolTip() {
-    return getName() + S_NEWLINE + getToolTipContent();
-  }
-
-  public String getToolTipContent() {
-    StringBuffer stringBuffer = new StringBuffer();
-    if (this.getEnumNetwork() == EnumNetwork.DONKEY) {
-      stringBuffer.append(RS_MD4);
-      stringBuffer.append(this.getMd4().toUpperCase());
-      stringBuffer.append(S_NEWLINE);
-    }
-    stringBuffer.append(RS_NETWORK);
-    stringBuffer.append(this.getEnumNetwork().getName());
-    stringBuffer.append(S_NEWLINE);
-
-    if (!this.getFormat().equals(SResources.S_ES)) {
-      stringBuffer.append(RS_FORMAT);
-      stringBuffer.append(this.getFormat());
-      stringBuffer.append(S_NEWLINE);
-    }
-
-    stringBuffer.append(RS_SIZE);
-    stringBuffer.append(this.getSizeString());
-
-    Tag[] tagList = getTagList();
-    Tag tag;
-    for (int i = 0; i < tagList.length; i++) {
-      tag = tagList[i];
-      stringBuffer.append(S_NEWLINE);
-      stringBuffer.append(tag.getName());
-      stringBuffer.append(": ");
-      if (tag.getType() == EnumType.STRING)
-        stringBuffer.append(tag.getStringValue());
-      else
-        stringBuffer.append(tag.getValue());
-    }
-
-    if (downloaded()) {
-      stringBuffer.append(S_NEWLINE);
-      stringBuffer.append(RS_ADOWNLOADED);
-    }
-    return stringBuffer.toString();
-  }
-
-  public Image getToolTipImage() {
-    Program p = null;
-
-    if (!this.getFormat().equals(SResources.S_ES))
-      p = Program.findProgram(this.getFormat());
-    else {
-      int index;
-      String fileName = this.getName();
-
-      if ((fileName != null) && ((index = fileName.lastIndexOf(".")) != -1))
-        p = Program.findProgram(fileName.substring(index));
-    }
-
-    Image programImage = null;
-
-    if (p != null) {
-      if ((programImage = SResources.getImage(p.getName())) == null) {
-        ImageData data = p.getImageData();
-
-        if (data != null) {
-          programImage = new Image(null, data);
-          SResources.putImage(p.getName(), programImage);
-        }
+   protected void calcFormat() {
+      if (this.format == null || this.format.equals("")) {
+         int var1 = this.getName().lastIndexOf(".");
+         if (var1 != -1) {
+            this.format = this.getName().substring(var1 + 1).toLowerCase().intern();
+         }
       }
-    }
-    return programImage;
-  }
+   }
 
-  public synchronized String getType() {
-    if (type != null && !type.equals(SResources.S_ES))
-      return type;
-    else
-      return extensionEnum != null ? extensionEnum.getName() : EnumExtension.UNKNOWN.getName();
-  }
+   public synchronized int getId() {
+      return this.id;
+   }
 
-  public int hashCode() {
-    return getId();
-  }
+   public synchronized String[] getUIDs() {
+      return null;
+   }
 
-  public boolean isDownloading() {
-    return core.getFileCollection().containsHash(getMd4());
-  }
+   public synchronized String getLengthTag() {
+      return this.tag_length != null ? this.tag_length : "";
+   }
 
-  protected void parseTags() {
-    tag_codec = SResources.S_ES;
-    tag_length = SResources.S_ES;
-    String tagName;
-    for (int i = 0; i < tagList.length; i++) {
-      tagName = tagList[i].getName();
-      if (tagName.equals(TAG_LENGTH) || tagName.equals(TAG_TIME) || tagName.equals(TAG_SECONDS))
-        tag_length = tagList[i].getStringValue();
-      else if (tagName.equals(TAG_CODEC) || tagName.equals(TAG_RESOLUTION) || tagName.equals(TAG_SAMPLE_RATE))
-        tag_codec = tagList[i].getStringValue();
-      else if (tagName.equals(TAG_BITRATE))
-        tag_bitrate = tagList[i].getValue();
-      else if (tagName.equals(TAG_COMPLETESOURCES))
-        tag_completesources = tagList[i].getValue();
-      else if (tagName.equals(TAG_QUALITY)) {
-        StringTokenizer st = new StringTokenizer(tagList[i].getStringValue());
-        if (st.hasMoreTokens()) {
-          try {
-            tag_bitrate = Integer.parseInt(st.nextToken());
-          } catch (Exception e) {
-          }
-        }
-      } else if (tagName.equals(TAG_AVAILABILITY))
-        tag_availability = tagList[i].getValue();
-      if (tag_availability == 0)
-        tag_availability = 1;
-    }
-  }
+   public synchronized String getMD4() {
+      return SwissArmy.calcStringOfMD4(this.md4);
+   }
 
-  protected void readUIDs(MessageBuffer messageBuffer) {
-    this.md4 = messageBuffer.getMd4();
-  }
+   public Image getFileTypeImage() {
+      return SResources.getFileTypeImage(this.getFormat());
+   }
 
-  //guiEncoding#buf_result
-  public void read(int id, MessageBuffer messageBuffer) {
-    synchronized (this) {
-      this.id = id;
-      this.networkEnum = readNetworkEnum(messageBuffer);
-      this.names = messageBuffer.getStringList();
-      readUIDs(messageBuffer);
-      this.size = readSize(messageBuffer);
-      this.format = messageBuffer.getString();
-      this.calcFormat();
-      this.type = messageBuffer.getString();
-      this.tagList = messageBuffer.getTagList();
-      this.comment = messageBuffer.getString();
-      this.downloaded = messageBuffer.getBool();
-      this.regexFilters();
-      this.parseTags();
-      this.setRating();
-      this.calcFileType();
-    }
-  }
+   public String getName() {
+      String[] var1 = this.getNames();
+      if (var1.length < 1) {
+         return "";
+      } else {
+         String var2 = var1[0];
+         EnumNetwork var3 = this.getEnumNetwork();
+         if (var3 == EnumNetwork.GNUT || var3 == EnumNetwork.GNUT2) {
+            String var4 = String.valueOf('\u0000');
+            var2 = SwissArmy.replaceAll(var2, var4, "");
+         }
 
-  // guiEncoding#buf_result
-  public void read(MessageBuffer messageBuffer) {
-    read(messageBuffer.getInt32(), messageBuffer);
-  }
-
-  protected long readSize(MessageBuffer messageBuffer) {
-    return messageBuffer.getInt32() & 0xFFFFFFFFL;
-  }
-
-  //  public void readJigle(int id, long size, String hash, int avail, String[]
-  // filenames) {
-  //    this.id = id;
-  //    setSize(size);
-  //    this.md4 = hash;
-  //    this.tag_availability = avail;
-  //    this.names = filenames;
-  //    this.tag_length = Resources.S_ES;
-  //    this.tag_codec = Resources.S_ES;
-  //    this.tag_availability = avail;
-  //    this.comment = Resources.S_ES;
-  //    this.network = core.getNetworkCollection().getByEnum(EnumNetwork.DONKEY);
-  //    this.stringSize = SwissArmy.calcStringSize(this.getSize());
-  //    this.regexFilters();
-  //    this.setRating();
-  //  }
-
-  protected void regexFilters() {
-    if (core.getResultCollection().filterPornography || core.getResultCollection().filterProfanity) {
-      for (int i = 0; i < names.length; i++) {
-        if ((profanityFilterRE != null) && (profanityFilterRE.getMatch(names[i]) != null)) {
-          containsProfanity = true;
-          if (containsPornography)
-            break;
-        }
-
-        if ((pornographyFilterRE != null) && (pornographyFilterRE.getMatch(names[i]) != null)) {
-          containsPornography = true;
-          if (containsProfanity)
-            break;
-        }
-
-        if ((fakeRE != null) && (fakeRE.getMatch(names[i]) != null))
-          containsFake = true;
+         return var2;
       }
-    }
+   }
 
-    if (!containsFake && (fakeRE != null)) {
-      if (fakeRE.getMatch(this.comment) != null)
-        containsFake = true;
-    }
-  }
+   public synchronized String[] getNames() {
+      return this.names != null ? this.names : new String[0];
+   }
 
-  protected void calcFileType() {
-    EnumExtension enumExtension = EnumExtension.GET_EXT(getFormat());
-    extensionEnum = enumExtension != null ? enumExtension : EnumExtension.UNKNOWN;
-  }
+   public synchronized EnumRating getRating() {
+      return this.rating;
+   }
 
-  protected EnumNetwork readNetworkEnum(MessageBuffer messageBuffer) {
-    return core.getNetworkCollection().getNetworkEnum(messageBuffer.getInt32());
-  }
+   public synchronized String getRatingString() {
+      if (this.core.getResultCollection().verboseNumbers) {
+         StringBuffer var1 = new StringBuffer();
+         var1.append(this.rating.getName());
+         var1.append("(");
+         var1.append(this.getAvail());
+         var1.append(")");
+         return var1.toString().intern();
+      } else {
+         return String.valueOf(this.getAvail());
+      }
+   }
 
-  protected void setRating() {
-    this.rating = containsFake ? EnumRating.FAKE : EnumRating.intToEnum(getAvail());
-  }
+   public synchronized long getSize() {
+      return this.size;
+   }
 
-  static {
-    // who knows how to filter this garbage properly...
-    try {
-      profanityFilterRE = new RE("fuck|shit", RE.REG_ICASE);
-    } catch (REException e) {
-      profanityFilterRE = null;
-    }
+   public synchronized String getSizeString() {
+      return SwissArmy.calcStringSize(this.getSize()).intern();
+   }
 
-    try {
-      pornographyFilterRE = new RE("fuck|shit|porn|pr0n|pussy|xxx|sex|erotic|anal|lolita|sluts|fetish"
-          + "|naked|incest|bondage|masturbat|blow.*job|barely.*legal", RE.REG_ICASE);
-    } catch (REException e) {
-      pornographyFilterRE = null;
-    }
+   public synchronized Tag[] getTagList() {
+      if (this.tagList != null && this.tagList.length != 0) {
+         Tag[] var1 = new Tag[this.tagList.length];
+         System.arraycopy(this.tagList, 0, var1, 0, this.tagList.length);
+         return var1;
+      } else {
+         return new Tag[0];
+      }
+   }
 
-    try {
-      fakeRE = new RE("fake", RE.REG_ICASE);
-    } catch (REException e) {
-      fakeRE = null;
-    }
-  }
+   public String getToolTip() {
+      return this.getName() + "\n" + this.getToolTipContent();
+   }
+
+   public String getToolTipContent() {
+      StringBuffer var1 = new StringBuffer();
+      String[] var2 = this.getUIDs();
+      if (var2 != null) {
+         for (int var3 = 0; var3 < var2.length; var3++) {
+            var1.append(var2[var3]);
+            var1.append("\n");
+         }
+      } else if (this.getEnumNetwork() == EnumNetwork.DONKEY) {
+         var1.append(RS_MD4);
+         var1.append(this.getMD4().toUpperCase());
+         var1.append("\n");
+      }
+
+      var1.append(RS_NETWORK);
+      var1.append(this.getEnumNetwork().getName());
+      var1.append("\n");
+      if (!this.getFormat().equals("")) {
+         var1.append(RS_FORMAT);
+         var1.append(this.getFormat());
+         var1.append("\n");
+      }
+
+      var1.append(RS_SIZE);
+      var1.append(this.getSizeString());
+      Tag[] var6 = this.getTagList();
+
+      for (int var5 = 0; var5 < var6.length; var5++) {
+         Tag var4 = var6[var5];
+         var1.append("\n");
+         var1.append(this.localizeTagName(var4.getName()));
+         var1.append(": ");
+         if (var4.getType() == EnumType.STRING) {
+            var1.append(var4.getStringValue());
+         } else {
+            var1.append(var4.getValue());
+         }
+      }
+
+      if (this.downloaded()) {
+         var1.append("\n");
+         var1.append(RS_ADOWNLOADED);
+      }
+
+      return var1.toString();
+   }
+
+   protected String localizeTagName(String var1) {
+      String var2 = this.lookupTagName(var1);
+      return var2 == null ? var1 : SResources.getString(var2);
+   }
+
+   protected String lookupTagName(String var1) {
+      if (var1.equalsIgnoreCase("length")) {
+         return "s.r.tag.length";
+      } else if (var1.equalsIgnoreCase("time")) {
+         return "s.r.tag.time";
+      } else if (var1.equalsIgnoreCase("seconds")) {
+         return "s.r.tag.seconds";
+      } else if (var1.equalsIgnoreCase("codec")) {
+         return "s.r.tag.codec";
+      } else if (var1.equalsIgnoreCase("resolution")) {
+         return "s.r.tag.resolution";
+      } else if (var1.equalsIgnoreCase("sampleRate")) {
+         return "s.r.tag.samplerate";
+      } else if (var1.equalsIgnoreCase("bitrate")) {
+         return "s.r.tag.bitrate";
+      } else if (var1.equalsIgnoreCase("quality")) {
+         return "s.r.tag.quality";
+      } else if (var1.equalsIgnoreCase("availability")) {
+         return "s.r.tag.availability";
+      } else {
+         return var1.equalsIgnoreCase("completesources") ? "s.r.tag.completesources" : null;
+      }
+   }
+
+   public synchronized String getType() {
+      if (this.type != null && !this.type.equals("")) {
+         return this.type;
+      } else {
+         return this.extensionEnum != null ? this.extensionEnum.getName() : EnumExtension.UNKNOWN.getName();
+      }
+   }
+
+   public int hashCode() {
+      return this.getId();
+   }
+
+   public boolean isDownloading() {
+      return this.core.getFileCollection().containsHash(this.getMD4());
+   }
+
+   protected void parseTags() {
+      this.tag_codec = "";
+      this.tag_length = "";
+
+      for (int var2 = 0; var2 < this.tagList.length; var2++) {
+         String var1 = this.tagList[var2].getName();
+         if (var1.equals("length") || var1.equals("time") || var1.equals("seconds")) {
+            this.tag_length = this.tagList[var2].getStringValue();
+         } else if (var1.equals("codec") || var1.equals("resolution") || var1.equals("sampleRate")) {
+            this.tag_codec = this.tagList[var2].getStringValue();
+         } else if (var1.equals("bitrate")) {
+            this.tag_bitrate = this.tagList[var2].getValue();
+         } else if (var1.equals("completesources")) {
+            this.tag_completesources = this.tagList[var2].getValue();
+         } else if (var1.equals("quality")) {
+            StringTokenizer var3 = new StringTokenizer(this.tagList[var2].getStringValue());
+            if (var3.hasMoreTokens()) {
+               try {
+                  this.tag_bitrate = Integer.parseInt(var3.nextToken());
+               } catch (Exception var5) {
+               }
+            }
+         } else if (var1.equals("availability")) {
+            this.tag_availability = this.tagList[var2].getValue();
+         }
+
+         if (this.tag_availability == 0) {
+            this.tag_availability = 1;
+         }
+      }
+   }
+
+   protected void readUIDs(MessageBuffer var1) {
+      this.md4 = var1.getMd4();
+   }
+
+   public void read(int var1, MessageBuffer var2) {
+      synchronized (this) {
+         this.id = var1;
+         this.networkEnum = this.readNetworkEnum(var2);
+         this.names = var2.getStringList();
+         this.readUIDs(var2);
+         this.size = this.readSize(var2);
+         this.format = var2.getString();
+         this.calcFormat();
+         this.type = var2.getString();
+         this.tagList = var2.getTagList();
+         this.comment = var2.getString();
+         this.downloaded = var2.getBool();
+         this.regexFilters();
+         this.parseTags();
+         this.setRating();
+         this.calcFileType();
+      }
+   }
+
+   public void read(MessageBuffer var1) {
+      this.read(var1.getInt32(), var1);
+   }
+
+   protected long readSize(MessageBuffer var1) {
+      return (long)var1.getInt32() & 4294967295L;
+   }
+
+   protected void regexFilters() {
+      if (this.core.getResultCollection().filterPornography || this.core.getResultCollection().filterProfanity) {
+         for (int var1 = 0; var1 < this.names.length; var1++) {
+            if (profanityFilterRE != null && profanityFilterRE.getMatch(this.names[var1]) != null) {
+               this.containsProfanity = true;
+               if (this.containsPornography) {
+                  break;
+               }
+            }
+
+            if (pornographyFilterRE != null && pornographyFilterRE.getMatch(this.names[var1]) != null) {
+               this.containsPornography = true;
+               if (this.containsProfanity) {
+                  break;
+               }
+            }
+
+            if (!this.containsFake) {
+               this.containsFake = SwissArmy.containsFake(this.names[var1]);
+            }
+         }
+      }
+
+      if (!this.containsFake) {
+         this.containsFake = SwissArmy.containsFake(this.comment);
+      }
+   }
+
+   protected void calcFileType() {
+      EnumExtension var1 = EnumExtension.GET_EXT(this.getFormat());
+      this.extensionEnum = var1 != null ? var1 : EnumExtension.UNKNOWN;
+   }
+
+   protected EnumNetwork readNetworkEnum(MessageBuffer var1) {
+      return this.core.getNetworkCollection().getNetworkEnum(var1.getInt32());
+   }
+
+   protected void setRating() {
+      this.rating = this.containsFake ? EnumRating.FAKE : EnumRating.intToEnum(this.getAvail());
+   }
+
+   static {
+      try {
+         profanityFilterRE = new RE("fuck|shit", 2);
+      } catch (REException var3) {
+         profanityFilterRE = null;
+      }
+
+      try {
+         pornographyFilterRE = new RE(
+            "fuck|shit|porn|pr0n|pussy|xxx|sex|erotic|anal|lolita|sluts|fetish|naked|incest|bondage|masturbat|blow.*job|barely.*legal", 2
+         );
+      } catch (REException var2) {
+         pornographyFilterRE = null;
+      }
+
+      try {
+         fakeRE = new RE("fake", 2);
+      } catch (REException var1) {
+         fakeRE = null;
+      }
+   }
 }

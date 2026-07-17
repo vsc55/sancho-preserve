@@ -1,176 +1,169 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.utility;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-
 import sancho.core.ICore;
 import sancho.core.Sancho;
 import sancho.view.MainWindow;
 import sancho.view.viewFrame.ViewFrame;
 
 public abstract class AbstractTab {
+   private boolean active;
+   protected Composite contentComposite;
+   protected MainWindow mainWindow;
+   protected ToolButton toolButton;
+   protected List viewFrameList;
 
-  private boolean active;
-  protected Composite contentComposite;
-  protected MainWindow mainWindow;
-  protected ToolButton toolButton;
-  protected List viewFrameList;
+   public AbstractTab(MainWindow var1, String var2) {
+      this.mainWindow = var1;
+      this.contentComposite = new Composite(var1.getPageContainer(), 0);
+      this.contentComposite.setLayout(new FillLayout());
+      this.contentComposite.setLayoutData(new GridData(1808));
+      this.createButton(var2);
+      this.createContents(this.contentComposite);
+   }
 
-  public AbstractTab(MainWindow mainWindow, String resButtonString) {
-    this.mainWindow = mainWindow;
-    this.contentComposite = new Composite(mainWindow.getPageContainer(), SWT.NONE);
-    this.contentComposite.setLayout(new FillLayout());
-    this.contentComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-    this.createButton(resButtonString);
-    createContents(this.contentComposite);
-  }
-
-  public void addViewFrame(ViewFrame viewFrame) {
-    if (viewFrameList == null)
-      viewFrameList = new ArrayList();
-
-    viewFrameList.add(viewFrame);
-  }
-
-  public void allViewFramesUpdateDisplay() {
-    if (viewFrameList == null)
-      return;
-    
-    for (int i = 0; i < viewFrameList.size(); ++i) {
-      ViewFrame viewFrame = (ViewFrame) viewFrameList.get(i);
-      viewFrame.updateDisplay();
-    }
-  }
-
-  public void createButton(String buttonName) {
-    toolButton = new ToolButton(mainWindow.getCoolBar().getToolBar(), SWT.PUSH);
-    toolButton.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent s) {
-        if (!isActive())
-          setActive();
+   public void addViewFrame(ViewFrame var1) {
+      if (this.viewFrameList == null) {
+         this.viewFrameList = new ArrayList();
       }
-    });
-    toolButton.setText(SResources.getString(buttonName));
-    toolButton.setToolTipText(SResources.getString(buttonName + ".tooltip"));
-    toolButton.setBigActiveImage(SResources.getImage(buttonName + ".buttonActive"));
-    toolButton.setBigInactiveImage(SResources.getImage(buttonName + ".button"));
-    toolButton.setSmallActiveImage(SResources.getImage(buttonName + ".buttonSmallActive"));
-    toolButton.setSmallInactiveImage(SResources.getImage(buttonName + ".buttonSmall"));
-    toolButton.useSmallButtons(this.mainWindow.getCoolBar().isToolbarSmallButtons());
-    toolButton.setActive(false);
-    toolButton.resetImage();
-    this.mainWindow.getCoolBar().getMainToolButtons().add(toolButton);
-  }
 
-  protected abstract void createContents(Composite parent);
+      this.viewFrameList.add(var1);
+   }
 
-  public void dispose() {
-    this.toolButton.dispose();
-  }
+   public void allViewFramesUpdateDisplay() {
+      if (this.viewFrameList != null) {
+         for (int var1 = 0; var1 < this.viewFrameList.size(); var1++) {
+            ViewFrame var2 = (ViewFrame)this.viewFrameList.get(var1);
+            var2.updateDisplay();
+         }
+      }
+   }
 
-  public Composite getContent() {
-    return contentComposite;
-  }
+   public void createButton(String var1) {
+      this.toolButton = new ToolButton(this.mainWindow.getCoolBar().getToolBar(), 8);
+      this.toolButton.addSelectionListener(new AbstractTab$1(this));
+      this.toolButton.setText(SResources.getString(var1));
+      this.toolButton.setToolTipText(SResources.getString(var1 + ".tooltip"));
+      this.toolButton.setBigActiveImage(SResources.getImage(var1 + ".buttonActive"));
+      this.toolButton.setBigInactiveImage(SResources.getImage(var1 + ".button"));
+      this.toolButton.setSmallActiveImage(SResources.getImage(var1 + ".buttonSmallActive"));
+      this.toolButton.setSmallInactiveImage(SResources.getImage(var1 + ".buttonSmall"));
+      this.toolButton.useSmallButtons(this.mainWindow.getCoolBar().isToolbarSmallButtons());
+      this.toolButton.setActive(false);
+      this.toolButton.resetImage();
+      this.mainWindow.getCoolBar().getMainToolButtons().add(this.toolButton);
+   }
 
-  public ICore getCore() {
-    return Sancho.getCore();
-  }
+   protected abstract void createContents(Composite var1);
 
-  public MainWindow getMainWindow() {
-    return mainWindow;
-  }
+   public void dispose() {
+      this.toolButton.dispose();
 
-  public ToolButton getToolButton() {
-    return this.toolButton;
-  }
+      for (int var1 = 0; var1 < this.viewFrameList.size(); var1++) {
+         ViewFrame var2 = (ViewFrame)this.viewFrameList.get(var1);
+         var2.dispose();
+      }
 
-  public List getViewFrameList() {
-    return viewFrameList;
-  }
+      this.viewFrameList.clear();
+      if (this.contentComposite != null && !this.contentComposite.isDisposed()) {
+         this.contentComposite.dispose();
+      }
+   }
 
-  public boolean isActive() {
-    return active;
-  }
+   public Composite getContent() {
+      return this.contentComposite;
+   }
 
-  public void onConnect() {
-    if (getCore() != null && this.isActive())
-      getCore().setActiveTab(this);
+   public ICore getCore() {
+      return Sancho.getCore();
+   }
 
-    if (viewFrameList == null)
-      return;
+   public MainWindow getMainWindow() {
+      return this.mainWindow;
+   }
 
-    for (int i = 0; i < viewFrameList.size(); ++i) {
-      ViewFrame viewFrame = (ViewFrame) viewFrameList.get(i);
-      viewFrame.onConnect();
-    }
-  }
+   public ToolButton getToolButton() {
+      return this.toolButton;
+   }
 
-  public void onDisconnect() {
-    if (viewFrameList == null)
-      return;
+   public List getViewFrameList() {
+      return this.viewFrameList;
+   }
 
-    for (int i = 0; i < viewFrameList.size(); ++i) {
-      ViewFrame viewFrame = (ViewFrame) viewFrameList.get(i);
-      viewFrame.onDisconnect();
-    }
-  }
+   public boolean isActive() {
+      return this.active;
+   }
 
-  public void setVisible(boolean b) {
-    if (viewFrameList == null)
-      return;
+   public void onConnect() {
+      if (this.getCore() != null && this.isActive()) {
+         this.getCore().setActiveTab(this);
+      }
 
-    for (int i = 0; i < viewFrameList.size(); ++i) {
-      ViewFrame viewFrame = (ViewFrame) viewFrameList.get(i);
-      if (viewFrame != null)
-        viewFrame.setVisible(b);
-    }
-  }
+      if (this.viewFrameList != null) {
+         for (int var1 = 0; var1 < this.viewFrameList.size(); var1++) {
+            ViewFrame var2 = (ViewFrame)this.viewFrameList.get(var1);
+            var2.onConnect();
+         }
+      }
+   }
 
-  public void removeViewFrame(ViewFrame viewFrame) {
-    viewFrameList.remove(viewFrame);
-  }
+   public void onDisconnect() {
+      if (this.viewFrameList != null) {
+         for (int var1 = 0; var1 < this.viewFrameList.size(); var1++) {
+            ViewFrame var2 = (ViewFrame)this.viewFrameList.get(var1);
+            var2.onDisconnect();
+         }
+      }
+   }
 
-  public void setActive() {
+   public void setVisible(boolean var1) {
+      if (this.viewFrameList != null) {
+         for (int var2 = 0; var2 < this.viewFrameList.size(); var2++) {
+            ViewFrame var3 = (ViewFrame)this.viewFrameList.get(var2);
+            if (var3 != null) {
+               var3.setVisible(var1);
+            }
+         }
+      }
+   }
 
-    this.active = true;
-    this.mainWindow.setActive(this);
-    this.toolButton.setActive(true);
-    toggleAllViewFramesActive(true);
-    if (getCore() != null)
-      getCore().setActiveTab(this);
-  }
+   public void removeViewFrame(ViewFrame var1) {
+      this.viewFrameList.remove(var1);
+   }
 
-  public void setInActive() {
-    this.active = false;
-    this.toolButton.setActive(false);
-    toggleAllViewFramesActive(false);
-  }
+   public void setActive() {
+      this.active = true;
+      this.mainWindow.setActive(this);
+      this.toolButton.setActive(true);
+      this.toggleAllViewFramesActive(true);
+      if (this.getCore() != null) {
+         this.getCore().setActiveTab(this);
+      }
+   }
 
-  public void toggleAllViewFramesActive(boolean b) {
-    if (viewFrameList == null)
-      return;
+   public void setInActive() {
+      this.active = false;
+      this.toolButton.setActive(false);
+      this.toggleAllViewFramesActive(false);
+   }
 
-    for (int i = 0; i < viewFrameList.size(); ++i) {
-      ViewFrame viewFrame = (ViewFrame) viewFrameList.get(i);
-      if (viewFrame != null)
-        viewFrame.setActive(b);
-    }
-  }
+   public void toggleAllViewFramesActive(boolean var1) {
+      if (this.viewFrameList != null) {
+         for (int var2 = 0; var2 < this.viewFrameList.size(); var2++) {
+            ViewFrame var3 = (ViewFrame)this.viewFrameList.get(var2);
+            if (var3 != null) {
+               var3.setActive(var1);
+            }
+         }
+      }
+   }
 
-  public void updateDisplay() {
-    getContent().layout();
-    allViewFramesUpdateDisplay();
-  }
+   public void updateDisplay() {
+      this.getContent().layout();
+      this.allViewFramesUpdateDisplay();
+   }
 }

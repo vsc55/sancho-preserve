@@ -1,16 +1,9 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.search;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-
 import sancho.core.Sancho;
 import sancho.model.mldonkey.utility.SearchQuery;
 import sancho.view.SearchTab;
@@ -19,135 +12,113 @@ import sancho.view.search.result.ResultViewFrame;
 import sancho.view.utility.SResources;
 
 public class SearchTab_Audio extends ASearchTab2 {
-  private Combo albumCombo;
-  private Combo artistCombo;
-  private Combo bitrateCombo;
+   private Combo albumCombo;
+   private Combo artistCombo;
+   private Combo bitrateCombo;
 
-  public SearchTab_Audio(ResultViewFrame viewFrame, SearchTab tab) {
-    super(viewFrame, tab);
-  }
+   public SearchTab_Audio(ResultViewFrame var1, SearchTab var2) {
+      super(var1, var2);
+   }
 
-  public Control createTab(CTabFolder cTabFolder) {
-    Composite composite = createMainComposite(cTabFolder);
+   public Control createTab(CTabFolder var1) {
+      Composite var2 = this.createMainComposite(var1);
+      this.searchCombo = this.createSavedSearchCombo(var2, "s.a.title", "audioTitleSearchFor");
+      this.artistCombo = this.createSavedSearchCombo(var2, "s.a.artist", "audioArtistSearchFor");
+      this.albumCombo = this.createSavedSearchCombo(var2, "s.a.album", "audioAlbumSearchFor");
+      this.createSeparator(var2);
+      String[] var3 = new String[]{"", "32kb", "64kb", "96kb", "128kb", "160kb", "192kb", "256kb", "320kb"};
+      this.bitrateCombo = this.createCombo(var2, 8, "s.a.bitrate", var3);
+      this.createNetworkCombo(var2);
+      var3 = new String[]{"", "mp3", "ogg", "wav", "midi"};
+      this.formatCombo = this.createCombo(var2, 0, "s.format", var3);
+      this.searchTypeCombo = this.createSearchTypeCombo(var2);
+      this.createSeparator(var2);
+      var3 = new String[]{"", "3", "5", "10", "25", "50"};
+      this.minAvailCombo = this.createCombo(var2, 0, "s.minAvail", var3);
+      this.minCombo = this.createMinMaxCombo(var2, 0, "s.minSize");
+      this.maxCombo = this.createMinMaxCombo(var2, 0, "s.maxSize");
+      var3 = new String[]{"", "50", "100", "200", "400"};
+      this.resultCombo = this.createIntegerCombo(var2, 0, "s.maxResults", var3);
+      var2.setData(this);
+      return var2;
+   }
 
-    this.searchCombo = createSavedSearchCombo(composite, "s.a.title", "audioTitleSearchFor");
-    this.artistCombo = createSavedSearchCombo(composite, "s.a.artist", "audioArtistSearchFor");
-    this.albumCombo = createSavedSearchCombo(composite, "s.a.album", "audioAlbumSearchFor");
+   public String getText() {
+      return SResources.getString("s.tab.audio");
+   }
 
-    createSeparator(composite);
+   public void performSearch() {
+      String var1 = this.searchCombo.getText();
+      String var2 = this.albumCombo.getText();
+      String var3 = this.artistCombo.getText();
+      String var4 = "";
+      if (!var1.equals("") || !var3.equals("") || !var2.equals("")) {
+         if (Sancho.hasCollectionFactory()) {
+            SearchQuery var5 = this.viewFrame.getCore().getCollectionFactory().getSearchQuery();
+            if (!var1.equals("")) {
+               this.searchCombo.add(var1, 0);
+               var5.setMp3Title(var1);
+               var4 = var4 + var1;
+            }
 
-    // bitrate
-    String[] items = {SResources.S_ES, "32kb", "64kb", "96kb", "128kb", "160kb", "192kb", "256kb", "320kb"};
-    this.bitrateCombo = createCombo(composite, SWT.READ_ONLY, "s.a.bitrate", items);
+            if (!var3.equals("")) {
+               this.artistCombo.add(var3, 0);
+               var5.setMp3Artist(var3);
+               if (var4.length() > 0) {
+                  var4 = var4 + "/";
+               }
 
-    // network
-    this.createNetworkCombo(composite);
+               var4 = var4 + var3;
+            }
 
-    // format
-    items = items = new String[]{SResources.S_ES, "mp3", "ogg", "wav", "midi"};
-    formatCombo = createCombo(composite, SWT.NULL, "s.format", items);
+            if (!var2.equals("")) {
+               this.albumCombo.add(var2, 0);
+               var5.setMp3Album(var2);
+               if (var4.length() > 0) {
+                  var4 = var4 + "/";
+               }
 
-    this.searchTypeCombo = createSearchTypeCombo(composite);
+               var4 = var4 + var2;
+            }
 
-    createSeparator(composite);
+            this.artistCombo.setText("");
+            this.albumCombo.setText("");
+            this.searchCombo.setText("");
+            String var6 = this.bitrateCombo.getText();
+            if (!var6.equals("")) {
+               int var7;
+               try {
+                  var7 = Integer.parseInt(var6.substring(0, var6.length() - 2));
+               } catch (NumberFormatException var10) {
+                  var7 = 0;
+               }
 
-    // minAvail
-    items = new String[]{SResources.S_ES, "3", "5", "10", "25", "50"};
-    this.minAvailCombo = createCombo(composite, SWT.NULL, "s.minAvail", items);
+               var5.setMp3Bitrate(String.valueOf(var7));
+            }
 
-    // minSize
-    this.minCombo = createMinMaxCombo(composite, SWT.NULL, "s.minSize");
+            this.parseSearchType(this.searchTypeCombo, var5);
+            this.addMinSizeToQuery(var5, this.minCombo);
+            this.addMaxSizeToQuery(var5, this.maxCombo);
+            if (!this.resultCombo.getText().equals("")) {
+               int var11 = 0;
 
-    // maxSize
-    this.maxCombo = createMinMaxCombo(composite, SWT.NULL, "s.maxSize");
+               try {
+                  var11 = Integer.parseInt(this.resultCombo.getText());
+               } catch (NumberFormatException var9) {
+                  var11 = 100;
+               }
 
-    // maxResults
-    items = new String[]{SResources.S_ES, "50", "100", "200", "400"};
-    this.resultCombo = createIntegerCombo(composite, SWT.NULL, "s.maxResults", items);
+               var5.setMaxSearchResults(var11);
+            }
 
-    composite.setData(this);
-    return composite;
-  }
+            if (!this.formatCombo.getText().equals("")) {
+               var5.setFormat(this.formatCombo.getText());
+            }
 
-  public String getText() {
-    return SResources.getString("s.tab.audio");
-  }
-
-  public void performSearch() {
-    String title = this.searchCombo.getText();
-    String album = this.albumCombo.getText();
-    String artist = this.artistCombo.getText();
-    String tabTitle = SResources.S_ES;
-
-    if (title.equals(SResources.S_ES) && artist.equals(SResources.S_ES) && album.equals(SResources.S_ES))
-      return;
-
-    if (!Sancho.hasCollectionFactory())
-      return;
-
-    SearchQuery searchQuery = viewFrame.getCore().getCollectionFactory().getSearchQuery();
-
-    if (!title.equals(SResources.S_ES)) {
-      searchCombo.add(title);
-      searchQuery.setMp3Title(title);
-      tabTitle += title;
-    }
-
-    if (!artist.equals(SResources.S_ES)) {
-      artistCombo.add(artist);
-      searchQuery.setMp3Artist(artist);
-      if (tabTitle.length() > 0)
-        tabTitle += "/";
-      tabTitle += artist;
-
-    }
-    if (!album.equals(SResources.S_ES)) {
-      albumCombo.add(album);
-      searchQuery.setMp3Album(album);
-      if (tabTitle.length() > 0)
-        tabTitle += "/";
-      tabTitle += album;
-    }
-
-    artistCombo.setText(SResources.S_ES);
-    albumCombo.setText(SResources.S_ES);
-    searchCombo.setText(SResources.S_ES);
-
-    String bitrateString = bitrateCombo.getText();
-
-    if (!bitrateString.equals(SResources.S_ES)) {
-      int rate;
-      try {
-        rate = Integer.parseInt(bitrateString.substring(0, bitrateString.length() - 2));
-      } catch (NumberFormatException e) {
-        rate = 0;
+            this.addNetwork(var5);
+            var5.send();
+            new ResultTab(this.viewFrame, this.searchTab.getCTabFolder(), this.searchTab, var5.getSearchId(), var4);
+         }
       }
-      searchQuery.setMp3Bitrate(String.valueOf(rate));
-    }
-
-    parseSearchType(searchTypeCombo, searchQuery);
-
-    addMinSizeToQuery(searchQuery, minCombo);
-    addMaxSizeToQuery(searchQuery, maxCombo);
-
-    if (!resultCombo.getText().equals(SResources.S_ES)) {
-      int maxResults = 0;
-
-      try {
-        maxResults = Integer.parseInt(resultCombo.getText());
-      } catch (NumberFormatException e) {
-        maxResults = 100;
-      }
-      searchQuery.setMaxSearchResults(maxResults);
-    }
-
-    if (!formatCombo.getText().equals(SResources.S_ES))
-      searchQuery.setFormat(formatCombo.getText());
-
-    addNetwork(searchQuery);
-
-    searchQuery.send();
-    new ResultTab(viewFrame, searchTab.getCTabFolder(), this.searchTab, searchQuery.getSearchId(), tabTitle);
-  }
-
+   }
 }

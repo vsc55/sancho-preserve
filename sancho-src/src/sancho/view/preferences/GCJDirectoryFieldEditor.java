@@ -1,56 +1,45 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.preferences;
 
 import java.io.File;
-
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 
-import sancho.view.utility.SResources;
-
 public class GCJDirectoryFieldEditor extends DirectoryFieldEditor {
-  public GCJDirectoryFieldEditor(String name, String labelText, Composite parent) {
-    super(name, labelText, parent);
-  }
+   public GCJDirectoryFieldEditor(String var1, String var2, Composite var3) {
+      super(var1, var2, var3);
+   }
 
-  protected String changePressed() {
-    String input = getTextControl().getText();
+   protected String changePressed() {
+      String var1 = this.getTextControl().getText();
+      if (var1.equals("") && SWT.getPlatform().equals("win32")) {
+         var1 = ".";
+      }
 
-    if (input.equals(SResources.S_ES) && SWT.getPlatform().equals("win32"))
-      input = ".";
+      File var2 = new File(var1);
+      if (!var2.exists()) {
+         var2 = null;
+      }
 
-    File f = new File(input);
+      File var3 = this.getDirectory(var2);
+      return var3 == null ? null : var3.getAbsolutePath();
+   }
 
-    if (!f.exists())
-      f = null;
+   private File getDirectory(File var1) {
+      DirectoryDialog var2 = new DirectoryDialog(this.getShell(), 4096);
+      if (var1 != null) {
+         var2.setFilterPath(var1.getPath());
+      }
 
-    File d = getDirectory(f);
+      String var3 = var2.open();
+      if (var3 != null) {
+         var3 = var3.trim();
+         if (var3.length() > 0) {
+            return new File(var3);
+         }
+      }
 
-    if (d == null)
       return null;
-
-    return d.getAbsolutePath();
-  }
-
-  private File getDirectory(File startingDirectory) {
-
-    DirectoryDialog fileDialog = new DirectoryDialog(getShell(), SWT.OPEN);
-    if (startingDirectory != null)
-      fileDialog.setFilterPath(startingDirectory.getPath());
-    String dir = fileDialog.open();
-    if (dir != null) {
-      dir = dir.trim();
-      if (dir.length() > 0)
-        return new File(dir);
-    }
-
-    return null;
-  }
-
+   }
 }

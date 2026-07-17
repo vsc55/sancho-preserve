@@ -1,36 +1,28 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.server.users;
 
 import org.eclipse.jface.viewers.Viewer;
-
 import sancho.model.mldonkey.User;
 import sancho.view.viewer.GSorter;
 
 public class ServerUsersTableSorter extends GSorter {
-  public ServerUsersTableSorter(ServerUsersTableView sTableViewer) {
-    super(sTableViewer);
-  }
+   public ServerUsersTableSorter(ServerUsersTableView var1) {
+      super(var1);
+   }
 
-  public int compare(Viewer viewer, Object obj1, Object obj2) {
-    User user1 = (User) obj1;
-    User user2 = (User) obj2;
-
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case ServerUsersTableView.NAME :
-        return compareStrings(user1.getName(), user2.getName());
-      case ServerUsersTableView.TAGS :
-        return compareStrings(user1.getTagsString(), user2.getTagsString());
-      case ServerUsersTableView.ADDR :
-        return compareAddrs(user1.getAddr(), user2.getAddr());
-      case ServerUsersTableView.PORT :
-        return compareInts(user1.getPort(), user2.getPort());
-      default :
-        return 0;
-    }
-  }
+   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
+      User var5 = (User)var2;
+      User var6 = (User)var3;
+      switch (var4) {
+         case 0:
+            return this.compareStrings(var5.getName(), var6.getName());
+         case 1:
+            return this.compareStrings(var5.getTagsString(), var6.getTagsString());
+         case 2:
+            return this.compareAddrs(var5.getAddr(), var6.getAddr());
+         case 3:
+            return this.compareInts(var5.getPort(), var6.getPort());
+         default:
+            return 0;
+      }
+   }
 }
-

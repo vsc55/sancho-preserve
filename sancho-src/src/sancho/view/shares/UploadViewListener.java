@@ -1,14 +1,8 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.shares;
 
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-
+import sancho.view.utility.MyMenuManager;
 import sancho.view.utility.SResources;
 import sancho.view.viewFrame.TabbedViewFrame;
 import sancho.view.viewFrame.ViewFrame;
@@ -19,35 +13,23 @@ import sancho.view.viewer.actions.RefreshUploadsAction;
 import sancho.view.viewer.actions.RemoveAllFiltersAction;
 
 public class UploadViewListener extends ViewListener {
+   public UploadViewListener(ViewFrame var1) {
+      super(var1);
+   }
 
-  public UploadViewListener(ViewFrame viewFrame) {
-    super(viewFrame);
-  }
-
-  public void menuAboutToShow(IMenuManager menuManager) {
-    // refresh table
-    menuManager.add(new RefreshUploadsAction(gView));
-    menuManager.add(new Separator());
-    // columnSelector
-    menuManager.add(new ColumnSelectorAction(gView));
-    menuManager.add(new Separator());
-    createDynamicColumnSubMenu(menuManager);
-
-    // for macOS
-    createSortByColumnSubMenu(menuManager);
-
-    // filter submenu			
-    MenuManager filterSubMenu = new MenuManager(SResources.getString("mi.filter"));
-
-    // all filters
-    filterSubMenu.add(new RemoveAllFiltersAction(gView));
-    filterSubMenu.add(new Separator());
-
-    // network filters
-    createEnabledNetworkFilterSubMenu(filterSubMenu);
-
-    menuManager.add(filterSubMenu);
-    menuManager.add(new ToggleTabsAction((TabbedViewFrame) viewFrame));
-  }
+   public void menuAboutToShow(IMenuManager var1) {
+      var1.add(new RefreshUploadsAction());
+      var1.add(new Separator());
+      var1.add(new ColumnSelectorAction(this.gView));
+      var1.add(new Separator());
+      this.createDynamicColumnSubMenu(var1);
+      this.createSortByColumnSubMenu(var1);
+      MyMenuManager var2 = new MyMenuManager(SResources.getString("mi.show"));
+      var2.setImageString("target");
+      var2.add(new RemoveAllFiltersAction(this.gView));
+      var2.add(new Separator());
+      this.createEnabledNetworkFilterSubMenu(var2);
+      var1.add(var2);
+      var1.add(new ToggleTabsAction((TabbedViewFrame)this.viewFrame));
+   }
 }
-

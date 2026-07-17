@@ -6,23 +6,28 @@
 
     <groupId>org.sancho</groupId>
     <artifactId>sancho</artifactId>
-    <!-- Matches VersionInfo.VERSION in the source. The repo holds the 0.9.4-23
-         snapshot; the later published 0.9.4-59 binary was built from newer sources
-         that are not preserved here. -->
-    <version>0.9.4-23</version>
+    <!-- This branch holds the 0.9.4-59 sources recovered by decompiling the last
+         published binary (CFR). Unlike the 0.9.4-23 source on main, -59 already
+         moved off the deprecated SWT TableTree onto Tree, so no Eclipse classes
+         are vendored and stock (signed) SWT/JFace jars are used directly. -->
+    <version>0.9.4-59</version>
     <packaging>jar</packaging>
 
     <name>Sancho</name>
-    <description>Java/SWT GUI for the MLDonkey P2P client (archival preservation build)</description>
+    <description>Java/SWT GUI for the MLDonkey P2P client (0.9.4-59, decompiled)</description>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
-        <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
+        <!-- Vineflower emits UTF-8 (e.g. the SWT.MOZILLA style shows up as the
+             char literal '耀'). -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <!-- Signature-stripped SWT/JFace live here. The stock Eclipse jars are signed,
-         and Java refuses to load our vendored TableTree/TableTreeViewer classes into
-         a signed package. tools/unsign-libs regenerates this repo from Maven Central. -->
+    <!-- Like -23, -59 injects its own classes into an Eclipse package
+         (org.eclipse.jface.viewers.{ICustomViewer,CustomTableViewer,CustomTreeViewer}),
+         so JFace must be unsigned. SWT is not injected into, so stock SWT is fine,
+         but the unsigned-JFace artifact pulls the matching unsigned SWT anyway.
+         tools/unsign-libs.ps1 regenerates local-repo/. -->
     <repositories>
         <repository>
             <id>sancho-local</id>
@@ -33,8 +38,6 @@
     </repositories>
 
     <dependencies>
-        <!-- Unsigned SWT (win32/x86_64). For another OS/arch, strip signatures from
-             the matching org.eclipse.swt.* fragment and install it the same way. -->
         <dependency>
             <groupId>org.sancho.thirdparty</groupId>
             <artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
@@ -45,6 +48,13 @@
             <groupId>org.sancho.thirdparty</groupId>
             <artifactId>org.eclipse.jface</artifactId>
             <version>3.31.0-unsigned</version>
+        </dependency>
+
+        <!-- IRC support (sancho.view.irc.*) — new in -59. -->
+        <dependency>
+            <groupId>pircbot</groupId>
+            <artifactId>pircbot</artifactId>
+            <version>1.5.0</version>
         </dependency>
 
         <dependency>
@@ -68,7 +78,6 @@
 
     <build>
         <sourceDirectory>sancho-src/src</sourceDirectory>
-        <!-- Ship the .properties bundles and images that live alongside the sources. -->
         <resources>
             <resource>
                 <directory>sancho-src/src</directory>
@@ -106,7 +115,6 @@
                 </configuration>
             </plugin>
 
-            <!-- `mvn exec:java` launches the app straight from the class tree. -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>

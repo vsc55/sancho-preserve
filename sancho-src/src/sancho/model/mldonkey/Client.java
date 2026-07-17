@@ -1,19 +1,11 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
 import gnu.trove.THash;
 import gnu.trove.THashMap;
 import gnu.trove.TIntObjectHashMap;
-
 import java.util.Map;
 import java.util.WeakHashMap;
-
 import org.eclipse.swt.graphics.Image;
-
 import sancho.core.ICore;
 import sancho.model.mldonkey.enums.AbstractEnum;
 import sancho.model.mldonkey.enums.EnumClientMode;
@@ -24,390 +16,446 @@ import sancho.model.mldonkey.utility.Addr;
 import sancho.model.mldonkey.utility.HostState;
 import sancho.model.mldonkey.utility.Kind;
 import sancho.model.mldonkey.utility.MessageBuffer;
-import sancho.model.mldonkey.utility.OpCodes;
 import sancho.model.mldonkey.utility.Tag;
 import sancho.model.mldonkey.utility.UtilityFactory;
+import sancho.utility.SwissArmy;
 import sancho.view.utility.SResources;
 
 public class Client extends AObjectO {
+   public static final String RS_TRANSFERRING = SResources.getString("l.transferring");
+   public static final String RS_RANK = SResources.getString("l.rank");
+   public static final String RS_TRUE = SResources.getString("l.true");
+   public static final String RS_FALSE = SResources.getString("l.false");
+   protected static final String S_Q = " (Q: ";
+   public static final int CONNECTED = 1;
+   public static final int DISCONNECTED = 2;
+   public static final int TRANSFERRING_ADD = 4;
+   public static final int TRANSFERRING_REM = 8;
+   public static final int CHANGED_AVAIL = 16;
+   public static final int READ_CLIENT_FILE = 32;
+   protected THash avail;
+   protected int chatPort;
+   protected THashMap clientFilesMap;
+   protected EnumClientType enumClientType;
+   protected int id;
+   protected Kind kind;
+   protected String name;
+   protected EnumNetwork networkEnum;
+   protected int rating;
+   protected HostState state;
+   protected Tag[] tag;
+   protected EnumHostState stateEnum;
+   protected EnumClientMode clientModeEnum;
 
-  public static final String RS_TRANSFERRING = SResources.getString("l.transferring");
-  public static final String RS_RANK = SResources.getString("l.rank");
+   Client(ICore var1) {
+      super(var1);
+      this.state = UtilityFactory.getHostState(var1);
+      this.kind = UtilityFactory.getKind(var1);
+   }
 
-  protected static final String S_Q = " (Q: ";
+   public void addAsFriend() {
+      this.core.send((short)14, new Integer(this.getId()));
+   }
 
-  public static final int CONNECTED = 1;
-  public static final int DISCONNECTED = 2;
-  public static final int TRANSFERRING_ADD = 4;
-  public static final int TRANSFERRING_REM = 8;
+   public void connect() {
+   }
 
-  public static final int CHANGED_AVAIL = 16;
-  public static final int READ_CLIENT_FILE = 32;
+   public void disconnect() {
+   }
 
-  public static final Integer iTA = new Integer(TRANSFERRING_ADD);
-  public static final Integer iTAC = new Integer(TRANSFERRING_ADD | CONNECTED);
-  public static final Integer iTR = new Integer(TRANSFERRING_REM);
-  public static final Integer iTRD = new Integer(TRANSFERRING_REM | DISCONNECTED);
-  public static final Integer iD = new Integer(DISCONNECTED);
-  public static final Integer iC = new Integer(CONNECTED);
+   public boolean equals(Object var1) {
+      return var1 instanceof Client && this.getId() == ((Client)var1).getId();
+   }
 
-  public static final Integer iCHANGED_AVAIL = new Integer(CHANGED_AVAIL);
-  public static final Integer iREAD_CLIENT_FILE = new Integer(READ_CLIENT_FILE);
+   public Addr getAddr() {
+      return this.kind.getAddr();
+   }
 
-  protected THash avail;
-  protected int chatPort;
-  protected THashMap clientFilesMap;
-  protected EnumClientType enumClientType;
-  protected int id;
-  protected Kind kind;
-  protected String name;
-  protected EnumNetwork networkEnum;
-  protected int rating;
-  protected HostState state;
-  protected Tag[] tag;
-  protected EnumHostState stateEnum;
-  protected EnumClientMode clientModeEnum;
+   private TIntObjectHashMap getAvailMap() {
+      if (this.avail == null) {
+         this.avail = new TIntObjectHashMap();
+      }
 
-  Client(ICore core) {
-    super(core);
-    state = UtilityFactory.getHostState(core);
-    kind = UtilityFactory.getKind(core);
-  }
+      return (TIntObjectHashMap)this.avail;
+   }
 
-  public void addAsFriend() {
-    core.send(OpCodes.S_ADD_CLIENT_FRIEND, new Integer(getId()));
-  }
+   public String getClientActivity() {
+      return this.getStateEnum() == EnumHostState.CONNECTED_DOWNLOADING ? RS_TRANSFERRING : RS_RANK + this.getStateRank();
+   }
 
-  public void connect() {
-  }
+   public THashMap getClientFilesMap() {
+      if (this.clientFilesMap == null) {
+         this.clientFilesMap = new THashMap();
+      }
 
-  public void disconnect() {
-  }
+      return this.clientFilesMap;
+   }
 
-  public boolean equals(Object obj) {
-    return (obj instanceof Client && getId() == ((Client) obj).getId());
-  }
+   public synchronized Map getClientFilesResultMap(Object var1) {
+      return this.clientFilesMap == null ? null : (Map)this.clientFilesMap.get(var1);
+   }
 
-  public Addr getAddr() {
-    return this.kind.getAddr();
-  }
+   public synchronized EnumClientMode getClientModeEnum() {
+      return this.clientModeEnum;
+   }
 
-  private TIntObjectHashMap getAvailMap() {
-    if (avail == null)
-      avail = new TIntObjectHashMap();
-    return (TIntObjectHashMap) avail;
-  }
+   public int getConnectedTime() {
+      return 0;
+   }
 
-  public String getClientActivity() {
-    if (this.getStateEnum() == EnumHostState.CONNECTED_DOWNLOADING)
-      return RS_TRANSFERRING;
-    else
-      return RS_RANK + this.getStateRank();
-  }
+   public String getConnectedTimeString() {
+      return "";
+   }
 
-  public THashMap getClientFilesMap() {
-    if (clientFilesMap == null)
-      clientFilesMap = new THashMap();
-    return clientFilesMap;
-  }
+   public String getDetailedClientActivity() {
+      EnumHostState var1 = this.getStateEnum();
+      StringBuffer var2 = new StringBuffer();
+      var2.append(var1.getName());
+      if (var1 == EnumHostState.CONNECTED_DOWNLOADING && this.getStateFileNum() != -1) {
+         var2.append("(");
+         var2.append(this.getState().getFileNum());
+         var2.append(")");
+         return var2.toString().intern();
+      } else if (var1 != EnumHostState.CONNECTED_DOWNLOADING && this.getStateRank() > 0) {
+         var2.append(" (Q: ");
+         var2.append(this.getState().getRank());
+         var2.append(")");
+         return var2.toString().intern();
+      } else {
+         return var2.toString().intern();
+      }
+   }
 
-  public synchronized Map getClientFilesResultMap(Object key) {
-    if (clientFilesMap == null)
+   public long getDownloaded() {
+      return 0L;
+   }
+
+   public String getDownloadedString() {
+      return "";
+   }
+
+   public synchronized EnumClientType getEnumClientType() {
+      return this.enumClientType;
+   }
+
+   public synchronized boolean isFriend() {
+      return this.enumClientType == EnumClientType.FRIEND;
+   }
+
+   public synchronized EnumNetwork getEnumNetwork() {
+      return this.networkEnum;
+   }
+
+   public synchronized String getFileAvailability(int var1) {
+      return (String)this.getAvailMap().get(var1);
+   }
+
+   public synchronized String getFileAvailabilityPercentString(File var1) {
+      float var2 = this.getFileAvailabilityPercent(var1);
+      return var2 < 0.0F ? "" : SwissArmy.percentToString(var2);
+   }
+
+   public synchronized float getFileAvailabilityPercent(File var1) {
+      int var2 = var1.getId();
+      String var3 = this.getFileAvailability(var2);
+      if (var3 == null) {
+         return -1.0F;
+      } else {
+         String var4 = var1.getChunks();
+         if (var3.length() > 0 && var3.length() == var4.length()) {
+            int var5 = 0;
+            int var6 = 0;
+
+            for (int var7 = 0; var7 < var4.length(); var7++) {
+               int var8 = var4.charAt(var7) - '0';
+               int var9 = var3.charAt(var7) - '0';
+               if (var8 < 2) {
+                  var6++;
+                  if (var9 > 0) {
+                     var5++;
+                  }
+               }
+            }
+
+            return var6 == 0 ? -1.0F : (float)var5 / (float)var6 * 100.0F;
+         } else {
+            return -1.0F;
+         }
+      }
+   }
+
+   public synchronized Object[] getFileDirectories() {
+      return this.clientFilesMap.keySet().toArray();
+   }
+
+   public Map getFirstResultMap() {
+      synchronized (this) {
+         String var2 = (String)this.getFileDirectories()[0];
+         return this.getClientFilesResultMap(var2);
+      }
+   }
+
+   public String getHash() {
+      return this.kind.getHash();
+   }
+
+   public synchronized int getId() {
+      return this.id;
+   }
+
+   public String getModeString() {
+      return this.getClientModeEnum().getName();
+   }
+
+   public synchronized String getName() {
+      return this.name != null ? this.name : "";
+   }
+
+   public synchronized Image getNameImage() {
+      return this.isFriend() ? SResources.getImage("client_friend") : SResources.getImage("client");
+   }
+
+   public synchronized byte getSUI() {
+      return 2;
+   }
+
+   public synchronized String getSUIString() {
+      return SResources.getString("l.none");
+   }
+
+   public synchronized Image getSUIImage() {
+      byte var1 = this.getSUI();
+      switch (var1) {
+         case 0:
+            return SResources.getImage("bulb-red");
+         case 1:
+            return SResources.getImage("bulb-green");
+         default:
+            return SResources.getImage("bulb-grey");
+      }
+   }
+
+   public int getNumChunks(int var1) {
+      int var2 = 0;
+      String var3 = this.getFileAvailability(var1);
+      if (var3 != null) {
+         for (int var4 = 0; var4 < var3.length(); var4++) {
+            if (var3.charAt(var4) == '1') {
+               var2++;
+            }
+         }
+      }
+
+      return var2;
+   }
+
+   public synchronized int getPort() {
+      return this.kind.getPort();
+   }
+
+   public synchronized int getRating() {
+      return this.rating;
+   }
+
+   public String getSoftware() {
+      return "";
+   }
+
+   public Image getSoftwareImage() {
       return null;
-    return (Map) clientFilesMap.get(key);
-  }
+   }
 
-  public synchronized EnumClientMode getClientModeEnum() {
-    return clientModeEnum;
-  }
+   public synchronized HostState getState() {
+      return this.state;
+   }
 
-  public int getConnectedTime() {
-    return 0;
-  }
+   public synchronized EnumHostState getStateEnum() {
+      return this.stateEnum;
+   }
 
-  public String getConnectedTimeString() {
-    return SResources.S_ES;
-  }
+   public synchronized int getStateFileNum() {
+      return this.state.getFileNum();
+   }
 
-  // public static StringBuffer stringBuffer = new StringBuffer();
+   public synchronized int getStateRank() {
+      return this.state.getRank();
+   }
 
-  public String getDetailedClientActivity() {
-    EnumHostState state = this.getStateEnum();
-    StringBuffer stringBuffer = new StringBuffer();
-    stringBuffer.append(state.getName());
+   public long getUploaded() {
+      return 0L;
+   }
 
-    if (state == EnumHostState.CONNECTED_DOWNLOADING && getStateFileNum() != -1) {
-      stringBuffer.append(SResources.S_OB);
-      stringBuffer.append(getState().getFileNum());
-      stringBuffer.append(SResources.S_CB);
-      return stringBuffer.toString();
-    } else if (state == EnumHostState.CONNECTED_DOWNLOADING || this.getStateRank() <= 0)
-      return stringBuffer.toString();
-    else {
-      stringBuffer.append(S_Q);
-      stringBuffer.append(getState().getRank());
-      stringBuffer.append(SResources.S_CB);
-      return stringBuffer.toString();
-    }
-  }
+   public String getUploadedString() {
+      return "";
+   }
 
-  public long getDownloaded() {
-    return 0;
-  }
+   public String getUploadFilename() {
+      return "";
+   }
 
-  public String getDownloadedString() {
-    return SResources.S_ES;
-  }
+   public synchronized boolean hasFiles() {
+      return this.clientFilesMap != null;
+   }
 
-  public synchronized EnumClientType getEnumClientType() {
-    return enumClientType;
-  }
+   public synchronized String hasFilesString() {
+      return this.hasFiles() ? RS_TRUE : RS_FALSE;
+   }
 
-  public synchronized EnumNetwork getEnumNetwork() {
-    return networkEnum;
-  }
+   public synchronized Image hasFilesImage() {
+      return SResources.getImage(this.hasFiles() ? "bulb-green" : "bulb-red");
+   }
 
-  public synchronized String getFileAvailability(int id) {
-    return (String) getAvailMap().get(id);
-  }
+   public int hashCode() {
+      return this.getId();
+   }
 
-  public synchronized Object[] getFileDirectories() {
-    return clientFilesMap.keySet().toArray();
-  }
+   public boolean isConnected() {
+      return this.isConnected(this.getStateEnum());
+   }
 
-  public Map getFirstResultMap() {
-    synchronized (this) {
-      String key = (String) getFileDirectories()[0];
-      return getClientFilesResultMap(key);
-    }
-  }
+   public boolean isConnected(AbstractEnum var1) {
+      return var1 == EnumHostState.CONNECTED_DOWNLOADING
+         || var1 == EnumHostState.CONNECTED_INITIATING
+         || var1 == EnumHostState.CONNECTED_AND_QUEUED
+         || var1 == EnumHostState.CONNECTED;
+   }
 
-  public String getHash() {
-    return this.kind.getHash();
-  }
+   public boolean isTransferring() {
+      return this.isTransferring(this.getStateEnum());
+   }
 
-  public synchronized int getId() {
-    return id;
-  }
+   public boolean isTransferring(AbstractEnum var1) {
+      return var1 == EnumHostState.CONNECTED_DOWNLOADING;
+   }
 
-  public String getModeString() {
-    return getClientModeEnum().getName();
-  }
+   public boolean isTransferring(int var1) {
+      return this.isTransferring() && this.getStateFileNum() == var1;
+   }
 
-  public synchronized String getName() {
-    return name != null ? name : SResources.S_ES;
-  }
+   public boolean isUploader() {
+      return false;
+   }
 
-  public int getNumChunks(int id) {
-    int numChunks = 0;
-    String availability = getFileAvailability(id);
-
-    if (availability != null) {
-      for (int i = 0; i < availability.length(); i++)
-        if (availability.charAt(i) == '1')
-          numChunks++;
-    }
-
-    return numChunks;
-  }
-
-  public synchronized int getPort() {
-    return this.kind.getPort();
-  }
-
-  public synchronized int getRating() {
-    return rating;
-  }
-
-  public String getSoftware() {
-    return SResources.S_ES;
-  }
-
-  public Image getSoftwareImage() {
-    return null;
-  }
-
-  public synchronized HostState getState() {
-    return state;
-  }
-
-  public synchronized EnumHostState getStateEnum() {
-    return stateEnum;
-  }
-
-  public synchronized int getStateFileNum() {
-    return state.getFileNum();
-  }
-
-  public synchronized int getStateRank() {
-    return state.getRank();
-  }
-
-  public long getUploaded() {
-    return 0;
-  }
-
-  public String getUploadedString() {
-    return SResources.S_ES;
-  }
-
-  public String getUploadFilename() {
-    return SResources.S_ES;
-  }
-
-  public synchronized boolean hasFiles() {
-    return !(clientFilesMap == null);
-  }
-
-  public int hashCode() {
-    return getId();
-  }
-
-  public boolean isConnected() {
-    return isConnected(this.getStateEnum());
-  }
-
-  public boolean isConnected(AbstractEnum enumState) {
-    return (enumState == EnumHostState.CONNECTED_DOWNLOADING
-        || enumState == EnumHostState.CONNECTED_INITIATING || enumState == EnumHostState.CONNECTED_AND_QUEUED || enumState == EnumHostState.CONNECTED);
-  }
-
-  public boolean isTransferring() {
-    return isTransferring(getStateEnum());
-  }
-
-  public boolean isTransferring(AbstractEnum state) {
-    return state == EnumHostState.CONNECTED_DOWNLOADING;
-  }
-
-  public boolean isTransferring(int fileNum) {
-    return isTransferring() && getStateFileNum() == fileNum;
-  }
-
-  public boolean isUploader() {
-    return false;
-  }
-
-  public void onChangedState(AbstractEnum oldState) {
-    this.setChanged();
-
-    if (oldState != getStateEnum()) {
-      if (isTransferring()) {
-        if (isConnected(oldState))
-          this.notifyObservers(iTA);
-        else
-          this.notifyObservers(iTAC);
-      } else if (isTransferring(oldState)) {
-        if (isConnected())
-          this.notifyObservers(iTR);
-        else
-          this.notifyObservers(iTRD);
-      } else {
-        if (isConnected(oldState)) {
-          if (isConnected()) {
-            // this.notifyObservers();
-
-          } else
-            this.notifyObservers(iD);
-        } else {
-          if (isConnected())
-            this.notifyObservers(iC);
-          else {
-            // this.notifyObservers();
-
-          }
-        }
+   public boolean onChangedState(AbstractEnum var1) {
+      boolean var2 = false;
+      this.setChanged();
+      byte var3 = 0;
+      if (var1 != this.getStateEnum()) {
+         if (this.isTransferring()) {
+            if (this.isConnected(var1)) {
+               var3 = 4;
+            } else {
+               var3 = 5;
+            }
+         } else if (this.isTransferring(var1)) {
+            if (this.isConnected()) {
+               var3 = 8;
+            } else {
+               var3 = 10;
+            }
+         } else if (this.isConnected(var1)) {
+            if (!this.isConnected()) {
+               var3 = 2;
+            }
+         } else if (this.isConnected()) {
+            var3 = 1;
+         }
       }
-    }
 
-    //else
-    // this.notifyObservers(this);
-
-    this.clearChanged();
-
-  }
-
-  public void putAvail(int fileId, String avail) {
-    synchronized (this) {
-      getAvailMap().put(fileId, avail);
-    }
-    this.setChanged();
-    this.notifyObservers(iCHANGED_AVAIL);
-  }
-
-  public void read(int clientID, MessageBuffer messageBuffer) {
-    AbstractEnum oldState = this.getStateEnum();
-    AbstractEnum oldType = this.getEnumClientType();
-
-    synchronized (this) {
-      this.id = clientID;
-      this.networkEnum = this.core.getNetworkCollection().getNetworkEnum(messageBuffer.getInt32());
-      this.clientModeEnum = this.kind.read(messageBuffer);
-      this.stateEnum = this.state.read(messageBuffer);
-      this.enumClientType = EnumClientType.byteToEnum(messageBuffer.getByte());
-      this.tag = messageBuffer.getTagList();
-      this.name = messageBuffer.getString();
-      this.rating = messageBuffer.getInt32();
-      readMore(messageBuffer);
-    }
-    onChangedType(oldType);
-    onChangedState(oldState);
-  }
-
-  protected void onChangedType(AbstractEnum oldType) {
-    if (oldType != null && oldType != getEnumClientType())
-      core.getClientCollection().updateFriends(this);
-  }
-
-  protected void readMore(MessageBuffer messageBuffer) {
-    this.chatPort = messageBuffer.getInt32();
-  }
-
-  // guiEncoding#buf_client
-  public void read(MessageBuffer messageBuffer) {
-    read(messageBuffer.getInt32(), messageBuffer);
-  }
-
-  public void readClientFile(MessageBuffer messageBuffer) {
-
-    String dirName = messageBuffer.getString();
-    int resultNum = messageBuffer.getInt32();
-
-    Result result = (Result) core.getResultCollection().getResult(resultNum);
-
-    if (result == null)
-      return;
-
-    synchronized (this) { // TODO: this
-      THashMap hashMap = getClientFilesMap();
-      Map resultMap;
-
-      if (hashMap.containsKey(dirName)) {
-        resultMap = (WeakHashMap) hashMap.get(dirName);
-      } else {
-        resultMap = new WeakHashMap();
-        hashMap.put(dirName, resultMap);
+      if (var3 != 0) {
+         var2 = true;
+         this.notifyObservers(null, var3);
       }
-      resultMap.put(result, null);
-    }
-    this.setChanged();
-    this.notifyObservers(iREAD_CLIENT_FILE);
-  }
 
-  public void readUpdate(MessageBuffer messageBuffer) {
-    AbstractEnum oldState = getStateEnum();
-    synchronized (this) {
-      this.stateEnum = this.state.read(messageBuffer);
-    }
-    onChangedState(oldState);
-  }
+      this.clearChanged();
+      return var2;
+   }
 
-  public void removeAsFriend() {
-    core.send(OpCodes.S_REMOVE_FRIEND, new Integer(getId()));
-  }
+   public void putAvail(int var1, String var2) {
+      synchronized (this) {
+         this.getAvailMap().put(var1, var2);
+      }
 
-  public void requestClientFiles() {
-    core.send(OpCodes.S_GET_CLIENT_FILES, new Integer(getId()));
-  }
+      this.setChanged();
+      this.notifyObservers(null, 16);
+   }
 
+   public void read(int var1, MessageBuffer var2) {
+      EnumHostState var3 = this.getStateEnum();
+      EnumClientType var4 = this.getEnumClientType();
+      boolean var5 = false;
+      synchronized (this) {
+         this.id = var1;
+         this.networkEnum = this.core.getNetworkCollection().getNetworkEnum(var2.getInt32());
+         this.clientModeEnum = this.kind.read(var2);
+         this.stateEnum = this.state.read(var2);
+         this.enumClientType = EnumClientType.byteToEnum(var2.getByte());
+         this.tag = var2.getTagList();
+         this.name = var2.getString();
+         this.rating = var2.getInt32();
+         var5 = this.readMore(var2);
+      }
+
+      this.onChangedType(var4);
+      boolean var7 = this.onChangedState(var3);
+      if (!var7 && var5) {
+         this.setChanged();
+         this.notifyObservers();
+      }
+   }
+
+   protected void onChangedType(AbstractEnum var1) {
+      if (var1 != null && var1 != this.getEnumClientType()) {
+         this.core.getClientCollection().updateFriends(this);
+      }
+   }
+
+   protected boolean readMore(MessageBuffer var1) {
+      this.chatPort = var1.getInt32();
+      return false;
+   }
+
+   public void read(MessageBuffer var1) {
+      this.read(var1.getInt32(), var1);
+   }
+
+   public void readClientFile(MessageBuffer var1) {
+      String var2 = var1.getString();
+      int var3 = var1.getInt32();
+      Result var4 = this.core.getResultCollection().getResult(var3);
+      if (var4 != null) {
+         synchronized (this) {
+            THashMap var6 = this.getClientFilesMap();
+            WeakHashMap var7;
+            if (var6.containsKey(var2)) {
+               var7 = (WeakHashMap)var6.get(var2);
+            } else {
+               var7 = new WeakHashMap();
+               var6.put(var2, var7);
+            }
+
+            var7.put(var4, null);
+         }
+
+         this.setChanged();
+         this.notifyObservers(null, 32);
+      }
+   }
+
+   public void readUpdate(MessageBuffer var1) {
+      EnumHostState var2 = this.getStateEnum();
+      synchronized (this) {
+         this.stateEnum = this.state.read(var1);
+      }
+
+      this.onChangedState(var2);
+   }
+
+   public void removeAsFriend() {
+      this.core.send((short)16, new Integer(this.getId()));
+   }
+
+   public void requestClientFiles() {
+      this.core.send((short)33, new Integer(this.getId()));
+   }
 }

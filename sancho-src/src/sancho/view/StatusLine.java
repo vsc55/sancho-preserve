@@ -1,133 +1,141 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-
 import sancho.core.Sancho;
 import sancho.view.statusline.CoreConsoleItem;
 import sancho.view.statusline.IStatusItem;
 import sancho.view.statusline.LinkEntry;
 import sancho.view.statusline.LinkEntryItem;
+import sancho.view.statusline.LinkEntryItem_win32;
 import sancho.view.statusline.NetworkItem;
 import sancho.view.statusline.RateItem;
-import sancho.view.utility.SResources;
+import sancho.view.statusline.StatusConsole;
 import sancho.view.utility.WidgetFactory;
 
 public class StatusLine {
-  protected CLabel cLabel;
-  protected Composite linkEntryComposite;
-  protected MainWindow mainWindow;
-  protected List statusItemList;
-  protected Composite statusLineComposite;
+   protected CLabel cLabel;
+   protected Composite linkEntryComposite;
+   protected Composite consoleComposite;
+   protected MainWindow mainWindow;
+   protected List statusItemList;
+   protected Composite statusLineComposite;
+   protected StatusConsole statusConsole;
 
-  public StatusLine(MainWindow mainWindow, boolean create) {
-    this.mainWindow = mainWindow;
-    statusItemList = new ArrayList();
-    if (create)
-      createContents();
-  }
+   public StatusLine(MainWindow var1, SashForm var2, Composite var3, Composite var4) {
+      this.mainWindow = var1;
+      this.statusItemList = new ArrayList();
+      this.createContents(var2, var3, var4);
+   }
 
-  private void addSeparator(Composite composite) {
-    Label separator = new Label(composite, SWT.SEPARATOR | SWT.VERTICAL);
-    separator.setLayoutData(WidgetFactory.createGridData(GridData.FILL_VERTICAL, SWT.DEFAULT, 0));
-  }
+   private void addSeparator(Composite var1) {
+      Label var2 = new Label(var1, 514);
+      var2.setLayoutData(WidgetFactory.createGridData(1040, -1, 0));
+   }
 
-  public void clear() {
-    if (!cLabel.isDisposed()) {
-      cLabel.setText(SResources.S_ES);
-      cLabel.setToolTipText(SResources.S_ES);
-      cLabel.setImage(null);
-    }
-  }
+   public void clear() {
+      if (!this.cLabel.isDisposed()) {
+         this.cLabel.setText("");
+         this.cLabel.setToolTipText("");
+         this.cLabel.setImage(null);
+      }
+   }
 
-  protected void createContents() {
-    boolean spawnedCore = (Sancho.getCoreConsole() != null);
+   public void updateDisplay() {
+      this.statusConsole.updateDisplay();
+   }
 
-    Composite mainComposite = new Composite(mainWindow.getMainComposite(), SWT.BORDER);
-    mainComposite.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
-    mainComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+   protected void createContents(SashForm var1, Composite var2, Composite var3) {
+      boolean var4 = Sancho.getCoreConsole() != null;
+      Composite var5 = new Composite(this.mainWindow.getMainComposite(), 2048);
+      var5.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
+      var5.setLayoutData(new GridData(768));
+      this.linkEntryComposite = this.createHiddenComposite(var5);
+      new LinkEntry(this, this.linkEntryComposite);
+      this.statusLineComposite = new Composite(var5, 0);
+      this.statusLineComposite.setLayout(WidgetFactory.createGridLayout(var4 ? 9 : 7, 0, 0, 0, 0, false));
+      this.statusLineComposite.setLayoutData(new GridData(768));
+      this.statusItemList.add(new NetworkItem(this));
+      this.addSeparator(this.statusLineComposite);
+      if (var4) {
+         new CoreConsoleItem(this);
+         this.addSeparator(this.statusLineComposite);
+      }
 
-    // hidden linkEntry composite
-    createLinkEntry(mainComposite);
+      Composite var6 = new Composite(this.statusLineComposite, 0);
+      var6.setLayout(new FillLayout());
+      var6.setLayoutData(new GridData(1808));
+      this.cLabel = new CLabel(var6, 0);
+      this.cLabel.addMouseListener(new StatusLine$1(this));
+      this.cLabel.setText("");
+      this.addSeparator(this.statusLineComposite);
+      this.statusConsole = new StatusConsole(var1, var2, var3);
+      this.statusItemList.add(this.statusConsole);
+      if (Sancho.forceMozilla()) {
+         new LinkEntryItem(this, this.statusConsole);
+      } else {
+         new LinkEntryItem_win32(this, this.statusConsole);
+      }
 
-    new LinkEntry(this, linkEntryComposite);
+      this.addSeparator(this.statusLineComposite);
+      this.statusItemList.add(new RateItem(this));
+      if (Sancho.hasCollectionFactory()) {
+         this.setText(Sancho.getCoreFactory().getStatusString());
+      }
+   }
 
-    statusLineComposite = new Composite(mainComposite, SWT.NONE);
-    statusLineComposite.setLayout(WidgetFactory.createGridLayout(spawnedCore ? 9 : 7, 0, 0, 0, 0, false));
-    statusLineComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+   private Composite createHiddenComposite(Composite var1) {
+      Composite var2 = new Composite(var1, 0);
+      var2.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
+      var2.setLayoutData(WidgetFactory.createGridData(768, -1, 0));
+      return var2;
+   }
 
-    statusItemList.add(new NetworkItem(this));
+   public Composite getLinkEntryComposite() {
+      return this.linkEntryComposite;
+   }
 
-    addSeparator(statusLineComposite);
+   public Composite getConsoleComposite() {
+      return this.consoleComposite;
+   }
 
-    if (spawnedCore) {
-      new CoreConsoleItem(this);
-      addSeparator(statusLineComposite);
-    }
+   public MainWindow getMainWindow() {
+      return this.mainWindow;
+   }
 
-    // status
-    Composite middle = new Composite(statusLineComposite, SWT.NONE);
-    middle.setLayout(new FillLayout());
-    middle.setLayoutData(new GridData(GridData.FILL_BOTH));
-    cLabel = new CLabel(middle, SWT.NONE);
-    cLabel.setText(SResources.S_ES);
+   public Composite getStatusline() {
+      return this.statusLineComposite;
+   }
 
-    addSeparator(statusLineComposite);
+   public void setConnected(boolean var1) {
+      for (int var2 = 0; var2 < this.statusItemList.size(); var2++) {
+         ((IStatusItem)this.statusItemList.get(var2)).setConnected(var1);
+      }
+   }
 
-    new LinkEntryItem(this);
-    addSeparator(statusLineComposite);
+   public void setImage(Image var1) {
+      if (!this.cLabel.isDisposed()) {
+         this.cLabel.setImage(var1);
+      }
+   }
 
-    statusItemList.add(new RateItem(this));
-  }
+   public void setText(String var1) {
+      if (!this.cLabel.isDisposed()) {
+         this.cLabel.setText(var1);
+         this.cLabel.update();
+      }
+   }
 
-  private void createLinkEntry(Composite parent) {
-    linkEntryComposite = new Composite(parent, SWT.NONE);
-    linkEntryComposite.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 0, 0, false));
-    linkEntryComposite.setLayoutData(WidgetFactory.createGridData(GridData.FILL_HORIZONTAL, SWT.DEFAULT, 0));
-  }
-
-  public Composite getLinkEntryComposite() {
-    return linkEntryComposite;
-  }
-
-  public MainWindow getMainWindow() {
-    return mainWindow;
-  }
-
-  public Composite getStatusline() {
-    return statusLineComposite;
-  }
-
-  public void setConnected(boolean connected) {
-    for (int i = 0; i < statusItemList.size(); i++)
-      ((IStatusItem) statusItemList.get(i)).setConnected(connected);
-  }
-
-  public void setImage(Image image) {
-    if (!cLabel.isDisposed())
-      cLabel.setImage(image);
-  }
-
-  public void setText(String string) {
-    if (!cLabel.isDisposed())
-      cLabel.setText(string);
-  }
-
-  public void setToolTip(String string) {
-    if (!cLabel.isDisposed())
-      cLabel.setToolTipText(string);
-  }
+   public void setToolTip(String var1) {
+      if (!this.cLabel.isDisposed()) {
+         this.cLabel.setToolTipText(var1);
+      }
+   }
 }

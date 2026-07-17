@@ -1,453 +1,473 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.core;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Observable;
-import java.util.Observer;
-
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-
+import sancho.model.mldonkey.Option;
+import sancho.utility.MyObservable;
+import sancho.utility.MyObserver;
 import sancho.utility.SwissArmy;
+import sancho.utility.VersionInfo;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.SResources;
-import sancho.view.utility.Splash;
-import sancho.view.utility.setupWizard.SetupWizard;
-import sancho.view.utility.setupWizard.SetupWizardDialog;
 
-public class CoreFactory extends Observable implements Observer, Runnable {
-  public static final int CLOSE = 1;
-  public static final int OK = 0;
-  public static final int RETRY = 2;
-  private boolean automated;
-  protected boolean autoReconnecting;
-  private long connectedAt;
+public class CoreFactory extends MyObservable implements MyObserver, Runnable {
+   public static final int CLOSE = 1;
+   public static final int OK = 0;
+   public static final int RETRY = 2;
+   private boolean automated;
+   protected boolean autoReconnecting;
+   private long connectedAt;
+   protected String sResult;
+   private boolean brc;
+   private int irc;
+   private int connectRC;
+   private ICore core;
+   protected Display display;
+   private boolean hasConnected;
+   private String hostname;
+   private int numRetries;
+   private String password;
+   private boolean ask_pass;
+   protected int port;
+   private Socket socket;
+   private String username;
+   private boolean wantToConnect;
+   private String description;
 
-  private boolean brc;
-  private int irc;
+   public CoreFactory(Display var1) {
+      this.display = var1;
+      this.connectRC = -1;
+      this.automated = false;
+   }
 
-  private int connectRC;
-  private ICore core;
-  protected Display display;
-  private boolean hasConnected;
-  private String hostname;
+   public int connect() {
+      int var1;
+      while ((var1 = this.startCore()) == 2) {
+         this.numRetries++;
+         this.updateSplash("splash.connecting");
+         int var2 = PreferenceLoader.loadInt("autoReconnectDelay");
 
-  private int numRetries;
-  private String password;
-  protected int port;
-  private int result;
-  private Socket socket;
-  private String username;
-  private boolean wantToConnect;
+         while (this.autoReconnecting && var2 > 0) {
+            SwissArmy.threadSleep(1000);
+            this.notifyObject("[" + var2-- + "] " + SResources.getString("l.waitingToReconnect"));
+         }
 
-  public CoreFactory(Display display) {
-    this.display = display;
-    this.connectRC = -1;
-    this.automated = false;
-  }
-
-  public int connect() {
-    int rc;
-
-    while ((rc = startCore()) == CoreFactory.RETRY) {
-      numRetries++;
-      updateSplash("splash.connecting");
-
-      int delay = PreferenceLoader.loadInt("autoReconnectDelay");
-      while (autoReconnecting && delay > 0) {
-        SwissArmy.threadSleep(1000);
-        this.notifyObject("[" + delay-- + "] " + SResources.getString("l.waitingToReconnect"));
+         if (!this.autoReconnecting) {
+            boolean var3 = false;
+            this.setChanged();
+            this.notifyObservers("");
+         }
       }
-      if (!autoReconnecting) {
-        rc = OK;
-        this.setChanged();
-        this.notifyObservers(SResources.S_ES);
+
+      return var1;
+   }
+
+   protected boolean createYesNoBox(String var1, String var2) {
+      this.brc = false;
+      this.display.syncExec(new CoreFactory$1(this, var1, var2));
+      return this.brc;
+   }
+
+   private boolean createResYesNoBox(String var1, String var2) {
+      return this.createYesNoBox(SResources.getString(var1), SResources.getString(var2));
+   }
+
+   public void disconnect() {
+      if (this.core != null) {
+         this.core.disconnect();
+         if (this.core instanceof MLDonkeyCore) {
+            ((MLDonkeyCore)this.core).deleteObservers();
+         }
+
+         this.setDisconnected();
       }
-    }
+   }
 
-    return rc;
-  }
+   protected int errorHandling(String var1, String var2) {
+      if (!this.automated && !this.createYesNoBox(var1, var2)) {
+         return 1;
+      } else {
+         if (Sancho.getCoreConsole() != null) {
+            this.display.syncExec(new CoreFactory$2(this));
+         }
 
-  protected boolean createYesNoBox(final String text, final String message) {
-    brc = false;
-    display.syncExec(new Runnable() {
-      public void run() {
-        Splash.setVisible(false);
-        brc = openQuestion(null, text, message);
+         Sancho.killCoreConsole();
+         return !this.setupWizard() ? 1 : 2;
       }
-    });
-    return brc;
-  }
+   }
 
-  private boolean createResYesNoBox(String resText, String resMessage) {
-    return createYesNoBox(SResources.getString(resText), SResources.getString(resMessage));
-  }
+   protected synchronized int getConnectRC() {
+      return this.connectRC;
+   }
 
-  public void disconnect() {
-    if (core != null) {
-      core.disconnect();
-      if (core instanceof MLDonkeyCore)
-        ((MLDonkeyCore) core).deleteObservers();
-      setDisconnected();
-    }
-  }
-
-  protected int errorHandling(String text, String message) {
-    if (!automated) {
-      if (!createYesNoBox(text, message))
-        return CLOSE;
-    }
-    if (!setupWizard())
-      return CLOSE;
-
-    return RETRY;
-  }
-
-  protected synchronized int getConnectRC() {
-    return connectRC;
-  }
-
-  public ICore getCore() {
-    return core;
-  }
-
-  public String getHostname() {
-    return this.hostname;
-  }
-
-  public int getNumRetries() {
-    return numRetries;
-  }
-
-  public String getPassword() {
-    return this.password;
-  }
-
-  public Socket getSocket() {
-    return socket;
-  }
-
-  public String getUptime() {
-    return SwissArmy.calcUptime(connectedAt);
-  }
-
-  public String getUsername() {
-    return this.username;
-  }
-
-  public void initialize() {
-    readPreferences(0, false);
-    Thread thread = new Thread(this);
-    thread.setDaemon(true);
-    thread.start();
-  }
-
-  public int initializeSocket() {
-
-    updateSplash("splash.initializeSocket", SResources.S_ES, 0);
-
-    try {
-      socket = new Socket(hostname, port);
-    } catch (UnknownHostException uh) {
-      return autoReconnecting ? RETRY : errorHandling(SResources.getString("core.invalidAddressTitle"),
-          SResources.getString("core.invalidAddressText"));
-    } catch (IOException e) {
-      return autoReconnecting ? RETRY : errorHandling(SResources.getString("core.notFoundTitle"), hostname
-          + ":" + port + " " + SResources.getString("core.notFoundText"));
-    }
-    return OK;
-  }
-
-  public int interactiveConnect() {
-    if (!checkIfInitialized())
-      return CLOSE;
-
-    if (PreferenceLoader.loadBoolean("hostManagerOnStart")) {
-      if (!setupWizard())
-        return CLOSE;
-    }
-    this.automated = false;
-    this.wantToConnect = true;
-    return successfulConnect();
-  }
-
-  public boolean isAutoReconnecting() {
-    return autoReconnecting;
-  }
-
-  public boolean isConnected() {
-    if (core != null)
-      return core.isConnected();
-
-    return false;
-  }
-
-  public void notifyObject(Object object) {
-    this.setChanged();
-    this.notifyObservers(object);
-  }
-
-  private int onConnectionDenied() {
-    if (createResYesNoBox("core.connectionDeniedTitle", "core.connectionDeniedText")) {
-      if (!setupWizard())
-        return CLOSE;
-      return RETRY;
-    } else
-      return CLOSE;
-  }
-
-  private int onInvalidPassword() {
-    if (createResYesNoBox("core.invalidLoginTitle", "core.invalidLoginText")) {
-      if (!setupWizard())
-        return CLOSE;
-      return RETRY;
-    } else
-      return CLOSE;
-  }
-
-  public void readPreferences(int i) {
-    
-    
-    readPreferences(i, true);
-  }
-
-  public boolean checkIfInitialized() {
-    if (!(PreferenceLoader.loadBoolean("initialized"))) {
-      if (!setupWizard())
-        return false;
-      PreferenceLoader.getPreferenceStore().setValue("initialized", true);
-      PreferenceLoader.saveStore();
-    }
-    return true;
-  }
-
-  public void readPreferences(int i, boolean overwrite) {
-    if (overwrite && !Sancho.automated && PreferenceLoader.loadBoolean("useLastFile")) {
-      SwissArmy.writeLastFile(i);
-    }
-    
-    if (!PreferenceLoader.contains("hm_" + i + "_hostname"))
-      i = 0;
-
-    port = port == 0 || overwrite ? PreferenceLoader.loadInt("hm_" + i + "_port") : port;
-    hostname = hostname == null || overwrite
-        ? PreferenceLoader.loadString("hm_" + i + "_hostname")
-        : hostname;
-    username = username == null || overwrite
-        ? PreferenceLoader.loadString("hm_" + i + "_username")
-        : username;
-    password = password == null || overwrite
-        ? PreferenceLoader.loadString("hm_" + i + "_password")
-        : password;
-  }
-
-  public synchronized void reconnect() {
-    wantToConnect = true;
-  }
-
-  public void reconnect(int i) {
-    readPreferences(i);
-    reconnect();
-  }
-
-  public void reconnectO() {
-    connect();
-  }
-
-  // corefactory thread
-  public void run() {
-    while (true) {
-
-      if (core == null && wantToConnect) {
-        connectRC = connect();
-
-        if (connectRC == CLOSE)
-          wantToConnect = false;
-
+   public String getDescription() {
+      if (this.core == null) {
+         return "";
+      } else if (this.description != null && !this.description.equals("")) {
+         return this.description;
+      } else {
+         return this.hostname != null ? this.hostname : "";
       }
-      SwissArmy.threadSleep(1000);
-    }
-  }
+   }
 
-  public synchronized void setAutomated(boolean b) {
-    this.automated = b;
+   public ICore getCore() {
+      return this.core;
+   }
 
-  }
+   public String getHostname() {
+      return this.hostname;
+   }
 
-  public synchronized void setAutoReconnect() {
-    this.wantToConnect = true;
-    this.autoReconnecting = true;
-  }
-
-  public void setAutoReconnecting(boolean b) {
-    autoReconnecting = b;
-  }
-
-  // run in some core's thread
-  public void setDisconnected() {
-    synchronized (this) {
-      this.core = null;
-      this.wantToConnect = false;
-    }
-    this.setChanged();
-    this.notifyObservers(Boolean.FALSE);
-    this.setChanged();
-    this.notifyObservers(SResources.S_ES);
-  }
-
-  public void setHostPort(String hostname, int port) {
-    this.hostname = hostname;
-    this.port = port;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  private boolean setupWizard() {
-    brc = false;
-    irc = 0;
-    display.syncExec(new Runnable() {
-      public void run() {
-        Splash.setVisible(false);
-        SetupWizardDialog dialog = new SetupWizardDialog(null, new SetupWizard());
-        dialog.create();
-        brc = WizardDialog.OK == dialog.open();
-        irc = dialog.getNum();
-        Splash.setVisible(true);
+   public String getHTTPPort() {
+      String var1 = "";
+      Option var2 = (Option)this.core.getOptionCollection().get("http_port");
+      if (var2 != null) {
+         var1 = var2.getValue();
       }
-    });
 
-    readPreferences(irc);
-    return brc;
-  }
+      return var1;
+   }
 
-  public void setUsername(String username) {
-    this.username = username;
-  }
+   public int getNumRetries() {
+      return this.numRetries;
+   }
 
-  public synchronized void setWantToConnect(boolean b) {
-    this.wantToConnect = b;
-  }
+   public String getPassword() {
+      return this.password;
+   }
 
-  public int startCore() {
+   public Socket getSocket() {
+      return this.socket;
+   }
 
-    int rc = initializeSocket();
+   public String getUptime() {
+      return SwissArmy.calcUptime(this.connectedAt);
+   }
 
-    if (rc == RETRY || rc == CLOSE)
-      return rc;
+   public String getUsername() {
+      return this.username;
+   }
 
-    if (this.core != null) {
-      this.core.deleteObservers();
-    }
+   public void initialize() {
+      this.readPreferences(0, false);
+      Thread var1 = new Thread(this);
+      var1.setDaemon(true);
+      var1.start();
+   }
 
-    this.core = Sancho.monitorMode
-        ? new MLDonkeyCoreMonitor(socket, username, password, automated)
-        : new MLDonkeyCore(socket, username, password, automated);
+   public int initializeSocket() {
+      this.updateSplash("splash.initializeSocket", "", 0);
 
-    this.core.addObserver(this);
-    this.core.connect();
+      try {
+         if (this.socket != null && !this.socket.isClosed()) {
+            this.socket.close();
+         }
 
-    Thread thread = new Thread(core);
-    thread.setDaemon(true);
-    thread.start();
+         this.socket = new Socket(this.hostname, this.port);
+         return 0;
+      } catch (UnknownHostException var4) {
+         return this.autoReconnecting
+            ? 2
+            : this.errorHandling(SResources.getString("core.invalidAddressTitle"), SResources.getString("core.invalidAddressText"));
+      } catch (IOException var5) {
+         if (Sancho.getCoreConsole() != null) {
+            this.display.syncExec(new CoreFactory$3(this));
+         }
 
-    int incr = 20 * 4;
-    while (incr-- > 0 && core != null && !core.semaphore()) {
-      SwissArmy.threadSleep(250);
-    }
-
-    if (core == null || core.isConnectionDenied())
-      return autoReconnecting ? RETRY : onConnectionDenied();
-    else if (core.isInvalidPassword())
-      return autoReconnecting ? RETRY : onInvalidPassword();
-
-    connectedAt = System.currentTimeMillis();
-    autoReconnecting = false;
-    hasConnected = true;
-    this.setChanged();
-    this.notifyObservers(SResources.getString("e.state.connected") + getConnectedString() + getCoreVersion());
-    this.setChanged();
-    this.notifyObservers(Boolean.TRUE);
-    return OK;
-  }
-
-  public String getCoreVersion() {
-    if (core != null) {
-      String result = core.getCoreVersion();
-      if (result.equals(""))
-        return result;
-      return " | " + result;
-
-    }
-    return SResources.S_ES;
-  }
-
-  public String getConnectedString() {
-    return SResources.S_ES;
-  }
-
-  // from main thread
-  public int successfulConnect() {
-    int rc;
-
-    while (true) {
-      rc = getConnectRC();
-
-      if (!display.readAndDispatch()) {
-        SwissArmy.threadSleep(100);
-
-        if (rc == OK || rc == CLOSE)
-          break;
+         return this.autoReconnecting
+            ? 2
+            : this.errorHandling(SResources.getString("core.notFoundTitle"), this.hostname + ":" + this.port + " " + SResources.getString("core.notFoundText"));
       }
-    }
-    return rc;
-  }
+   }
 
-  public void update(Observable o, Object obj) {
-    if (obj instanceof IOException && o == core) { // && core.initialized()) {
-      setDisconnected();
-
-      if (hasConnected && PreferenceLoader.loadBoolean("autoReconnect"))
-        setAutoReconnect();
-    }
-  }
-
-  public void updateSplash(final String text) {
-    display.syncExec(new Runnable() {
-      public void run() {
-        Splash.updateText(text);
+   public int interactiveConnect() {
+      if (!this.checkIfInitialized()) {
+         return 1;
+      } else if (PreferenceLoader.loadBoolean("hostManagerOnStart") && !this.setupWizard()) {
+         return 1;
+      } else {
+         this.automated = false;
+         this.wantToConnect = true;
+         return this.successfulConnect();
       }
-    });
-  }
+   }
 
-  public void updateSplash(final String text, final String p, final int i) {
-    display.syncExec(new Runnable() {
-      public void run() {
-        Splash.updateText(text, p, i);
+   public boolean isAutoReconnecting() {
+      return this.autoReconnecting;
+   }
+
+   public boolean isConnected() {
+      return this.core != null ? this.core.isConnected() : false;
+   }
+
+   public void notifyObject(Object var1) {
+      this.setChanged();
+      this.notifyObservers(var1);
+   }
+
+   private int onConnectionDenied() {
+      if (this.createResYesNoBox("core.connectionDeniedTitle", "core.connectionDeniedText")) {
+         return !this.setupWizard() ? 1 : 2;
+      } else {
+         return 1;
       }
-    });
-  }
+   }
 
-  public static boolean openQuestion(Shell parent, String title, String message) {
-    MessageDialog dialog = new MessageDialog(parent, title, SResources.getImage("ProgramIcon"), message,
-        MessageDialog.QUESTION, new String[]{IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL}, 0);
-    return dialog.open() == 0;
-  }
+   private int onInvalidPassword() {
+      if (this.createResYesNoBox("core.invalidLoginTitle", "core.invalidLoginText")) {
+         return !this.setupWizard() ? 1 : 2;
+      } else {
+         return 1;
+      }
+   }
 
-  public static void openInformation(Shell parent, String title, String message) {
-    MessageDialog dialog = new MessageDialog(parent, title, SResources.getImage("ProgramIcon"), message,
-        MessageDialog.INFORMATION, new String[]{IDialogConstants.OK_LABEL}, 0);
-    dialog.open();
-    return;
-  }
+   public void readPreferences(int var1) {
+      this.readPreferences(var1, true);
+   }
+
+   public boolean checkIfInitialized() {
+      if (!PreferenceLoader.loadBoolean("initialized")) {
+         if (!this.setupWizard()) {
+            return false;
+         }
+
+         PreferenceLoader.getPreferenceStore().setValue("initialized", true);
+         PreferenceLoader.saveStore();
+      }
+
+      return true;
+   }
+
+   public void readPreferences(int var1, boolean var2) {
+      if (var2 && !Sancho.automated && PreferenceLoader.loadBoolean("useLastFile")) {
+         SwissArmy.writeLastFile(var1);
+      }
+
+      if (!PreferenceLoader.contains("hm_" + var1 + "_hostname")) {
+         var1 = 0;
+      }
+
+      this.port = this.port != 0 && !var2 ? this.port : PreferenceLoader.loadInt("hm_" + var1 + "_port");
+      this.hostname = this.hostname != null && !var2 ? this.hostname : PreferenceLoader.loadString("hm_" + var1 + "_hostname");
+      this.username = this.username != null && !var2 ? this.username : PreferenceLoader.loadString("hm_" + var1 + "_username");
+      this.password = this.password != null && !var2 ? this.password : PreferenceLoader.loadString("hm_" + var1 + "_password");
+      this.description = this.description != null && !var2 ? this.description : PreferenceLoader.loadString("hm_" + var1 + "_description");
+      this.ask_pass = this.ask_pass && !var2 ? this.ask_pass : PreferenceLoader.loadBoolean("hm_" + var1 + "_ask_pass");
+   }
+
+   public synchronized void reconnect() {
+      this.wantToConnect = true;
+   }
+
+   public void reconnect(int var1) {
+      this.readPreferences(var1);
+      this.reconnect();
+   }
+
+   public void reconnectO() {
+      this.connect();
+   }
+
+   public void run() {
+      while (true) {
+         if (this.core == null && this.wantToConnect) {
+            this.connectRC = this.connect();
+            if (this.connectRC == 1) {
+               this.wantToConnect = false;
+            }
+         }
+
+         SwissArmy.threadSleep(1000);
+      }
+   }
+
+   public synchronized void setAutomated(boolean var1) {
+      this.automated = var1;
+   }
+
+   public synchronized void setAutoReconnect() {
+      this.wantToConnect = true;
+      this.autoReconnecting = true;
+   }
+
+   public void setAutoReconnecting(boolean var1) {
+      this.autoReconnecting = var1;
+   }
+
+   public void setDisconnected() {
+      synchronized (this) {
+         this.wantToConnect = false;
+         this.core = null;
+      }
+
+      this.setChanged();
+      this.notifyObservers(Boolean.FALSE);
+      this.setChanged();
+      this.notifyObservers("");
+   }
+
+   public void setHostPort(String var1, int var2) {
+      this.hostname = var1;
+      this.port = var2;
+   }
+
+   public void setPassword(String var1) {
+      this.password = var1;
+   }
+
+   private boolean setupWizard() {
+      this.brc = false;
+      this.irc = 0;
+      this.display.syncExec(new CoreFactory$4(this));
+      this.readPreferences(this.irc);
+      return this.brc;
+   }
+
+   public void setUsername(String var1) {
+      this.username = var1;
+   }
+
+   public synchronized void setWantToConnect(boolean var1) {
+      this.wantToConnect = var1;
+   }
+
+   public String getStatusString() {
+      return SResources.getString("e.state.connected") + this.getConnectedString() + this.getCoreVersion();
+   }
+
+   public int startCore() {
+      int var1 = this.initializeSocket();
+      if (var1 != 2 && var1 != 1) {
+         if (this.core != null) {
+            this.core.deleteObservers();
+         }
+
+         if (this.ask_pass) {
+            String var2 = this.askForPassword("/CORE", SResources.getString("hm.password"));
+            this.sResult = null;
+            if (var2 != null) {
+               this.password = var2;
+            }
+         }
+
+         this.core = (ICore)(Sancho.monitorMode
+            ? new MLDonkeyCoreMonitor(this.socket, this.username, this.password, this.automated)
+            : new MLDonkeyCore(this.socket, this.username, this.password, this.automated));
+         this.core.addObserver(this);
+         this.core.connect();
+         Thread var5 = new Thread(this.core);
+         var5.setDaemon(true);
+         var5.start();
+         int var3 = PreferenceLoader.loadInt("connectionTimeout");
+         int var4 = var3 * 4;
+
+         while (var4-- > 0 && this.core != null && !this.core.semaphore()) {
+            SwissArmy.threadSleep(250);
+         }
+
+         if (this.core != null && !this.core.isConnectionDenied()) {
+            if (this.core.isInvalidPassword()) {
+               this.core.deleteObservers();
+               this.core = null;
+               return this.autoReconnecting ? 2 : this.onInvalidPassword();
+            } else {
+               this.connectedAt = System.currentTimeMillis();
+               this.autoReconnecting = false;
+               this.hasConnected = true;
+               this.setChanged();
+               this.notifyObservers(this.getStatusString());
+               this.setChanged();
+               this.notifyObservers(Boolean.TRUE);
+               return 0;
+            }
+         } else {
+            if (this.core != null) {
+               this.core.deleteObservers();
+            }
+
+            this.core = null;
+            return this.autoReconnecting ? 2 : this.onConnectionDenied();
+         }
+      } else {
+         return var1;
+      }
+   }
+
+   public String getCoreVersion() {
+      if (this.core != null) {
+         String var1 = this.core.getCoreVersion();
+         if (var1.equals("")) {
+            return var1;
+         } else {
+            var1 = var1 + " | " + this.core.getProtocol();
+            return " | " + var1;
+         }
+      } else {
+         return "";
+      }
+   }
+
+   public String getConnectedString() {
+      return "";
+   }
+
+   public int successfulConnect() {
+      while (true) {
+         int var1 = this.getConnectRC();
+         if (!this.display.readAndDispatch()) {
+            SwissArmy.threadSleep(100);
+            if (var1 == 0 || var1 == 1) {
+               return var1;
+            }
+         }
+      }
+   }
+
+   public void update(MyObservable var1, Object var2, int var3) {
+      if (var2 instanceof IOException && var1 == this.core) {
+         this.setDisconnected();
+         if (this.hasConnected && PreferenceLoader.loadBoolean("autoReconnect")) {
+            this.setAutoReconnect();
+         }
+      }
+   }
+
+   public void updateSplash(String var1) {
+      this.display.syncExec(new CoreFactory$5(this, var1));
+   }
+
+   public void updateSplash(String var1, String var2, int var3) {
+      this.display.syncExec(new CoreFactory$6(this, var1, var2, var3));
+   }
+
+   public String askForPassword(String var1, String var2) {
+      this.display.syncExec(new CoreFactory$7(this, var1, var2));
+      return this.sResult;
+   }
+
+   public static boolean openQuestion(Shell var0, String var1, String var2) {
+      String[] var3 = new String[]{IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL};
+      CoreFactory$9 var4 = new CoreFactory$9(var0, var1, VersionInfo.getProgramIcon(), var2, 3, var3, 0);
+      return var4.open() == 0;
+   }
+
+   public static void openInformation(Shell var0, String var1, String var2) {
+      MessageDialog var3 = new MessageDialog(var0, var1, VersionInfo.getProgramIcon(), var2, 2, new String[]{IDialogConstants.OK_LABEL}, 0);
+      var3.open();
+   }
+
+   // $VF: synthetic method
+   static boolean access$002(CoreFactory var0, boolean var1) {
+      return var0.brc = var1;
+   }
+
+   // $VF: synthetic method
+   static int access$102(CoreFactory var0, int var1) {
+      return var0.irc = var1;
+   }
 }

@@ -1,71 +1,60 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.downloadComplete;
-
-import java.io.File;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-
 import sancho.utility.VersionInfo;
+import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.SResources;
 
 public class DownloadCompleteShell extends Dialog {
+   public DownloadCompleteShell(Shell var1) {
+      super(var1);
+   }
 
-  public DownloadCompleteShell(Shell parentShell) {
-    super(parentShell);
-  }
+   protected void configureShell(Shell var1) {
+      super.configureShell(var1);
+      var1.setImage(VersionInfo.getProgramIcon());
+      var1.setText(SResources.getString("l.downloadCompleteTitle"));
+   }
 
-  protected void configureShell(Shell newShell) {
-    super.configureShell(newShell);
-    newShell.setImage(SResources.getImage("ProgramIcon"));
-    newShell.setText(SResources.getString("l.downloadCompleteTitle"));
-  }
+   protected void constrainShellSize() {
+      super.constrainShellSize();
+      this.getShell().setBounds(PreferenceLoader.loadRectangle("downloadHistoryWindowBounds"));
+   }
 
-  public int getShellStyle() {
-    return super.getShellStyle() | SWT.RESIZE;
-  }
+   public int getShellStyle() {
+      return super.getShellStyle() | 16;
+   }
 
-  protected void createButtonsForButtonBar(Composite parent) {
+   protected void createButtonsForButtonBar(Composite var1) {
+      ((GridLayout)var1.getLayout()).numColumns++;
+      Button var2 = new Button(var1, 0);
+      var2.setText(SResources.getString("b.deleteLogFile"));
+      var2.addSelectionListener(new DownloadCompleteShell$1(this, var2));
+      this.createButton(var1, 0, IDialogConstants.OK_LABEL, true);
+   }
 
-    ((GridLayout) parent.getLayout()).numColumns++;
-    final Button b = new Button(parent, SWT.NONE);
-    b.setText(SResources.getString("b.deleteLogFile"));
-    b.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        File f = new File(VersionInfo.getDownloadLogFile());
-        f.delete();
-        b.setEnabled(false);
-      }
-    });
+   protected Control createDialogArea(Composite var1) {
+      Composite var2 = (Composite)super.createDialogArea(var1);
+      var2.setLayout(new FillLayout());
+      new DownloadCompleteViewFrame(var2, "l.downloadCompleteTitle", "tab.transfers.buttonSmall", null);
+      return var2;
+   }
 
-    createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-  }
+   protected void buttonPressed(int var1) {
+      super.buttonPressed(var1);
+   }
 
-  protected Control createDialogArea(Composite parent) {
-
-    Composite composite = (Composite) super.createDialogArea(parent);
-    composite.setLayout(new FillLayout());
-
-    new DownloadCompleteViewFrame(composite, "l.downloadCompleteTitle", "tab.transfers.buttonSmall", null);
-
-    return composite;
-  }
-
-  protected void buttonPressed(int buttonId) {
-    super.buttonPressed(buttonId);
-  }
-
+   public boolean close() {
+      PreferenceConverter.setValue(PreferenceLoader.getPreferenceStore(), "downloadHistoryWindowBounds", this.getShell().getBounds());
+      PreferenceLoader.saveStore();
+      return super.close();
+   }
 }

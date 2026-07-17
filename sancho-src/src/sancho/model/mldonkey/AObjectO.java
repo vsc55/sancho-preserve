@@ -1,24 +1,16 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
-import java.util.Observable;
-
 import sancho.core.ICore;
+import sancho.utility.MyObservable;
 
-public abstract class AObjectO extends Observable implements IObject {
+public abstract class AObjectO extends MyObservable implements IObject {
+   protected ICore core;
 
-  protected ICore core;
+   AObjectO(ICore var1) {
+      this.core = var1;
+   }
 
-  AObjectO(ICore core) {
-    this.core = core;
-  }
-
-  public ICore getCore() {
-    return this.core;
-  }
-
+   public final ICore getCore() {
+      return this.core;
+   }
 }

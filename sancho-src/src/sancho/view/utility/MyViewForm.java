@@ -1,23 +1,6 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.utility;
 
-/*******************************************************************************
- * Copyright (c) 2000, 2003 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials 
- * are made available under the terms of the Common Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/cpl-v10.html
- * 
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *******************************************************************************/
-
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
@@ -26,672 +9,458 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Layout;
-import org.eclipse.swt.widgets.Listener;
-
-/**
- * Instances of this class implement a Composite that lays out three
- * children horizontally and allows programmatic control of layout and
- * border parameters. ViewForm is used in the workbench to implement a
- * view's label/menu/toolbar local bar.
- * <p>
- * Note that although this class is a subclass of <code>Composite</code>,
- * it does not make sense to set a layout on it.
- * </p><p>
- * <dl>
- * <dt><b>Styles:</b></dt>
- * <dd>BORDER, FLAT</dd>
- * <dt><b>Events:</b></dt>
- * <dd>(None)</dd>
- * </dl>
- * <p>
- * IMPORTANT: This class is <em>not</em> intended to be subclassed.
- * </p>
- */
 
 public class MyViewForm extends Composite {
+   public int marginWidth = 0;
+   public int marginHeight = 0;
+   public int horizontalSpacing = 0;
+   public int verticalSpacing = 1;
+   public static RGB borderInsideRGB = new RGB(132, 130, 132);
+   public static RGB borderMiddleRGB = new RGB(143, 141, 138);
+   public static RGB borderOutsideRGB = new RGB(171, 168, 165);
+   private Control topLeft;
+   private Control topCenter;
+   private Control topRight;
+   private Control content;
+   private boolean separateTopCenter = false;
+   private boolean showBorder = false;
+   private int borderTop = 0;
+   private int borderBottom = 0;
+   private int borderLeft = 0;
+   private int borderRight = 0;
+   private Color borderColor1 = new Color(this.getDisplay(), borderInsideRGB);
+   private Color borderColor2 = new Color(this.getDisplay(), borderMiddleRGB);
+   private Color borderColor3 = new Color(this.getDisplay(), borderOutsideRGB);
+   private Rectangle oldArea;
+   private static final int OFFSCREEN = -200;
 
-  /**
-   * marginWidth specifies the number of pixels of horizontal margin
-   * that will be placed along the left and right edges of the form.
-   *
-   * The default value is 0.
-   */
-  public int marginWidth = 0;
-  /**
-   * marginHeight specifies the number of pixels of vertical margin
-   * that will be placed along the top and bottom edges of the form.
-   *
-   * The default value is 0.
-   */
-  public int marginHeight = 0;
-  /**
-   * horizontalSpacing specifies the number of pixels between the right
-   * edge of one cell and the left edge of its neighbouring cell to
-   * the right.
-   *
-   * The default value is 1.
-   */
-  public int horizontalSpacing = 1;
-  /**
-   * verticalSpacing specifies the number of pixels between the bottom
-   * edge of one cell and the top edge of its neighbouring cell underneath.
-   *
-   * The default value is 1.
-   */
-  public int verticalSpacing = 1;
+   public MyViewForm(Composite var1, int var2) {
+      super(var1, checkStyle(var2));
+      this.setBorderVisible((var2 & 2048) != 0);
+      MyViewForm$1 var3 = new MyViewForm$1(this);
+      int[] var4 = new int[]{12, 9, 11};
 
-  /**
-   * Color of innermost line of drop shadow border.
-   * 
-   * NOTE This field is badly named and can not be fixed for backwards compatability.
-   * It should be capitalized.
-   */
-  public static RGB borderInsideRGB = new RGB(132, 130, 132);
-  /**
-   * Color of middle line of drop shadow border.
-   * 
-   * NOTE This field is badly named and can not be fixed for backwards compatability.
-   * It should be capitalized.
-   */
-  public static RGB borderMiddleRGB = new RGB(143, 141, 138);
-  /**
-   * Color of outermost line of drop shadow border.
-   * 
-   * NOTE This field is badly named and can not be fixed for backwards compatability.
-   * It should be capitalized.
-   */
-  public static RGB borderOutsideRGB = new RGB(171, 168, 165);
-
-  // SWT widgets
-  private Control topLeft;
-  private Control topCenter;
-  private Control topRight;
-  private Control content;
-
-  // Configuration and state info
-  private boolean separateTopCenter = false;
-  private boolean showBorder = false;
-
-  private int borderTop = 0;
-  private int borderBottom = 0;
-  private int borderLeft = 0;
-  private int borderRight = 0;
-
-  private Color borderColor1;
-  private Color borderColor2;
-  private Color borderColor3;
-
-  private Rectangle oldArea;
-  private static final int OFFSCREEN = -200;
-
-  /**
-   * Constructs a new instance of this class given its parent
-   * and a style value describing its behavior and appearance.
-   * <p>
-   * The style value is either one of the style constants defined in
-   * class <code>SWT</code> which is applicable to instances of this
-   * class, or must be built by <em>bitwise OR</em>'ing together 
-   * (that is, using the <code>int</code> "|" operator) two or more
-   * of those <code>SWT</code> style constants. The class description
-   * lists the style constants that are applicable to the class.
-   * Style bits are also inherited from superclasses.
-   * </p>
-   *
-   * @param parent a widget which will be the parent of the new instance (cannot be null)
-   * @param style the style of widget to construct
-   *
-   * @exception IllegalArgumentException <ul>
-   *    <li>ERROR_NULL_ARGUMENT - if the parent is null</li>
-   * </ul>
-   * @exception SWTException <ul>
-   *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the parent</li>
-   * </ul>
-   *
-   * @see SWT#BORDER
-   * @see SWT#FLAT
-   * @see #getStyle()
-   */
-  public MyViewForm(Composite parent, int style) {
-    super(parent, checkStyle(style));
-
-    RGB a = getDisplay().getSystemColor(SWT.COLOR_TITLE_BACKGROUND).getRGB();
-
-    //borderColor1 = new Color(getDisplay(), borderInsideRGB);
-
-    borderColor1 = new Color(getDisplay(), a);
-
-    borderColor2 = new Color(getDisplay(), borderMiddleRGB);
-
-    //borderColor2 = changeColor(a, 20);
-    //borderColor3 = changeColor(a, 40);
-
-    borderColor3 = new Color(getDisplay(), borderOutsideRGB);
-    setBorderVisible((style & SWT.BORDER) != 0);
-
-    Listener listener = new Listener() {
-      public void handleEvent(Event e) {
-        switch (e.type) {
-          case SWT.Dispose :
-            onDispose();
-            break;
-          case SWT.Paint :
-            onPaint(e.gc);
-            break;
-          case SWT.Resize :
-            onResize();
-            break;
-        }
+      for (int var5 = 0; var5 < var4.length; var5++) {
+         this.addListener(var4[var5], var3);
       }
-    };
+   }
 
-    int[] events = new int[]{SWT.Dispose, SWT.Paint, SWT.Resize};
+   public static Color changeColor(RGB var0, int var1) {
+      int var2 = modifyIntColor(var0.red, var1);
+      int var3 = modifyIntColor(var0.green, var1);
+      int var4 = modifyIntColor(var0.blue, var1);
+      return new Color(null, var2, var3, var4);
+   }
 
-    for (int i = 0; i < events.length; i++) {
-      addListener(events[i], listener);
-    }
-  }
+   public static Color changeColor(RGB var0, int var1, int var2) {
+      int var3 = modifyIntColor(var0.red, var1, var2);
+      int var4 = modifyIntColor(var0.green, var1, var2);
+      int var5 = modifyIntColor(var0.blue, var1, var2);
+      return new Color(null, var3, var4, var5);
+   }
 
-  public static Color changeColor(RGB color, int num) {
-    int r = modifyIntColor(color.red, num);
-    int g = modifyIntColor(color.green, num);
-    int b = modifyIntColor(color.blue, num);
+   public static int modifyIntColor(int var0, int var1) {
+      return modifyIntColor(var0, var1, var0);
+   }
 
-    return new Color(null, r, g, b);
-  }
+   public static int modifyIntColor(int var0, int var1, int var2) {
+      return var0 + var1 >= 0 && var0 + var1 <= 255 ? var0 + var1 : var2;
+   }
 
-  public static Color changeColor(RGB color, int num, int def) {
+   static int checkStyle(int var0) {
+      int var1 = 109051904;
+      return var0 & var1 | 1048576;
+   }
 
-    int r = modifyIntColor(color.red, num, def);
-    int g = modifyIntColor(color.green, num, def);
-    int b = modifyIntColor(color.blue, num, def);
-
-    return new Color(null, r, g, b);
-  }
-
-  public static int modifyIntColor(int i, int num) {
-    return modifyIntColor(i, num, i);
-  }
-
-  public static int modifyIntColor(int i, int num, int def) {
-    return (((i + num) >= 0) && ((i + num) <= 255)) ? (i + num) : def;
-  }
-
-  static int checkStyle(int style) {
-    int mask = SWT.FLAT | SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT;
-    return style & mask | SWT.NO_REDRAW_RESIZE;
-  }
-
-  //protected void checkSubclass () {
-  //  String name = getClass().getName ();
-  //  String validName = ViewForm.class.getName();
-  //  if (!validName.equals(name)) {
-  //    SWT.error (SWT.ERROR_INVALID_SUBCLASS);
-  //  }
-  //}
-
-  public Point computeSize(int wHint, int hHint, boolean changed) {
-    checkWidget();
-    // size of title bar area
-    Point leftSize = new Point(0, 0);
-    if (topLeft != null) {
-      leftSize = topLeft.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-    }
-    Point centerSize = new Point(0, 0);
-    if (topCenter != null) {
-      centerSize = topCenter.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-    }
-    Point rightSize = new Point(0, 0);
-    if (topRight != null) {
-      rightSize = topRight.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-    }
-    Point size = new Point(0, 0);
-    // calculate width of title bar
-    if (separateTopCenter || (wHint != SWT.DEFAULT && leftSize.x + centerSize.x + rightSize.x > wHint)) {
-      size.x = leftSize.x + rightSize.x;
-      if (leftSize.x > 0 && rightSize.x > 0)
-        size.x += horizontalSpacing;
-      size.x = Math.max(centerSize.x, size.x);
-      size.y = Math.max(leftSize.y, rightSize.y);
-      if (topCenter != null) {
-        size.y += centerSize.y;
-        if (topLeft != null || topRight != null)
-          size.y += verticalSpacing;
+   public Point computeSize(int var1, int var2, boolean var3) {
+      this.checkWidget();
+      Point var4 = new Point(0, 0);
+      if (this.topLeft != null) {
+         var4 = this.topLeft.computeSize(-1, -1);
       }
-    } else {
-      size.x = leftSize.x + centerSize.x + rightSize.x;
-      int count = -1;
-      if (leftSize.x > 0)
-        count++;
-      if (centerSize.x > 0)
-        count++;
-      if (rightSize.x > 0)
-        count++;
-      if (count > 0)
-        size.x += count * horizontalSpacing;
-      size.y = Math.max(leftSize.y, Math.max(centerSize.y, rightSize.y));
-    }
 
-    if (content != null) {
-      Point contentSize = new Point(0, 0);
-      contentSize = content.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-      size.x = Math.max(size.x, contentSize.x);
-      size.y += contentSize.y;
-      if (size.y > contentSize.y)
-        size.y += verticalSpacing;
-    }
-
-    size.x += 2 * marginWidth;
-    size.y += 2 * marginHeight;
-
-    if (wHint != SWT.DEFAULT)
-      size.x = wHint;
-    if (hHint != SWT.DEFAULT)
-      size.y = hHint;
-
-    Rectangle trim = computeTrim(0, 0, size.x, size.y);
-    return new Point(trim.width, trim.height);
-  }
-
-  public Rectangle computeTrim(int x, int y, int width, int height) {
-    checkWidget();
-    int trimX = x - borderLeft;
-    int trimY = y - borderTop;
-    int trimWidth = width + borderLeft + borderRight;
-    int trimHeight = height + borderTop + borderBottom;
-    return new Rectangle(trimX, trimY, trimWidth, trimHeight);
-  }
-
-  public Rectangle getClientArea() {
-    checkWidget();
-    Rectangle clientArea = super.getClientArea();
-    clientArea.x += borderLeft;
-    clientArea.y += borderTop;
-    clientArea.width -= borderLeft + borderRight;
-    clientArea.height -= borderTop + borderBottom;
-    return clientArea;
-  }
-
-  /**
-   * Returns the content area.
-   * 
-   * @return the control in the content area of the pane or null
-   */
-  public Control getContent() {
-    //checkWidget();
-    return content;
-  }
-
-  /**
-   * Returns Control that appears in the top center of the pane.
-   * Typically this is a toolbar.
-   * 
-   * @return the control in the top center of the pane or null
-   */
-  public Control getTopCenter() {
-    //checkWidget();
-    return topCenter;
-  }
-
-  /**
-   * Returns the Control that appears in the top left corner of the pane.
-   * Typically this is a label such as CLabel.
-   * 
-   * @return the control in the top left corner of the pane or null
-   */
-  public Control getTopLeft() {
-    //checkWidget();
-    return topLeft;
-  }
-
-  /**
-   * Returns the control in the top right corner of the pane.
-   * Typically this is a Close button or a composite with a Menu and Close button.
-   * 
-   * @return the control in the top right corner of the pane or null
-   */
-  public Control getTopRight() {
-    //checkWidget();
-    return topRight;
-  }
-
-  public void layout(boolean changed) {
-    checkWidget();
-    Rectangle rect = getClientArea();
-
-    Point leftSize = new Point(0, 0);
-    if (topLeft != null && !topLeft.isDisposed()) {
-      leftSize = topLeft.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-    }
-    Point centerSize = new Point(0, 0);
-    if (topCenter != null && !topCenter.isDisposed()) {
-      centerSize = topCenter.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-    }
-    Point rightSize = new Point(0, 0);
-    if (topRight != null && !topRight.isDisposed()) {
-      rightSize = topRight.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-    }
-
-    int minTopWidth = leftSize.x + centerSize.x + rightSize.x + 2 * marginWidth;
-    int count = -1;
-    if (leftSize.x > 0)
-      count++;
-    if (centerSize.x > 0)
-      count++;
-    if (rightSize.x > 0)
-      count++;
-    if (count > 0)
-      minTopWidth += count * horizontalSpacing;
-
-    int x = rect.x + rect.width - marginWidth;
-    int y = rect.y + marginHeight;
-
-    boolean top = false;
-    if (separateTopCenter || minTopWidth > rect.width) {
-      int topHeight = Math.max(rightSize.y, leftSize.y);
-      if (topRight != null && !topRight.isDisposed()) {
-        top = true;
-        x -= rightSize.x;
-        topRight.setBounds(x, y, rightSize.x, topHeight);
-        x -= horizontalSpacing;
+      Point var5 = new Point(0, 0);
+      if (this.topCenter != null) {
+         var5 = this.topCenter.computeSize(-1, -1);
       }
-      if (topLeft != null && !topLeft.isDisposed()) {
-        top = true;
-        leftSize = topLeft.computeSize(x - rect.x - marginWidth, SWT.DEFAULT);
-        topLeft.setBounds(rect.x + marginWidth, y, leftSize.x, topHeight);
+
+      Point var6 = new Point(0, 0);
+      if (this.topRight != null) {
+         var6 = this.topRight.computeSize(-1, -1);
       }
-      if (top)
-        y += topHeight + verticalSpacing;
-      if (topCenter != null && !topCenter.isDisposed()) {
-        top = true;
-        centerSize = topCenter.computeSize(rect.width - 2 * marginWidth, SWT.DEFAULT);
-        topCenter.setBounds(rect.x + rect.width - marginWidth - centerSize.x, y, centerSize.x, centerSize.y);
-        y += centerSize.y + verticalSpacing;
-      }
-    } else {
-      int topHeight = Math.max(rightSize.y, Math.max(centerSize.y, leftSize.y));
-      if (topRight != null && !topRight.isDisposed()) {
-        top = true;
-        x -= rightSize.x;
-        topRight.setBounds(x, y, rightSize.x, topHeight);
-        x -= horizontalSpacing;
-      }
-      if (topCenter != null && !topCenter.isDisposed()) {
-        top = true;
-        x -= centerSize.x;
-        topCenter.setBounds(x, y, centerSize.x, topHeight);
-        x -= horizontalSpacing;
-      }
-      if (topLeft != null && !topLeft.isDisposed()) {
-        top = true;
-        leftSize = topLeft.computeSize(x - rect.x - marginWidth, topHeight);
-        topLeft.setBounds(rect.x + marginWidth, y, leftSize.x, topHeight);
-      }
-      if (top)
-        y += topHeight + verticalSpacing;
-    }
 
-    if (content != null && !content.isDisposed()) {
-      content.setBounds(rect.x + marginWidth, y, rect.width - 2 * marginWidth, rect.y + rect.height - y
-          - marginHeight);
-    }
-  }
+      Point var7 = new Point(0, 0);
+      if (this.separateTopCenter || var1 != -1 && var4.x + var5.x + var6.x > var1) {
+         var7.x = var4.x + var6.x;
+         if (var4.x > 0 && var6.x > 0) {
+            var7.x = var7.x + this.horizontalSpacing;
+         }
 
-  void onDispose() {
-    if (borderColor1 != null) {
-      borderColor1.dispose();
-    }
-    borderColor1 = null;
-
-    if (borderColor2 != null) {
-      borderColor2.dispose();
-    }
-    borderColor2 = null;
-
-    if (borderColor3 != null) {
-      borderColor3.dispose();
-    }
-    borderColor3 = null;
-
-    topLeft = null;
-    topCenter = null;
-    topRight = null;
-    content = null;
-    oldArea = null;
-  }
-
-  void onPaint(GC gc) {
-    Color gcForeground = gc.getForeground();
-    Point size = getSize();
-    if (showBorder) {
-      if ((getStyle() & SWT.FLAT) != 0) {
-        gc.setForeground(borderColor1);
-        gc.drawRectangle(0, 0, size.x - 1, size.y - 1);
+         var7.x = Math.max(var5.x, var7.x);
+         var7.y = Math.max(var4.y, var6.y);
+         if (this.topCenter != null) {
+            var7.y = var7.y + var5.y;
+            if (this.topLeft != null || this.topRight != null) {
+               var7.y = var7.y + this.verticalSpacing;
+            }
+         }
       } else {
-        gc.setForeground(borderColor1);
-        gc.drawRectangle(0, 0, size.x - 3, size.y - 3);
+         var7.x = var4.x + var5.x + var6.x;
+         int var8 = -1;
+         if (var4.x > 0) {
+            var8++;
+         }
 
-        gc.setForeground(borderColor2);
-        gc.drawLine(1, size.y - 2, size.x - 1, size.y - 2);
-        gc.drawLine(size.x - 2, 1, size.x - 2, size.y - 1);
+         if (var5.x > 0) {
+            var8++;
+         }
 
-        gc.setForeground(borderColor3);
-        gc.drawLine(2, size.y - 1, size.x - 2, size.y - 1);
-        gc.drawLine(size.x - 1, 2, size.x - 1, size.y - 2);
+         if (var6.x > 0) {
+            var8++;
+         }
+
+         if (var8 > 0) {
+            var7.x = var7.x + var8 * this.horizontalSpacing;
+         }
+
+         var7.y = Math.max(var4.y, Math.max(var5.y, var6.y));
       }
-    }
-    gc.setForeground(gcForeground);
-  }
 
-  void onResize() {
-    layout();
-
-    Rectangle area = super.getClientArea();
-    if (oldArea == null || oldArea.width == 0 || oldArea.height == 0) {
-      redraw();
-    } else {
-      int width = 0;
-      if (oldArea.width < area.width) {
-        width = area.width - oldArea.width + borderRight;
-      } else if (oldArea.width > area.width) {
-        width = borderRight;
+      if (this.content != null) {
+         new Point(0, 0);
+         Point var9 = this.content.computeSize(-1, -1);
+         var7.x = Math.max(var7.x, var9.x);
+         var7.y = var7.y + var9.y;
+         if (var7.y > var9.y) {
+            var7.y = var7.y + this.verticalSpacing;
+         }
       }
-      redraw(area.x + area.width - width, area.y, width, area.height, false);
 
-      int height = 0;
-      if (oldArea.height < area.height) {
-        height = area.height - oldArea.height + borderBottom;
+      var7.x = var7.x + 2 * this.marginWidth;
+      var7.y = var7.y + 2 * this.marginHeight;
+      if (var1 != -1) {
+         var7.x = var1;
       }
-      if (oldArea.height > area.height) {
-        height = borderBottom;
+
+      if (var2 != -1) {
+         var7.y = var2;
       }
-      redraw(area.x, area.y + area.height - height, area.width, height, false);
-    }
-    oldArea = area;
-  }
 
-  /**
-   * Sets the content.
-   * Setting the content to null will remove it from 
-   * the pane - however, the creator of the content must dispose of the content.
-   * 
-   * @param content the control to be displayed in the content area or null
-   * 
-   * @exception SWTException <ul>
-   *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-   *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-   *    <li>ERROR_INVALID_ARGUMENT - if the control is not a child of this ViewForm</li>
-   * </ul>
-   */
-  public void setContent(Control content) {
-    checkWidget();
-    if (content != null && content.getParent() != this) {
-      SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-    }
-    if (this.content != null && !this.content.isDisposed()) {
-      this.content.setBounds(OFFSCREEN, OFFSCREEN, 0, 0);
-    }
-    this.content = content;
-    layout();
-  }
+      Rectangle var10 = this.computeTrim(0, 0, var7.x, var7.y);
+      return new Point(var10.width, var10.height);
+   }
 
-  public void setFont(Font f) {
-    super.setFont(f);
-    if (topLeft != null && !topLeft.isDisposed())
-      topLeft.setFont(f);
-    if (topCenter != null && !topCenter.isDisposed())
-      topCenter.setFont(f);
-    if (topRight != null && !topRight.isDisposed())
-      topRight.setFont(f);
+   public Rectangle computeTrim(int var1, int var2, int var3, int var4) {
+      this.checkWidget();
+      int var5 = var1 - this.borderLeft;
+      int var6 = var2 - this.borderTop;
+      int var7 = var3 + this.borderLeft + this.borderRight;
+      int var8 = var4 + this.borderTop + this.borderBottom;
+      return new Rectangle(var5, var6, var7, var8);
+   }
 
-    layout();
-  }
+   public Rectangle getClientArea() {
+      this.checkWidget();
+      Rectangle var1 = super.getClientArea();
+      var1.x = var1.x + this.borderLeft;
+      var1.y = var1.y + this.borderTop;
+      var1.width = var1.width - (this.borderLeft + this.borderRight);
+      var1.height = var1.height - (this.borderTop + this.borderBottom);
+      return var1;
+   }
 
-  /**
-   * Sets the layout which is associated with the receiver to be
-   * the argument which may be null.
-   * <p>
-   * Note : ViewForm does not use a layout class to size and position its children.
-   * </p>
-   *
-   * @param layout the receiver's new layout or null
-   *
-   * @exception SWTException <ul>
-   *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-   *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-   * </ul>
-   */
-  public void setLayout(Layout layout) {
-    checkWidget();
-    return;
-  }
+   public Control getContent() {
+      return this.content;
+   }
 
-  /**
-   * Set the control that appears in the top center of the pane.
-   * Typically this is a toolbar.
-   * The topCenter is optional.  Setting the topCenter to null will remove it from 
-   * the pane - however, the creator of the topCenter must dispose of the topCenter.
-   * 
-   * @param topCenter the control to be displayed in the top center or null
-   * 
-   * @exception SWTException <ul>
-   *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-   *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-   *    <li>ERROR_INVALID_ARGUMENT - if the control is not a child of this ViewForm</li>
-   * </ul>
-   */
-  public void setTopCenter(Control topCenter) {
-    checkWidget();
-    if (topCenter != null && topCenter.getParent() != this) {
-      SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-    }
-    if (this.topCenter != null && !this.topCenter.isDisposed()) {
-      this.topCenter.setBounds(OFFSCREEN, OFFSCREEN, 0, 0);
-    }
-    this.topCenter = topCenter;
-    layout();
-  }
+   public Control getTopCenter() {
+      return this.topCenter;
+   }
 
-  /**
-   * Set the control that appears in the top left corner of the pane.
-   * Typically this is a label such as CLabel.
-   * The topLeft is optional.  Setting the top left control to null will remove it from 
-   * the pane - however, the creator of the control must dispose of the control.
-   * 
-   * @param c the control to be displayed in the top left corner or null
-   * 
-   * @exception SWTException <ul>
-   *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-   *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-   *    <li>ERROR_INVALID_ARGUMENT - if the control is not a child of this ViewForm</li>
-   * </ul>
-   */
-  public void setTopLeft(Control c) {
-    checkWidget();
-    if (c != null && c.getParent() != this) {
-      SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-    }
-    if (this.topLeft != null && !this.topLeft.isDisposed()) {
-      this.topLeft.setBounds(OFFSCREEN, OFFSCREEN, 0, 0);
-    }
-    this.topLeft = c;
-    layout();
-  }
+   public Control getTopLeft() {
+      return this.topLeft;
+   }
 
-  /**
-   * Set the control that appears in the top right corner of the pane.
-   * Typically this is a Close button or a composite with a Menu and Close button.
-   * The topRight is optional.  Setting the top right control to null will remove it from 
-   * the pane - however, the creator of the control must dispose of the control.
-   * 
-   * @param c the control to be displayed in the top right corner or null
-   * 
-   * @exception SWTException <ul>
-   *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-   *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-   *    <li>ERROR_INVALID_ARGUMENT - if the control is not a child of this ViewForm</li>
-   * </ul>
-   */
-  public void setTopRight(Control c) {
-    checkWidget();
-    if (c != null && c.getParent() != this) {
-      SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-    }
-    if (this.topRight != null && !this.topRight.isDisposed()) {
-      this.topRight.setBounds(OFFSCREEN, OFFSCREEN, 0, 0);
-    }
-    this.topRight = c;
-    layout();
-  }
+   public Control getTopRight() {
+      return this.topRight;
+   }
 
-  /**
-   * Specify whether the border should be displayed or not.
-   * 
-   * @param show true if the border should be displayed
-   * 
-   * @exception SWTException <ul>
-   *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-   *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-   * </ul>
-   */
-  public void setBorderVisible(boolean show) {
-    checkWidget();
-    if (showBorder == show)
-      return;
+   public void layout(boolean var1) {
+      this.checkWidget();
+      Rectangle var2 = this.getClientArea();
+      Point var3 = new Point(0, 0);
+      if (this.topLeft != null && !this.topLeft.isDisposed()) {
+         var3 = this.topLeft.computeSize(-1, -1);
+      }
 
-    showBorder = show;
-    if (showBorder) {
-      if ((getStyle() & SWT.FLAT) != 0) {
-        borderLeft = borderTop = borderRight = borderBottom = 1;
+      Point var4 = new Point(0, 0);
+      if (this.topCenter != null && !this.topCenter.isDisposed()) {
+         var4 = this.topCenter.computeSize(-1, -1);
+      }
+
+      Point var5 = new Point(0, 0);
+      if (this.topRight != null && !this.topRight.isDisposed()) {
+         var5 = this.topRight.computeSize(-1, -1);
+      }
+
+      int var6 = var3.x + var4.x + var5.x + 2 * this.marginWidth;
+      int var7 = -1;
+      if (var3.x > 0) {
+         var7++;
+      }
+
+      if (var4.x > 0) {
+         var7++;
+      }
+
+      if (var5.x > 0) {
+         var7++;
+      }
+
+      if (var7 > 0) {
+         var6 += var7 * this.horizontalSpacing;
+      }
+
+      int var8 = var2.x + var2.width - this.marginWidth;
+      int var9 = var2.y + this.marginHeight;
+      boolean var10 = false;
+      if (!this.separateTopCenter && var6 <= var2.width) {
+         int var19 = Math.max(var5.y, Math.max(var4.y, var3.y));
+         if (this.topRight != null && !this.topRight.isDisposed()) {
+            var10 = true;
+            var8 -= var5.x;
+            this.topRight.setBounds(var8, var9, var5.x, var19);
+            var8 -= this.horizontalSpacing;
+         }
+
+         if (this.topCenter != null && !this.topCenter.isDisposed()) {
+            var10 = true;
+            var8 -= var4.x;
+            this.topCenter.setBounds(var8, var9, var4.x, var19);
+            var8 -= this.horizontalSpacing;
+         }
+
+         if (this.topLeft != null && !this.topLeft.isDisposed()) {
+            var10 = true;
+            var3 = this.topLeft.computeSize(var8 - var2.x - this.marginWidth, var19);
+            this.topLeft.setBounds(var2.x + this.marginWidth, var9, var3.x, var19);
+         }
+
+         if (var10) {
+            var9 += var19 + this.verticalSpacing;
+         }
       } else {
-        borderLeft = borderTop = 1;
-        borderRight = borderBottom = 3;
+         int var11 = Math.max(var5.y, var3.y);
+         if (this.topRight != null && !this.topRight.isDisposed()) {
+            var10 = true;
+            var8 -= var5.x;
+            this.topRight.setBounds(var8, var9, var5.x, var11);
+            var8 -= this.horizontalSpacing;
+         }
+
+         if (this.topLeft != null && !this.topLeft.isDisposed()) {
+            var10 = true;
+            var3 = this.topLeft.computeSize(var8 - var2.x - this.marginWidth, -1);
+            this.topLeft.setBounds(var2.x + this.marginWidth, var9, var3.x, var11);
+         }
+
+         if (var10) {
+            var9 += var11 + this.verticalSpacing;
+         }
+
+         if (this.topCenter != null && !this.topCenter.isDisposed()) {
+            var10 = true;
+            var4 = this.topCenter.computeSize(var2.width - 2 * this.marginWidth, -1);
+            this.topCenter.setBounds(var2.x + var2.width - this.marginWidth - var4.x, var9, var4.x, var4.y);
+            var9 += var4.y + this.verticalSpacing;
+         }
       }
-    } else {
-      borderBottom = borderTop = borderLeft = borderRight = 0;
-    }
 
-    layout();
-    redraw();
-  }
+      if (this.content != null && !this.content.isDisposed()) {
+         this.content.setBounds(var2.x + this.marginWidth, var9, var2.width - 2 * this.marginWidth, var2.y + var2.height - var9 - this.marginHeight);
+      }
+   }
 
-  /**
-   * If true, the topCenter will always appear on a separate line by itself, otherwise the 
-   * topCenter will appear in the top row if there is room and will be moved to the second row if
-   * required.
-   * 
-   * @param show true if the topCenter will always appear on a separate line by itself
-   * 
-   * @exception SWTException <ul>
-   *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-   *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-   * </ul>
-   */
-  public void setTopCenterSeparate(boolean show) {
-    checkWidget();
-    separateTopCenter = show;
-    layout();
-  }
+   void onDispose() {
+      if (this.borderColor1 != null) {
+         this.borderColor1.dispose();
+      }
 
+      this.borderColor1 = null;
+      if (this.borderColor2 != null) {
+         this.borderColor2.dispose();
+      }
+
+      this.borderColor2 = null;
+      if (this.borderColor3 != null) {
+         this.borderColor3.dispose();
+      }
+
+      this.borderColor3 = null;
+      this.topLeft = null;
+      this.topCenter = null;
+      this.topRight = null;
+      this.content = null;
+      this.oldArea = null;
+   }
+
+   void onPaint(GC var1) {
+      Color var2 = var1.getForeground();
+      Point var3 = this.getSize();
+      if (this.showBorder) {
+         if ((this.getStyle() & 8388608) != 0) {
+            var1.setForeground(this.borderColor1);
+            var1.drawRectangle(0, 0, var3.x - 1, var3.y - 1);
+         } else {
+            var1.setForeground(this.borderColor1);
+            var1.drawRectangle(0, 0, var3.x - 3, var3.y - 3);
+            var1.setForeground(this.borderColor1);
+            var1.setBackground(this.getDisplay().getSystemColor(1));
+            var1.fillRectangle(0, 0, var3.x - 3, var3.y - 3);
+            var1.setBackground(this.getDisplay().getSystemColor(18));
+            var1.fillRectangle(1, 1, var3.x - 3, var3.y - 3);
+            var1.setForeground(this.borderColor2);
+            var1.drawLine(1, var3.y - 2, var3.x - 1, var3.y - 2);
+            var1.drawLine(var3.x - 2, 1, var3.x - 2, var3.y - 1);
+            var1.setForeground(this.borderColor3);
+            var1.drawLine(2, var3.y - 1, var3.x - 2, var3.y - 1);
+            var1.drawLine(var3.x - 1, 2, var3.x - 1, var3.y - 2);
+         }
+      }
+
+      var1.setForeground(var2);
+   }
+
+   void onResize() {
+      this.layout();
+      Rectangle var1 = super.getClientArea();
+      if (this.oldArea != null && this.oldArea.width != 0 && this.oldArea.height != 0) {
+         int var2 = 0;
+         if (this.oldArea.width < var1.width) {
+            var2 = var1.width - this.oldArea.width + this.borderRight;
+         } else if (this.oldArea.width > var1.width) {
+            var2 = this.borderRight;
+         }
+
+         this.redraw(var1.x + var1.width - var2, var1.y, var2, var1.height, false);
+         int var3 = 0;
+         if (this.oldArea.height < var1.height) {
+            var3 = var1.height - this.oldArea.height + this.borderBottom;
+         }
+
+         if (this.oldArea.height > var1.height) {
+            var3 = this.borderBottom;
+         }
+
+         this.redraw(var1.x, var1.y + var1.height - var3, var1.width, var3, false);
+      } else {
+         this.redraw();
+      }
+
+      this.oldArea = var1;
+   }
+
+   public void setContent(Control var1) {
+      this.checkWidget();
+      if (var1 != null && var1.getParent() != this) {
+         SWT.error(5);
+      }
+
+      if (this.content != null && !this.content.isDisposed()) {
+         this.content.setBounds(-200, -200, 0, 0);
+      }
+
+      this.content = var1;
+      this.layout();
+   }
+
+   public void setFont(Font var1) {
+      super.setFont(var1);
+      if (this.topLeft != null && !this.topLeft.isDisposed()) {
+         this.topLeft.setFont(var1);
+      }
+
+      if (this.topCenter != null && !this.topCenter.isDisposed()) {
+         this.topCenter.setFont(var1);
+      }
+
+      if (this.topRight != null && !this.topRight.isDisposed()) {
+         this.topRight.setFont(var1);
+      }
+
+      this.layout();
+   }
+
+   public void setLayout(Layout var1) {
+      this.checkWidget();
+   }
+
+   public void setTopCenter(Control var1) {
+      this.checkWidget();
+      if (var1 != null && var1.getParent() != this) {
+         SWT.error(5);
+      }
+
+      if (this.topCenter != null && !this.topCenter.isDisposed()) {
+         this.topCenter.setBounds(-200, -200, 0, 0);
+      }
+
+      this.topCenter = var1;
+      this.layout();
+   }
+
+   public void setTopLeft(Control var1) {
+      this.checkWidget();
+      if (var1 != null && var1.getParent() != this) {
+         SWT.error(5);
+      }
+
+      if (this.topLeft != null && !this.topLeft.isDisposed()) {
+         this.topLeft.setBounds(-200, -200, 0, 0);
+      }
+
+      this.topLeft = var1;
+      this.layout();
+   }
+
+   public void setTopRight(Control var1) {
+      this.checkWidget();
+      if (var1 != null && var1.getParent() != this) {
+         SWT.error(5);
+      }
+
+      if (this.topRight != null && !this.topRight.isDisposed()) {
+         this.topRight.setBounds(-200, -200, 0, 0);
+      }
+
+      this.topRight = var1;
+      this.layout();
+   }
+
+   public void setBorderVisible(boolean var1) {
+      this.checkWidget();
+      if (this.showBorder != var1) {
+         this.showBorder = var1;
+         if (this.showBorder) {
+            if ((this.getStyle() & 8388608) != 0) {
+               this.borderLeft = this.borderTop = this.borderRight = this.borderBottom = 1;
+            } else {
+               this.borderLeft = this.borderTop = 1;
+               this.borderRight = this.borderBottom = 3;
+            }
+         } else {
+            this.borderBottom = this.borderTop = this.borderLeft = this.borderRight = 0;
+         }
+
+         this.layout();
+         this.redraw();
+      }
+   }
+
+   public void setTopCenterSeparate(boolean var1) {
+      this.checkWidget();
+      this.separateTopCenter = var1;
+      this.layout();
+   }
 }

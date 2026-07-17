@@ -1,14 +1,6 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.search.result;
 
-import java.util.Observable;
-import java.util.Observer;
-
-import org.eclipse.swt.SWT;
+import org.eclipse.jface.viewers.CustomTableViewer;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.DisposeEvent;
@@ -16,159 +8,145 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-
 import sancho.core.Sancho;
 import sancho.model.mldonkey.ResultCollection;
 import sancho.model.mldonkey.utility.SearchWaiting;
+import sancho.utility.MyObservable;
+import sancho.utility.MyObserver;
 import sancho.utility.ObjectMap;
+import sancho.utility.SwissArmy;
 import sancho.view.utility.AbstractTab;
 import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
-import sancho.view.viewer.CustomTableViewer;
 import sancho.view.viewer.GView;
 
-public class ResultTab implements Observer, Runnable, DisposeListener {
-  private boolean hasTable;
-  private CTabFolder cTabFolder;
-  private CTabItem cTabItem;
-  private GView gView;
-  private boolean paused;
-  private int searchId;
-  private Composite searchingComposite;
-  private Label searchingLabel;
-  private String searchString;
-  private AbstractTab searchTab;
-  private ResultViewFrame viewFrame;
+public class ResultTab implements MyObserver, Runnable, DisposeListener {
+   private boolean hasTable;
+   private CTabFolder cTabFolder;
+   private CTabItem cTabItem;
+   private GView gView;
+   private boolean paused;
+   private int searchId;
+   private Composite searchingComposite;
+   private Label searchingLabel;
+   private String searchString;
+   private AbstractTab searchTab;
+   private ResultViewFrame viewFrame;
 
-  public ResultTab(ResultViewFrame viewFrame, CTabFolder cTabFolder, AbstractTab searchTab, int searchId,
-      String string) {
-    this.searchString = string;
-    this.cTabFolder = cTabFolder;
-    this.searchId = searchId;
-    this.searchTab = searchTab;
-    this.viewFrame = viewFrame;
-
-    createContent();
-
-    if (Sancho.hasCollectionFactory())
-      viewFrame.getCore().getResultCollection().addObserver(this);
-
-    viewFrame.onCTabFolderSelection();
-  }
-
-  private void createContent() {
-    cTabItem = new CTabItem(cTabFolder, SWT.FLAT);
-    viewFrame.updateCLabelText(SResources.getString("t.search.results"));
-
-    cTabItem.addDisposeListener(new DisposeListener() {
-      public void widgetDisposed(DisposeEvent e) {
-        viewFrame.onCTabFolderSelection();
-        if (cTabFolder.getItemCount() == 0)
-          viewFrame.updateCLabelText(SResources.getString("t.search.results"));
+   public ResultTab(ResultViewFrame var1, CTabFolder var2, AbstractTab var3, int var4, String var5) {
+      this.searchString = var5;
+      this.cTabFolder = var2;
+      this.searchId = var4;
+      this.searchTab = var3;
+      this.viewFrame = var1;
+      this.createContent();
+      if (Sancho.hasCollectionFactory()) {
+         var1.getCore().getResultCollection().addObserver(this);
       }
-    });
 
-    cTabItem.addDisposeListener(this);
-    cTabItem.setText(searchString);
-    cTabItem.setToolTipText(SResources.getString("s.r.searchingFor") + searchString);
-    cTabItem.setImage(SResources.getImage("search_small"));
-    cTabItem.setData(this);
+      var1.onCTabFolderSelection();
+   }
 
-    searchingComposite = new Composite(cTabFolder, SWT.NONE);
-    searchingComposite.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
+   private void createContent() {
+      this.cTabItem = new CTabItem(this.cTabFolder, 8388608);
+      this.viewFrame.updateCLabelText(SResources.getString("t.search.results"));
+      this.cTabItem.addDisposeListener(new ResultTab$1(this));
+      this.cTabItem.addDisposeListener(this);
+      this.cTabItem.setText(SwissArmy.stringNoAccel(this.searchString));
+      this.cTabItem.setToolTipText(SResources.getString("s.r.searchingFor") + this.searchString);
+      this.cTabItem.setImage(SResources.getImage("search_small"));
+      this.cTabItem.setData(this);
+      this.searchingComposite = new Composite(this.cTabFolder, 0);
+      this.searchingComposite.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
+      this.searchingLabel = new Label(this.searchingComposite, 0);
+      this.searchingLabel.setText(SResources.getString("s.r.searching"));
+      this.searchingLabel.setLayoutData(new GridData(2));
+      this.cTabItem.setControl(this.searchingComposite);
+      this.cTabFolder.setSelection(this.cTabItem);
+   }
 
-    searchingLabel = new Label(searchingComposite, SWT.NONE);
-    searchingLabel.setText(SResources.getString("s.r.searching"));
-    searchingLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-    cTabItem.setControl(searchingComposite);
+   private void createTable() {
+      this.cTabItem.setImage(SResources.getImage(this.searchId < 0 ? "jigle" : "search_complete"));
+      this.gView = new ResultTableView(this.viewFrame, this.cTabItem, this.searchTab);
+      this.gView.setActive(true);
+      this.gView.setVisible(true);
+      this.cTabItem.setControl(((CustomTableViewer)this.gView.getViewer()).getTable());
+   }
 
-    cTabFolder.setSelection(cTabItem);
-  }
+   public boolean isPaused() {
+      return this.paused;
+   }
 
-  private void createTable() {
-    cTabItem.setImage(SResources.getImage(searchId < 0 ? "jigle" : "search_complete"));
-    this.gView = new ResultTableView(viewFrame, cTabItem, searchTab);
-    cTabItem.setControl(((CustomTableViewer) gView.getViewer()).getTable());
-  }
+   public void pause() {
+      this.paused = true;
+      if (Sancho.hasCollectionFactory()) {
+         ObjectMap var1 = (ObjectMap)this.viewFrame.getCore().getResultCollection().get(this.searchId);
+         if (var1 != null) {
+            var1.deleteObservers();
+         }
+      }
+   }
 
-  public boolean isPaused() {
-    return paused;
-  }
+   public void run() {
+      if (!this.cTabItem.isDisposed() && !this.paused && Sancho.hasCollectionFactory()) {
+         if (this.searchingLabel != null && !this.searchingLabel.isDisposed()) {
+            this.searchingLabel.dispose();
+            this.searchingComposite.dispose();
+         }
 
-  public void pause() {
-    this.paused = true;
-    if (Sancho.hasCollectionFactory()) {
-      ObjectMap objectMap = (ObjectMap) viewFrame.getCore().getResultCollection().get(searchId);
-      if (objectMap != null)
-        objectMap.deleteObservers();
-    }
-  }
+         this.createTable();
+         if (Sancho.hasCollectionFactory()) {
+            this.gView.getViewer().setInput(this.viewFrame.getCore().getResultCollection().get(this.searchId));
+         }
+      }
+   }
 
-  public void run() {
-    if (cTabItem.isDisposed() || this.paused || !Sancho.hasCollectionFactory())
-      return;
+   public void unPause() {
+      this.paused = false;
+      if (Sancho.hasCollectionFactory() && this.gView != null && !this.gView.isDisposed()) {
+         this.gView.getViewer().setInput(this.viewFrame.getCore().getResultCollection().get(this.searchId));
+      }
+   }
 
-    if (searchingLabel != null && !searchingLabel.isDisposed()) {
-      searchingLabel.dispose();
-      searchingComposite.dispose();
-    }
-    this.createTable();
-    if (Sancho.hasCollectionFactory())
-      gView.getViewer().setInput(viewFrame.getCore().getResultCollection().get(searchId));
+   public void update(MyObservable var1, Object var2, int var3) {
+      if (this.cTabItem != null && !this.cTabItem.isDisposed() && !this.isPaused()) {
+         if (var2 instanceof SearchWaiting) {
+            SearchWaiting var4 = (SearchWaiting)var2;
+            if (var4.getId() == this.searchId && this.searchingLabel != null && !this.searchingLabel.isDisposed()) {
+               this.searchingLabel.getDisplay().asyncExec(new ResultTab$2(this, var4));
+            }
+         }
 
-  }
-
-  public void unPause() {
-    this.paused = false;
-    if (Sancho.hasCollectionFactory() && gView != null && !gView.isDisposed())
-      gView.getViewer().setInput(viewFrame.getCore().getResultCollection().get(searchId));
-  }
-
-  public void update(Observable o, final Object arg) {
-    if (cTabItem == null || cTabItem.isDisposed() || isPaused())
-      return;
-
-    if (arg instanceof SearchWaiting) {
-      final SearchWaiting searchWaiting = (SearchWaiting) arg;
-      if (searchWaiting.getId() == searchId && searchingLabel != null && !searchingLabel.isDisposed())
-        searchingLabel.getDisplay().asyncExec(new Runnable() {
-          public void run() {
-            if (searchingLabel != null && !searchingLabel.isDisposed()) {
-              searchingLabel.setText(SResources.getString("s.r.searchesWaiting")
-                  + searchWaiting.getNumWaiting());
-              searchingLabel.getParent().layout();
+         if (!this.hasTable && this.gView == null && ((ResultCollection)var1).containsKey(this.searchId)) {
+            if (Sancho.hasCollectionFactory() && this.viewFrame.getCore().getResultCollection() != null) {
+               this.viewFrame.getCore().getResultCollection().deleteObserver(this);
             }
 
-          }
-        });
-    }
+            this.hasTable = true;
+            this.cTabFolder.getDisplay().asyncExec(this);
+         }
+      }
+   }
 
-    //    else if (arg instanceof JigleSearchComplete) {
-    //      final JigleSearchComplete jigleSearchComplete = (JigleSearchComplete) arg;
-    //      if (jigleSearchComplete.getSearchID() == searchId && searchingLabel != null
-    //          && !searchingLabel.isDisposed())
-    //        searchingLabel.getDisplay().asyncExec(new Runnable() {
-    //          public void run() {
-    //            if (searchingLabel != null && !searchingLabel.isDisposed())
-    //              searchingLabel.setText(Resources.getString("s.r.jigleComplete") + " ("
-    //                  + jigleSearchComplete.getCode() + ")");
-    //          }
-    //        });
-    //    }
+   public void widgetDisposed(DisposeEvent var1) {
+      if (Sancho.hasCollectionFactory()) {
+         this.viewFrame.getCore().getResultCollection().deleteObserver(this);
+         this.viewFrame.getCore().getResultCollection().closeSearch(this.searchId);
+      }
+   }
 
-    if (!hasTable && gView == null && ((ResultCollection) o).containsKey(searchId)) {
-      if (Sancho.hasCollectionFactory() && viewFrame.getCore().getResultCollection() != null)
-        viewFrame.getCore().getResultCollection().deleteObserver(this);
-      hasTable = true;
-      cTabFolder.getDisplay().asyncExec(this);
-    }
-  }
+   // $VF: synthetic method
+   static ResultViewFrame access$000(ResultTab var0) {
+      return var0.viewFrame;
+   }
 
-  public void widgetDisposed(DisposeEvent e) {
-    if (Sancho.hasCollectionFactory()) {
-      viewFrame.getCore().getResultCollection().deleteObserver(this);
-      viewFrame.getCore().getResultCollection().closeSearch(searchId);
-    }
-  }
+   // $VF: synthetic method
+   static CTabFolder access$100(ResultTab var0) {
+      return var0.cTabFolder;
+   }
 
+   // $VF: synthetic method
+   static Label access$200(ResultTab var0) {
+      return var0.searchingLabel;
+   }
 }

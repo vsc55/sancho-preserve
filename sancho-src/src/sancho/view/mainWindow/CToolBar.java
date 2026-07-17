@@ -1,20 +1,11 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.mainWindow;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-
 import org.eclipse.jface.preference.PreferenceStore;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -24,7 +15,6 @@ import org.eclipse.swt.widgets.CoolItem;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ToolBar;
-
 import sancho.view.MainWindow;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.SResources;
@@ -32,149 +22,148 @@ import sancho.view.utility.ToolButton;
 import sancho.view.utility.WidgetFactory;
 
 public class CToolBar implements DisposeListener {
-  private Composite composite;
-  private CoolBar coolbar;
-  private boolean coolbarLocked;
-  private List mainToolButtons;
-  private ToolBar mainTools;
-  private MainWindow mainWindow;
-  private boolean toolbarSmallButtons;
+   private Composite composite;
+   private CoolBar coolbar;
+   private boolean coolbarLocked;
+   private List mainToolButtons;
+   private ToolBar mainTools;
+   private MainWindow mainWindow;
+   private boolean toolbarSmallButtons;
 
-  public CToolBar(MainWindow mainWindow, boolean size) {
-    this.toolbarSmallButtons = size;
-    this.coolbarLocked = true;
-    this.mainWindow = mainWindow;
-    this.mainToolButtons = new ArrayList();
-    this.createContent(mainWindow.getMainComposite());
-  }
+   public CToolBar(MainWindow var1, boolean var2) {
+      this.toolbarSmallButtons = var2;
+      this.coolbarLocked = true;
+      this.mainWindow = var1;
+      this.mainToolButtons = new ArrayList();
+      this.createContent(var1.getMainComposite());
+   }
 
-  private void createContent(Composite parent) {
-    composite = new Composite(parent, SWT.NONE);
-    GridLayout gridLayout = WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false);
-    composite.setLayout(gridLayout);
-    composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    createCoolBar();
-    createToolBars();
-    createCoolItems();
-  }
+   private void createContent(Composite var1) {
+      this.composite = new Composite(var1, 0);
+      GridLayout var2 = WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false);
+      this.composite.setLayout(var2);
+      this.composite.setLayoutData(new GridData(768));
+      this.createCoolBar();
+      this.createToolBars();
+      this.createCoolItems();
+   }
 
-  private void createCoolBar() {
-    coolbar = new CoolBar(this.composite, SWT.FLAT);
-    coolbar.addDisposeListener(this);
-    coolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-  }
+   private void createCoolBar() {
+      this.coolbar = new CoolBar(this.composite, 8388608);
+      this.coolbar.addDisposeListener(this);
+      this.coolbar.setLayoutData(new GridData(768));
+   }
 
-  public void createCoolItems() {
-    for (int i = 0; i < coolbar.getItems().length; i++)
-      coolbar.getItems()[i].dispose();
-
-    for (int i = 0; i < 1; i++)
-      new CoolItem(coolbar, SWT.NONE);
-
-    CoolItem[] items = coolbar.getItems();
-    CoolItem mainCoolItem = items[0];
-    mainCoolItem.setControl(mainTools);
-  }
-
-  public MenuItem createMenuItem(Menu menu, int style, boolean checked, String resString,
-      SelectionAdapter selectionAdapter) {
-    MenuItem menuItem = new MenuItem(menu, style);
-    menuItem.setText(SResources.getString(resString));
-    if (checked)
-      menuItem.setSelection(checked);
-    menuItem.addSelectionListener(selectionAdapter);
-    return menuItem;
-  }
-
-  private Menu createToolBarRMMenu() {
-    Menu menu = new Menu(mainWindow.getShell(), SWT.POP_UP);
-
-    createMenuItem(menu, SWT.CHECK, toolbarSmallButtons, "mi.cb.small", new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        MenuItem menuItem = (MenuItem) e.widget;
-        toggleSmallButtons();
+   public void createCoolItems() {
+      for (int var1 = 0; var1 < this.coolbar.getItems().length; var1++) {
+         this.coolbar.getItems()[var1].dispose();
       }
-    });
 
-    createMenuItem(menu, SWT.NONE, false, "mi.cb.tabSelector", new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        mainWindow.configureTabs();
+      for (int var2 = 0; var2 < 1; var2++) {
+         new CoolItem(this.coolbar, 0);
       }
-    });
 
-    return menu;
-  }
+      CoolItem[] var3 = this.coolbar.getItems();
+      CoolItem var4 = var3[0];
+      var4.setControl(this.mainTools);
+   }
 
-  public void createToolBars() {
-    if ((mainTools != null) && !mainTools.isDisposed()) {
-      mainTools.getMenu().dispose();
-      mainTools.dispose();
-    }
+   public MenuItem createMenuItem(Menu var1, int var2, boolean var3, String var4, SelectionAdapter var5) {
+      MenuItem var6 = new MenuItem(var1, var2);
+      var6.setText(SResources.getString(var4));
+      if (var3) {
+         var6.setSelection(var3);
+      }
 
-    mainTools = new ToolBar(coolbar, (toolbarSmallButtons ? SWT.RIGHT : SWT.NONE) | SWT.FLAT);
-    mainTools.setMenu(createToolBarRMMenu());
-  }
+      var6.addSelectionListener(var5);
+      return var6;
+   }
 
-  public List getMainToolButtons() {
-    return mainToolButtons;
-  }
+   private Menu createToolBarRMMenu() {
+      Menu var1 = new Menu(this.mainWindow.getShell(), 8);
+      this.createMenuItem(var1, 32, this.toolbarSmallButtons, "mi.cb.small", new CToolBar$1(this));
+      this.createMenuItem(var1, 0, false, "mi.cb.tabSelector", new CToolBar$2(this));
+      return var1;
+   }
 
-  public ToolBar getToolBar() {
-    return mainTools;
-  }
+   public void createToolBars() {
+      if (this.mainTools != null && !this.mainTools.isDisposed()) {
+         this.mainTools.getMenu().dispose();
+         this.mainTools.dispose();
+      }
 
-  public boolean isToolbarSmallButtons() {
-    return toolbarSmallButtons;
-  }
+      this.mainTools = new ToolBar(this.coolbar, (this.toolbarSmallButtons ? 131072 : 0) | 8388608);
+      this.mainTools.setMenu(this.createToolBarRMMenu());
+   }
 
-  public void layoutCoolBar() {
-    for (int j = 0; j < coolbar.getItemCount(); j++) {
-      CoolItem tempCoolItem = coolbar.getItem(j);
-      ToolBar tempToolBar = (ToolBar) tempCoolItem.getControl();
-      Point point = tempToolBar.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-      point = tempCoolItem.computeSize(point.x, point.y);
-      tempCoolItem.setSize(point);
-      tempCoolItem.setMinimumSize(point);
-    }
+   public List getMainToolButtons() {
+      return this.mainToolButtons;
+   }
 
-    coolbar.getParent().layout();
-    coolbar.setLocked(coolbarLocked);
-  }
+   public ToolBar getToolBar() {
+      return this.mainTools;
+   }
 
-  public void reset() {
-    mainToolButtons.clear();
-    createToolBars();
-    createCoolItems();
-  }
+   public boolean isToolbarSmallButtons() {
+      return this.toolbarSmallButtons;
+   }
 
-  public void savePreferences() {
-    PreferenceStore p = PreferenceLoader.getPreferenceStore();
-    p.setValue("toolbarSmallButtons", isToolbarSmallButtons());
-  }
+   public void layoutCoolBar() {
+      for (int var1 = 0; var1 < this.coolbar.getItemCount(); var1++) {
+         CoolItem var2 = this.coolbar.getItem(var1);
+         ToolBar var3 = (ToolBar)var2.getControl();
+         Point var4 = var3.computeSize(-1, -1);
+         var4 = var2.computeSize(var4.x, var4.y);
+         var2.setSize(var4);
+         var2.setMinimumSize(var4);
+      }
 
-  public void setToolbarSmallButtons(boolean b) {
-    toolbarSmallButtons = b;
-  }
+      this.coolbar.getParent().layout();
+      this.coolbar.setLocked(this.coolbarLocked);
+   }
 
-  private void toggleSmallButtons() {
-    toolbarSmallButtons = !toolbarSmallButtons;
-    coolbar.dispose();
+   public void reset() {
+      this.mainToolButtons.clear();
+      this.createToolBars();
+      this.createCoolItems();
+   }
 
-    createCoolBar();
-    createToolBars();
-    createCoolItems();
+   public void savePreferences() {
+      PreferenceStore var1 = PreferenceLoader.getPreferenceStore();
+      var1.setValue("toolbarSmallButtons", this.isToolbarSmallButtons());
+   }
 
-    for (Iterator i = mainToolButtons.iterator(); i.hasNext();) {
-      ToolButton toolButton = (ToolButton) i.next();
-      toolButton.useSmallButtons(toolbarSmallButtons);
-      toolButton.resetItem(mainTools);
-    }
-    layoutCoolBar();
-    composite.getParent().layout();
-  }
+   public void setToolbarSmallButtons(boolean var1) {
+      this.toolbarSmallButtons = var1;
+   }
 
-  public void widgetDisposed(DisposeEvent e) {
-    savePreferences();
-  }
+   private void toggleSmallButtons() {
+      this.toolbarSmallButtons = !this.toolbarSmallButtons;
+      this.coolbar.dispose();
+      this.createCoolBar();
+      this.createToolBars();
+      this.createCoolItems();
 
+      for (Object var2o : this.mainToolButtons) { ToolButton var2 = (ToolButton)var2o;
+         var2.useSmallButtons(this.toolbarSmallButtons);
+         var2.resetItem(this.mainTools);
+      }
+
+      this.layoutCoolBar();
+      this.composite.getParent().layout();
+   }
+
+   public void widgetDisposed(DisposeEvent var1) {
+      this.savePreferences();
+   }
+
+   // $VF: synthetic method
+   static void access$000(CToolBar var0) {
+      var0.toggleSmallButtons();
+   }
+
+   // $VF: synthetic method
+   static MainWindow access$100(CToolBar var0) {
+      return var0.mainWindow;
+   }
 }

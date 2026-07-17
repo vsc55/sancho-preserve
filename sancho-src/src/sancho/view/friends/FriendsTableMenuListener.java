@@ -1,156 +1,120 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.friends;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-
 import sancho.model.mldonkey.Client;
-import sancho.model.mldonkey.ClientCollection;
-import sancho.view.FriendsTab;
+import sancho.model.mldonkey.File;
 import sancho.view.friends.clientDirectories.ClientDirectoriesTableView;
-import sancho.view.utility.SResources;
-import sancho.view.viewer.actions.ClientDetailAction;
-import sancho.view.viewer.actions.ConnectClientAction;
-import sancho.view.viewer.actions.DisconnectClientAction;
-import sancho.view.viewer.actions.GetClientFilesAction;
-import sancho.view.viewer.table.GTableMenuListener;
+import sancho.view.viewer.GView;
+import sancho.view.viewer.table.GTableMenuListenerClient;
 
-public class FriendsTableMenuListener extends GTableMenuListener {
-  private ClientDirectoriesTableView clientDirectoriesTableView;
+public class FriendsTableMenuListener extends GTableMenuListenerClient {
+   private ClientDirectoriesTableView clientDirectoriesTableView;
+   // $VF: synthetic field
+   static Class class$sancho$model$mldonkey$Client;
 
-  public FriendsTableMenuListener(FriendsTableView fTableView) {
-    super(fTableView);
-  }
+   public FriendsTableMenuListener(FriendsTableView var1) {
+      super(var1);
+   }
 
-  public void selectionChanged(SelectionChangedEvent event) {
-    collectSelections(event, Client.class);
-    if (selectedObjects.size() > 0)
-      clientDirectoriesTableView.setInput(selectedObjects.get(0));
-  }
+   public void selectionChanged(SelectionChangedEvent var1) {
+      this.collectSelections(
+         var1,
+         class$sancho$model$mldonkey$Client == null
+            ? (class$sancho$model$mldonkey$Client = class$("sancho.model.mldonkey.Client"))
+            : class$sancho$model$mldonkey$Client
+      );
+      if (this.selectedObjects.size() > 0) {
+         this.clientDirectoriesTableView.setInput(this.selectedObjects.get(0));
+      }
+   }
 
-  public void setDirectoriesView(ClientDirectoriesTableView cTDV) {
-    clientDirectoriesTableView = cTDV;
-  }
+   public void setDirectoriesView(ClientDirectoriesTableView var1) {
+      this.clientDirectoriesTableView = var1;
+   }
 
-  public void menuAboutToShow(IMenuManager menuManager) {
-    if (selectedObjects.size() > 0) {
-      menuManager.add(new SendMessageAction());
-
-      Client[] clientArray = new Client[selectedObjects.size()];
-
-      List connected = new ArrayList();
-      List disconnected = new ArrayList();
-
-      for (int i = 0; i < selectedObjects.size(); i++) {
-        Client client = (Client) selectedObjects.get(i);
-        if (client.isConnected())
-          connected.add(client);
-        else
-          disconnected.add(client);
-        clientArray[i] = client;
+   public void menuAboutToShow(IMenuManager var1) {
+      if (this.selectedObjects.size() > 0) {
+         var1.add(new FriendsTableMenuListener$SendMessageAction(this));
+         this.addClientActions(this.gView.getShell(), (File)null, var1, this.createClientArray());
+         var1.add(new FriendsTableMenuListener$RemoveFriendAction(this));
       }
 
-      Client[] connectedClients = new Client[connected.size()];
-      for (int i = 0; i < connected.size(); i++)
-        connectedClients[i] = (Client) connected.get(i);
-
-      Client[] disconnectedClients = new Client[disconnected.size()];
-      for (int i = 0; i < disconnected.size(); i++)
-        disconnectedClients[i] = (Client) disconnected.get(i);
-
-      menuManager.add(new ClientDetailAction(gView.getShell(), null, (Client) selectedObjects.get(0), gView
-          .getCore()));
-
-      menuManager.add(new GetClientFilesAction(clientArray));
-      menuManager.add(new RemoveFriendAction());
-      if (connectedClients.length > 0)
-        menuManager.add(new DisconnectClientAction(clientArray));
-
-      if (disconnectedClients.length > 0)
-        menuManager.add(new ConnectClientAction(clientArray));
-
-    }
-
-    if (gView.getTable().getItemCount() > 0)
-      menuManager.add(new RemoveAllFriendsAction());
-
-    menuManager.add(new AddByIPAction());
-  }
-
-  /**
-   * RemoveFriendAction
-   */
-  private class RemoveFriendAction extends Action {
-    public RemoveFriendAction() {
-      super();
-
-      String num = ((selectedObjects.size() > 1) ? (" (" + selectedObjects.size() + ")") : SResources.S_ES);
-      setText(SResources.getString("mi.f.removeFriend") + num);
-      setImageDescriptor(SResources.getImageDescriptor("FriendsButtonSmallBW"));
-    }
-
-    public void run() {
-      for (int i = 0; i < selectedObjects.size(); i++) {
-        Client client = (Client) selectedObjects.get(i);
-        client.removeAsFriend();
+      if (this.gView.getItemCount() > 0) {
+         var1.add(new FriendsTableMenuListener$RemoveAllFriendsAction(this));
       }
-    }
-  }
 
-  /**
-   * RemoveAllFriendsAction
-   */
-  private class RemoveAllFriendsAction extends Action {
-    public RemoveAllFriendsAction() {
-      super(SResources.getString("mi.f.removeAllFriends"));
-      setImageDescriptor(SResources.getImageDescriptor("FriendsButtonSmallBW"));
-    }
+      var1.add(new FriendsTableMenuListener$AddByIPAction(this));
+   }
 
-    public void run() {
-      ClientCollection.removeAllFriends(gView.getCore());
-    }
-  }
-
-  /**
-   * SendMessageAction
-   */
-  private class SendMessageAction extends Action {
-    public SendMessageAction() {
-      super();
-
-      String num = ((selectedObjects.size() > 1) ? (" (" + selectedObjects.size() + ")") : SResources.S_ES);
-      setText(SResources.getString("mi.f.sendMessage") + num);
-      setImageDescriptor(SResources.getImageDescriptor("resume"));
-    }
-
-    public void run() {
-      for (int i = 0; i < selectedObjects.size(); i++) {
-        Client client = (Client) selectedObjects.get(i);
-        FriendsTab messagesTab = (FriendsTab) gView.getViewFrame().getGuiTab();
-        messagesTab.openTab(client);
+   private void removeSelectedFriends() {
+      for (int var1 = 0; var1 < this.selectedObjects.size(); var1++) {
+         Client var2 = (Client)this.selectedObjects.get(var1);
+         var2.removeAsFriend();
       }
-    }
-  }
+   }
 
-  /**
-   * AddByIPAction
-   */
-  private class AddByIPAction extends Action {
-    public AddByIPAction() {
-      super(SResources.getString("mi.f.addByIP"));
-      setImageDescriptor(SResources.getImageDescriptor("tab.friends.buttonSmall"));
-    }
+   protected void onDeleteKey() {
+      this.removeSelectedFriends();
+   }
 
-    public void run() {
-      new AddFriendDialog(gView.getShell(), gView.getCore()).open();
-    }
-  }
+   // $VF: synthetic method
+   static Class class$(String var0) {
+      try {
+         return Class.forName(var0);
+      } catch (ClassNotFoundException var2) {
+         throw new NoClassDefFoundError(var2.getMessage());
+      }
+   }
+
+   // $VF: synthetic method
+   static List access$000(FriendsTableMenuListener var0) {
+      return var0.selectedObjects;
+   }
+
+   // $VF: synthetic method
+   static List access$100(FriendsTableMenuListener var0) {
+      return var0.selectedObjects;
+   }
+
+   // $VF: synthetic method
+   static void access$200(FriendsTableMenuListener var0) {
+      var0.removeSelectedFriends();
+   }
+
+   // $VF: synthetic method
+   static GView access$300(FriendsTableMenuListener var0) {
+      return var0.gView;
+   }
+
+   // $VF: synthetic method
+   static List access$400(FriendsTableMenuListener var0) {
+      return var0.selectedObjects;
+   }
+
+   // $VF: synthetic method
+   static List access$500(FriendsTableMenuListener var0) {
+      return var0.selectedObjects;
+   }
+
+   // $VF: synthetic method
+   static List access$600(FriendsTableMenuListener var0) {
+      return var0.selectedObjects;
+   }
+
+   // $VF: synthetic method
+   static List access$700(FriendsTableMenuListener var0) {
+      return var0.selectedObjects;
+   }
+
+   // $VF: synthetic method
+   static GView access$800(FriendsTableMenuListener var0) {
+      return var0.gView;
+   }
+
+   // $VF: synthetic method
+   static GView access$900(FriendsTableMenuListener var0) {
+      return var0.gView;
+   }
 }

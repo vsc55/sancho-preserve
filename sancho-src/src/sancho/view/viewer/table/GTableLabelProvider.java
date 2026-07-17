@@ -1,49 +1,71 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.viewer.table;
 
+import org.eclipse.jface.viewers.ICustomViewer;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-
+import sancho.view.preferences.PreferenceLoader;
 import sancho.view.viewer.GView;
-import sancho.view.viewer.ICustomViewer;
+import sancho.view.viewer.IGContentProvider;
+import sancho.view.viewer.tree.GTreeContentProvider;
 
-public abstract class GTableLabelProvider implements ITableLabelProvider {
-  protected ICustomViewer cViewer;
-  protected GView gView;
+public abstract class GTableLabelProvider implements ITableLabelProvider, ITableColorProvider {
+   protected ICustomViewer cViewer;
+   protected GView gView;
+   protected boolean alternateColors;
+   protected Color alternateColor;
 
-  public GTableLabelProvider(GView gView) {
-    this.gView = gView;
-    updateDisplay();
-  }
+   public GTableLabelProvider(GView var1) {
+      this.gView = var1;
+      this.updateDisplay();
+   }
 
-  public void addListener(ILabelProviderListener listener) {
-  }
+   public Color getForeground(Object var1, int var2) {
+      return null;
+   }
 
-  public void dispose() {
-  }
+   public Color getBackground(Object var1, int var2) {
+      if (this.alternateColors) {
+         IGContentProvider var3 = (IGContentProvider)this.gView.getViewer().getContentProvider();
+         if (var3 instanceof GTableContentProvider) {
+            if (((GTableContentProvider)var3).getSFIndex(var1) % 2 != 0) {
+               return this.alternateColor;
+            }
+         } else if (var3 instanceof GTreeContentProvider && ((GTreeContentProvider)var3).getSFIndex(var1) % 2 != 0) {
+            return this.alternateColor;
+         }
+      }
 
-  public Image getColumnImage(Object element, int columnIndex) {
-    return null;
-  }
+      return null;
+   }
 
-  public abstract String getColumnText(Object element, int columnIndex);
+   public void addListener(ILabelProviderListener var1) {
+   }
 
-  public void initialize() {
-    cViewer = (ICustomViewer) gView.getViewer();
-  }
+   public void dispose() {
+   }
 
-  public boolean isLabelProperty(Object element, String property) {
-    return true;
-  }
+   public Image getColumnImage(Object var1, int var2) {
+      return null;
+   }
 
-  public void removeListener(ILabelProviderListener listener) {
-  }
+   public abstract String getColumnText(Object var1, int var2);
 
-  public void updateDisplay() {
-  }
+   public void initialize() {
+      this.cViewer = (ICustomViewer)this.gView.getViewer();
+   }
+
+   public boolean isLabelProperty(Object var1, String var2) {
+      return true;
+   }
+
+   public void removeListener(ILabelProviderListener var1) {
+   }
+
+   public void updateDisplay() {
+      this.alternateColor = PreferenceLoader.loadColor("tableAlternateBGColor");
+      this.alternateColors = PreferenceLoader.loadBoolean("tableAlternateBGColors");
+   }
 }

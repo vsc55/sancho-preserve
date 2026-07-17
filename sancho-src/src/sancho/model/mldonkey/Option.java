@@ -1,97 +1,83 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
 import sancho.core.ICore;
 import sancho.model.mldonkey.enums.EnumTagType;
 import sancho.model.mldonkey.utility.MessageBuffer;
-import sancho.model.mldonkey.utility.OpCodes;
-import sancho.view.utility.SResources;
 
 public class Option extends AObject {
+   protected String description;
+   protected String name;
+   protected String plugin;
+   protected String section;
+   protected EnumTagType type;
+   protected String value;
 
-  protected String description;
-  protected String name;
-  protected String plugin;
-  protected String section;
-  protected EnumTagType type;
-  protected String value;
+   Option(ICore var1) {
+      super(var1);
+   }
 
-  Option(ICore core) {
-    super(core);
-  }
+   public synchronized void addPluginOption(String var1, String var2, String var3, MessageBuffer var4) {
+      this.plugin = var1;
+      this.description = var2;
+      this.name = var3;
+      this.type = this.readType(var4);
+   }
 
-  public synchronized void addPluginOption(String plugin, String desc, String name,
-      MessageBuffer messageBuffer) {
-    this.plugin = plugin;
-    this.description = desc;
-    this.name = name;
-    this.type = readType(messageBuffer);
-  }
+   public synchronized void addSectionOption(String var1, String var2, String var3, MessageBuffer var4) {
+      this.section = var1;
+      this.description = var2;
+      this.name = var3;
+      this.type = this.readType(var4);
+   }
 
-  public synchronized void addSectionOption(String section, String desc, String name,
-      MessageBuffer messageBuffer) {
-    this.section = section;
-    this.description = desc;
-    this.name = name;
-    this.type = readType(messageBuffer);
-  }
+   public String getDefaultValue() {
+      return "";
+   }
 
-  public String getDefaultValue() {
-    return SResources.S_ES;
-  }
+   public synchronized String getDescription() {
+      return this.description != null ? this.description : "";
+   }
 
-  public synchronized String getDescription() {
-    return description != null ? description : SResources.S_ES;
-  }
+   public synchronized String getName() {
+      return this.name != null ? this.name : "";
+   }
 
-  public synchronized String getName() {
-    return name != null ? name : SResources.S_ES;
-  }
+   public synchronized String getPlugin() {
+      return this.plugin;
+   }
 
-  public synchronized String getPlugin() {
-    return plugin ;
-  }
+   public synchronized String getSection() {
+      return this.section;
+   }
 
-  // null OK (prefs)
-  public synchronized String getSection() {
-    return section;
-  }
+   public synchronized EnumTagType getType() {
+      return this.type;
+   }
 
-  public synchronized EnumTagType getType() {
-    return type;
-  }
+   public synchronized String getValue() {
+      return this.value;
+   }
 
-  public synchronized String getValue() {
-    return value;
-  }
+   public boolean isAdvanced() {
+      return false;
+   }
 
-  public boolean isAdvanced() {
-    return false;
-  }
+   public void read(MessageBuffer var1) {
+      this.read(var1.getString(), var1);
+   }
 
-  // guiEncoding#Options_info
-  public void read(MessageBuffer messageBuffer) {
-    read(messageBuffer.getString(), messageBuffer);
-  }
+   public void read(String var1, MessageBuffer var2) {
+      synchronized (this) {
+         this.name = var1;
+         this.value = var2.getString();
+      }
+   }
 
-  public void read(String key, MessageBuffer messageBuffer) {
-    synchronized (this) {
-      this.name = key;
-      this.value = messageBuffer.getString();
-    }
-    
-  }
+   protected EnumTagType readType(MessageBuffer var1) {
+      return EnumTagType.optionByteToEnum(var1.getByte());
+   }
 
-  protected EnumTagType readType(MessageBuffer messageBuffer) {
-    return EnumTagType.optionByteToEnum(messageBuffer.getByte());
-  }
-
-  public void setValue(String newValue) {
-    core.send(OpCodes.S_SET_OPTION, new Object[]{getName(), newValue});
-  }
-
+   public void setValue(String var1) {
+      this.core.send((short)28, new Object[]{this.getName(), var1});
+   }
 }

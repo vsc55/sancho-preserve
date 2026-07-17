@@ -1,31 +1,25 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey.enums;
 
 public class EnumRoomState extends AbstractEnum {
-  public static final EnumRoomState UNKNOWN = new EnumRoomState(0, "unknown");
-  public static final EnumRoomState OPEN = new EnumRoomState(1, "open");
-  public static final EnumRoomState CLOSED = new EnumRoomState(2, "closed");
-  public static final EnumRoomState PAUSED = new EnumRoomState(4, "paused");
+   public static final EnumRoomState UNKNOWN = new EnumRoomState(0, "unknown");
+   public static final EnumRoomState OPEN = new EnumRoomState(1, "open");
+   public static final EnumRoomState CLOSED = new EnumRoomState(2, "closed");
+   public static final EnumRoomState PAUSED = new EnumRoomState(4, "paused");
 
-  private EnumRoomState(int i, String resString) {
-    super(i, "e.roomState." + resString);
-  }
+   private EnumRoomState(int var1, String var2) {
+      super(var1, "e.roomState." + var2);
+   }
 
-  public static EnumRoomState intToEnum(int i) {
-    switch (i) {
-      case 0 :
-        return EnumRoomState.OPEN;
-      case 1 :
-        return EnumRoomState.CLOSED;
-      case 2 :
-        return EnumRoomState.PAUSED;
-      default :
-        return EnumRoomState.UNKNOWN;
-    }
-  }
-
+   public static EnumRoomState intToEnum(int var0) {
+      switch (var0) {
+         case 0:
+            return OPEN;
+         case 1:
+            return CLOSED;
+         case 2:
+            return PAUSED;
+         default:
+            return UNKNOWN;
+      }
+   }
 }

@@ -1,26 +1,19 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.statusline.actions;
 
 import org.eclipse.jface.action.Action;
-
-import sancho.model.mldonkey.Network;
+import sancho.core.Sancho;
+import sancho.model.mldonkey.enums.EnumNetwork;
 import sancho.view.utility.SResources;
 
 public class NetworkConnectMoreAction extends Action {
+   public NetworkConnectMoreAction(EnumNetwork var1) {
+      super(SResources.getString("sl.n.connect"));
+      this.setImageDescriptor(SResources.getImageDescriptor("plus"));
+   }
 
-  Network network;
-
-  public NetworkConnectMoreAction(Network network) {
-    super(SResources.getString("sl.n.connect"));
-    setImageDescriptor(SResources.getImageDescriptor("plus"));
-    this.network = network;
-  }
-
-  public void run() {
-    network.getCore().getServerCollection().connectMore();
-  }
+   public void run() {
+      if (Sancho.hasCollectionFactory()) {
+         Sancho.getCore().getServerCollection().connectMore();
+      }
+   }
 }

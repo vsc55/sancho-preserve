@@ -1,36 +1,20 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.statusline;
 
 import gnu.regexp.RE;
 import gnu.regexp.REException;
 import gnu.regexp.REMatch;
-
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
-import org.eclipse.swt.dnd.DropTargetAdapter;
-import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
-
 import sancho.core.Sancho;
-import sancho.model.mldonkey.utility.OpCodes;
 import sancho.utility.SwissArmy;
 import sancho.view.StatusLine;
 import sancho.view.preferences.PreferenceLoader;
@@ -40,145 +24,93 @@ import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
 
 public class LinkEntry {
-  private StatusLine statusLine;
+   private StatusLine statusLine;
 
-  public LinkEntry(StatusLine statusLine, Composite parent) {
-    this.statusLine = statusLine;
-    createContents(parent);
-  }
+   public LinkEntry(StatusLine var1, Composite var2) {
+      this.statusLine = var1;
+      this.createContents(var2);
+   }
 
-  public void createContents(final Composite parent) {
-    MyViewForm linkEntryViewForm = WidgetFactory.createViewForm(parent, false);
-    linkEntryViewForm.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-    CLabel linkEntryCLabel = WidgetFactory.createCLabel(linkEntryViewForm, "sl.linkEntryHeader",
-        "up_arrow_green");
-    linkEntryCLabel.setFont(PreferenceLoader.loadFont("headerFontData"));
-
-    final Text linkEntryText = new Text(linkEntryViewForm, SWT.WRAP | SWT.MULTI | SWT.V_SCROLL);
-    linkEntryText.setLayoutData(new FillLayout());
-    linkEntryText.setFont(PreferenceLoader.loadFont("ircConsoleFontData"));
-    linkEntryText.setForeground(PreferenceLoader.loadColor("ircConsoleInputForeground"));
-    linkEntryText.setBackground(PreferenceLoader.loadColor("ircConsoleInputBackground"));
-
-    linkEntryText.addKeyListener(new KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
-        if ((e.stateMask & SWT.CTRL) != 0) {
-          if ((e.character == SWT.LF) || (e.character == SWT.CR)) {
-            enterLinks(linkEntryText);
-            e.doit = false;
-          }
-        }
+   public void createContents(Composite var1) {
+      MyViewForm var2 = WidgetFactory.createViewForm(var1, false);
+      var2.setLayoutData(new GridData(1808));
+      CLabel var3 = WidgetFactory.createCLabel(var2, "sl.linkEntryHeader", "up_arrow_green");
+      var3.setFont(PreferenceLoader.loadFont("headerFontData"));
+      Text var4 = new Text(var2, 578);
+      var4.setLayoutData(new FillLayout());
+      var4.setFont(PreferenceLoader.loadFont("ircConsoleFontData"));
+      var4.setForeground(PreferenceLoader.loadColor("ircConsoleInputForeground"));
+      var4.setBackground(PreferenceLoader.loadColor("ircConsoleInputBackground"));
+      var4.addKeyListener(new LinkEntry$1(this, var4));
+      Composite var5 = new Composite(var2, 0);
+      var5.setLayout(WidgetFactory.createGridLayout(1, 1, 1, 0, 0, false));
+      ToolBar var6 = new ToolBar(var5, 8519680);
+      var6.setBackground(var6.getDisplay().getSystemColor(22));
+      ToolItem var7 = new ToolItem(var6, 8);
+      var7.setToolTipText(SResources.getString("sl.addLocalTorrents"));
+      var7.setImage(SResources.getImage("folder-12"));
+      var7.setText("");
+      var7.addSelectionListener(new LinkEntry$2(this));
+      ToolItem var8 = new ToolItem(var6, 8);
+      var8.setText(SResources.getString("sl.clear"));
+      var8.setImage(SResources.getImage("clear-12"));
+      var8.addSelectionListener(new LinkEntry$3(this, var4));
+      ToolItem var9 = new ToolItem(var6, 8);
+      var9.setText(SResources.getString("sl.send"));
+      var9.setImage(SResources.getImage("up_arrow_green"));
+      var9.addSelectionListener(new LinkEntry$4(this, var4));
+      var2.setTopLeft(var3);
+      var2.setContent(var4);
+      var2.setTopRight(var5);
+      var6.pack();
+      if (PreferenceLoader.loadBoolean("dragAndDrop")) {
+         this.activateDropTarget(var4);
       }
-    });
+   }
 
-    final ToolBar linkEntryToolBar = new ToolBar(linkEntryViewForm, SWT.RIGHT | SWT.FLAT);
+   public void enterLinks(Text var1) {
+      String var2 = var1.getText();
+      RE var3 = null;
 
-    ToolItem torrentItem = new ToolItem(linkEntryToolBar, SWT.PUSH);
-    torrentItem.setToolTipText(SResources.getString("sl.addLocalTorrents"));
-    torrentItem.setImage(SResources.getImage("folder-12"));
-    torrentItem.setText(SResources.S_ES);
-    torrentItem.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent s) {
+      try {
+         String var4 = "(ed2k://\\|file\\|[^\\|]+\\|(\\d+)\\|([\\dabcdef]+)\\|)|(sfdl://\\|.+?\\|[^\\|]+\\|(\\d+)\\|([\\dabcdef]+)\\|)";
+         var4 = var4 + "|(sig2dat:///?\\|File:[^\\|]+\\|Length:.+?\\|UUHash:\\=.+?\\=)|(\\\"magnet:\\?xt=.+?\\\")";
+         var4 = var4 + "|(magnet:\\?xt=.+?\n)|(\"http://.+\\.torrent\\?[^>]+\")|(http://.+\\.torrent)";
+         if (var1.getLineCount() == 1) {
+            var4 = var4 + "|(magnet:\\?xt=.+)|(http://.+?\\.torrent.+)|(.+?\\.torrent.*)|(.+?\\.torrent)";
+         }
 
-        if (!Sancho.hasCollectionFactory())
-          return;
-
-        FileDialog fileDialog = new FileDialog(linkEntryToolBar.getShell(), SWT.MULTI);
-        fileDialog.setFilterExtensions(new String[]{"*.torrent"});
-        if (fileDialog.open() != null) {
-
-          if (Sancho.getCore() != null) {
-
-            String path = fileDialog.getFilterPath() + System.getProperty("file.separator");
-            String[] fileNames = fileDialog.getFileNames();
-            for (int i = 0; i < fileNames.length; i++)
-              SwissArmy.sendLink(Sancho.getCore(), path + fileNames[i]);
-            statusLine.setText(SResources.getString("sl.linksSent") + fileNames.length);
-          }
-        }
-      }
-    });
-
-    ToolItem clearItem = new ToolItem(linkEntryToolBar, SWT.PUSH);
-    clearItem.setText(SResources.getString("sl.clear"));
-    clearItem.setImage(SResources.getImage("clear-12"));
-    clearItem.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent s) {
-        linkEntryText.setText(SResources.S_ES);
-      }
-    });
-
-    ToolItem sendItem = new ToolItem(linkEntryToolBar, SWT.PUSH);
-    sendItem.setText(SResources.getString("sl.send"));
-    sendItem.setImage(SResources.getImage("up_arrow_green"));
-    sendItem.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent s) {
-        enterLinks(linkEntryText);
-      }
-    });
-
-    linkEntryViewForm.setTopLeft(linkEntryCLabel);
-    linkEntryViewForm.setContent(linkEntryText);
-    linkEntryViewForm.setTopRight(linkEntryToolBar);
-
-    linkEntryToolBar.pack();
-
-    if (SWT.getPlatform().equals("win32") && PreferenceLoader.loadBoolean("dragAndDrop"))
-      activateDropTarget(linkEntryText);
-  }
-
-  public void enterLinks(Text linkEntryText) {
-    String input = linkEntryText.getText();
-    RE regex = null;
-
-    try {
-      regex = new RE("(ed2k://\\|file\\|[^\\|]+\\|(\\d+)\\|([\\dabcdef]+)\\|)"
-          + "|(sig2dat:///?\\|File:[^\\|]+\\|Length:.+?\\|UUHash:\\=.+?\\=)" + "|(\\\"magnet:\\?xt=.+?\\\")"
-          + "|(magnet:\\?xt=.+?\n)" + ((linkEntryText.getLineCount() == 1) ? "|(magnet:\\?xt=.+)" : SResources.S_ES)
-          + ((linkEntryText.getLineCount() == 1) ? "|(http://.+?\\.torrent.+)" : SResources.S_ES)
-          + ((linkEntryText.getLineCount() == 1) ? "|(.+?\\.torrent.*)" : SResources.S_ES)
-          + ((linkEntryText.getLineCount() == 1) ? "|(.+?\\.torrent)" : SResources.S_ES)
-          + "|(\"http://.+\\.torrent\\?[^>]+\")" + "|(http://.+\\.torrent)", RE.REG_ICASE | RE.REG_MULTILINE);
-    } catch (REException e) {
-      e.printStackTrace();
-    }
-
-    REMatch[] matches = regex.getAllMatches(input);
-
-    for (int i = 0; i < matches.length; i++) {
-      String link = SwissArmy.replaceAll(matches[i].toString(), "\"", SResources.S_ES);
-      link = SwissArmy.replaceAll(link, "\n", SResources.S_ES);
-      Sancho.send(OpCodes.S_DLLINK, link);
-    }
-
-    statusLine.setText(SResources.getString("sl.linksSent") + matches.length);
-    linkEntryText.setText(SResources.S_ES);
-  }
-
-  private void activateDropTarget(final Text linkEntryText) {
-    DropTarget dropTarget = new DropTarget(linkEntryText, DND.DROP_COPY | DND.DROP_DEFAULT | DND.DROP_LINK);
-    final UniformResourceLocator uRL = UniformResourceLocator.getInstance();
-    final TextTransfer textTransfer = TextTransfer.getInstance();
-    dropTarget.setTransfer(new Transfer[]{uRL, textTransfer});
-    dropTarget.addDropListener(new DropTargetAdapter() {
-      public void dragEnter(DropTargetEvent event) {
-        event.detail = DND.DROP_COPY;
-
-        for (int i = 0; i < event.dataTypes.length; i++) {
-          if (uRL.isSupportedType(event.dataTypes[i])) {
-            event.detail = DND.DROP_LINK;
-
-            break;
-          }
-        }
+         var3 = new RE(var4, 10);
+      } catch (REException var7) {
+         var7.printStackTrace();
       }
 
-      public void drop(DropTargetEvent event) {
-        if (event.data == null)
-          return;
-        linkEntryText.append((String) event.data);
+      REMatch[] var10 = var3.getAllMatches(var2);
+
+      for (int var5 = 0; var5 < var10.length; var5++) {
+         String var6 = SwissArmy.replaceAll(var10[var5].toString(), "\"", "");
+         var6 = SwissArmy.replaceAll(var6, "\n", "");
+         if (Sancho.hasCollectionFactory()) {
+            SwissArmy.sendLink(Sancho.getCore(), var6);
+         }
       }
-    });
-  }
+
+      this.statusLine.setText(SResources.getString("sl.linksSent") + var10.length);
+      var1.setText("");
+   }
+
+   private void activateDropTarget(Text var1) {
+      byte var2 = 23;
+      DropTarget var3 = new DropTarget(var1, var2);
+      UniformResourceLocator var4 = UniformResourceLocator.getInstance();
+      TextTransfer var5 = TextTransfer.getInstance();
+      FileTransfer var6 = FileTransfer.getInstance();
+      var3.setTransfer(new Transfer[]{var4, var5, var6});
+      var3.addDropListener(new LinkEntry$5(this, var5, var4, var1, var6));
+   }
+
+   // $VF: synthetic method
+   static StatusLine access$000(LinkEntry var0) {
+      return var0.statusLine;
+   }
 }

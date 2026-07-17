@@ -1,35 +1,46 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.rooms.roomUsers;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-
 import sancho.model.mldonkey.User;
 import sancho.view.viewer.actions.AddUserAsFriendAction;
 import sancho.view.viewer.table.GTableMenuListener;
 
 public class RoomUsersTableMenuListener extends GTableMenuListener {
+   // $VF: synthetic field
+   static Class class$sancho$model$mldonkey$User;
 
-  public RoomUsersTableMenuListener(RoomUsersTableView rTableView) {
-    super(rTableView);
-  }
+   public RoomUsersTableMenuListener(RoomUsersTableView var1) {
+      super(var1);
+   }
 
-  public void selectionChanged(SelectionChangedEvent event) {
-    collectSelections(event, User.class);
-  }
+   public void selectionChanged(SelectionChangedEvent var1) {
+      this.collectSelections(
+         var1,
+         class$sancho$model$mldonkey$User == null
+            ? (class$sancho$model$mldonkey$User = class$("sancho.model.mldonkey.User"))
+            : class$sancho$model$mldonkey$User
+      );
+   }
 
-  public void menuAboutToShow(IMenuManager menuManager) {
-    if (selectedObjects.size() > 0) {
-      User[] userArray = new User[selectedObjects.size()];
-      for (int i = 0; i < selectedObjects.size(); i++)
-        userArray[i] = (User) selectedObjects.get(i);
+   public void menuAboutToShow(IMenuManager var1) {
+      if (this.selectedObjects.size() > 0) {
+         User[] var2 = new User[this.selectedObjects.size()];
 
-      menuManager.add(new AddUserAsFriendAction(userArray));
-    }
-  }
+         for (int var3 = 0; var3 < this.selectedObjects.size(); var3++) {
+            var2[var3] = (User)this.selectedObjects.get(var3);
+         }
 
+         var1.add(new AddUserAsFriendAction(var2));
+      }
+   }
+
+   // $VF: synthetic method
+   static Class class$(String var0) {
+      try {
+         return Class.forName(var0);
+      } catch (ClassNotFoundException var2) {
+         throw new NoClassDefFoundError(var2.getMessage());
+      }
+   }
 }

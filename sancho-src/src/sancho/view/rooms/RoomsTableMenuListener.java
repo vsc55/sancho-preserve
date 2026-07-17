@@ -1,52 +1,53 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.rooms;
 
-import org.eclipse.jface.action.Action;
+import java.util.List;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
-
-import sancho.model.mldonkey.Room;
 import sancho.model.mldonkey.enums.EnumRoomState;
-import sancho.view.utility.SResources;
 import sancho.view.viewer.table.GTableMenuListener;
 
 public class RoomsTableMenuListener extends GTableMenuListener {
+   // $VF: synthetic field
+   static Class class$sancho$model$mldonkey$Room;
 
-  public RoomsTableMenuListener(RoomsTableView rTableView) {
-    super(rTableView);
-  }
+   public RoomsTableMenuListener(RoomsTableView var1) {
+      super(var1);
+   }
 
-  public void selectionChanged(SelectionChangedEvent event) {
-    collectSelections(event, Room.class);
-  }
+   public void selectionChanged(SelectionChangedEvent var1) {
+      this.collectSelections(
+         var1,
+         class$sancho$model$mldonkey$Room == null
+            ? (class$sancho$model$mldonkey$Room = class$("sancho.model.mldonkey.Room"))
+            : class$sancho$model$mldonkey$Room
+      );
+   }
 
-  public void menuAboutToShow(IMenuManager menuManager) {
-    if (selectedObjects.size() > 0) {
-      menuManager.add(new SetRoomStateAction(EnumRoomState.OPEN));
-      menuManager.add(new SetRoomStateAction(EnumRoomState.CLOSED));
-      menuManager.add(new SetRoomStateAction(EnumRoomState.PAUSED));
-    }
-  }
-
-  private class SetRoomStateAction extends Action {
-    private EnumRoomState enumRoomState;
-
-    public SetRoomStateAction(EnumRoomState enumRoomState) {
-      super("Set: " + enumRoomState.getName());
-      this.enumRoomState = enumRoomState;
-      setImageDescriptor(SResources.getImageDescriptor("rooms.buttonActiveSmall"));
-    }
-
-    public void run() {
-      for (int i = 0; i < selectedObjects.size(); i++) {
-        Room room = (Room) selectedObjects.get(i);
-        room.setRoomState(enumRoomState);
+   public void menuAboutToShow(IMenuManager var1) {
+      if (this.selectedObjects.size() > 0) {
+         var1.add(new RoomsTableMenuListener$SetRoomStateAction(this, EnumRoomState.OPEN));
+         var1.add(new RoomsTableMenuListener$SetRoomStateAction(this, EnumRoomState.CLOSED));
+         var1.add(new RoomsTableMenuListener$SetRoomStateAction(this, EnumRoomState.PAUSED));
+         this.addSelectAllMenu(var1);
       }
-    }
-  }
+   }
 
+   // $VF: synthetic method
+   static Class class$(String var0) {
+      try {
+         return Class.forName(var0);
+      } catch (ClassNotFoundException var2) {
+         throw new NoClassDefFoundError(var2.getMessage());
+      }
+   }
+
+   // $VF: synthetic method
+   static List access$000(RoomsTableMenuListener var0) {
+      return var0.selectedObjects;
+   }
+
+   // $VF: synthetic method
+   static List access$100(RoomsTableMenuListener var0) {
+      return var0.selectedObjects;
+   }
 }

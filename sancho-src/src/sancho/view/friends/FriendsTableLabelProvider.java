@@ -1,123 +1,100 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.friends;
 
-import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-
 import sancho.model.mldonkey.Client;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.SResources;
 import sancho.view.viewer.table.GTableLabelProvider;
 
-public class FriendsTableLabelProvider extends GTableLabelProvider implements IColorProvider {
+public class FriendsTableLabelProvider extends GTableLabelProvider {
+   boolean colors;
+   Color hasFilesColor;
+   Color connectedColor;
+   Color disconnectedColor;
 
-  boolean colors;
-  Color hasFilesColor;
-  Color connectedColor;
-  Color disconnectedColor;
+   public FriendsTableLabelProvider(FriendsTableView var1) {
+      super(var1);
+   }
 
-  public static final String RS_TRUE = SResources.getString("l.true");
-  public static final String RS_FALSE = SResources.getString("l.false");
+   public Image getColumnImage(Object var1, int var2) {
+      Client var3 = (Client)var1;
+      switch (this.cViewer.getColumnIDs()[var2]) {
+         case 0:
+            if (var3.isConnected()) {
+               return SResources.getImage(var3.hasFiles() ? "FriendsButtonSmallPlus" : "tab.friends.buttonSmall");
+            }
 
-  public FriendsTableLabelProvider(FriendsTableView fTableView) {
-    super(fTableView);
-  }
+            return SResources.getImage(var3.hasFiles() ? "FriendsButtonSmallBWPlus" : "FriendsButtonSmallBW");
+         case 1:
+            return var3.getStateEnum().getImage();
+         case 2:
+            return var3.getEnumNetwork().getImage();
+         case 3:
+            return var3.getSoftwareImage();
+         case 4:
+         case 5:
+         case 6:
+         case 8:
+         default:
+            return null;
+         case 7:
+            return var3.getAddr().getImage();
+         case 9:
+            return var3.getClientModeEnum().getImage();
+         case 10:
+            return var3.hasFilesImage();
+      }
+   }
 
-  public Image getColumnImage(Object element, int columnIndex) {
-    Client client = (Client) element;
+   public String getColumnText(Object var1, int var2) {
+      Client var3 = (Client)var1;
+      switch (this.cViewer.getColumnIDs()[var2]) {
+         case 0:
+            return var3.getName();
+         case 1:
+            return var3.getDetailedClientActivity();
+         case 2:
+            return var3.getEnumNetwork().getName();
+         case 3:
+            return var3.getSoftware();
+         case 4:
+            return var3.getUploadedString();
+         case 5:
+            return var3.getDownloadedString();
+         case 6:
+            return var3.getConnectedTimeString();
+         case 7:
+            return var3.getAddr().toString();
+         case 8:
+            return String.valueOf(var3.getPort()).intern();
+         case 9:
+            return var3.getModeString();
+         case 10:
+            return var3.hasFilesString();
+         default:
+            return "?";
+      }
+   }
 
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case FriendsTableView.NAME :
-        if (client.isConnected())
-          return SResources.getImage(client.hasFiles() ? "FriendsButtonSmallPlus" : "tab.friends.buttonSmall");
-        else
-          return SResources.getImage(client.hasFiles() ? "FriendsButtonSmallBWPlus" : "FriendsButtonSmallBW");
+   public Color getForeground(Object var1, int var2) {
+      if (!this.colors) {
+         return null;
+      } else {
+         Client var3 = (Client)var1;
+         if (var3.hasFiles()) {
+            return this.hasFilesColor;
+         } else {
+            return var3.isConnected() ? this.connectedColor : this.disconnectedColor;
+         }
+      }
+   }
 
-      case FriendsTableView.STATE :
-        return client.getStateEnum().getImage();
-
-      case FriendsTableView.NETWORK :
-        return client.getEnumNetwork().getImage();
-
-      case FriendsTableView.SOFTWARE :
-        return client.getSoftwareImage();
-
-      default :
-        return null;
-    }
-  }
-
-  public String getColumnText(Object element, int columnIndex) {
-    Client client = (Client) element;
-
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case FriendsTableView.NAME :
-        return client.getName();
-
-      case FriendsTableView.STATE :
-        return client.getDetailedClientActivity();
-
-      case FriendsTableView.NETWORK :
-        return client.getEnumNetwork().getName();
-
-      case FriendsTableView.KIND :
-        return client.getModeString();
-
-      case FriendsTableView.SOFTWARE :
-        return client.getSoftware();
-
-      case FriendsTableView.UPLOADED :
-        return client.getUploadedString();
-
-      case FriendsTableView.DOWNLOADED :
-        return client.getDownloadedString();
-
-      case FriendsTableView.SOCK_ADDR :
-        return client.getAddr().toString();
-
-      case FriendsTableView.PORT :
-        return String.valueOf(client.getPort());
-
-      case FriendsTableView.CONNECT_TIME :
-        return client.getConnectedTimeString();
-
-      case FriendsTableView.HAS_FILES :
-        return client.hasFiles() ? RS_TRUE : RS_FALSE;
-
-      default :
-        return "?";
-    }
-  }
-
-  public Color getForeground(Object element) {
-    if (!colors)
-      return null;
-
-    Client client = (Client) element;
-
-    if (client.hasFiles())
-      return hasFilesColor;
-    else if (client.isConnected())
-      return connectedColor;
-    else
-      return disconnectedColor;
-
-  }
-
-  public Color getBackground(Object element) {
-    return null;
-  }
-
-  public void updateDisplay() {
-    super.updateDisplay();
-    colors = PreferenceLoader.loadBoolean("displayTableColors");
-    connectedColor = PreferenceLoader.loadColor("clientsConnectedColor");
-    hasFilesColor = PreferenceLoader.loadColor("clientsHasFilesColor");
-    disconnectedColor = PreferenceLoader.loadColor("clientsDisconnectedColor");
-  }
+   public void updateDisplay() {
+      super.updateDisplay();
+      this.colors = PreferenceLoader.loadBoolean("displayTableColors");
+      this.connectedColor = PreferenceLoader.loadColor("clientsConnectedColor");
+      this.hasFilesColor = PreferenceLoader.loadColor("clientsHasFilesColor");
+      this.disconnectedColor = PreferenceLoader.loadColor("clientsDisconnectedColor");
+   }
 }

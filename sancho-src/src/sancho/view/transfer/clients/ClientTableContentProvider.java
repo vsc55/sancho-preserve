@@ -1,90 +1,63 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.transfer.clients;
-
-import java.util.Observable;
 
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.custom.CLabel;
-
 import sancho.model.mldonkey.File;
 import sancho.utility.ObjectMap;
 import sancho.view.utility.SResources;
+import sancho.view.viewer.table.GTableContentProvider;
 import sancho.view.viewer.table.GTableContentProviderOM;
 
 public class ClientTableContentProvider extends GTableContentProviderOM {
+   private static final String RS_CLIENTS = SResources.getString("l.clients");
+   private static final String RS_CONNECTED = SResources.getString("l.connected");
+   private File inputElementFile;
 
-  private static final String RS_CLIENTS = SResources.getString("l.clients");
-  private static final String RS_CONNECTED = SResources.getString("l.connected");
+   public ClientTableContentProvider(ClientTableView var1, CLabel var2) {
+      super(var1);
+      this.updateOnUpdate = true;
+   }
 
-  private long lastRefreshTime;
-  private long currentTime;
-  private File inputElementFile;
-
-  public ClientTableContentProvider(ClientTableView cTableViewer, CLabel headerCLabel) {
-    super(cTableViewer);
-    updateOnUpdate = true;
-  }
-
-  public Object[] getElements(Object inputElement) {
-    if (inputElement instanceof File) {
-      File file = (File) inputElement;
-      ObjectMap objectWeakMap = file.getClientWeakMap();
-      lastRefreshTime = System.currentTimeMillis();
-
-      synchronized (objectWeakMap) {
-        objectWeakMap.clearAllLists();
-        return objectWeakMap.getKeyArray();
+   public Object[] getElements(Object var1) {
+      if (var1 instanceof File) {
+         File var2 = (File)var1;
+         ObjectMap var3 = var2.getClientWeakMap();
+         synchronized (var3) {
+            var3.clearAllLists();
+            return var3.getKeyArray();
+         }
+      } else {
+         return GTableContentProvider.EMPTY_ARRAY;
       }
-    }
-    return EMPTY_ARRAY;
-  }
+   }
 
-  public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-    super.inputChanged(viewer, oldInput, newInput);
-    inputElementFile = null;
+   public void inputChanged(Viewer var1, Object var2, Object var3) {
+      super.inputChanged(var1, var2, var3);
+      this.inputElementFile = null;
+      if (var2 != null && var2 instanceof File) {
+         File var4 = (File)var2;
+         var4.getClientWeakMap().deleteObserver(this);
+      }
 
-    if ((oldInput != null) && oldInput instanceof File) {
-      File file = (File) oldInput;
-      file.getClientWeakMap().deleteObserver(this);
-    }
+      if (var3 != null && var3 instanceof File) {
+         File var5 = (File)var3;
+         this.inputElementFile = var5;
+         var5.getClientWeakMap().addObserver(this);
+         this.updateHeaderLabel(var5.getClientWeakMap().size());
+      } else if (var3 == null) {
+         this.updateHeaderLabel();
+      }
+   }
 
-    if ((newInput != null) && newInput instanceof File) {
-      File file = (File) newInput;
-      inputElementFile = file;
-      file.getClientWeakMap().addObserver(this);
-      updateHeaderLabel(file.getClientWeakMap().size());
-    } else if (newInput == null) {
-      updateHeaderLabel();
-    }
-  }
+   public void updateHeaderLabel(int var1) {
+      if (this.inputElementFile != null) {
+         this.gView.getViewFrame().updateCLabelText(RS_CLIENTS + ": " + this.inputElementFile.getConnected() + " / " + var1 + " " + RS_CONNECTED);
+      }
+   }
 
-  public void update(Observable o, Object obj) {
-    boolean fullRefresh = false;
- 
-    if ((currentTime = System.currentTimeMillis()) > (lastRefreshTime + 120000)) {
-      fullRefresh = true;
-      lastRefreshTime = currentTime;
-    }
-
-    updateViewer((ObjectMap) o, ((Integer) obj).intValue(), fullRefresh);
-  }
-
-  public void updateHeaderLabel(int size) {
-    if (inputElementFile == null)
-      return;
-    gView.getViewFrame().updateCLabelText(
-        RS_CLIENTS + SResources.S_COLON + inputElementFile.getConnected() + SResources.S_SLASH2 + size
-            + SResources.S_SPACE + RS_CONNECTED);
-  }
-
-  public void updateHeaderLabel() {
-    if (gView == null || gView.isDisposed())
-      return;
-    gView.getViewFrame().updateCLabelText(RS_CLIENTS);
-  }
-
+   public void updateHeaderLabel() {
+      if (this.gView != null && !this.gView.isDisposed()) {
+         this.gView.getViewFrame().updateCLabelText(RS_CLIENTS);
+      }
+   }
 }

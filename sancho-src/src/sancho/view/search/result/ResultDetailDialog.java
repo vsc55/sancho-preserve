@@ -1,15 +1,8 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.search.result;
 
 import java.util.Arrays;
-
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -17,60 +10,51 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
 import sancho.model.mldonkey.Result;
+import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
 
 public class ResultDetailDialog extends Dialog {
-  Result result;
+   Result result;
 
-  public ResultDetailDialog(Shell shell, Result result) {
-    super(shell);
-    this.result = result;
-  }
+   public ResultDetailDialog(Shell var1, Result var2) {
+      super(var1);
+      this.result = var2;
+   }
 
-  protected void configureShell(Shell newShell) {
-    super.configureShell(newShell);
-    newShell.setImage(result.getToolTipImage());
-    newShell.setText(result.getName());
-  }
+   protected void configureShell(Shell var1) {
+      super.configureShell(var1);
+      var1.setImage(this.result.getFileTypeImage());
+      var1.setText(SResources.getString("s.r.resultDetails"));
+   }
 
-  protected void createButtonsForButtonBar(Composite parent) {
-    // create OK and Cancel buttons by default
-    createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-  }
+   protected void createButtonsForButtonBar(Composite var1) {
+      this.createButton(var1, 0, IDialogConstants.OK_LABEL, true);
+   }
 
-  protected Control createDialogArea(Composite parent) {
-    Composite composite = (Composite) super.createDialogArea(parent);
-    composite.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 0, 5, false));
+   protected Control createDialogArea(Composite var1) {
+      Composite var2 = (Composite)super.createDialogArea(var1);
+      var2.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 0, 5, false));
+      Text var3 = new Text(var2, 2058);
+      var3.setLayoutData(new GridData(768));
+      var3.setText(this.result.getToolTip());
+      String[] var4 = this.result.getNames();
+      if (var4 != null && var4.length > 1) {
+         GC var5 = new GC(var1);
+         int var6 = var5.getFontMetrics().getHeight();
+         var5.dispose();
+         int var7 = this.result.getNames().length;
+         var7 = var7 > 6 ? 6 : var7;
+         String[] var8 = new String[var4.length];
+         System.arraycopy(var4, 0, var8, 0, var4.length);
+         Arrays.sort(var8, String.CASE_INSENSITIVE_ORDER);
+         List var9 = new List(var2, 2816);
+         var9.setItems(var8);
+         GridData var10 = new GridData(768);
+         var10.heightHint = var7 * var6;
+         var9.setLayoutData(var10);
+      }
 
-    Text text = new Text(composite, SWT.MULTI | SWT.BORDER);
-    text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    text.setText(result.getToolTip());
-
-    String[] originalNames = result.getNames();
-
-    if ((originalNames != null) && (originalNames.length > 1)) {
-      GC gc = new GC(parent);
-      int charHeight = gc.getFontMetrics().getHeight();
-      gc.dispose();
-
-      int numToDisplay = result.getNames().length;
-      numToDisplay = (numToDisplay > 6) ? 6 : numToDisplay;
-
-      String[] names = new String[originalNames.length];
-      System.arraycopy(originalNames, 0, names, 0, originalNames.length);
-      Arrays.sort(names, String.CASE_INSENSITIVE_ORDER);
-
-      List namesList = new List(composite, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-      namesList.setItems(names);
-
-      GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
-      gridData.heightHint = numToDisplay * (charHeight);
-      namesList.setLayoutData(gridData);
-    }
-
-    return composite;
-  }
-
+      return var2;
+   }
 }

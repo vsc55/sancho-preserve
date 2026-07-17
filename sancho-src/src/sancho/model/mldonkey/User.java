@@ -1,88 +1,81 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
 import sancho.core.ICore;
 import sancho.model.mldonkey.utility.Addr;
 import sancho.model.mldonkey.utility.MessageBuffer;
-import sancho.model.mldonkey.utility.OpCodes;
 import sancho.model.mldonkey.utility.Tag;
 import sancho.model.mldonkey.utility.UtilityFactory;
-import sancho.view.utility.SResources;
+import sancho.utility.SwissArmy;
 
 public class User extends AObject {
+   private static String S_OSB = "[";
+   private static String S_CSB = "] ";
+   private Addr addr;
+   private int id;
+   private byte[] md4;
+   private String name;
+   private int port;
+   private int serverId;
+   private Tag[] tags;
 
-  private static String S_OSB = "[";
-  private static String S_CSB = "] ";
+   User(ICore var1) {
+      super(var1);
+      this.addr = UtilityFactory.getAddr(var1);
+   }
 
-  private Addr addr;
-  private int id;
-  private String md4;
-  private String name;
-  private int port;
-  private int serverId;
-  private Tag[] tags;
+   public void addAsFriend() {
+      this.core.send((short)15, new Integer(this.getId()));
+   }
 
-  User(ICore core) {
-    super(core);
-    addr = UtilityFactory.getAddr();
-  }
+   public Addr getAddr() {
+      return this.addr;
+   }
 
-  public void addAsFriend() {
-    core.send(OpCodes.S_ADD_USER_FRIEND, new Integer(getId()));
-  }
+   public synchronized int getId() {
+      return this.id;
+   }
 
-  public Addr getAddr() {
-    return addr;
-  }
+   public synchronized String getMd4() {
+      return SwissArmy.calcStringOfMD4(this.md4);
+   }
 
-  public synchronized int getId() {
-    return id;
-  }
+   public synchronized String getName() {
+      return this.name != null ? this.name : "";
+   }
 
-  public synchronized String getMd4() {
-    return md4 != null ? md4 : SResources.S_ES;
-  }
+   public synchronized int getPort() {
+      return this.port;
+   }
 
-  public synchronized String getName() {
-    return name != null ? name : SResources.S_ES;
-  }
+   public synchronized int getServerId() {
+      return this.serverId;
+   }
 
-  public synchronized int getPort() {
-    return port;
-  }
+   public synchronized String getTagsString() {
+      StringBuffer var1 = new StringBuffer();
 
-  public synchronized int getServerId() {
-    return serverId;
-  }
+      for (int var2 = 0; var2 < this.tags.length; var2++) {
+         var1.append(S_OSB);
+         var1.append(this.tags[var2]);
+         var1.append(S_CSB);
+      }
 
-  public synchronized String getTagsString() {
-    StringBuffer stringBuffer = new StringBuffer();
-    for (int i = 0; i < tags.length; i++) {
-      stringBuffer.append(S_OSB);
-      stringBuffer.append(tags[i]);
-      stringBuffer.append(S_CSB);
-    }
-    return stringBuffer.toString();
-  }
+      return var1.toString();
+   }
 
-  public synchronized void read(int userID, MessageBuffer messageBuffer) {
-    synchronized (this) {
-      this.id = userID;
-      this.md4 = messageBuffer.getMd4();
-      this.name = messageBuffer.getString();
-      this.addr.read(false, messageBuffer);
-      this.port = messageBuffer.getUInt16();
-      this.tags = messageBuffer.getTagList();
-      this.serverId = messageBuffer.getInt32();
-    }
-  }
+   public synchronized void read(int var1, MessageBuffer var2) {
+      synchronized (this) {
+         this.id = var1;
+         this.md4 = var2.getMd4();
+         this.name = var2.getString();
+         this.addr.read(false, var2);
+         this.port = var2.getUInt16();
+         this.tags = var2.getTagList();
+         this.serverId = var2.getInt32();
+      }
+   }
 
-  // guiEncoding#buf_user
-  public void read(MessageBuffer messageBuffer) {
-    read(messageBuffer.getInt32(), messageBuffer);
-  }
+   public void read(MessageBuffer var1) {
+      this.read(var1.getInt32(), var1);
+   }
 }

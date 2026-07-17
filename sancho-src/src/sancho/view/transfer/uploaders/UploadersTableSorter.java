@@ -1,61 +1,47 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.transfer.uploaders;
 
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
-
 import sancho.model.mldonkey.Client;
 import sancho.view.viewer.GSorter;
 
 public class UploadersTableSorter extends GSorter {
-  public UploadersTableSorter(UploadersTableView uTableViewer) {
-    super(uTableViewer);
-  }
+   public UploadersTableSorter(UploadersTableView var1) {
+      super(var1);
+   }
 
-  public boolean sortOrder(int columnIndex) {
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case UploadersTableView.UPLOADED :
-      case UploadersTableView.DOWNLOADED :
-      case UploadersTableView.CONNECT_TIME :
-      case UploadersTableView.SOCK_ADDR :
-      case UploadersTableView.PORT :
-        return false;
+   public boolean sortOrder(int var1) {
+      switch (this.cViewer.getColumnIDs()[var1]) {
+         case 3:
+         case 4:
+         case 5:
+         case 6:
+         case 7:
+            return false;
+         default:
+            return true;
+      }
+   }
 
-      default :
-        return true;
-    }
-  }
-
-  public int compare(Viewer viewer, Object obj1, Object obj2) {
-    Client client1 = (Client) obj1;
-    Client client2 = (Client) obj2;
-
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case UploadersTableView.UPLOADED :
-        return compareLongs(client1.getUploaded(), client2.getUploaded());
-
-      case UploadersTableView.DOWNLOADED :
-        return compareLongs(client1.getDownloaded(), client2.getDownloaded());
-
-      case UploadersTableView.STATE :
-        return compareClientStates(client1, client2);
-
-      case UploadersTableView.SOCK_ADDR :
-        return compareAddrs(client1.getAddr(), client2.getAddr());
-
-      case UploadersTableView.PORT :
-        return compareInts(client1.getPort(), client2.getPort());
-
-      case UploadersTableView.CONNECT_TIME :
-        return compareInts(client1.getConnectedTime(), client2.getConnectedTime());
-
-      default :
-        return compareDefault((TableViewer) viewer, columnIndex, obj1, obj2);
-
-    }
-  }
+   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
+      Client var5 = (Client)var2;
+      Client var6 = (Client)var3;
+      switch (var4) {
+         case 3:
+            return this.compareLongs(var5.getUploaded(), var6.getUploaded());
+         case 4:
+            return this.compareLongs(var5.getDownloaded(), var6.getDownloaded());
+         case 5:
+            return this.compareInts(var5.getConnectedTime(), var6.getConnectedTime());
+         case 6:
+            return this.compareAddrs(var5.getAddr(), var6.getAddr());
+         case 7:
+            return this.compareInts(var5.getPort(), var6.getPort());
+         case 8:
+         default:
+            return this.compareDefault((TableViewer)var1, this.columnIndex, var2, var3);
+         case 9:
+            return this.compareClientStates(var5, var6);
+      }
+   }
 }

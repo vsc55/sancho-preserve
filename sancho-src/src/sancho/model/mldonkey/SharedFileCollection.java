@@ -1,98 +1,69 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
-import gnu.trove.TObjectProcedure;
 import sancho.core.ICore;
 import sancho.model.mldonkey.utility.MessageBuffer;
-import sancho.model.mldonkey.utility.OpCodes;
 import sancho.utility.SwissArmy;
-import sancho.view.utility.SResources;
 
 public class SharedFileCollection extends ACollection_Int2 {
+   long totalSize;
+   String totalSizeString;
 
-  long totalSize;
-  String totalSizeString;
+   SharedFileCollection(ICore var1) {
+      super(var1);
+   }
 
-  SharedFileCollection(ICore core) {
-    super(core);
-  }
-
-  
-   // not synced
-  public void read(MessageBuffer messageBuffer) {
-    
-      int fileID = messageBuffer.getInt32();
-      SharedFile sharedFile = (SharedFile) get(fileID);
-      if (sharedFile != null) {
-        if (sharedFile.readUpdate(fileID, messageBuffer)) {
-          addToUpdated(sharedFile);
-          this.setChanged();
-          this.notifyObservers(sharedFile);
-        }
+   public void read(MessageBuffer var1) {
+      int var2 = var1.getInt32();
+      SharedFile var3 = (SharedFile)this.get(var2);
+      if (var3 != null) {
+         if (var3.readUpdate(var2, var1)) {
+            this.addToUpdated(var3);
+            this.setChanged();
+            this.notifyObservers(var3);
+         }
       } else {
-        sharedFile = core.getCollectionFactory().getSharedFile();
-        sharedFile.read(fileID, messageBuffer);
-        put(fileID, sharedFile);
-        addToAdded(sharedFile);
-        calculateTotalSize();
-        this.setChanged();
-        this.notifyObservers();
+         var3 = this.core.getCollectionFactory().getSharedFile();
+         var3.read(var2, var1);
+         this.put(var2, var3);
+         this.addToAdded(var3);
+         this.calculateTotalSize();
+         this.setChanged();
+         this.notifyObservers();
       }
-  }
+   }
 
-  public void reshare() {
-    core.send(OpCodes.S_CONSOLE_MESSAGE, "reshare");
-  }
+   public void reshare() {
+      this.core.send((short)29, "reshare");
+   }
 
-  public void unshared(MessageBuffer messageBuffer) {
-    int fileID = messageBuffer.getInt32();
-    if (containsKey(fileID)) {
-      addToRemoved(remove(fileID));
-      calculateTotalSize();
-      this.setChanged();
-      this.notifyObservers();
-    }
-  }
-
-  public void upload(MessageBuffer messageBuffer) {
-    int fileID = messageBuffer.getInt32();
-    SharedFile sharedFile = (SharedFile) get(fileID);
-    if (sharedFile != null) {
-      if (sharedFile.upload(fileID, messageBuffer)) {
-        addToUpdated(sharedFile);
-        this.setChanged();
-        this.notifyObservers();
+   public void unshared(MessageBuffer var1) {
+      int var2 = var1.getInt32();
+      if (this.containsKey(var2)) {
+         this.addToRemoved(this.remove(var2));
+         this.calculateTotalSize();
+         this.setChanged();
+         this.notifyObservers();
       }
-    }
-  }
+   }
 
-  public synchronized void calculateTotalSize() {
-    CalculateTotalSize c = new CalculateTotalSize();
-    forEachValue(c);
-    totalSize = c.getTotal();
-    totalSizeString = SwissArmy.calcStringSize(totalSize);
-  }
+   public void upload(MessageBuffer var1) {
+      int var2 = var1.getInt32();
+      SharedFile var3 = (SharedFile)this.get(var2);
+      if (var3 != null && var3.upload(var2, var1)) {
+         this.addToUpdated(var3);
+         this.setChanged();
+         this.notifyObservers();
+      }
+   }
 
-  public synchronized String getTotalSizeString() {
-    return totalSizeString != null ? totalSizeString : SResources.S_ES;
-  }
+   public synchronized void calculateTotalSize() {
+      SharedFileCollection$CalculateTotalSize var1 = new SharedFileCollection$CalculateTotalSize();
+      this.forEachValue(var1);
+      this.totalSize = var1.getTotal();
+      this.totalSizeString = SwissArmy.calcStringSize(this.totalSize);
+   }
 
-  static class CalculateTotalSize implements TObjectProcedure {
-    long total;
-
-    public boolean execute(Object object) {
-      SharedFile sharedFile = (SharedFile) object;
-      total += sharedFile.getSize();
-      return true;
-    }
-
-    public long getTotal() {
-      return total;
-    }
-  }
-
+   public synchronized String getTotalSizeString() {
+      return this.totalSizeString != null ? this.totalSizeString : "0";
+   }
 }

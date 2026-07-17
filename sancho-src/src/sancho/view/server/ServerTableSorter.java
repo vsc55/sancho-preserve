@@ -1,72 +1,71 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.server;
 
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
-
 import sancho.model.mldonkey.Server;
 import sancho.view.viewer.GSorter;
 
 public class ServerTableSorter extends GSorter {
-  public ServerTableSorter(ServerTableView sTableViewer) {
-    super(sTableViewer);
-  }
+   public ServerTableSorter(ServerTableView var1) {
+      super(var1);
+   }
 
-  public boolean sortOrder(int columnIndex) {
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case ServerTableView.NETWORK :
-      case ServerTableView.NAME :
-      case ServerTableView.DESCRIPTION :
-      case ServerTableView.STATE :
-        return true;
+   public boolean sortOrder(int var1) {
+      switch (this.cViewer.getColumnIDs()[var1]) {
+         case 0:
+         case 1:
+         case 2:
+         case 8:
+            return true;
+         case 3:
+         case 4:
+         case 5:
+         case 6:
+         case 7:
+         default:
+            return false;
+      }
+   }
 
-      default :
-        return false;
-    }
-  }
-
-  public int compare(Viewer viewer, Object obj1, Object obj2) {
-    Server server1 = (Server) obj1;
-    Server server2 = (Server) obj2;
-
-    switch (cViewer.getColumnIDs()[columnIndex]) {
-      case ServerTableView.NETWORK :
-        return compareStrings(server1.getNetworkName(), server2.getNetworkName());
-
-      case ServerTableView.NAME :
-        return compareStrings(server1.getName(), server2.getName());
-
-      case ServerTableView.DESCRIPTION :
-        return compareStrings(server1.getDescription(), server2.getDescription());
-
-      case ServerTableView.ADDRESS :
-        return compareAddrs(server1.getAddr(), server2.getAddr());
-
-      case ServerTableView.PORT :
-        return compareInts(server1.getPort(), server2.getPort());
-
-      case ServerTableView.SCORE :
-        return compareInts(server1.getScore(), server2.getScore());
-
-      case ServerTableView.USERS :
-        return compareLongs(server1.getNumUsers(), server2.getNumUsers());
-
-      case ServerTableView.FILES :
-        return compareLongs(server1.getNumFiles(), server2.getNumFiles());
-
-      case ServerTableView.STATE :
-        return compareStrings(server1.getStateEnum().getName(), server2.getStateEnum().getName());
-
-      case ServerTableView.PREFERRED :
-        return compareBooleans(server1.isPreferred(), server2.isPreferred());
-
-      default :
-        return compareDefault((TableViewer) viewer, columnIndex, obj1, obj2);
-
-    }
-  }
+   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
+      Server var5 = (Server)var2;
+      Server var6 = (Server)var3;
+      switch (var4) {
+         case 0:
+            return this.compareStrings(var5.getNetworkName(), var6.getNetworkName());
+         case 1:
+            return this.compareStrings(var5.getName(), var6.getName());
+         case 2:
+            return this.compareStrings(var5.getDescription(), var6.getDescription());
+         case 3:
+            return this.compareAddrs(var5.getAddr(), var6.getAddr());
+         case 4:
+            return this.compareInts(var5.getPort(), var6.getPort());
+         case 5:
+            return this.compareInts(var5.getScore(), var6.getScore());
+         case 6:
+            return this.compareLongs(var5.getNumUsers(), var6.getNumUsers());
+         case 7:
+            return this.compareLongs(var5.getNumFiles(), var6.getNumFiles());
+         case 8:
+            return this.compareStrings(var5.getStateString(), var6.getStateString());
+         case 9:
+            return this.compareStrings(var5.getPreferredString(), var6.getPreferredString());
+         case 10:
+         default:
+            return this.compareDefault((TableViewer)var1, this.columnIndex, var2, var3);
+         case 11:
+            return this.compareStrings(var5.getVersion(), var6.getVersion());
+         case 12:
+            return this.compareLongs(var5.getMaxUsers(), var6.getMaxUsers());
+         case 13:
+            return this.compareLongs(var5.getLowIDUsers(), var6.getLowIDUsers());
+         case 14:
+            return this.compareLongs(var5.getSoftLimit(), var6.getSoftLimit());
+         case 15:
+            return this.compareLongs(var5.getHardLimit(), var6.getHardLimit());
+         case 16:
+            return this.compareInts(var5.getPing(), var6.getPing());
+      }
+   }
 }

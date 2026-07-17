@@ -1,20 +1,9 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.search.result;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.ToolItem;
-
-import sancho.core.Sancho;
-import sancho.model.mldonkey.utility.OpCodes;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.AbstractTab;
 import sancho.view.utility.SResources;
@@ -22,122 +11,100 @@ import sancho.view.utility.WidgetFactory;
 import sancho.view.viewFrame.CTabFolderViewFrame;
 
 public class ResultViewFrame extends CTabFolderViewFrame {
+   ToolItem pauseContinueToolItem;
+   ToolItem extendSearchToolItem;
+   ToolItem closeAllTabsToolItem;
 
-  ToolItem pauseContinueToolItem;
-  ToolItem extendSearchToolItem;
-  ToolItem closeAllTabsToolItem;
+   public ResultViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
+      super(var1, var2, var3, var4);
+      this.createViewListener(new ResultViewListener(this));
+      this.createViewToolBar();
+   }
 
-  public ResultViewFrame(SashForm parentSashForm, String prefString, String prefImageString, AbstractTab aTab) {
-    super(parentSashForm, prefString, prefImageString, aTab);
-    createViewListener(new ResultViewListener(this));
-    createViewToolBar();
-  }
+   public void onCTabFolderSelection() {
+      super.onCTabFolderSelection();
+      this.updatePauseContinue();
+      this.updateExtendSearch();
+      this.closeAllTabsToolItem.setEnabled(this.cTabFolder.getItemCount() > 0);
+   }
 
-  public void onCTabFolderSelection() {
-    super.onCTabFolderSelection();
-    updatePauseContinue();
-    updateExtendSearch();
-    closeAllTabsToolItem.setEnabled(cTabFolder.getItemCount() > 0);
-  }
+   protected CTabFolder createCTabFolder() {
+      boolean var1 = PreferenceLoader.loadBoolean("resultsCTabFolderTabsOnTop");
+      CTabFolder var2 = WidgetFactory.createCTabFolder(this.childComposite, 64 | (var1 ? 128 : 1024));
+      WidgetFactory.addCTabFolderMenu(var2, "resultsCTabFolder");
+      return var2;
+   }
 
-  protected CTabFolder createCTabFolder() {
-    boolean onTop = PreferenceLoader.loadBoolean("resultsCTabFolderTabsOnTop");
-    CTabFolder cTabFolder = WidgetFactory.createCTabFolder(childComposite, SWT.CLOSE
-        | (onTop ? SWT.TOP : SWT.BOTTOM));
-    WidgetFactory.addCTabFolderMenu(cTabFolder, "resultsCTabFolder");
-    return cTabFolder;
-  }
+   public void createViewToolBar() {
+      super.createViewToolBar();
+      this.addCloseAllTabs();
+      this.addExtendSearch();
+      this.addPauseContinue();
+      this.addRefine();
+   }
 
-  public void createViewToolBar() {
-    super.createViewToolBar();
-    addCloseAllTabs();
-    addExtendSearch();
-    addPauseContinue();
-    addRefine();
-  }
+   public void addCloseAllTabs() {
+      this.closeAllTabsToolItem = new ToolItem(this.toolBar, 0);
+      this.closeAllTabsToolItem.setImage(SResources.getImage("x"));
+      this.closeAllTabsToolItem.setToolTipText(SResources.getString("ti.f.closeAllTabs"));
+      this.closeAllTabsToolItem.setEnabled(false);
+      this.closeAllTabsToolItem.addSelectionListener(new ResultViewFrame$1(this));
+   }
 
-  public void addCloseAllTabs() {
-    closeAllTabsToolItem = new ToolItem(toolBar, SWT.NONE);
-    closeAllTabsToolItem.setImage(SResources.getImage("x"));
-    closeAllTabsToolItem.setToolTipText(SResources.getString("ti.f.closeAllTabs"));
-    closeAllTabsToolItem.setEnabled(false);
-    closeAllTabsToolItem.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent s) {
-        CTabItem[] cTabItems = cTabFolder.getItems();
-        for (int i = 0; i < cTabItems.length; i++) {
-          cTabItems[i].dispose();
-        }
+   public void addExtendSearch() {
+      this.extendSearchToolItem = new ToolItem(this.toolBar, 0);
+      this.extendSearchToolItem.setImage(SResources.getImage("plus"));
+      this.extendSearchToolItem.setToolTipText(SResources.getString("ti.extendSearch"));
+      this.extendSearchToolItem.addSelectionListener(new ResultViewFrame$2(this));
+      this.updateExtendSearch();
+   }
+
+   public void updateExtendSearch() {
+      this.extendSearchToolItem.setEnabled(this.cTabFolder.getItemCount() > 0);
+   }
+
+   public void addPauseContinue() {
+      this.pauseContinueToolItem = new ToolItem(this.toolBar, 0);
+      this.togglePauseContinue(false);
+      this.pauseContinueToolItem.addSelectionListener(new ResultViewFrame$3(this));
+      new ToolItem(this.toolBar, 2);
+      if (this.getGView() == null) {
+         this.pauseContinueToolItem.setEnabled(false);
       }
-    });
-  }
+   }
 
-  public void addExtendSearch() {
-    extendSearchToolItem = new ToolItem(toolBar, SWT.NONE);
-    extendSearchToolItem.setImage(SResources.getImage("plus"));
-    extendSearchToolItem.setToolTipText(SResources.getString("ti.extendSearch"));
-    extendSearchToolItem.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent s) {
-        Sancho.send(OpCodes.S_EXTEND_SEARCH);
+   public void togglePauseContinue(boolean var1) {
+      this.pauseContinueToolItem.setImage(SResources.getImage(var1 ? "forward" : "pause"));
+      this.pauseContinueToolItem.setToolTipText(SResources.getString(var1 ? "ti.continueSearch" : "ti.pauseSearch"));
+   }
+
+   public void updatePauseContinue() {
+      if (this.getGView() != null) {
+         CTabItem var1 = this.cTabFolder.getSelection();
+         if (var1 == null) {
+            return;
+         }
+
+         ResultTab var2 = (ResultTab)var1.getData();
+         if (var2 == null) {
+            return;
+         }
+
+         this.togglePauseContinue(var2.isPaused());
+         this.pauseContinueToolItem.setEnabled(true);
+      } else {
+         this.togglePauseContinue(false);
+         this.pauseContinueToolItem.setEnabled(false);
       }
-    });
+   }
 
-    updateExtendSearch();
-  }
+   // $VF: synthetic method
+   static CTabFolder access$000(ResultViewFrame var0) {
+      return var0.cTabFolder;
+   }
 
-  public void updateExtendSearch() {
-    extendSearchToolItem.setEnabled(getGView() != null);
-  }
-
-  public void addPauseContinue() {
-    pauseContinueToolItem = new ToolItem(toolBar, SWT.NONE);
-    togglePauseContinue(false);
-    pauseContinueToolItem.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent s) {
-        CTabItem cTabItem = cTabFolder.getSelection();
-        if (cTabItem == null)
-          return;
-        ResultTab resultTab = (ResultTab) cTabItem.getData();
-        if (resultTab == null)
-          return;
-
-        if (resultTab.isPaused()) {
-
-          togglePauseContinue(false);
-          resultTab.unPause();
-        } else {
-          resultTab.pause();
-          togglePauseContinue(true);
-        }
-      }
-    });
-    ToolItem sep = new ToolItem(toolBar, SWT.SEPARATOR);
-
-    if (getGView() == null)
-      pauseContinueToolItem.setEnabled(false);
-  }
-
-  public void togglePauseContinue(boolean isPaused) {
-    pauseContinueToolItem.setImage(SResources.getImage(isPaused ? "forward" : "pause"));
-    pauseContinueToolItem.setToolTipText(SResources.getString(isPaused
-        ? "ti.continueSearch"
-        : "ti.pauseSearch"));
-  }
-
-  public void updatePauseContinue() {
-    if (getGView() != null) {
-
-      CTabItem cTabItem = cTabFolder.getSelection();
-      if (cTabItem == null)
-        return;
-      ResultTab resultTab = (ResultTab) cTabItem.getData();
-      if (resultTab == null)
-        return;
-
-      togglePauseContinue(resultTab.isPaused());
-      pauseContinueToolItem.setEnabled(true);
-    } else {
-      togglePauseContinue(false);
-      pauseContinueToolItem.setEnabled(false);
-    }
-  }
+   // $VF: synthetic method
+   static CTabFolder access$100(ResultViewFrame var0) {
+      return var0.cTabFolder;
+   }
 }

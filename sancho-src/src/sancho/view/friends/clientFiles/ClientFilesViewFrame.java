@@ -1,27 +1,19 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.friends.clientFiles;
 
 import org.eclipse.swt.custom.SashForm;
-
 import sancho.view.utility.AbstractTab;
 import sancho.view.viewFrame.SashViewFrame;
 
 public class ClientFilesViewFrame extends SashViewFrame {
+   public ClientFilesViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
+      super(var1, var2, var3, var4);
+      this.gView = new ClientFilesTableView(this);
+      this.createViewListener(new ClientFilesViewListener(this));
+      this.createViewToolBar();
+   }
 
-  public ClientFilesViewFrame(SashForm parentSashForm, String prefString, String prefImageString,
-      AbstractTab aTab) {
-    super(parentSashForm, prefString, prefImageString, aTab);
-    gView = gView = new ClientFilesTableView(this);
-    createViewListener(new ClientFilesViewListener(this));
-    createViewToolBar();
-  }
-
-  public void createViewToolBar() {
-    super.createViewToolBar();
-    addRefine();
-  }
+   public void createViewToolBar() {
+      super.createViewToolBar();
+      this.addRefine();
+   }
 }

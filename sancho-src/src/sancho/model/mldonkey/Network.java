@@ -1,185 +1,204 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
 import org.eclipse.swt.graphics.Image;
-
 import sancho.core.ICore;
 import sancho.model.mldonkey.enums.EnumNetwork;
 import sancho.model.mldonkey.utility.MessageBuffer;
-import sancho.model.mldonkey.utility.OpCodes;
+import sancho.model.mldonkey.utility.NetworkStatCollection;
+import sancho.utility.SwissArmy;
 import sancho.view.utility.SResources;
 
 public class Network extends AObject {
-  private static final String RS_CONNECTED_TO = SResources.getString("sl.n.connectedTo");
-  private static final String RS_ENABLED = SResources.getString("sl.n.enabled");
-  private static final String RS_DISABLED = SResources.getString("sl.n.disabled");
+   private static final String RS_CONNECTED_TO = SResources.getString("sl.n.connectedTo");
+   private static final String RS_ENABLED = SResources.getString("sl.n.enabled");
+   private static final String RS_DISABLED = SResources.getString("sl.n.disabled");
+   private static final String S_CONNECTED = "connected";
+   private static final String S_DISABLED = "disabled";
+   private static final String S_DISCONNECTED = "disconnected";
+   private static final String S_BAD_CONNECT = "badconnect";
+   protected String configFile;
+   protected long downloaded;
+   private boolean enabled;
+   private EnumNetwork enumNetwork;
+   protected int id;
+   protected String name;
+   protected long uploaded;
 
-  private static final String S_CONNECTED = "connected";
-  private static final String S_DISABLED = "disabled";
-  private static final String S_DISCONNECTED = "disconnected";
-  private static final String S_BAD_CONNECT = "badconnect";
+   Network(ICore var1) {
+      super(var1);
+   }
 
-  private static StringBuffer stringBuffer = new StringBuffer();
+   public void getStats() {
+   }
 
-  protected String configFile;
-  protected long downloaded;
-  private boolean enabled;
-  private EnumNetwork enumNetwork;
-  protected int id;
-  protected String name;
-  protected long uploaded;
+   public boolean equals(EnumNetwork var1) {
+      return this.getEnumNetwork() == var1;
+   }
 
-  Network(ICore core) {
-    super(core);
-  }
+   public boolean equals(Object var1) {
+      return var1 instanceof Network && this.getId() == ((Network)var1).getId();
+   }
 
-  public boolean equals(EnumNetwork enumNetwork) {
-    return this.getEnumNetwork() == enumNetwork;
-  }
+   public synchronized String getConfigFile() {
+      return this.configFile != null ? this.configFile : "";
+   }
 
-  public boolean equals(Object obj) {
-    return (obj instanceof Network && getId() == ((Network) obj).getId());
-  }
+   public synchronized long getDownloaded() {
+      return this.downloaded;
+   }
 
-  public synchronized String getConfigFile() {
-    return configFile != null ? configFile : SResources.S_ES;
-  }
+   public synchronized EnumNetwork getEnumNetwork() {
+      return this.enumNetwork;
+   }
 
-  public synchronized long getDownloaded() {
-    return downloaded;
-  }
+   public synchronized int getId() {
+      return this.id;
+   }
 
-  public synchronized EnumNetwork getEnumNetwork() {
-    return enumNetwork;
-  }
+   public synchronized Image getImage() {
+      if (!this.isEnabled()) {
+         return this.enumNetwork.getImage("disabled");
+      } else if (this.core.getProtocol() >= 18 && !this.isVirtual() && (this.hasServers() || this.hasSupernodes())) {
+         int var1 = this.core.getOptionCollection().getMaxConnected(this);
+         int var2 = this.numConnectedServers();
+         return (var2 < 1 || this.enumNetwork != EnumNetwork.DC) && var2 < var1
+            ? this.enumNetwork.getImage(var2 == 0 ? "disconnected" : "badconnect")
+            : this.enumNetwork.getImage("connected");
+      } else {
+         return this.enumNetwork.getImage("connected");
+      }
+   }
 
-  public synchronized int getId() {
-    return id;
-  }
+   public String getName() {
+      return this.name != null ? this.name : "";
+   }
 
-  public synchronized Image getImage() {
-    if (this.isEnabled()) {
-      if (core.getProtocol() < 18 || isVirtual() || (!this.hasServers() && !this.hasSupernodes()))
-        return enumNetwork.getImage(S_CONNECTED);
+   public String getToolTip() {
+      StringBuffer var1 = new StringBuffer(256);
+      if (!this.isEnabled() || !this.hasServers() && !this.hasSupernodes()) {
+         if (this.isVirtual()) {
+            return this.getName();
+         } else {
+            var1.append(this.getName());
+            var1.append(" ");
+            var1.append(this.isEnabled() ? RS_ENABLED : RS_DISABLED);
+            return var1.toString();
+         }
+      } else {
+         var1.append(this.getName());
+         var1.append(" ");
+         var1.append(RS_CONNECTED_TO);
+         var1.append(this.numConnectedServers());
+         return var1.toString();
+      }
+   }
 
-      int maxConnnectedServers = core.getOptionCollection().getMaxConnected(this);
-      int currentConnectedServers = numConnectedServers();
+   public synchronized long getUploaded() {
+      return this.uploaded;
+   }
 
-      if ((currentConnectedServers >= 1 && enumNetwork == EnumNetwork.DC)
-          || currentConnectedServers >= maxConnnectedServers)
-        return enumNetwork.getImage(S_CONNECTED);
-      else
-        return enumNetwork.getImage(currentConnectedServers == 0 ? S_DISCONNECTED : S_BAD_CONNECT);
-    } else
-      return enumNetwork.getImage(S_DISABLED);
-  }
+   public synchronized String getUploadedString() {
+      return SwissArmy.calcStringSize(this.uploaded);
+   }
 
-  public String getName() {
-    return name != null ? name : SResources.S_ES;
-  }
+   public synchronized String getDownloadedString() {
+      return SwissArmy.calcStringSize(this.downloaded);
+   }
 
-  public String getToolTip() {
-    stringBuffer.setLength(0);
-    if (isEnabled() && (hasServers() || hasSupernodes())) {
-      stringBuffer.append(getName());
-      stringBuffer.append(SResources.S_SPACE);
-      stringBuffer.append(RS_CONNECTED_TO);
-      stringBuffer.append(numConnectedServers());
-      return stringBuffer.toString();
-    } else if (isVirtual())
-      return getName();
-    else {
-      stringBuffer.append(getName());
-      stringBuffer.append(SResources.S_SPACE);
-      stringBuffer.append(isEnabled() ? RS_ENABLED : RS_DISABLED);
-      return stringBuffer.toString();
-    }
-  }
+   public synchronized String toString() {
+      StringBuffer var1 = new StringBuffer(50);
+      var1.append(this.getName());
+      var1.append(": U:");
+      var1.append(this.getUploadedString());
+      var1.append(" D:");
+      var1.append(this.getDownloadedString());
+      var1.append(" (");
+      var1.append(SResources.getString(this.isEnabled() ? "stats.enabled" : "stats.disabled"));
+      var1.append(")");
+      return var1.toString();
+   }
 
-  public synchronized long getUploaded() {
-    return uploaded;
-  }
+   public synchronized boolean hasChat() {
+      return this.enumNetwork == EnumNetwork.DONKEY || this.enumNetwork == EnumNetwork.OV;
+   }
 
-  public synchronized boolean hasChat() {
-    return this.enumNetwork == EnumNetwork.DONKEY || this.enumNetwork == EnumNetwork.OV;
-  }
+   public int hashCode() {
+      return this.getId();
+   }
 
-  public int hashCode() {
-    return getId();
-  }
+   public synchronized boolean hasRooms() {
+      return this.enumNetwork == EnumNetwork.SOULSEEK || this.enumNetwork == EnumNetwork.DC;
+   }
 
-  public synchronized boolean hasRooms() {
-    return this.enumNetwork == EnumNetwork.SOULSEEK || this.enumNetwork == EnumNetwork.DC;
-  }
+   public synchronized boolean hasServers() {
+      return this.enumNetwork != EnumNetwork.BT && this.enumNetwork != EnumNetwork.FT && this.enumNetwork != EnumNetwork.GNUT;
+   }
 
-  public synchronized boolean hasServers() {
-    return this.enumNetwork != EnumNetwork.BT && this.enumNetwork != EnumNetwork.FT
-        && this.enumNetwork != EnumNetwork.GNUT;
-  }
+   public synchronized boolean hasSupernodes() {
+      return this.enumNetwork == EnumNetwork.FT || this.enumNetwork == EnumNetwork.GNUT || this.enumNetwork == EnumNetwork.GNUT2;
+   }
 
-  public synchronized boolean hasSupernodes() {
-    return this.enumNetwork == EnumNetwork.FT || this.enumNetwork == EnumNetwork.GNUT
-        || this.enumNetwork == EnumNetwork.GNUT2;
-  }
+   public synchronized boolean hasUpload() {
+      return this.enumNetwork == EnumNetwork.DONKEY
+         || this.enumNetwork == EnumNetwork.OV
+         || this.enumNetwork == EnumNetwork.BT
+         || this.enumNetwork == EnumNetwork.GNUT
+         || this.enumNetwork == EnumNetwork.DC;
+   }
 
-  public synchronized boolean hasUpload() {
-    return this.enumNetwork == EnumNetwork.DONKEY || this.enumNetwork == EnumNetwork.OV
-        || this.enumNetwork == EnumNetwork.BT || this.enumNetwork == EnumNetwork.GNUT
-        || this.enumNetwork == EnumNetwork.DC;
-  }
+   public synchronized boolean isEnabled() {
+      return this.enabled;
+   }
 
-  public synchronized boolean isEnabled() {
-    return enabled;
-  }
+   public boolean isMultinet() {
+      return false;
+   }
 
-  public boolean isMultinet() {
-    return false;
-  }
+   public synchronized boolean isSearchable() {
+      return this.enumNetwork != EnumNetwork.BT;
+   }
 
-  public synchronized boolean isSearchable() {
-    return this.enumNetwork != EnumNetwork.BT;
-  }
+   public boolean isVirtual() {
+      return false;
+   }
 
-  public boolean isVirtual() {
-    return false;
-  }
+   public int numConnectedServers() {
+      return this.core.getServerCollection().getConnected(this.getEnumNetwork());
+   }
 
-  public int numConnectedServers() {
-    return core.getServerCollection().getConnected(this.getEnumNetwork());
-  }
+   public void read(int var1, MessageBuffer var2) {
+      boolean var3 = this.isEnabled();
+      synchronized (this) {
+         this.id = var1;
+         this.name = var2.getString();
+         this.enabled = var2.getBool();
+         this.configFile = var2.getString();
+         this.uploaded = var2.getUInt64();
+         this.downloaded = var2.getUInt64();
+         this.enumNetwork = EnumNetwork.stringToEnum(this.name);
+      }
 
-  public void read(int networkID, MessageBuffer messageBuffer) {
-    synchronized (this) {
-      this.id = networkID;
-      this.name = messageBuffer.getString();
-      this.enabled = messageBuffer.getBool();
-      this.configFile = messageBuffer.getString();
-      this.uploaded = messageBuffer.getUInt64();
-      this.downloaded = messageBuffer.getUInt64();
+      if (!this.isEnabled() && var3) {
+         this.core.getServerCollection().removeAll(this.getEnumNetwork());
+      }
+   }
 
-      this.enumNetwork = EnumNetwork.stringToEnum(this.name);
-    }
+   public void read(MessageBuffer var1) {
+      this.read(var1.getInt32(), var1);
+   }
 
-    if (!this.isEnabled())
-      this.core.getServerCollection().removeAll(this.getEnumNetwork());
-  }
+   protected void setConnectedServers(int var1) {
+   }
 
-  // guiEncoding#buf_network
-  public void read(MessageBuffer messageBuffer) {
-    read(messageBuffer.getInt32(), messageBuffer);
-  }
+   public NetworkStatCollection[] getNetworkStatCollection() {
+      return null;
+   }
 
-  protected void setConnectedServers(int i) {
-  }
+   public void toggleEnabled() {
+      Object[] var1 = new Object[]{new Integer(this.getId()), new Byte((byte)(this.isEnabled() ? 0 : 1))};
+      this.core.send((short)40, var1);
+   }
 
-  public void toggleEnabled() {
-    Object[] oArray = new Object[2];
-    oArray[0] = new Integer(this.getId());
-    oArray[1] = new Byte(isEnabled() ? (byte) 0 : (byte) 1);
-    core.send(OpCodes.S_ENABLE_NETWORK, oArray);
-  }
+   public void readStats(MessageBuffer var1) {
+   }
 }

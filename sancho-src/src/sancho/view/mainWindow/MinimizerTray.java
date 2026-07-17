@@ -1,212 +1,174 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.mainWindow;
 
-import java.util.Observable;
-
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TrayItem;
-
 import sancho.core.Sancho;
 import sancho.model.mldonkey.ClientStats;
+import sancho.utility.MyObservable;
+import sancho.utility.VersionInfo;
 import sancho.view.MainWindow;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.statusline.actions.DNDBoxAction;
 import sancho.view.statusline.actions.PreferencesAction;
-import sancho.view.statusline.actions.RateBandwidthDialogAction;
-import sancho.view.utility.SResources;
+import sancho.view.utility.dialogs.BandwidthDialog;
 
 public class MinimizerTray extends Minimizer implements DisposeListener, IMenuListener {
+   protected static final String S_DL = "DL: ";
+   protected static final String S_UL = ", UL: ";
+   private TrayItem trayItem;
+   private MenuManager popupMenu;
+   private boolean closeMe = false;
+   private MainWindow mainWindow;
 
-  protected static final String S_DL = "DL: ";
-  protected static final String S_UL = ", UL: ";
+   public MinimizerTray(MainWindow var1, String var2) {
+      super(var1, var2);
+      this.mainWindow = var1;
+      this.createTrayIcon();
+      this.createMenu();
+      this.shell.addDisposeListener(this);
+      this.setConnected(true);
+   }
 
-  private TrayItem trayItem;
-  private MenuManager popupMenu;
-  private boolean closeMe = false;
-  private MainWindow mainWindow;
-
-  public MinimizerTray(MainWindow mainWindow, String titleBarText) {
-    super(mainWindow, titleBarText);
-    this.mainWindow = mainWindow;
-
-    createTrayIcon();
-    createMenu();
-    shell.addDisposeListener(this);
-    setConnected(true);
-  }
-
-  public void setConnected(boolean b) {
-    if (b && Sancho.hasCollectionFactory())
-      Sancho.getCore().getClientStats().addObserver(this);
-  }
-
-  private void createTrayIcon() {
-    trayItem = new TrayItem(mainWindow.getShell().getDisplay().getSystemTray(), SWT.NONE);
-
-    if (trayItem == null) {
-      MessageBox b = new MessageBox(new Shell(), SWT.OK);
-      b.setMessage("trayItem is null");
-      b.open();
-      return;
-    }
-
-    String s = SWT.getPlatform().equals("win32") ? "tray-16" : "tray-22";
-    trayItem.setImage(SResources.getImage(s));
-    trayItem.setToolTipText(titleBarText);
-
-    trayItem.addListener(SWT.MenuDetect, new Listener() {
-      public void handleEvent(Event e) {
-        Menu menu = popupMenu.createContextMenu(shell);
-        menu.setVisible(true);
+   public void setConnected(boolean var1) {
+      super.setConnected(var1);
+      if (var1 && Sancho.hasCollectionFactory()) {
+         Sancho.getCore().getClientStats().addObserver(this);
       }
-    });
+   }
 
-    trayItem.addSelectionListener(new SelectionAdapter() {
-      public void widgetDefaultSelected(SelectionEvent e) {
-        if (shell.isVisible()) {
-          hide();
-        } else {
-          restore();
-
-          if (shell.getMinimized())
-            shell.setMinimized(false);
-        }
+   private void createTrayIcon() {
+      this.trayItem = new TrayItem(this.mainWindow.getShell().getDisplay().getSystemTray(), 0);
+      if (this.trayItem == null) {
+         MessageBox var1 = new MessageBox(new Shell(), 32);
+         var1.setMessage("trayItem is null");
+         var1.open();
+      } else {
+         this.trayItem.setImage(VersionInfo.getTrayIcon());
+         this.trayItem.setToolTipText(this.titleBarText);
+         this.trayItem.addListener(35, new MinimizerTray$1(this));
+         this.trayItem.addSelectionListener(new MinimizerTray$2(this));
       }
-    });
-  }
+   }
 
-  private void createMenu() {
-    popupMenu = new MenuManager(SResources.S_ES);
-    popupMenu.setRemoveAllWhenShown(true);
-    popupMenu.addMenuListener(this);
-  }
+   private void createMenu() {
+      this.popupMenu = new MenuManager("");
+      this.popupMenu.setRemoveAllWhenShown(true);
+      this.popupMenu.addMenuListener(this);
+   }
 
-  public boolean close() {
-    if (closeMe || !PreferenceLoader.loadBoolean("minimizeOnClose")) {
-      return true;
-    } else {
-      hide();
-      return false;
-    }
-  }
-
-  public void hide() {
-    shell.setMinimized(true);
-    shell.setVisible(false);
-
-    if (Sancho.getCoreConsole() != null)
-      Sancho.getCoreConsole().getShell().setVisible(false);
-  }
-
-  public void forceClose() {
-    closeMe = true;
-  }
-
-  public boolean minimize() {
-    if (PreferenceLoader.loadBoolean("systrayOnMinimize")) {
-      hide();
-      return false;
-    } else {
-      return true;
-    }
-  }
-
-  public void restore() {
-    shell.setVisible(true);
-    shell.forceActive();
-    setTitleBarText();
-    trayItem.setToolTipText(titleBarText);
-  }
-
-  public void menuAboutToShow(IMenuManager menuManager) {
-    menuManager.add(new DNDBoxAction(mainWindow));
-    menuManager.add(new Separator());
-    menuManager.add(new PreferencesAction(mainWindow));
-    menuManager.add(new RateBandwidthDialogAction(shell));
-    menuManager.add(new Separator());
-    menuManager.add(new HideRestoreAction());
-    menuManager.add(new CloseAction());
-  }
-
-  public void update(Observable o, Object obj) {
-    final ClientStats clientStats = (ClientStats) o;
-
-    if (clientStats == null || shell == null || shell.isDisposed())
-      return;
-
-    shell.getDisplay().asyncExec(new Runnable() {
-      public void run() {
-        if (shell == null || shell.isDisposed() || trayItem == null || trayItem.isDisposed())
-          return;
-
-        if (shell.isVisible() && shell.getMinimized())
-          setTitleBar(clientStats);
-
-        setTrayToolTip(clientStats);
+   public boolean close() {
+      if (!this.closeMe && PreferenceLoader.loadBoolean("minimizeOnClose")) {
+         this.hide();
+         return false;
+      } else {
+         return true;
       }
-    });
-  }
+   }
 
-  public void setTrayToolTip(ClientStats clientStats) {
-    stringBuffer.setLength(0);
-    stringBuffer.append(titleBarText);
-    stringBuffer.append(SResources.S_NL);
-    stringBuffer.append(S_DL);
-    stringBuffer.append(clientStats.getTcpDownRateString());
-    stringBuffer.append(S_UL);
-    stringBuffer.append(clientStats.getTcpUpRateString());
-    trayItem.setToolTipText(stringBuffer.toString());
-  }
-
-  public void widgetDisposed(DisposeEvent e) {
-    if (Sancho.hasCollectionFactory())
-      Sancho.getCore().getClientStats().deleteObserver(this);
-  }
-
-  private class HideRestoreAction extends Action {
-    public HideRestoreAction() {
-      super(SResources.getString(shell.isVisible() ? "mi.hide" : "mi.restore"));
-      setImageDescriptor(SResources.getImageDescriptor(shell.isVisible() ? "minus" : "plus"));
-    }
-
-    public void run() {
-      if (shell.isVisible())
-        hide();
-      else {
-        restore();
-        if (shell.getMinimized())
-          shell.setMinimized(false);
+   public void hide() {
+      if (!this.shell.getMinimized()) {
+         this.shell.setMinimized(true);
       }
-    }
-  }
 
-  private class CloseAction extends Action {
-    public CloseAction() {
-      super(SResources.getString("mi.close"));
-      setImageDescriptor(SResources.getImageDescriptor("x"));
-    }
+      if (this.shell.isVisible()) {
+         this.shell.setVisible(false);
+      }
 
-    public void run() {
-      closeMe = true;
-      shell.close();
-    }
-  }
+      if (Sancho.getCoreConsole() != null) {
+         Sancho.getCoreConsole().getShell().setVisible(false);
+      }
+   }
+
+   public void forceClose() {
+      this.closeMe = true;
+   }
+
+   public void startMin() {
+      this.hide();
+   }
+
+   public boolean minimize(boolean var1) {
+      if (!var1 && !PreferenceLoader.loadBoolean("systrayOnMinimize")) {
+         return true;
+      } else {
+         this.hide();
+         return false;
+      }
+   }
+
+   public boolean minimize() {
+      return this.minimize(false);
+   }
+
+   public void restore() {
+      this.isRestoring = true;
+      if (!this.shell.isVisible()) {
+         this.shell.setVisible(true);
+      }
+
+      this.shell.forceActive();
+      this.setTitleBarText();
+      this.trayItem.setToolTipText(this.titleBarText);
+      this.isRestoring = false;
+   }
+
+   public void menuAboutToShow(IMenuManager var1) {
+      var1.add(new DNDBoxAction(this.mainWindow));
+      var1.add(new Separator());
+      var1.add(new PreferencesAction(this.mainWindow));
+      new BandwidthDialog(this.shell, var1);
+      var1.add(new Separator());
+      var1.add(new MinimizerTray$HideRestoreAction(this));
+      var1.add(new MinimizerTray$CloseAction(this));
+   }
+
+   public void update(MyObservable var1, Object var2, int var3) {
+      if (var1 instanceof ClientStats) {
+         ClientStats var4 = (ClientStats)var1;
+         if (var4 != null && this.shell != null && !this.shell.isDisposed()) {
+            this.shell.getDisplay().asyncExec(new MinimizerTray$3(this, var4));
+         }
+      }
+   }
+
+   public void setTrayToolTip(ClientStats var1) {
+      StringBuffer var2 = new StringBuffer(32);
+      var2.append(this.titleBarText);
+      var2.append("\n");
+      var2.append(Sancho.getCoreFactory().getDescription());
+      var2.append("\n");
+      var2.append("DL: ");
+      var2.append(var1.getTcpDownRateString());
+      var2.append(", UL: ");
+      var2.append(var1.getTcpUpRateString());
+      this.trayItem.setToolTipText(var2.toString());
+   }
+
+   public void widgetDisposed(DisposeEvent var1) {
+      if (Sancho.hasCollectionFactory()) {
+         Sancho.getCore().getClientStats().deleteObserver(this);
+      }
+   }
+
+   // $VF: synthetic method
+   static MenuManager access$000(MinimizerTray var0) {
+      return var0.popupMenu;
+   }
+
+   // $VF: synthetic method
+   static TrayItem access$100(MinimizerTray var0) {
+      return var0.trayItem;
+   }
+
+   // $VF: synthetic method
+   static boolean access$202(MinimizerTray var0, boolean var1) {
+      return var0.closeMe = var1;
+   }
 }

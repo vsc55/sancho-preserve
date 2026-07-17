@@ -1,14 +1,6 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.friends;
 
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -16,79 +8,66 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
-import sancho.core.ICore;
-import sancho.core.Sancho;
-import sancho.model.mldonkey.utility.OpCodes;
+import sancho.utility.VersionInfo;
 import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
 
 public class AddFriendDialog extends Dialog {
-  private ICore core;
-  private Text host;
-  private Text port;
+   private Text host;
+   private Text port;
 
-  public AddFriendDialog(Shell parentShell, ICore core) {
-    super(parentShell);
-    this.core = core;
-  }
+   public AddFriendDialog(Shell var1) {
+      super(var1);
+   }
 
-  protected void configureShell(Shell newShell) {
-    super.configureShell(newShell);
-    newShell.setImage(SResources.getImage("ProgramIcon"));
-    newShell.setText(SResources.getString("t.f.addByIP"));
-  }
+   protected void configureShell(Shell var1) {
+      super.configureShell(var1);
+      var1.setImage(VersionInfo.getProgramIcon());
+      var1.setText(SResources.getString("t.f.addByIP"));
+   }
 
-  protected Control createDialogArea(Composite parent) {
-    Composite composite = (Composite) super.createDialogArea(parent);
-    composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 10, 5, false));
+   protected Control createDialogArea(Composite var1) {
+      Composite var2 = (Composite)super.createDialogArea(var1);
+      var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 10, 5, false));
+      Label var3 = new Label(var2, 0);
+      var3.setLayoutData(new GridData(128));
+      var3.setText(SResources.getString("t.f.host"));
+      this.host = new Text(var2, 2048);
+      this.host.setText("192.168.1.1");
+      GridData var4 = new GridData(768);
+      var4.widthHint = 120;
+      this.host.setLayoutData(var4);
+      Label var5 = new Label(var2, 0);
+      var5.setLayoutData(new GridData(128));
+      var5.setText(SResources.getString("t.f.port"));
+      this.port = new Text(var2, 2048);
+      this.port.setText("4662");
+      this.port.setLayoutData(new GridData(768));
+      return var2;
+   }
 
-    Label hostLabel = new Label(composite, SWT.NONE);
-    hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-    hostLabel.setText(SResources.getString("t.f.host"));
+   protected Control createButtonBar(Composite var1) {
+      Composite var2 = new Composite(var1, 0);
+      var2.setLayoutData(new GridData(768));
+      var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 0, false));
+      Button var3 = new Button(var2, 0);
+      var3.setLayoutData(new GridData(768));
+      var3.setText(SResources.getString("b.ok"));
+      var3.addSelectionListener(new AddFriendDialog$1(this));
+      Button var4 = new Button(var2, 0);
+      var4.setLayoutData(new GridData(768));
+      var4.setText(SResources.getString("b.cancel"));
+      var4.addSelectionListener(new AddFriendDialog$2(this));
+      return var2;
+   }
 
-    host = new Text(composite, SWT.BORDER);
-    host.setText("192.168.1.1");
-    GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
-    gridData.widthHint = 120;
-    host.setLayoutData(gridData);
+   // $VF: synthetic method
+   static Text access$000(AddFriendDialog var0) {
+      return var0.host;
+   }
 
-    Label portLabel = new Label(composite, SWT.NONE);
-    portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-    portLabel.setText(SResources.getString("t.f.port"));
-
-    port = new Text(composite, SWT.BORDER);
-    port.setText("4662");
-    port.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-    return composite;
-  }
-
-  protected Control createButtonBar(Composite parent) {
-    Composite buttonComposite = new Composite(parent, SWT.NONE);
-    buttonComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    buttonComposite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 0, false));
-
-    Button okButton = new Button(buttonComposite, SWT.NONE);
-    okButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    okButton.setText(SResources.getString("b.ok"));
-    okButton.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent s) {
-        String string = "afr " + host.getText() + " " + port.getText();
-        Sancho.send(OpCodes.S_CONSOLE_MESSAGE, string);
-        close();
-      }
-    });
-
-    Button cancelButton = new Button(buttonComposite, SWT.NONE);
-    cancelButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    cancelButton.setText(SResources.getString("b.cancel"));
-    cancelButton.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent s) {
-        close();
-      }
-    });
-
-    return buttonComposite;
-  }
+   // $VF: synthetic method
+   static Text access$100(AddFriendDialog var0) {
+      return var0.port;
+   }
 }

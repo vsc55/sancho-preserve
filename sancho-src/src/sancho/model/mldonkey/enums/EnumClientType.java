@@ -1,27 +1,22 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey.enums;
 
 public class EnumClientType extends AbstractEnum {
-  public static final EnumClientType SOURCE = new EnumClientType(1, "source");
-  public static final EnumClientType FRIEND = new EnumClientType(2, "friend");
-  public static final EnumClientType CONTACT = new EnumClientType(4, "contact");
+   public static final EnumClientType SOURCE = new EnumClientType(1, "source");
+   public static final EnumClientType FRIEND = new EnumClientType(2, "friend");
+   public static final EnumClientType CONTACT = new EnumClientType(4, "contact");
 
-  private EnumClientType(int i, String resString) {
-    super(i, "e.clientType." + resString);
-  }
+   private EnumClientType(int var1, String var2) {
+      super(var1, "e.clientType." + var2);
+   }
 
-  public static EnumClientType byteToEnum(byte b) {
-    switch (b) {
-      case 1 :
-        return EnumClientType.FRIEND;
-      case 2 :
-        return EnumClientType.CONTACT;
-      default :
-        return EnumClientType.SOURCE;
-    }
-  }
+   public static EnumClientType byteToEnum(byte var0) {
+      switch (var0) {
+         case 1:
+            return FRIEND;
+         case 2:
+            return CONTACT;
+         default:
+            return SOURCE;
+      }
+   }
 }

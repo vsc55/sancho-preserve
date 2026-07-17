@@ -1,148 +1,110 @@
-/*******************************************************************************
- * Copyright (c) 2000, 2003 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Common Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/cpl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *******************************************************************************/
-
-// A modified ProductInfoDialog.java
 package sancho.view.utility;
 
 import java.io.IOException;
-
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
-
 import sancho.utility.VersionInfo;
 import sancho.view.preferences.PreferenceLoader;
 
 public class WebLauncher {
-  private static String webBrowser = SResources.S_ES;
-  private static boolean webBrowserOpened;
+   private static String webBrowser = "";
+   private static boolean webBrowserOpened;
 
-  private static Process openWebBrowser(String href) throws IOException {
-    Process p = null;
-
-    String[] cmdArray = new String[2];
-    cmdArray[0] = webBrowser;
-    cmdArray[1] = href;
-
-    if ((webBrowser == null) || webBrowser.equals(SResources.S_ES)) {
-      try {
-        webBrowser = "mozilla"; //$NON-NLS-1$
-        cmdArray[0] = webBrowser;
-        p = Runtime.getRuntime().exec(cmdArray); //$NON-NLS-1$;
-      } catch (IOException e) {
-        try {
-          webBrowser = "konqueror"; //$NON-NLS-1$
-          cmdArray[0] = webBrowser;
-          p = Runtime.getRuntime().exec(cmdArray); //$NON-NLS-1$;
-        } catch (IOException f) {
-          p = null;
-          webBrowser = "netscape"; //$NON-NLS-1$
-          cmdArray[0] = webBrowser;
-        }
-      }
-    }
-
-    if (p == null) {
-      try {
-        p = Runtime.getRuntime().exec(cmdArray); //$NON-NLS-1$;
-      } catch (IOException e) {
-        p = null;
-        throw e;
-      }
-    }
-
-    return p;
-  }
-
-  public static void openLink(String href) {
-    webBrowser = PreferenceLoader.loadString("defaultWebBrowser");
-
-    // format the href for an html file (file:///<filename.html>
-    // required for Mac only.
-    if (href.startsWith("file:")) { //$NON-NLS-1$
-      href = href.substring(5);
-
-      while (href.startsWith("/"))
-        href = href.substring(1);
-
-      href = "file:///" + href; //$NON-NLS-1$
-    }
-
-    final String localHref = href;
-
-    final Display d = Display.getCurrent();
-
-    String platform = VersionInfo.getSWTPlatform();
-
-    if ("win32".equals(platform) || "win32-fox".equals(platform))
-      Program.launch(localHref);
-    else if ("carbon".equals(platform)) { //$NON-NLS-1$
-      try {
-        String[] cmdArray = new String[2];
-
-        cmdArray[0] = "/usr/bin/open";
-        cmdArray[1] = localHref;
-
-        Runtime.getRuntime().exec(cmdArray); //$NON-NLS-1$
-      } catch (IOException e) {
-        openWebBrowserError(d);
-      }
-    } else {
-      Thread launcher = new Thread("webBrowser") { //$NON-NLS-1$
-        public void run() {
-          try {
-            if (webBrowserOpened
-                && (webBrowser.equals("MozillaFirebird") || webBrowser.equals("netscape") || webBrowser
-                    .equals("mozilla"))) {
-
-              String[] cmdArray = new String[3];
-              cmdArray[0] = webBrowser;
-              cmdArray[1] = "-remote";
-              cmdArray[2] = "openURL(" + localHref + ")";
-
-              Runtime.getRuntime().exec(cmdArray);
-              // Runtime.getRuntime().exec(webBrowser + " -remote openURL(" + localHref + ")");
-            } else {
-              Process p = openWebBrowser(localHref);
-              webBrowserOpened = true;
-
-              try {
-                if (p != null)
-                  p.waitFor();
-              } catch (InterruptedException e) {
-                openWebBrowserError(d);
-              } finally {
-                webBrowserOpened = false;
-              }
+   private static Process openWebBrowser(String var0) throws IOException {
+      Process var1 = null;
+      String[] var2 = new String[]{webBrowser, var0};
+      if (webBrowser == null || webBrowser.equals("")) {
+         try {
+            webBrowser = "mozilla";
+            var2[0] = webBrowser;
+            var1 = Runtime.getRuntime().exec(var2);
+         } catch (IOException var7) {
+            try {
+               webBrowser = "konqueror";
+               var2[0] = webBrowser;
+               var1 = Runtime.getRuntime().exec(var2);
+            } catch (IOException var6) {
+               var1 = null;
+               webBrowser = "netscape";
+               var2[0] = webBrowser;
             }
-          } catch (IOException e) {
-            openWebBrowserError(d);
-          }
-        }
-      };
-
-      launcher.start();
-    }
-  }
-
-  private static void openWebBrowserError(final Display display) {
-    display.asyncExec(new Runnable() {
-      public void run() {
-        MessageBox failBox = new MessageBox(new Shell(display), SWT.ICON_ERROR);
-        failBox.setText("Fail");
-        failBox.setMessage("openWebBrowserError: \nCheck Preferences>Default Web Browser");
-        failBox.open();
+         }
       }
-    });
-  }
+
+      if (var1 == null) {
+         try {
+            var1 = Runtime.getRuntime().exec(var2);
+         } catch (IOException var5) {
+            Object var8 = null;
+            throw var5;
+         }
+      }
+
+      return var1;
+   }
+
+   public static void openLink(String var0) {
+      webBrowser = PreferenceLoader.loadStringEnv("defaultWebBrowser");
+      if (var0.startsWith("file:")) {
+         var0 = var0.substring(5);
+
+         while (var0.startsWith("/")) {
+            var0 = var0.substring(1);
+         }
+
+         var0 = "file:///" + var0;
+      }
+
+      String var1 = var0;
+      Display var2 = Display.getCurrent();
+      String var3 = VersionInfo.getSWTPlatform();
+      if ("win32".equals(var3) || "win32-fox".equals(var3)) {
+         Program var8 = Program.findProgram("html");
+         if (var8 != null && var8.execute(var0)) {
+            return;
+         }
+
+         Program.launch(var0);
+      } else if ("carbon".equals(var3)) {
+         try {
+            String[] var4 = new String[]{"/usr/bin/open", var1};
+            Runtime.getRuntime().exec(var4);
+         } catch (IOException var5) {
+            openWebBrowserError(var2);
+         }
+      } else {
+         WebLauncher$1 var7 = new WebLauncher$1("webBrowser", var0, var2);
+         var7.start();
+      }
+   }
+
+   private static void openWebBrowserError(Display var0) {
+      var0.asyncExec(new WebLauncher$2(var0));
+   }
+
+   // $VF: synthetic method
+   static boolean access$000() {
+      return webBrowserOpened;
+   }
+
+   // $VF: synthetic method
+   static String access$100() {
+      return webBrowser;
+   }
+
+   // $VF: synthetic method
+   static Process access$200(String var0) throws IOException {
+      return openWebBrowser(var0);
+   }
+
+   // $VF: synthetic method
+   static boolean access$002(boolean var0) {
+      webBrowserOpened = var0;
+      return var0;
+   }
+
+   // $VF: synthetic method
+   static void access$300(Display var0) {
+      openWebBrowserError(var0);
+   }
 }

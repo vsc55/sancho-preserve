@@ -1,14 +1,9 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
+import gnu.trove.TIntArrayList;
 import gnu.trove.TIntIntHashMap;
 import gnu.trove.TIntObjectHashMap;
 import sancho.core.ICore;
-import sancho.model.mldonkey.utility.OpCodes;
 import sancho.model.mldonkey.utility.MessageBuffer;
 import sancho.model.mldonkey.utility.SearchWaiting;
 import sancho.model.mldonkey.utility.UtilityFactory;
@@ -16,162 +11,188 @@ import sancho.utility.ObjectMap;
 import sancho.view.preferences.PreferenceLoader;
 
 public class ResultCollection extends ACollection_Int {
+   private TIntIntHashMap minAvailMap;
+   public boolean filterProfanity;
+   public boolean filterPornography;
+   public boolean verboseNumbers = true;
+   private TIntObjectHashMap resultIntMap = new TIntObjectHashMap();
+   private TIntArrayList closedList;
+   private TIntObjectHashMap searchResultChart;
+   public int cnt;
 
-  //  private int externalResultID;
-  //  private int externalSearchID;
-  private TIntIntHashMap minAvailMap;
-  public boolean filterProfanity;
-  public boolean filterPornography;
-  
-  // must retain them all?
-  private TIntObjectHashMap resultIntMap;
-  
-  public synchronized int getNumResults() {
-    return resultIntMap.size();
-  }
+   public synchronized int getNumResults() {
+      return this.resultIntMap.size();
+   }
 
-  ResultCollection(ICore core) {
-    super(core);
-    resultIntMap = new TIntObjectHashMap();
-    minAvailMap = new TIntIntHashMap();
-  }
+   ResultCollection(ICore var1) {
+      super(var1);
+      this.minAvailMap = new TIntIntHashMap();
+      this.closedList = new TIntArrayList();
+      this.searchResultChart = new TIntObjectHashMap();
+   }
 
-  public void closeSearch(int searchId) {
-    if (searchId < 0)
-      remove(searchId);
-    else {
-      Object[] oArray = {new Integer(searchId), new Byte((byte) 1)};
-      core.send(OpCodes.S_CLOSE_SEARCH, oArray);
-    }
-  }
-
-  public void download(Result result, boolean force) {
-    int resultID = result.getId();
-
-    if (resultID < 0) {
-      core.send(OpCodes.S_DLLINK, result.getED2K());
-    } else {
-      Object[] oArray = new Object[3];
-      oArray[0] = result.getNames();
-      oArray[1] = new Integer(resultID);
-      oArray[2] = new Byte((byte) (force ? 1 : 0));
-      core.send(OpCodes.S_DOWNLOAD, oArray);
-    }
-  }
-
-  //  public int getExternalResultID() {
-  //    return --externalResultID;
-  //  }
-  //
-  //  public int getExternalSearchID() {
-  //    return --externalSearchID;
-  //  }
-
-  public synchronized Result getResult(int key) {
-    return (Result) resultIntMap.get(key);
-  }
-
-  protected boolean hasMinAvail(int searchID, int avail) {
-    synchronized (minAvailMap) {
-      return avail >= minAvailMap.get(searchID);
-    }
-  }
-
-  //  public void jigleSearchComplete(JigleSearchComplete jigleSearchComplete) {
-  //    this.setChanged();
-  //    this.notifyObservers(jigleSearchComplete);
-  //  }
-
-  public int cnt;
-
-  public void read(MessageBuffer messageBuffer) {
-    int searchID = messageBuffer.getInt32();
-    int resultID = messageBuffer.getInt32();
-    
-    Result result;
-
-    synchronized (this) {
-      if (resultIntMap.contains(resultID))
-        result = (Result) resultIntMap.get(resultID);
-      else {
-        return;
+   public synchronized void closeSearch(int var1) {
+      if (var1 < 0) {
+         this.remove(var1);
+      } else {
+         this.closedList.add(var1);
+         this.searchResultChart.remove(var1);
+         this.remove(var1);
+         Object[] var2 = new Object[]{new Integer(var1), new Byte((byte)1)};
+         this.core.send((short)53, var2);
       }
-    }
+   }
 
-    if (!hasMinAvail(searchID, result.getAvail()))
-      return;
+   public void download(Result var1, boolean var2) {
+      int var3 = var1.getId();
+      if (var3 < 0) {
+         this.core.send((short)8, var1.getED2K());
+      } else {
+         Object[] var4 = new Object[]{var1.getNames(), new Integer(var3), new Byte((byte)(var2 ? 1 : 0))};
+         this.core.send((short)50, var4);
+      }
+   }
 
-    if (containsKey(searchID))
-      ((ObjectMap) get(searchID)).addOrUpdate(result);
-    else {
-      ObjectMap map = new ObjectMap();
-      map.add(result);
-      this.put(searchID, map);
-    }
+   public synchronized boolean alreadyClosed(int var1) {
+      return this.closedList.contains(var1);
+   }
 
-    this.setChanged();
-    this.notifyObservers(this);
-  }
+   public synchronized Result getResult(int var1) {
+      return (Result)this.resultIntMap.get(var1);
+   }
 
-  //  public void readJigle(int searchID, Object object) {
-  //    if (object instanceof ObjectMap) {
-  //      ObjectMap objectMap = (ObjectMap) object;
-  //      this.put(searchID, objectMap);
-  //      this.setChanged();
-  //      this.notifyObservers(this);
-  //    } else if (object instanceof JigleSearchComplete) {
-  //      jigleSearchComplete((JigleSearchComplete) object);
-  //    }
-  //  }
+   protected boolean hasMinAvail(int var1, int var2) {
+      synchronized (this.minAvailMap) {
+         return var2 >= this.minAvailMap.get(var1);
+      }
+   }
 
-  public void resultInfo(MessageBuffer messageBuffer) {
-    int resultID = messageBuffer.getInt32();
+   public void read(MessageBuffer var1) {
+      int var2 = var1.getInt32();
+      int var3 = var1.getInt32();
+      Result var4 = null;
+      synchronized (this) {
+         if (this.resultIntMap.contains(var3)) {
+            var4 = (Result)this.resultIntMap.get(var3);
+            this.resultIntMap.remove(var3);
+            TIntArrayList var10 = (TIntArrayList)this.searchResultChart.get(var2);
+            if (var10 == null) {
+               var10 = new TIntArrayList();
+               this.searchResultChart.put(var2, var10);
+            }
 
-    Result result = (Result) resultMapGet(resultID); 
+            if (!var10.contains(var3)) {
+               var10.add(var3);
+            }
+         } else {
+            TIntArrayList var6 = (TIntArrayList)this.searchResultChart.get(var2);
+            if (var6 == null || !var6.contains(var3)) {
+               return;
+            }
 
-    if (result != null) {
-      result.read(resultID, messageBuffer);
-    } else {
-      result = core.getCollectionFactory().getResult();
-      result.read(resultID, messageBuffer);
-      resultMapPut(resultID, result);
-    }
+            ObjectMap var7 = (ObjectMap)this.get(var2);
+            if (var7 != null) {
+               var4 = var7.getResult(var3);
+            }
+         }
+      }
 
-  }
-  
-  public synchronized Object resultMapGet(int key) {
-    return resultIntMap.get(key); 
-  }
+      if (var4 != null) {
+         if (this.hasMinAvail(var2, var4.getAvail())) {
+            boolean var11 = false;
+            if (this.containsKey(var2)) {
+               ((ObjectMap)this.get(var2)).addOrUpdate(var4);
+               var11 = true;
+            } else if (!this.alreadyClosed(var2)) {
+               ObjectMap var12 = new ObjectMap(false);
+               var12.add(var4);
+               this.put(var2, var12);
+               var11 = true;
+            }
 
-  public synchronized boolean resultMapContains(int key) {
-    return resultIntMap.contains(key);
-  }
+            if (var11) {
+               this.setChanged();
+               this.notifyObservers(this);
+            }
+         }
+      }
+   }
 
-  public synchronized void resultMapPut(int key, Object value) {
-    resultIntMap.put(key, value);
-  }
-  
-  public void updatePreferences() {
-    filterPornography = PreferenceLoader.loadBoolean("searchFilterPornography");
-    filterProfanity = PreferenceLoader.loadBoolean("searchFilterProfanity");
-  }
-  
-  public void searchWaiting(MessageBuffer messageBuffer) {
-    SearchWaiting searchWaiting = UtilityFactory.getSearchWaiting(core);
-    searchWaiting.read(messageBuffer);
+   public void resultInfo(MessageBuffer var1) {
+      int var2 = var1.getInt32();
+      Result var3 = (Result)this.resultMapGet(var2);
+      if (var3 != null) {
+         var3.read(var2, var1);
+      } else {
+         var3 = this.findResult(var2);
+         if (var3 != null) {
+            var3.read(var2, var1);
+         } else {
+            var3 = this.core.getCollectionFactory().getResult();
+            var3.read(var2, var1);
+            this.resultMapPut(var2, var3);
+         }
+      }
+   }
 
-    if (containsKey(searchWaiting.getId()))
-      ((ObjectMap) get(searchWaiting.getId())).notifyObject(searchWaiting);
-    else {
-      this.setChanged();
-      this.notifyObservers(searchWaiting);
-    }
-  }
+   public synchronized Result findResult(int var1) {
+      int[] var2 = this.searchResultChart.keys();
 
-  public void setMinAvail(int searchID, int minAvail) {
-    synchronized (minAvailMap) {
-      minAvailMap.put(searchID, minAvail);
-    }
-  }
+      for (int var3 = 0; var3 < var2.length; var3++) {
+         int var4 = var2[var3];
+         TIntArrayList var5 = (TIntArrayList)this.searchResultChart.get(var4);
+         if (var5 != null && var5.contains(var1)) {
+            ObjectMap var6 = (ObjectMap)this.get(var4);
+            if (var6 != null) {
+               Result var7 = var6.getResult(var1);
+               if (var7 != null) {
+                  return var7;
+               }
+            }
+         }
+      }
 
+      return null;
+   }
+
+   public synchronized Object resultMapGet(int var1) {
+      return this.resultIntMap.get(var1);
+   }
+
+   public synchronized boolean resultMapContains(int var1) {
+      return this.resultIntMap.contains(var1);
+   }
+
+   public synchronized void resultMapPut(int var1, Object var2) {
+      this.resultIntMap.put(var1, var2);
+   }
+
+   public void updatePreferences() {
+      this.filterPornography = PreferenceLoader.loadBoolean("searchFilterPornography");
+      this.filterProfanity = PreferenceLoader.loadBoolean("searchFilterProfanity");
+      this.verboseNumbers = PreferenceLoader.loadBoolean("verboseNumbers");
+   }
+
+   public void searchWaiting(MessageBuffer var1) {
+      SearchWaiting var2 = UtilityFactory.getSearchWaiting(this.core);
+      var2.read(var1);
+      if (this.containsKey(var2.getId())) {
+         ((ObjectMap)this.get(var2.getId())).notifyObject(var2);
+      } else {
+         this.setChanged();
+         this.notifyObservers(var2);
+      }
+   }
+
+   public void setMinAvail(int var1, int var2) {
+      synchronized (this.minAvailMap) {
+         this.minAvailMap.put(var1, var2);
+      }
+   }
+
+   public String getStats() {
+      ResultCollection$GetCollectionStats var1 = new ResultCollection$GetCollectionStats();
+      this.forEachEntry(var1);
+      return var1.getStats();
+   }
 }

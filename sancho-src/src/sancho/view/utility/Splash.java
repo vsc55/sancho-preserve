@@ -1,103 +1,88 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.utility;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-
+import sancho.utility.VersionInfo;
 import sancho.view.preferences.PreferenceLoader;
 
 public class Splash {
-  private static Shell shell = null;
-  private static Display display;
+   private static Shell shell = null;
+   private static Display display;
+   public static boolean[] on = new boolean[10];
+   public static int[] boxes = new int[]{13, 66, 107, 162, 212, 259, 314, 363, 398, 441, 492};
 
-  public static boolean[] on = new boolean[10];
-  public static int[] boxes = {13, 66, 107, 162, 212, 259, 314, 363, 398, 441, 492};
-
-  public Splash(Display displayX) {
-    display = displayX;
-    if (PreferenceLoader.loadBoolean("splashScreen"))
-      createContents(display);
-  }
-
-  public void createContents(Display display) {
-    shell = new Shell(display, SWT.NO_TRIM | SWT.NO_BACKGROUND | SWT.ON_TOP);
-    shell.setLayout(new FillLayout());
-
-    Image image = SResources.getImage("splashScreen");
-    Rectangle displayBounds = display.getPrimaryMonitor().getBounds();
-    Rectangle imageBounds = image.getBounds();
-    shell.setBounds(displayBounds.x + ((displayBounds.width - imageBounds.width) / 2), displayBounds.y
-        + ((displayBounds.height - imageBounds.height) / 2), imageBounds.width, imageBounds.height);
-
-    shell.open();
-    shell.update();
-  }
-
-  public static void updateText(String resString) {
-    updateText(resString, "");
-  }
-
-  public static void updateText(String resString, String parameter) {
-    updateText(resString, parameter, -1);
-  }
-
-  public static void updateText(final String resString, final String parameter, final int box) {
-    if (shell == null)
-      return;
-
-    String string = SResources.getString(resString) + parameter;
-    Image bufferImage = new Image(shell.getDisplay(), shell.getBounds());
-    GC gc = new GC(bufferImage);
-    gc.drawImage(SResources.getImage("splashScreen"), 0, 0);
-
-    //    gc.setForeground(shell.getDisplay().getSystemColor(SWT.COLOR_GRAY));
-    //    gc.drawText(string + "...", 16, shell.getBounds().height - 24, true);
-    gc.setForeground(shell.getDisplay().getSystemColor(SWT.COLOR_WHITE));
-    gc.drawText(string + "...", 15, shell.getBounds().height - 25, true);
-
-    if (box >= 0) {
-      on[box] = true;
-    }
-
-    Image image = SResources.getImage("splashHighlight");
-
-    for (int i = 0; i < on.length; i++) {
-      if (on[i]) {
-        int width = boxes[i + 1] - boxes[i];
-        gc.drawImage(image, boxes[i], 0, width, 57, boxes[i], 173, width, 57);
+   public Splash(Display var1) {
+      display = var1;
+      if (PreferenceLoader.loadBoolean("splashScreen")) {
+         this.createContents(display);
       }
-    }
+   }
 
-    GC gcd = new GC(shell);
-    gcd.drawImage(bufferImage, 0, 0);
-    gcd.dispose();
-    bufferImage.dispose();
-    gc.dispose();
-    
-  }
+   public void createContents(Display var1) {
+      boolean var2 = VersionInfo.getSWTPlatform().equals("win32");
+      shell = new Shell(var1, 278536 | (var2 ? 4 : 0));
+      shell.setLayout(new FillLayout());
+      Image var3 = SResources.getImage("splashScreen");
+      Rectangle var4 = var1.getPrimaryMonitor().getBounds();
+      Rectangle var5 = var3.getBounds();
+      shell.setBounds(var4.x + (var4.width - var5.width) / 2, var4.y + (var4.height - var5.height) / 2, var5.width, var5.height);
+      shell.open();
+      shell.update();
+   }
 
-  public static void dispose() {
-    if (shell == null)
-      return;
+   public static void updateText(String var0) {
+      updateText(var0, "");
+   }
 
-    shell.dispose();
-    shell = null;
-  }
+   public static void updateText(String var0, String var1) {
+      updateText(var0, var1, -1);
+   }
 
-  public static void setVisible(final boolean visible) {
-    if (shell == null)
-      return;
+   public static void updateText(String var0, String var1, int var2) {
+      if (shell != null) {
+         String var3 = SResources.getString(var0) + var1;
+         Image var4 = new Image(shell.getDisplay(), shell.getBounds());
+         GC var5 = new GC(var4);
+         var5.drawImage(SResources.getImage("splashScreen"), 0, 0);
+         var5.setForeground(shell.getDisplay().getSystemColor(1));
+         var5.drawText(var3 + "...", 15, shell.getBounds().height - 25, true);
+         if (var2 >= 0) {
+            on[var2] = true;
+         }
 
-    shell.setVisible(visible);
-  }
+         Image var6 = SResources.getImage("splashHighlight");
 
+         for (int var7 = 0; var7 < on.length; var7++) {
+            if (on[var7]) {
+               int var8 = boxes[var7 + 1] - boxes[var7];
+               var5.drawImage(var6, boxes[var7], 0, var8, 57, boxes[var7], 173, var8, 57);
+            }
+         }
+
+         GC var9 = new GC(shell);
+         var9.drawImage(var4, 0, 0);
+         var9.dispose();
+         var4.dispose();
+         var5.dispose();
+         display.readAndDispatch();
+      }
+   }
+
+   public static void dispose() {
+      if (shell != null) {
+         shell.dispose();
+         shell = null;
+         display = null;
+      }
+   }
+
+   public static void setVisible(boolean var0) {
+      if (shell != null) {
+         shell.setVisible(var0);
+      }
+   }
 }

@@ -1,28 +1,23 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.utility;
 
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 
 public class NoDuplicatesCombo extends Combo {
-  public NoDuplicatesCombo(Composite parent, int style) {
-    super(parent, style);
-  }
+   public NoDuplicatesCombo(Composite var1, int var2) {
+      super(var1, var2);
+   }
 
-  public void add(String string, int index) {
-    if (string.equals(SResources.S_ES))
-      return;
+   public void add(String var1, int var2) {
+      if (!var1.equals("")) {
+         if (this.indexOf(var1) != -1) {
+            this.remove(var1);
+         }
 
-    if (indexOf(string) != -1)
-      remove(string);
+         super.add(var1, var2);
+      }
+   }
 
-    super.add(string, index);
-  }
-
-  protected void checkSubclass() {
-  }
+   protected void checkSubclass() {
+   }
 }

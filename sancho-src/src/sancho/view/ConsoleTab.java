@@ -1,81 +1,83 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view;
 
-import java.util.Observable;
-import java.util.Observer;
-
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-
 import sancho.core.Sancho;
 import sancho.model.mldonkey.ConsoleMessage;
+import sancho.utility.MyObservable;
+import sancho.utility.MyObserver;
 import sancho.view.console.Console;
 import sancho.view.console.ConsoleViewFrame;
 import sancho.view.utility.AbstractTab;
 
-public class ConsoleTab extends AbstractTab implements Observer {
-  private Console console;
+public class ConsoleTab extends AbstractTab implements MyObserver {
+   private Console console;
 
-  public ConsoleTab(MainWindow mainWindow, String prefString) {
-    super(mainWindow, prefString);
-  }
+   public ConsoleTab(MainWindow var1, String var2) {
+      super(var1, var2);
+   }
 
-  protected void createContents(Composite parent) {
-    ConsoleViewFrame viewFrame = new ConsoleViewFrame(parent, "tab.console", "tab.console.buttonSmall", this);
-    addViewFrame(viewFrame);
-    console = new Console(viewFrame.getChildComposite(), SWT.NONE);
-  }
+   protected void createContents(Composite var1) {
+      ConsoleViewFrame var2 = new ConsoleViewFrame(var1, "tab.console", "tab.console.buttonSmall", this);
+      this.addViewFrame(var2);
+      this.console = new Console(var2.getChildComposite(), 0);
+   }
 
-  public void setInActive() {
-    super.setInActive();
-    console.setInactive();
-
-    if (Sancho.hasCollectionFactory())
-      getCore().getConsoleMessage().deleteObserver(this);
-  }
-
-  public void setActive() {
-    super.setActive();
-    setObservers();
-    console.setActive();
-    console.setFocus();
-  }
-
-  public void setObservers() {
-    if (Sancho.hasCollectionFactory()) {
-      getCore().getConsoleMessage().addObserver(this);
-      updateConsole();
-    }
-  }
-
-  public void update(Observable o, Object arg) {
-    if (o instanceof ConsoleMessage)
-      updateConsole();
-  }
-
-  public void updateConsole() {
-    if (getContent() == null || getContent().isDisposed())
-      return;
-
-    getContent().getDisplay().asyncExec(new Runnable() {
-      public void run() {
-        if (Sancho.hasCollectionFactory() && console != null && !console.isDisposed())
-          console.append(getCore().getConsoleMessage().getMessage());
+   public void setInActive() {
+      super.setInActive();
+      this.console.setInactive();
+      if (Sancho.hasCollectionFactory()) {
+         this.getCore().getConsoleMessage().deleteObserver(this);
       }
-    });
-  }
+   }
 
-  public void onConnect() {
-    if (this.isActive())
-      setObservers();
-  }
+   public void setActive() {
+      super.setActive();
+      this.setObservers();
+      this.console.setActive();
+      this.console.setFocus();
+   }
 
-  public void updateDisplay() {
-    super.updateDisplay();
-    console.updateDisplay();
-  }
+   public void setObservers() {
+      if (Sancho.hasCollectionFactory()) {
+         this.getCore().getConsoleMessage().addObserver(this);
+         this.updateConsole(this.getCore().getConsoleMessage().getMessage());
+      }
+   }
+
+   public void update(MyObservable var1, Object var2, int var3) {
+      if (var1 instanceof ConsoleMessage) {
+         this.updateConsole((String)var2);
+      }
+   }
+
+   public void updateConsole(String var1) {
+      if (this.getContent() != null && !this.getContent().isDisposed()) {
+         this.getContent().getDisplay().asyncExec(new ConsoleTab$1(this, var1));
+      }
+   }
+
+   public void onConnect() {
+      if (this.isActive()) {
+         this.setObservers();
+      }
+   }
+
+   public void updateDisplay() {
+      super.updateDisplay();
+      this.console.updateDisplay();
+   }
+
+   public void dispose() {
+      if (Sancho.hasCollectionFactory()) {
+         this.getCore().getConsoleMessage().deleteObserver(this);
+      }
+
+      this.console.dispose();
+      super.dispose();
+   }
+
+   // $VF: synthetic method
+   static Console access$000(ConsoleTab var0) {
+      return var0.console;
+   }
 }

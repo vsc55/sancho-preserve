@@ -1,15 +1,7 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.utility;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.PreferenceStore;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -17,335 +9,296 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
-
 import sancho.core.Sancho;
 import sancho.view.preferences.PreferenceLoader;
 
 public class IDSelector extends Dialog {
-  public static final int MAGIC_NUMBER = 65;
-  private String[] legend;
-  private String allIDs;
-  private String leftIDs;
-  private String rightIDs;
-  private String prefOption;
-  private String prefOptionOff;
-  private String prefSuffix;
-  private TableItem hoverTableItem;
-  private Table table;
-  private boolean dragging;
+   public static final int MAGIC_NUMBER = 65;
+   private String[] legend;
+   private String allIDs;
+   private String leftIDs;
+   private String rightIDs;
+   private String prefOption;
+   private String prefOptionOff;
+   private TableItem hoverTableItem;
+   private Table table;
+   private boolean dragging;
+   private String propString;
 
-  public IDSelector(Shell parentShell, String[] legend, String prefOption, String prefSuffix) {
-    super(parentShell);
-    this.legend = legend;
-    allIDs = SResources.S_ES;
+   public IDSelector(Shell var1, String[] var2, String var3, String var4, String var5) {
+      super(var1);
+      this.legend = var2;
+      this.allIDs = "";
 
-    for (int i = 0; i < legend.length; i++)
-      allIDs += String.valueOf((char) (IDSelector.MAGIC_NUMBER + i));
-
-    this.prefSuffix = prefSuffix;
-    this.prefOption = prefOption + prefSuffix;
-    this.prefOptionOff = this.prefOption + "Off";
-
-    String tmpString = PreferenceLoader.loadString(this.prefOption);
-    leftIDs = PreferenceLoader.loadString(this.prefOptionOff);
-    rightIDs = ((!tmpString.equals(SResources.S_ES)) ? tmpString : allIDs);
-
-    for (int i = 0; i < allIDs.length(); i++) {
-      if (leftIDs.indexOf(allIDs.charAt(i)) == -1) {
-        if (rightIDs.indexOf(allIDs.charAt(i)) == -1)
-          rightIDs += allIDs.charAt(i);
-      }
-    }
-  }
-
-  public Control createDialogArea(Composite oldParent) {
-    Composite parent = (Composite) super.createDialogArea(oldParent);
-    parent.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
-
-    GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
-    gridData.horizontalSpan = 2;
-
-    Label l = new Label(parent, SWT.NONE);
-    l.setText(SResources.getString("l.selectorInfo"));
-    l.setLayoutData(gridData);
-
-    createTable(parent);
-    createButtons(parent);
-    createDefault(parent);
-    return parent;
-  }
-
-  protected void configureShell(Shell shell) {
-    super.configureShell(shell);
-    shell.setText(prefSuffix + " " + SResources.getString("l.selector"));
-    shell.setImage(SResources.getImage("preferences"));
-  }
-
-  protected void createDefault(Composite parent) {
-    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-    gd.horizontalSpan = 2;
-    Button moveUp = new Button(parent, SWT.NONE);
-    moveUp.setText(SResources.getString("l.default"));
-    moveUp.setLayoutData(gd);
-    moveUp.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        rightIDs = allIDs;
-        leftIDs = SResources.S_ES;
-        table.removeAll();
-        createItems();
-      }
-    });
-  }
-
-  public void createTable(Composite parent) {
-    table = new Table(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE | SWT.CHECK);
-    table.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-    Listener shellListener = new Listener() {
-      public void handleEvent(Event e) {
-        switch (e.type) {
-          case SWT.MouseDown :
-            onMouseDown(e);
-            break;
-          case SWT.MouseMove :
-            onMouseMove(e);
-            break;
-          case SWT.MouseUp :
-            onMouseUp(e);
-        }
-      }
-    };
-    int[] shellEvents = new int[]{SWT.MouseDown, SWT.MouseUp, SWT.MouseMove};
-
-    for (int i = 0; i < shellEvents.length; i++)
-      table.addListener(shellEvents[i], shellListener);
-
-    createItems();
-  }
-
-  public void onMouseMove(Event e) {
-    Table table = (Table) e.widget;
-    TableItem tableItem = table.getItem(new Point(e.x, e.y));
-    if (tableItem != null) {
-      if (hoverTableItem != null) {
-        if (hoverTableItem != tableItem)
-          hoverTableItem.setBackground(null);
-      }
-      if (dragging) {
-        hoverTableItem = tableItem;
-        hoverTableItem.setBackground(table.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+      for (int var6 = 0; var6 < var2.length; var6++) {
+         this.allIDs = this.allIDs + String.valueOf((char)(65 + var6));
       }
 
-    } else {
-      dragging = false;
-      if (hoverTableItem != null && !hoverTableItem.isDisposed()) {
-        hoverTableItem.setBackground(null);
-        hoverTableItem = null;
+      this.propString = var5;
+      this.prefOption = var3 + var4;
+      this.prefOptionOff = this.prefOption + "Off";
+      String var7 = PreferenceLoader.loadString(this.prefOption);
+      this.leftIDs = PreferenceLoader.loadString(this.prefOptionOff);
+      this.rightIDs = !var7.equals("") ? var7 : this.allIDs;
+
+      for (int var8 = 0; var8 < this.allIDs.length(); var8++) {
+         if (this.leftIDs.indexOf(this.allIDs.charAt(var8)) == -1 && this.rightIDs.indexOf(this.allIDs.charAt(var8)) == -1) {
+            this.rightIDs = this.rightIDs + this.allIDs.charAt(var8);
+         }
       }
-    }
-  }
+   }
 
-  public void onMouseUp(Event e) {
-    Table table = (Table) e.widget;
-    TableItem tableItem = table.getItem(new Point(e.x, e.y));
+   public Control createDialogArea(Composite var1) {
+      Composite var2 = (Composite)super.createDialogArea(var1);
+      var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
+      GridData var3 = new GridData(768);
+      var3.horizontalSpan = 2;
+      Label var4 = new Label(var2, 0);
+      var4.setText(SResources.getString("l.selectorInfo"));
+      var4.setLayoutData(var3);
+      this.createTable(var2);
+      this.createButtons(var2);
+      this.createDefault(var2);
+      return var2;
+   }
 
-    if (dragging) {
-      if (hoverTableItem != null && table.getSelection().length > 0) {
+   protected void configureShell(Shell var1) {
+      super.configureShell(var1);
+      var1.setText(SResources.getString(this.propString) + " " + SResources.getString("l.selector"));
+      var1.setImage(SResources.getImage("preferences"));
+   }
 
-        TableItem selectedTableItem = table.getSelection()[0];
-        if (selectedTableItem != tableItem) {
-          int selID = table.getSelectionIndex();
+   protected void createDefault(Composite var1) {
+      GridData var2 = new GridData(768);
+      var2.horizontalSpan = 2;
+      Button var3 = new Button(var1, 0);
+      var3.setText(SResources.getString("l.default"));
+      var3.setLayoutData(var2);
+      var3.addSelectionListener(new IDSelector$1(this));
+   }
 
-          boolean isChecked = selectedTableItem.getChecked();
-          String ID = (String) selectedTableItem.getData("ID");
-          int IDnum = ID.charAt(0) - IDSelector.MAGIC_NUMBER;
+   public void createTable(Composite var1) {
+      this.table = new Table(var1, 67620);
+      this.table.setLayoutData(new GridData(1808));
+      IDSelector$2 var2 = new IDSelector$2(this);
+      int[] var3 = new int[]{3, 4, 5};
 
-          table.remove(selID);
-          int targetID = table.indexOf(hoverTableItem) + 1;
-
-          TableItem newTableItem = new TableItem(table, SWT.NONE, targetID);
-          newTableItem.setData("ID", ID);
-          newTableItem.setText(SResources.getString(legend[IDnum]));
-          newTableItem.setChecked(isChecked);
-
-          table.setSelection(targetID);
-          hoverTableItem.setBackground(null);
-          hoverTableItem = null;
-
-        }
+      for (int var4 = 0; var4 < var3.length; var4++) {
+         this.table.addListener(var3[var4], var2);
       }
-      dragging = false;
-    }
-  }
 
-  public void onMouseDown(Event e) {
-    Table table = (Table) e.widget;
-    TableItem tableItem = table.getItem(new Point(e.x, e.y));
+      this.createItems();
+   }
 
-    if (tableItem != null) {
-      dragging = true;
-      hoverTableItem = null;
-    }
-  }
+   public void onMouseMove(Event var1) {
+      Table var2 = (Table)var1.widget;
+      TableItem var3 = var2.getItem(new Point(var1.x, var1.y));
+      if (var3 != null) {
+         if (this.hoverTableItem != null && this.hoverTableItem != var3) {
+            this.hoverTableItem.setBackground(null);
+         }
 
-  public void createItems() {
-
-    for (int i = 0; i < rightIDs.length(); i++) {
-      TableItem tableItem = new TableItem(table, SWT.NONE);
-      int IDnum = rightIDs.charAt(i) - IDSelector.MAGIC_NUMBER;
-      tableItem.setData("ID", SResources.S_ES + rightIDs.charAt(i));
-      tableItem.setText(SResources.getString(legend[IDnum]));
-      tableItem.setChecked(true);
-    }
-
-    for (int i = 0; i < leftIDs.length(); i++) {
-      TableItem tableItem = new TableItem(table, SWT.NONE);
-      int IDnum = leftIDs.charAt(i) - IDSelector.MAGIC_NUMBER;
-      tableItem.setData("ID", SResources.S_ES + leftIDs.charAt(i));
-      tableItem.setText(SResources.getString(legend[IDnum]));
-    }
-
-  }
-
-  public void createButtons(Composite parent) {
-    Composite buttonComposite = new Composite(parent, SWT.NONE);
-    buttonComposite.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 5, 5, false));
-    buttonComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-    Button moveUp = new Button(buttonComposite, SWT.NONE);
-    moveUp.setText(SResources.getString("l.up"));
-    moveUp.setLayoutData(new GridData(GridData.FILL_BOTH));
-    moveUp.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        int index;
-        if ((index = table.getSelectionIndex()) > 0)
-          moveItem(index, -1);
+         if (this.dragging) {
+            this.hoverTableItem = var3;
+            this.hoverTableItem.setBackground(var2.getDisplay().getSystemColor(22));
+         }
+      } else {
+         this.dragging = false;
+         if (this.hoverTableItem != null && !this.hoverTableItem.isDisposed()) {
+            this.hoverTableItem.setBackground(null);
+            this.hoverTableItem = null;
+         }
       }
-    });
+   }
 
-    Button moveDown = new Button(buttonComposite, SWT.NONE);
-    moveDown.setText(SResources.getString("l.down"));
-    moveDown.setLayoutData(new GridData(GridData.FILL_BOTH));
-    moveDown.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        int index = table.getSelectionIndex();
-        if (index  < table.getItemCount() - 1 && index > -1)
-          moveItem(index, 1);
+   public void onMouseUp(Event var1) {
+      Table var2 = (Table)var1.widget;
+      TableItem var3 = var2.getItem(new Point(var1.x, var1.y));
+      if (this.dragging) {
+         if (this.hoverTableItem != null && var2.getSelection().length > 0) {
+            TableItem var4 = var2.getSelection()[0];
+            if (var4 != var3) {
+               int var5 = var2.getSelectionIndex();
+               boolean var6 = var4.getChecked();
+               String var7 = (String)var4.getData("ID");
+               int var8 = var7.charAt(0) - 'A';
+               var2.remove(var5);
+               int var9 = var2.indexOf(this.hoverTableItem) + 1;
+               TableItem var10 = new TableItem(var2, 0, var9);
+               var10.setData("ID", var7);
+               var10.setText(SResources.getString(this.legend[var8]));
+               var10.setChecked(var6);
+               var2.setSelection(var9);
+               this.hoverTableItem.setBackground(null);
+               this.hoverTableItem = null;
+            }
+         }
+
+         this.dragging = false;
       }
-    });
-  }
+   }
 
-  public void moveItem(int index, int increment) {
-    TableItem tableItem = table.getItem(index);
-    boolean isChecked = tableItem.getChecked();
-    String ID = (String) tableItem.getData("ID");
-    int IDnum = ID.charAt(0) - IDSelector.MAGIC_NUMBER;
-    table.remove(index);
-
-    TableItem newTableItem = new TableItem(table, SWT.NONE, index + increment);
-    newTableItem.setData("ID", ID);
-    newTableItem.setText(SResources.getString(legend[IDnum]));
-    newTableItem.setChecked(isChecked);
-
-    table.setSelection(index + increment);
-  }
-
-  /**
-   * savePrefs
-   */
-  public void savePrefs() {
-    if (rightIDs.length() > 1) {
-      PreferenceStore p = PreferenceLoader.getPreferenceStore();
-      p.setValue(prefOption, rightIDs);
-      p.setValue(prefOptionOff, leftIDs);
-      PreferenceLoader.saveStore();
-    }
-
-    if (Sancho.getCore() != null)
-      Sancho.getCore().updatePreferences();
-  }
-
-  /**
-   * refreshLists
-   */
-  public void refreshLists() {
-    TableItem[] tableItems = table.getItems();
-    leftIDs = SResources.S_ES;
-    rightIDs = SResources.S_ES;
-    for (int i = 0; i < tableItems.length; i++) {
-      if (tableItems[i].getChecked())
-        rightIDs += (String) tableItems[i].getData("ID");
-      else
-        leftIDs += (String) tableItems[i].getData("ID");
-    }
-  }
-
-  protected void buttonPressed(int buttonId) {
-    refreshLists();
-    super.buttonPressed(buttonId);
-  }
-
-  public static String createIDString(String[] legend) {
-    String result = "";
-
-    for (int i = 0; i < legend.length; i++)
-      result += String.valueOf((char) (IDSelector.MAGIC_NUMBER + i));
-
-    return result;
-  }
-
-  public static String getID(int i) {
-    return String.valueOf((char) (IDSelector.MAGIC_NUMBER + i));
-  }
-
-  public static String loadIDs(String prefString, String allIDs) {
-    String prefStringOff = prefString + "Off";
-
-    String savedIDs = PreferenceLoader.loadString(prefString);
-    String savedOffIDs = PreferenceLoader.loadString(prefStringOff);
-
-    for (int i = 0; i < savedIDs.length(); i++) {
-      if (allIDs.indexOf(savedIDs.charAt(i)) == -1) {
-        PreferenceStore p = PreferenceLoader.getPreferenceStore();
-        p.setValue(prefString, allIDs);
-        p.setValue(prefStringOff, "");
-        return allIDs;
+   public void onMouseDown(Event var1) {
+      Table var2 = (Table)var1.widget;
+      TableItem var3 = var2.getItem(new Point(var1.x, var1.y));
+      if (var3 != null) {
+         this.dragging = true;
+         this.hoverTableItem = null;
       }
-    }
-    
-    for (int i = 0; i < savedOffIDs.length(); i++) {
-      if (allIDs.indexOf(savedOffIDs.charAt(i)) == -1) {
-        PreferenceStore p = PreferenceLoader.getPreferenceStore();
-        savedOffIDs="";
-        p.setValue(prefStringOff, "");
+   }
+
+   public void createItems() {
+      for (int var1 = 0; var1 < this.rightIDs.length(); var1++) {
+         TableItem var2 = new TableItem(this.table, 0);
+         int var3 = this.rightIDs.charAt(var1) - 'A';
+         var2.setData("ID", "" + this.rightIDs.charAt(var1));
+         var2.setText(SResources.getString(this.legend[var3]));
+         var2.setChecked(true);
       }
-    }
-    
 
-    for (int i = 0; i < allIDs.length(); i++) {
-      if ((savedIDs.indexOf(allIDs.charAt(i)) == -1) && (savedOffIDs.indexOf(allIDs.charAt(i)) == -1))
-        savedIDs += allIDs.charAt(i);
-    }
+      for (int var5 = 0; var5 < this.leftIDs.length(); var5++) {
+         TableItem var6 = new TableItem(this.table, 0);
+         int var4 = this.leftIDs.charAt(var5) - 'A';
+         var6.setData("ID", "" + this.leftIDs.charAt(var5));
+         var6.setText(SResources.getString(this.legend[var4]));
+      }
+   }
 
-    String tmp = "";
-    for (int i = 0; i < savedIDs.length(); i++) {
-      if ((savedOffIDs.indexOf(savedIDs.charAt(i)) == -1))
-        tmp += savedIDs.charAt(i);
-    }
+   public void createButtons(Composite var1) {
+      Composite var2 = new Composite(var1, 0);
+      var2.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 5, 5, false));
+      var2.setLayoutData(new GridData(1808));
+      Button var3 = new Button(var2, 0);
+      var3.setText(SResources.getString("l.up"));
+      var3.setLayoutData(new GridData(1808));
+      var3.addSelectionListener(new IDSelector$3(this));
+      Button var4 = new Button(var2, 0);
+      var4.setText(SResources.getString("l.down"));
+      var4.setLayoutData(new GridData(1808));
+      var4.addSelectionListener(new IDSelector$4(this));
+   }
 
-    savedIDs = tmp;
+   public void moveItem(int var1, int var2) {
+      TableItem var3 = this.table.getItem(var1);
+      boolean var4 = var3.getChecked();
+      String var5 = (String)var3.getData("ID");
+      int var6 = var5.charAt(0) - 'A';
+      this.table.remove(var1);
+      TableItem var7 = new TableItem(this.table, 0, var1 + var2);
+      var7.setData("ID", var5);
+      var7.setText(SResources.getString(this.legend[var6]));
+      var7.setChecked(var4);
+      this.table.setSelection(var1 + var2);
+   }
 
-    PreferenceStore p = PreferenceLoader.getPreferenceStore();
-    p.setValue(prefString, savedIDs);
-    p.setValue(prefStringOff, savedOffIDs);
-    
-    //  PreferenceLoader.saveStore();
+   public void savePrefs() {
+      if (this.rightIDs.length() > 1) {
+         PreferenceStore var1 = PreferenceLoader.getPreferenceStore();
+         var1.setValue(this.prefOption, this.rightIDs);
+         var1.setValue(this.prefOptionOff, this.leftIDs);
+         PreferenceLoader.saveStore();
+      }
 
-    return savedIDs;
-  }
+      if (Sancho.getCore() != null) {
+         Sancho.getCore().updatePreferences();
+      }
+   }
 
+   public void refreshLists() {
+      TableItem[] var1 = this.table.getItems();
+      this.leftIDs = "";
+      this.rightIDs = "";
+
+      for (int var2 = 0; var2 < var1.length; var2++) {
+         if (var1[var2].getChecked()) {
+            this.rightIDs = this.rightIDs + (String)var1[var2].getData("ID");
+         } else {
+            this.leftIDs = this.leftIDs + (String)var1[var2].getData("ID");
+         }
+      }
+   }
+
+   protected void buttonPressed(int var1) {
+      this.refreshLists();
+      super.buttonPressed(var1);
+   }
+
+   public static String createIDString(String[] var0) {
+      StringBuffer var1 = new StringBuffer();
+
+      for (int var2 = 0; var2 < var0.length; var2++) {
+         var1.append(String.valueOf((char)(65 + var2)));
+      }
+
+      return var1.toString().intern();
+   }
+
+   public static String getID(int var0) {
+      return String.valueOf((char)(65 + var0));
+   }
+
+   public static String loadIDs(String var0, String var1) {
+      String var2 = var0 + "Off";
+      String var3 = PreferenceLoader.loadString(var0);
+      String var4 = PreferenceLoader.loadString(var2);
+
+      for (int var5 = 0; var5 < var3.length(); var5++) {
+         if (var1.indexOf(var3.charAt(var5)) == -1) {
+            PreferenceStore var6 = PreferenceLoader.getPreferenceStore();
+            var6.setValue(var0, var1);
+            var6.setValue(var2, "");
+            return var1;
+         }
+      }
+
+      for (int var11 = 0; var11 < var4.length(); var11++) {
+         if (var1.indexOf(var4.charAt(var11)) == -1) {
+            PreferenceStore var7 = PreferenceLoader.getPreferenceStore();
+            var4 = "";
+            var7.setValue(var2, "");
+         }
+      }
+
+      for (int var12 = 0; var12 < var1.length(); var12++) {
+         if (var3.indexOf(var1.charAt(var12)) == -1 && var4.indexOf(var1.charAt(var12)) == -1) {
+            var3 = var3 + var1.charAt(var12);
+         }
+      }
+
+      String var8 = "";
+
+      for (int var9 = 0; var9 < var3.length(); var9++) {
+         if (var4.indexOf(var3.charAt(var9)) == -1) {
+            var8 = var8 + var3.charAt(var9);
+         }
+      }
+
+      PreferenceStore var10 = PreferenceLoader.getPreferenceStore();
+      var10.setValue(var0, var8);
+      var10.setValue(var2, var4);
+      return var8.intern();
+   }
+
+   // $VF: synthetic method
+   static String access$002(IDSelector var0, String var1) {
+      return var0.rightIDs = var1;
+   }
+
+   // $VF: synthetic method
+   static String access$100(IDSelector var0) {
+      return var0.allIDs;
+   }
+
+   // $VF: synthetic method
+   static String access$202(IDSelector var0, String var1) {
+      return var0.leftIDs = var1;
+   }
+
+   // $VF: synthetic method
+   static Table access$300(IDSelector var0) {
+      return var0.table;
+   }
 }

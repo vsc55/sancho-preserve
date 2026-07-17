@@ -1,254 +1,217 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view;
 
 import gnu.trove.TIntObjectHashMap;
-
-import java.util.Observable;
-import java.util.Observer;
-
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabFolder2Adapter;
-import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
-
 import sancho.core.Sancho;
 import sancho.model.mldonkey.Room;
 import sancho.model.mldonkey.User;
 import sancho.model.mldonkey.enums.EnumMessage;
 import sancho.model.mldonkey.enums.EnumRoomState;
 import sancho.model.mldonkey.utility.RoomMessage;
+import sancho.utility.MyObservable;
+import sancho.utility.MyObserver;
 import sancho.view.console.RoomConsole;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.rooms.RoomsViewFrame;
 import sancho.view.rooms.roomConsole.RoomConsoleViewFrame;
 import sancho.view.rooms.roomUsers.RoomUsersViewFrame;
 import sancho.view.utility.AbstractTab;
-import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
 import sancho.view.viewFrame.SashViewFrame;
-import sancho.view.viewFrame.SashViewListener;
 
-public class RoomsTab extends AbstractTab implements Observer {
-  protected CTabFolder cTabFolder;
-  protected RoomCTabFolderViewFrame cTabFolderViewFrame;
-  protected TIntObjectHashMap roomTabMap;
+public class RoomsTab extends AbstractTab implements MyObserver {
+   protected CTabFolder cTabFolder;
+   protected RoomsTab$RoomCTabFolderViewFrame cTabFolderViewFrame;
+   protected TIntObjectHashMap roomTabMap;
 
-  public RoomsTab(MainWindow mainWindow, String prefString) {
-    super(mainWindow, prefString);
-  }
+   public RoomsTab(MainWindow var1, String var2) {
+      super(var1, var2);
+   }
 
-  public void closeAllClosedRooms() {
-    Object[] oA = roomTabMap.getValues();
-    for (int i = 0; i < oA.length; i++) {
-      CTabItem cTabItem = (CTabItem) oA[i];
-      Room room = (Room) cTabItem.getData("room");
-      if (room.getRoomState() == EnumRoomState.CLOSED)
-        closeTab(cTabItem);
-    }
-  }
+   public void closeAllClosedRooms() {
+      Object[] var1 = this.roomTabMap.getValues();
 
-  public void closeAllTabs() {
-    Object[] oA = roomTabMap.getValues();
-    for (int i = 0; i < oA.length; i++) {
-      CTabItem cTabItem = (CTabItem) oA[i];
-      closeTab(cTabItem);
-    }
-    roomTabMap.clear();
-  }
-
-  public void closeTab(CTabItem cTabItem) {
-    Room room = (Room) cTabItem.getData("room");
-    RoomUsersViewFrame roomUsersViewFrame = (RoomUsersViewFrame) cTabItem.getData("roomUsersViewFrame");
-    SashViewFrame consoleViewFrame = (SashViewFrame) cTabItem.getData("consoleViewFrame");
-    removeViewFrame(roomUsersViewFrame);
-    removeViewFrame(consoleViewFrame);
-    roomTabMap.remove(room.getId());
-    room.close();
-    ((SashForm) cTabItem.getData("roomSashForm")).dispose();
-    ((RoomConsole) cTabItem.getData("roomConsole")).dispose();
-    cTabItem.dispose();
-    cTabFolderViewFrame.updateCLabelText(SResources.S_ES);
-  }
-
-  public void closeTab(int roomNumber) {
-    if (roomTabMap.contains(roomNumber))
-      closeTab((CTabItem) roomTabMap.get(roomNumber));
-  }
-
-  protected void createContents(Composite parent) {
-    roomTabMap = new TIntObjectHashMap();
-    String sashPrefString = "roomsSash";
-    SashForm sashForm = WidgetFactory.createSashForm(parent, sashPrefString);
-    addViewFrame(new RoomsViewFrame(sashForm, "t.r.availableRooms", "tab.rooms.buttonSmall", this));
-    this.createRoomsCTabFolder(sashForm);
-    WidgetFactory.loadSashForm(sashForm, sashPrefString);
-    onConnect();
-  }
-
-  public void createRoomsCTabFolder(SashForm parent) {
-    cTabFolderViewFrame = new RoomCTabFolderViewFrame(parent, "t.r.rooms", "tab.rooms.buttonSmall", this);
-    addViewFrame(cTabFolderViewFrame);
-    int style = PreferenceLoader.loadBoolean("roomsCTabFolderTabsOnTop") ? SWT.TOP : SWT.BOTTOM;
-    cTabFolder = WidgetFactory.createCTabFolder(cTabFolderViewFrame.getChildComposite(), SWT.CLOSE | SWT.FLAT | style);
-    WidgetFactory.addCTabFolderMenu(cTabFolder, "roomsCTabFolder");
-
-    cTabFolder.setBorderVisible(false);
-    cTabFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
-      public void close(CTabFolderEvent e) {
-        closeTab((CTabItem) e.item);
+      for (int var2 = 0; var2 < var1.length; var2++) {
+         CTabItem var3 = (CTabItem)var1[var2];
+         Room var4 = (Room)var3.getData("room");
+         if (var4.getRoomState() == EnumRoomState.CLOSED) {
+            this.closeTab(var3);
+         }
       }
-    });
-    cTabFolder.addSelectionListener(new SelectionAdapter() {
-      public void widgetSelected(SelectionEvent e) {
-        setCTabFolderSelection((CTabItem) e.item);
-      }
-    });
-  }
+   }
 
-  public void onConnect() {
-    super.onConnect();
-    if (Sancho.hasCollectionFactory()) {
-      getCore().getRoomCollection().addObserver(this);
-      Room[] roomArray = getCore().getRoomCollection().getAllOpenRooms();
-      for (int i = 0; i < roomArray.length; i++)
-        openTab(roomArray[i]);
-    }
-  }
-
-  public void openTab(int roomNumber) {
-    Room room = getCore().getRoomCollection().getRoom(roomNumber);
-    if (room != null)
-      openTab(room);
-  }
-
-  public void openTab(Room room) {
-
-    CTabItem tabItem = new CTabItem(cTabFolder, SWT.NONE);
-    tabItem.setText(room.getName());
-    roomTabMap.put(room.getId(), tabItem);
-    String sashPrefString = "roomSash";
-    SashForm sashForm = WidgetFactory.createSashForm(cTabFolder, sashPrefString);
-    RoomUsersViewFrame roomUsersViewFrame = new RoomUsersViewFrame(sashForm, "t.r.roomUsers",
-        "tab.friends.buttonSmall", this, room);
-    roomUsersViewFrame.setActive(true);
-    roomUsersViewFrame.setVisible(true);
-    addViewFrame(roomUsersViewFrame);
-    RoomConsoleViewFrame consoleViewFrame = new RoomConsoleViewFrame(sashForm, "t.r.roomConsole",
-        "tab.console.buttonSmall", this);
-    RoomConsole roomConsole = new RoomConsole(consoleViewFrame.getChildComposite(), SWT.WRAP, room.getId());
-    WidgetFactory.loadSashForm(sashForm, sashPrefString);
-    tabItem.setData("roomSashForm", sashForm);
-    tabItem.setData("roomUsersViewFrame", roomUsersViewFrame);
-    tabItem.setData("roomConsoleViewFrame", consoleViewFrame);
-    tabItem.setData("roomConsole", roomConsole);
-    tabItem.setData("room", room);
-    tabItem.setControl(sashForm);
-    if (cTabFolder.getSelection() == null) {
-      cTabFolder.setSelection(tabItem);
-      setCTabFolderSelection(tabItem);
-    }
-  }
-
-  public void processRoom(Room room) {
-    if (room.getRoomState() == EnumRoomState.OPEN && !roomTabMap.contains(room.getId()))
-      openTab(room);
-    else {
-      if (room.getRoomState() == EnumRoomState.CLOSED && roomTabMap.contains(room.getId())
-          && PreferenceLoader.loadBoolean("autoCloseRooms"))
-        closeTab(room.getId());
-    }
-  }
-
-  public void processRoomMessage(RoomMessage roomMessage) {
-    String messageText = SResources.S_ES;
-    EnumMessage enumMessage = roomMessage.getMessageType();
-
-    if (enumMessage == EnumMessage.PRIVATE)
-      messageText = "(private) ";
-    if (enumMessage == EnumMessage.SERVER || enumMessage == EnumMessage.PRIVATE
-        || enumMessage == EnumMessage.PUBLIC) {
-
-      if (roomMessage.getFrom() > 0) {
-        User user = (User) getCore().getUserCollection().get(roomMessage.getFrom());
-        messageText += "<" + user.getName() + "> ";
+   public void dispose() {
+      if (Sancho.hasCollectionFactory()) {
+         this.getCore().getRoomCollection().deleteObserver(this);
       }
 
-      messageText += roomMessage.getMessage();
-      if (!roomTabMap.contains(roomMessage.getRoomNumber()) && PreferenceLoader.loadBoolean("autoOpenRooms"))
-        openTab(roomMessage.getRoomNumber());
-      if (roomTabMap.contains(roomMessage.getRoomNumber())) {
-        CTabItem c = (CTabItem) roomTabMap.get(roomMessage.getRoomNumber());
-        RoomConsole roomConsole = (RoomConsole) c.getData("roomConsole");
-        roomConsole.append(messageText + roomConsole.getLineDelimiter());
+      if (this.cTabFolder != null && !this.cTabFolder.isDisposed()) {
+         CTabItem[] var1 = this.cTabFolder.getItems();
+
+         for (int var2 = 0; var2 < var1.length; var2++) {
+            var1[var2].dispose();
+         }
+
+         this.cTabFolder.dispose();
+         this.cTabFolder = null;
       }
-    }
-  }
 
-  public void runUpdate(Observable o, Object obj) {
-    if (cTabFolder == null || cTabFolder.isDisposed())
-      return;
-    if (obj instanceof RoomMessage)
-      processRoomMessage((RoomMessage) obj);
-    else if (obj instanceof Room)
-      processRoom((Room) obj);
-  }
+      super.dispose();
+   }
 
-  public void setCTabFolderSelection(CTabItem cTabItem) {
-    Room room = (Room) cTabItem.getData("room");
-    RoomConsole roomConsole = (RoomConsole) cTabItem.getData("roomConsole");
-    cTabFolderViewFrame.updateCLabelText(room.getName());
-    roomConsole.setFocus();
-  }
+   public void closeAllTabs() {
+      Object[] var1 = this.roomTabMap.getValues();
 
-  public void update(final Observable o, final Object obj) {
-    if (getContent() != null && !getContent().isDisposed())
-      getContent().getDisplay().asyncExec(new Runnable() {
-        public void run() {
-          runUpdate(o, obj);
-        }
-      });
-  }
+      for (int var2 = 0; var2 < var1.length; var2++) {
+         CTabItem var3 = (CTabItem)var1[var2];
+         this.closeTab(var3);
+      }
 
-  static class RoomCTabFolderViewListener extends SashViewListener {
-    public RoomCTabFolderViewListener(SashViewFrame sashViewFrame) {
-      super(sashViewFrame);
-    }
+      this.roomTabMap.clear();
+   }
 
-    public void menuAboutToShow(IMenuManager menuManager) {
-      createSashActions(menuManager, "t.r.availableRooms");
-    }
-  }
+   public void closeTab(CTabItem var1) {
+      Room var2 = (Room)var1.getData("room");
+      RoomUsersViewFrame var3 = (RoomUsersViewFrame)var1.getData("roomUsersViewFrame");
+      SashViewFrame var4 = (SashViewFrame)var1.getData("consoleViewFrame");
+      this.removeViewFrame(var3);
+      this.removeViewFrame(var4);
+      this.roomTabMap.remove(var2.getId());
+      var2.close();
+      ((SashForm)var1.getData("roomSashForm")).dispose();
+      ((RoomConsole)var1.getData("roomConsole")).dispose();
+      var1.dispose();
+      this.cTabFolderViewFrame.updateCLabelText("");
+   }
 
-  class RoomCTabFolderViewFrame extends SashViewFrame {
-    public RoomCTabFolderViewFrame(SashForm parentSashForm, String prefString, String prefImageString,
-        AbstractTab aTab) {
-      super(parentSashForm, prefString, prefImageString, aTab);
-      createViewListener(new RoomCTabFolderViewListener(this));
-      createViewToolBar();
-    }
+   public void closeTab(int var1) {
+      if (this.roomTabMap.contains(var1)) {
+         this.closeTab((CTabItem)this.roomTabMap.get(var1));
+      }
+   }
 
-    public void createViewToolBar() {
-      super.createViewToolBar();
-      addToolItem("t.r.closeClosed", "x-light", new SelectionAdapter() {
-        public void widgetSelected(SelectionEvent s) {
-          closeAllClosedRooms();
-        }
-      });
-      addToolItem("t.r.closeAll", "x", new SelectionAdapter() {
-        public void widgetSelected(SelectionEvent s) {
-          closeAllTabs();
-        }
-      });
-    }
-  }
+   protected void createContents(Composite var1) {
+      this.roomTabMap = new TIntObjectHashMap();
+      String var2 = "roomsSash";
+      SashForm var3 = WidgetFactory.createSashForm(var1, var2);
+      this.addViewFrame(new RoomsViewFrame(var3, "t.r.availableRooms", "tab.rooms.buttonSmall", this));
+      this.createRoomsCTabFolder(var3);
+      WidgetFactory.loadSashForm(var3, var2);
+      this.onConnect();
+   }
+
+   public void createRoomsCTabFolder(SashForm var1) {
+      this.cTabFolderViewFrame = new RoomsTab$RoomCTabFolderViewFrame(this, var1, "t.r.rooms", "tab.rooms.buttonSmall", this);
+      this.addViewFrame(this.cTabFolderViewFrame);
+      int var2 = PreferenceLoader.loadBoolean("roomsCTabFolderTabsOnTop") ? 128 : 1024;
+      this.cTabFolder = WidgetFactory.createCTabFolder(this.cTabFolderViewFrame.getChildComposite(), 8388672 | var2);
+      WidgetFactory.addCTabFolderMenu(this.cTabFolder, "roomsCTabFolder");
+      this.cTabFolder.setBorderVisible(false);
+      this.cTabFolder.addCTabFolder2Listener(new RoomsTab$1(this));
+      this.cTabFolder.addSelectionListener(new RoomsTab$2(this));
+   }
+
+   public void onConnect() {
+      super.onConnect();
+      if (Sancho.hasCollectionFactory()) {
+         this.getCore().getRoomCollection().addObserver(this);
+         Room[] var1 = this.getCore().getRoomCollection().getAllOpenRooms();
+
+         for (int var2 = 0; var2 < var1.length; var2++) {
+            this.openTab(var1[var2]);
+         }
+      }
+   }
+
+   public void openTab(int var1) {
+      Room var2 = this.getCore().getRoomCollection().getRoom(var1);
+      if (var2 != null) {
+         this.openTab(var2);
+      }
+   }
+
+   public void openTab(Room var1) {
+      CTabItem var2 = new CTabItem(this.cTabFolder, 0);
+      var2.setText(var1.getName());
+      this.roomTabMap.put(var1.getId(), var2);
+      String var3 = "roomSash";
+      SashForm var4 = WidgetFactory.createSashForm(this.cTabFolder, var3);
+      RoomUsersViewFrame var5 = new RoomUsersViewFrame(var4, "t.r.roomUsers", "tab.friends.buttonSmall", this, var1);
+      var5.setActive(true);
+      var5.setVisible(true);
+      this.addViewFrame(var5);
+      RoomConsoleViewFrame var6 = new RoomConsoleViewFrame(var4, "t.r.roomConsole", "tab.console.buttonSmall", this);
+      RoomConsole var7 = new RoomConsole(var6.getChildComposite(), 64, var1.getId());
+      WidgetFactory.loadSashForm(var4, var3);
+      var2.setData("roomSashForm", var4);
+      var2.setData("roomUsersViewFrame", var5);
+      var2.setData("roomConsoleViewFrame", var6);
+      var2.setData("roomConsole", var7);
+      var2.setData("room", var1);
+      var2.setControl(var4);
+      if (this.cTabFolder.getSelection() == null) {
+         this.cTabFolder.setSelection(var2);
+         this.setCTabFolderSelection(var2);
+      }
+   }
+
+   public void processRoom(Room var1) {
+      if (var1.getRoomState() == EnumRoomState.OPEN && !this.roomTabMap.contains(var1.getId())) {
+         this.openTab(var1);
+      } else if (var1.getRoomState() == EnumRoomState.CLOSED && this.roomTabMap.contains(var1.getId()) && PreferenceLoader.loadBoolean("autoCloseRooms")) {
+         this.closeTab(var1.getId());
+      }
+   }
+
+   public void processRoomMessage(RoomMessage var1) {
+      String var2 = "";
+      EnumMessage var3 = var1.getMessageType();
+      if (var3 == EnumMessage.PRIVATE) {
+         var2 = "(private) ";
+      }
+
+      if (var3 == EnumMessage.SERVER || var3 == EnumMessage.PRIVATE || var3 == EnumMessage.PUBLIC) {
+         if (var1.getFrom() > 0) {
+            User var4 = (User)this.getCore().getUserCollection().get(var1.getFrom());
+            var2 = var2 + "<" + var4.getName() + "> ";
+         }
+
+         var2 = var2 + var1.getMessage();
+         if (!this.roomTabMap.contains(var1.getRoomNumber()) && PreferenceLoader.loadBoolean("autoOpenRooms")) {
+            this.openTab(var1.getRoomNumber());
+         }
+
+         if (this.roomTabMap.contains(var1.getRoomNumber())) {
+            CTabItem var7 = (CTabItem)this.roomTabMap.get(var1.getRoomNumber());
+            RoomConsole var5 = (RoomConsole)var7.getData("roomConsole");
+            var5.append(var2 + var5.getLineDelimiter());
+         }
+      }
+   }
+
+   public void runUpdate(MyObservable var1, Object var2) {
+      if (this.cTabFolder != null && !this.cTabFolder.isDisposed()) {
+         if (var2 instanceof RoomMessage) {
+            this.processRoomMessage((RoomMessage)var2);
+         } else if (var2 instanceof Room) {
+            this.processRoom((Room)var2);
+         }
+      }
+   }
+
+   public void setCTabFolderSelection(CTabItem var1) {
+      Room var2 = (Room)var1.getData("room");
+      RoomConsole var3 = (RoomConsole)var1.getData("roomConsole");
+      this.cTabFolderViewFrame.updateCLabelText(var2.getName());
+      var3.setFocus();
+   }
+
+   public void update(MyObservable var1, Object var2, int var3) {
+      if (this.getContent() != null && !this.getContent().isDisposed()) {
+         this.getContent().getDisplay().asyncExec(new RoomsTab$3(this, var1, var2));
+      }
+   }
 }

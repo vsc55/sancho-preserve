@@ -1,34 +1,37 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
 
-import java.util.Observable;
-
 import sancho.model.mldonkey.utility.MessageBuffer;
+import sancho.utility.MyObservable;
+import sancho.utility.SwissArmy;
 
-public class ConsoleMessage extends Observable implements IObject {
+public class ConsoleMessage extends MyObservable implements IObject {
+   private final int MAX_SIZE = 262136;
+   private StringBuffer message = new StringBuffer();
 
-  private static final int MAX_SIZE = 32767 * 8;
-  private StringBuffer message = new StringBuffer();
+   public synchronized String getMessage() {
+      String var1 = this.message.toString();
+      this.message = new StringBuffer();
+      return var1;
+   }
 
-  public synchronized String getMessage() {
-    String string = message.toString();
-    message.setLength(0);
-    return string;
-  }
+   public void read(MessageBuffer var1) {
+      String var2 = null;
+      synchronized (this) {
+         if (this.message.length() > 262136) {
+            this.message.setLength(0);
+         }
 
-  // guiEncoding#console
-  public void read(MessageBuffer messageBuffer) {
-    synchronized (this) {
-      if (message.length() > MAX_SIZE)
-        message.setLength(0);
-      message.append(messageBuffer.getString());
-    }
-    this.setChanged();
-    this.notifyObservers(this);
-  }
+         String var4 = SwissArmy.disableUTF8 ? var1.getString(false) : var1.getString();
+         this.message.append(var4);
+         if (this.countObservers() > 0) {
+            var2 = this.message.toString();
+            this.message = new StringBuffer();
+         }
+      }
 
+      if (var2 != null) {
+         this.setChanged();
+         this.notifyObservers(var2);
+      }
+   }
 }

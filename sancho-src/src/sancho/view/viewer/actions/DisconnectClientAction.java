@@ -1,28 +1,21 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.viewer.actions;
 
 import org.eclipse.jface.action.Action;
-
 import sancho.model.mldonkey.Client;
 import sancho.view.utility.SResources;
 
 public class DisconnectClientAction extends Action {
+   Client[] clientArray;
 
-  Client[] clientArray;
+   public DisconnectClientAction(Client[] var1) {
+      super(SResources.getString("mi.disconnectClient"));
+      this.setImageDescriptor(SResources.getImageDescriptor("menu-disconnect"));
+      this.clientArray = var1;
+   }
 
-  public DisconnectClientAction(Client[] clientArray) {
-    super(SResources.getString("mi.disconnectClient"));
-    setImageDescriptor(SResources.getImageDescriptor("menu-disconnect"));
-    this.clientArray = clientArray;
-  }
-
-  public void run() {
-    for (int i = 0; i < clientArray.length; i++) {
-      clientArray[i].disconnect();
-    }
-  }
+   public void run() {
+      for (int var1 = 0; var1 < this.clientArray.length; var1++) {
+         this.clientArray[var1].disconnect();
+      }
+   }
 }

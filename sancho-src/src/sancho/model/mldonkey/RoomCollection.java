@@ -1,102 +1,73 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey;
-
-import gnu.trove.TObjectProcedure;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import sancho.core.ICore;
 import sancho.core.Sancho;
-import sancho.model.mldonkey.enums.EnumRoomState;
 import sancho.model.mldonkey.utility.MessageBuffer;
 import sancho.model.mldonkey.utility.RoomMessage;
 import sancho.model.mldonkey.utility.UtilityFactory;
 
 public class RoomCollection extends ACollection_Int2 {
+   RoomCollection(ICore var1) {
+      super(var1);
+   }
 
-  RoomCollection(ICore core) {
-    super(core);
-  }
-
-  public void addUser(MessageBuffer messageBuffer) {
-    int roomNumber = messageBuffer.getInt32();
-    int userNumber = messageBuffer.getInt32();
-
-    if (containsKey(roomNumber)) {
-      Room room = (Room) get(roomNumber);
-      if (core.getUserCollection().containsKey(userNumber)) {
-        room.addUser((User) core.getUserCollection().get(userNumber));
-      } else {
-        Sancho.pDebug("RDE");
+   public void addUser(MessageBuffer var1) {
+      int var2 = var1.getInt32();
+      int var3 = var1.getInt32();
+      if (this.containsKey(var2)) {
+         Room var4 = (Room)this.get(var2);
+         if (this.core.getUserCollection().containsKey(var3)) {
+            var4.addUser((User)this.core.getUserCollection().get(var3));
+         } else {
+            Sancho.pDebug("RDE");
+         }
       }
-    }
-  }
+   }
 
-  public Room[] getAllOpenRooms() {
-    GetAllOpenRooms getAllOpenRooms = new GetAllOpenRooms();
-    forEachValue(getAllOpenRooms);
-    Room[] roomArray = new Room[getAllOpenRooms.getRoomList().size()];
-    getAllOpenRooms.getRoomList().toArray(roomArray);
-    return roomArray;
-  }
+   public Room[] getAllOpenRooms() {
+      RoomCollection$GetAllOpenRooms var1 = new RoomCollection$GetAllOpenRooms();
+      this.forEachValue(var1);
+      Room[] var2 = new Room[var1.getRoomList().size()];
+      var1.getRoomList().toArray(var2);
+      return var2;
+   }
 
-  public Room getRoom(int key) {
-    return (Room) super.get(key);
-  }
+   public Room getRoom(int var1) {
+      return (Room)super.get(var1);
+   }
 
-  public void read(MessageBuffer messageBuffer) {
+   public void read(MessageBuffer var1) {
+      int var2 = var1.getInt32();
+      Room var3 = (Room)this.get(var2);
+      if (var3 != null) {
+         var3.read(var2, var1);
+         this.addToUpdated(var3);
+      } else {
+         var3 = this.core.getCollectionFactory().getRoom();
+         var3.read(var2, var1);
+         this.put(var2, var3);
+         this.addToAdded(var3);
+      }
 
-    int roomNumber = messageBuffer.getInt32();
-    Room room = (Room) get(roomNumber);
-    if (room != null) {
-      room.read(roomNumber, messageBuffer);
-      addToUpdated(room);
-    } else {
-      room = core.getCollectionFactory().getRoom();
-      room.read(roomNumber, messageBuffer);
-      put(roomNumber, room);
-      addToAdded(room);
-    }
+      this.setChanged();
+      this.notifyObservers(var3);
+   }
 
-    this.setChanged();
-    this.notifyObservers(room);
-  }
+   public void removeUser(MessageBuffer var1) {
+      int var2 = var1.getInt32();
+      int var3 = var1.getInt32();
+      if (this.containsKey(var2)) {
+         Room var4 = (Room)this.get(var2);
+         if (this.core.getUserCollection().containsKey(var3)) {
+            var4.removeUser((User)this.core.getUserCollection().get(var3));
+         }
+      }
+   }
 
-  public void removeUser(MessageBuffer messageBuffer) {
-    int roomNumber = messageBuffer.getInt32();
-    int userNumber = messageBuffer.getInt32();
-    if (containsKey(roomNumber)) {
-      Room room = (Room) get(roomNumber);
-      if (core.getUserCollection().containsKey(userNumber))
-        room.removeUser((User) core.getUserCollection().get(userNumber));
-    }
-  }
-
-  public void roomMessage(MessageBuffer messageBuffer) {
-    RoomMessage roomMessage = UtilityFactory.getRoomMessage(core);
-    roomMessage.read(messageBuffer);
-    this.setChanged();
-    this.notifyObservers(roomMessage);
-  }
-
-  static class GetAllOpenRooms implements TObjectProcedure {
-    List roomList = new ArrayList();
-
-    public boolean execute(Object object) {
-      Room room = (Room) object;
-      if (room.getRoomState() == EnumRoomState.OPEN)
-        roomList.add(room);
-      return true;
-    }
-
-    public List getRoomList() {
-      return roomList;
-    }
-  }
-
+   public void roomMessage(MessageBuffer var1) {
+      RoomMessage var2 = UtilityFactory.getRoomMessage(this.core);
+      var2.read(var1);
+      this.setChanged();
+      this.notifyObservers(var2);
+   }
 }

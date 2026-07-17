@@ -1,54 +1,44 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.friends.clientDirectories;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-
 import sancho.view.friends.clientFiles.ClientFilesTableView;
 import sancho.view.viewer.table.GTableMenuListener;
 import sancho.view.viewer.table.GTableView;
 
 public class ClientDirectoriesTableView extends GTableView {
-  public static final int DIRECTORY = 0;
+   public static final int DIRECTORY = 0;
 
-  public ClientDirectoriesTableView(ClientDirectoriesViewFrame viewFrame) {
-    super(viewFrame);
+   public ClientDirectoriesTableView(ClientDirectoriesViewFrame var1) {
+      super(var1);
+      this.preferenceString = "clientDirectories";
+      this.columnLabels = new String[]{"clientDirectories.directory"};
+      this.columnDefaultWidths = new int[]{120};
+      this.columnAlignment = new int[]{16384};
+      this.tableContentProvider = new ClientDirectoriesTableContentProvider(this);
+      this.tableLabelProvider = new ClientDirectoriesTableLabelProvider(this);
+      this.gSorter = new ClientDirectoriesTableSorter(this);
+      this.tableMenuListener = new ClientDirectoriesTableMenuListener(this);
+      this.createContents(var1.getChildComposite());
+   }
 
-    preferenceString = "clientDirectories";
-    columnLabels = new String[]{"clientDirectories.directory"};
-    columnDefaultWidths = new int[]{120};
-    columnAlignment = new int[]{SWT.LEFT};
+   public void setInput() {
+   }
 
-    tableContentProvider = new ClientDirectoriesTableContentProvider(this);
-    tableLabelProvider = new ClientDirectoriesTableLabelProvider(this);
-    gSorter = new ClientDirectoriesTableSorter(this);
-    tableMenuListener = new ClientDirectoriesTableMenuListener(this);
-    this.createContents(viewFrame.getChildComposite());
-  }
+   public void setInput(Object var1) {
+      this.sViewer.setInput(var1);
+   }
 
-  public void setInput() {
-  }
+   public GTableMenuListener getMenuListener() {
+      return this.tableMenuListener;
+   }
 
-  public void setInput(Object object) {
-    sViewer.setInput(object);
-  }
+   public void setFilesView(ClientFilesTableView var1) {
+      ((ClientDirectoriesTableMenuListener)this.tableMenuListener).setFilesView(var1);
+      ((ClientDirectoriesTableContentProvider)this.tableContentProvider).setFilesView(var1);
+   }
 
-  public GTableMenuListener getMenuListener() {
-    return this.tableMenuListener;
-  }
-
-  public void setFilesView(ClientFilesTableView cFTV) {
-    ((ClientDirectoriesTableMenuListener) tableMenuListener).setFilesView(cFTV);
-    ((ClientDirectoriesTableContentProvider) tableContentProvider).setFilesView(cFTV);
-  }
-
-  protected void createContents(Composite parent) {
-    super.createContents(parent);
-    sViewer.addSelectionChangedListener((ClientDirectoriesTableMenuListener) tableMenuListener);
-  }
-
+   protected void createContents(Composite var1) {
+      super.createContents(var1);
+      this.sViewer.addSelectionChangedListener((ClientDirectoriesTableMenuListener)this.tableMenuListener);
+   }
 }

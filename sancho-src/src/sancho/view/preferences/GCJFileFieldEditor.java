@@ -1,88 +1,69 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.preferences;
 
 import java.io.File;
-
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 
-import sancho.view.utility.SResources;
-
 public class GCJFileFieldEditor extends FileFieldEditor {
-  private String[] extensions = null;
-  private boolean alwaysValid = false;
+   private String[] extensions = null;
+   private boolean alwaysValid = false;
 
-  public GCJFileFieldEditor(String name, String labelText, boolean enforceAbsolute, Composite parent) {
-    super(name, labelText, enforceAbsolute, parent);
-  }
+   public GCJFileFieldEditor(String var1, String var2, boolean var3, Composite var4) {
+      super(var1, var2, var3, var4);
+   }
 
-  public GCJFileFieldEditor(String name, String labelText, boolean enforceAbsolute, Composite parent,
-      boolean alwaysValid) {
-    this(name, labelText, enforceAbsolute, parent);
-    this.alwaysValid = alwaysValid;
-  }
+   public GCJFileFieldEditor(String var1, String var2, boolean var3, Composite var4, boolean var5) {
+      this(var1, var2, var3, var4);
+      this.alwaysValid = var5;
+   }
 
-  protected String changePressed() {
-    String input = getTextControl().getText();
+   protected String changePressed() {
+      String var1 = this.getTextControl().getText();
+      if (var1.equals("") && SWT.getPlatform().equals("win32")) {
+         var1 = ".";
+      }
 
-    if (input.equals(SResources.S_ES) && SWT.getPlatform().equals("win32"))
-      input = ".";
+      File var2 = new File(var1);
+      if (!var2.exists()) {
+         var2 = null;
+      }
 
-    File f = new File(input);
+      File var3 = this.getFile(var2);
+      return var3 == null ? null : var3.getAbsolutePath();
+   }
 
-    if (!f.exists())
-      f = null;
+   private File getFile(File var1) {
+      FileDialog var2 = new FileDialog(this.getShell(), 4096);
+      if (var1 != null) {
+         var2.setFileName(var1.getPath());
+      }
 
-    File d = getFile(f);
+      if (this.extensions != null) {
+         var2.setFilterExtensions(this.extensions);
+      }
 
-    if (d == null)
+      String var3 = var2.open();
+      if (var3 != null) {
+         var3 = var3.trim();
+         if (var3.length() > 0) {
+            return new File(var3);
+         }
+      }
+
       return null;
+   }
 
-    return d.getAbsolutePath();
-  }
+   public void setFileExtensions(String[] var1) {
+      this.extensions = var1;
+   }
 
-  private File getFile(File startingDirectory) {
-    FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
+   public boolean isValid() {
+      return this.alwaysValid ? true : super.isValid();
+   }
 
-    if (startingDirectory != null)
-      dialog.setFileName(startingDirectory.getPath());
-
-    if (extensions != null)
-      dialog.setFilterExtensions(extensions);
-
-    String file = dialog.open();
-
-    if (file != null) {
-      file = file.trim();
-
-      if (file.length() > 0)
-        return new File(file);
-    }
-
-    return null;
-  }
-
-  public void setFileExtensions(String[] extensions) {
-    this.extensions = extensions;
-  }
-
-  public boolean isValid() {
-    if (alwaysValid)
-      return true;
-    else
-      return super.isValid();
-  }
-
-  protected boolean checkState() {
-    if (alwaysValid)
-      return true;
-    else
-      return super.checkState();
-  }
+   protected boolean checkState() {
+      return this.alwaysValid ? true : super.checkState();
+   }
 }

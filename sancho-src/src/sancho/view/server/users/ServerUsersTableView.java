@@ -1,50 +1,38 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.view.server.users;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-
 import sancho.model.mldonkey.Server;
 import sancho.view.viewFrame.ViewFrame;
 import sancho.view.viewer.table.GTableView;
 
 public class ServerUsersTableView extends GTableView {
-	public static final int NAME = 0;
-	public static final int TAGS = 1;
-	public static final int ADDR = 2;
-	public static final int PORT = 3;
+   public static final int NAME = 0;
+   public static final int TAGS = 1;
+   public static final int ADDR = 2;
+   public static final int PORT = 3;
 
-	public ServerUsersTableView(ViewFrame viewFrame) {
-		super(viewFrame);
+   public ServerUsersTableView(ViewFrame var1) {
+      super(var1);
+      this.preferenceString = "serverUsers";
+      this.columnLabels = new String[]{"serverUsers.name", "serverUsers.tags", "serverUsers.addr", "serverUsers.port"};
+      this.columnAlignment = new int[]{16384, 16384, 131072, 131072};
+      this.columnDefaultWidths = new int[]{100, 100, 75, 75};
+      this.gSorter = new ServerUsersTableSorter(this);
+      this.tableContentProvider = new ServerUsersTableContentProvider(this, var1.getCLabel());
+      this.tableLabelProvider = new ServerUsersTableLabelProvider(this);
+      this.tableMenuListener = new ServerUsersTableMenuListener(this);
+      this.createContents(var1.getChildComposite());
+   }
 
-		preferenceString = "serverUsers";
-		columnLabels = new String[]{"serverUsers.name", "serverUsers.tags", "serverUsers.addr", "serverUsers.port"};
-		columnAlignment = new int[]{SWT.LEFT, SWT.LEFT, SWT.RIGHT, SWT.RIGHT};
-		columnDefaultWidths = new int[]{100, 100, 75, 75};
+   protected void createContents(Composite var1) {
+      super.createContents(var1);
+      this.sViewer.addSelectionChangedListener((ServerUsersTableMenuListener)this.tableMenuListener);
+   }
 
-		gSorter = new ServerUsersTableSorter(this);
-		tableContentProvider = new ServerUsersTableContentProvider(this, viewFrame.getCLabel());
-		tableLabelProvider = new ServerUsersTableLabelProvider(this);
-		tableMenuListener = new ServerUsersTableMenuListener(this);
+   public void setInput() {
+   }
 
-		createContents(viewFrame.getChildComposite());
-	}
-
-	protected void createContents(Composite parent) {
-		super.createContents(parent);
-		sViewer.addSelectionChangedListener((ServerUsersTableMenuListener) tableMenuListener);
-	}
-
-	public void setInput() {
-	}
-	
-	public void setInput(Server server) {
-		sViewer.setInput(server);	
-	}
-
-	
+   public void setInput(Server var1) {
+      this.sViewer.setInput(var1);
+   }
 }

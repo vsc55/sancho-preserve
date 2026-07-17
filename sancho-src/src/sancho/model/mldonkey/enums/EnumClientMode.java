@@ -1,25 +1,26 @@
-/*
- * Copyright (C) 2004-2005 Rutger M. Ovidius for use with the sancho project.
- * See LICENSE.txt for license information.
- */
-
 package sancho.model.mldonkey.enums;
 
+import org.eclipse.swt.graphics.Image;
+import sancho.view.utility.SResources;
+
 public class EnumClientMode extends AbstractEnum {
-  public static final EnumClientMode DIRECT = new EnumClientMode(1, "direct");
-  public static final EnumClientMode FIREWALLED = new EnumClientMode(2, "firewalled");
+   public static final EnumClientMode DIRECT = new EnumClientMode(1, "direct");
+   public static final EnumClientMode FIREWALLED = new EnumClientMode(2, "firewalled");
 
-  private EnumClientMode(int i, String resString) {
-    super(i, "e.clientmode." + resString);
-  }
+   private EnumClientMode(int var1, String var2) {
+      super(var1, "e.clientmode." + var2);
+   }
 
-  public static EnumClientMode byteToEnum(byte b) {
-    switch (b) {
-      case 1 :
-        return EnumClientMode.FIREWALLED;
-      default :
-        return EnumClientMode.DIRECT;
-    }
-  }
+   public static EnumClientMode byteToEnum(byte var0) {
+      switch (var0) {
+         case 1:
+            return FIREWALLED;
+         default:
+            return DIRECT;
+      }
+   }
 
+   public Image getImage() {
+      return this == FIREWALLED ? SResources.getImage("firewalled") : SResources.getImage("direct");
+   }
 }
