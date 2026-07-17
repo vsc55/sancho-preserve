@@ -8,6 +8,7 @@ on:
   push:
     tags:
       - 'v*'
+      - '[0-9]*'            # bare version tags too, e.g. 0.9.4-23 / 0.9.4-59
   workflow_dispatch:        # allow manual runs from the Actions tab (no release)
 
 permissions:
