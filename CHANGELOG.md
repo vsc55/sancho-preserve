@@ -8,6 +8,14 @@ The upstream project's original changelog (2004–2006) is preserved at
 authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 (`git checkout 0.9.4-23`).
 
+## [Unreleased]
+
+### Build & tooling
+
+- Added **Dependabot** (`.github/dependabot.yml`): weekly updates for GitHub
+  Actions and Maven dependencies/plugins, ignoring the compatibility-pinned ones
+  (Eclipse SWT — coupled to the vendored unsigned JFace — and Trove major).
+
 ## [0.9.4-65] — 2026-07-18
 
 ### Build & tooling

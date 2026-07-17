@@ -37,7 +37,9 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
 
 ## Housekeeping
 
-- [ ] **Dependabot** for SWT/JFace/PircBot/Trove version bumps.
+- [x] ~~Dependabot~~ — done: `.github/dependabot.yml` watches GitHub Actions and
+  Maven deps/plugins weekly, ignoring the compatibility-pinned ones (Eclipse SWT,
+  which moves with the vendored JFace; Trove major). See CHANGELOG.
 - [ ] **Audit remaining platform code** (`_wpf`, other legacy branches) and remove
   dead paths, as was done for the `_win32` browser.
 - [ ] **Comparator hardening (optional).** The legacy merge sort is requested to
