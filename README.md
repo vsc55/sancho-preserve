@@ -70,6 +70,7 @@ Sancho used a `0.9.4-NN` snapshot scheme.
 | `0.9.4-69` | Startup toolbar fix, real build version in the title, Edge web browser on Windows | [Release](../../releases/tag/0.9.4-69) |
 | `0.9.4-70` | Latent-bug sweep (core spawn, Linux links, sort contracts, leaks), local stable sort, pure `java.util.regex` | [Release](../../releases/tag/0.9.4-70) |
 | `0.9.4-71` | Virtual-table render fix (stale/duplicate/stuck rows), IRC nick + connect-dialog fixes | [Release](../../releases/tag/0.9.4-71) |
+| `0.9.4-72` | Audit sweep: tree render, UI-freeze fixes, numeric overflows, ~6 dialog defaults, IRC, browser/DnD, tray & protocol-parsing regressions, cross-platform (macOS ⌘, Linux preview/tray) | [Release](../../releases/tag/0.9.4-72) |
 
 **`main`** always holds the newest modernized build; [CHANGELOG.md](CHANGELOG.md)
 and the [Releases](../../releases) page are the authoritative, up-to-date list.
