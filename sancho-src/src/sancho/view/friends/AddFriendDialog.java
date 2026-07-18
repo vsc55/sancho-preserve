@@ -58,6 +58,9 @@ public class AddFriendDialog extends Dialog {
       var4.setLayoutData(new GridData(768));
       var4.setText(SResources.getString("b.cancel"));
       var4.addSelectionListener(new AddFriendDialog$2(this));
+      // Make OK the default button so Enter in the host/port fields submits (the
+      // hand-rolled button bar set no default button, so Enter did nothing).
+      var2.getShell().setDefaultButton(var3);
       return var2;
    }
 

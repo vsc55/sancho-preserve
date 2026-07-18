@@ -12,6 +12,13 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 
 ### Fixed
 
+- **The GUI froze for up to 3 s on an incoming friend message.** `FriendsTab`
+  resolved the sender with a retry loop that `Thread.sleep`s up to 3× — and it ran
+  inside the UI-thread runnable, freezing the whole GUI when the message came from a
+  not-yet-collected client. The resolution (with its sleep) now runs on the core
+  thread and only the UI append is marshalled.
+- **"Add Friend" dialog didn't submit on Enter** (its hand-rolled button bar set no
+  default button); OK is now the default.
 - **Closing an IRC channel during traffic could throw "Widget is disposed".** The
   coloured-message runnable (`IRCConsole`) guarded the append but not the styling
   that followed; it now returns early if the console is disposed.

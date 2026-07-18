@@ -126,9 +126,21 @@ public class FriendsTab extends AbstractTab implements MyObserver {
 
    public void update(MyObservable var1, Object var2, int var3) {
       if (var2 instanceof ClientMessage && !this.cTabFolder.isDisposed()) {
-         // asyncExec so this core-thread observer callback doesn't block on the UI
-         // thread (fire-and-forget UI update; nothing here reads the result).
-         this.cTabFolder.getDisplay().asyncExec(new FriendsTab$4(this, var2));
+         // Resolve the sender on THIS (core) thread: the client may not be in the
+         // collection yet, and the lookup retries with a 1s sleep up to 3 times.
+         // Doing it here keeps that sleep off the UI thread — messageFromClient used
+         // to sleep inside the asyncExec runnable, freezing the GUI for up to 3s on
+         // a message from a not-yet-collected client. Then marshal only the UI work.
+         Client var4 = null;
+
+         for (int var5 = 0; var5 < 3 && var4 == null && Sancho.hasCollectionFactory(); var5++) {
+            var4 = (Client)this.getCore().getClientCollection().get(((ClientMessage)var2).getId());
+            if (var4 == null) {
+               SwissArmy.threadSleep(1000);
+            }
+         }
+
+         this.cTabFolder.getDisplay().asyncExec(new FriendsTab$4(this, var2, var4));
       }
    }
 
@@ -147,36 +159,28 @@ public class FriendsTab extends AbstractTab implements MyObserver {
       var4.append(var2 + var4.getLineDelimiter());
    }
 
-   public void messageFromClient(ClientMessage var1) {
+   public void messageFromClient(ClientMessage var1, Client var10) {
+      // var10 is the sender client, already resolved on the core thread by update()
+      // (may be null if it never appeared) — so no blocking sleep runs here on the UI.
       if (this.cTabFolder != null && !this.cTabFolder.isDisposed() && Sancho.hasCollectionFactory()) {
          StatusLine var2 = this.getMainWindow().getStatusline();
          var2.setText(SResources.getString("l.newMessage"));
          var2.setImage(SResources.getImage("new-message"));
          if (this.openTabs.containsKey(Integer.valueOf(var1.getId()))) {
-            Client var4 = (Client)this.getCore().getClientCollection().get(var1.getId());
             String var3;
-            if (var4 == null) {
+            if (var10 == null) {
                var3 = this.getTimeStamp() + var1.getId() + ": <unknown>> " + var1.getText();
             } else {
-               var3 = this.getTimeStamp() + var1.getId() + ": " + var4.getName() + "> " + var1.getText();
+               var3 = this.getTimeStamp() + var1.getId() + ": " + var10.getName() + "> " + var1.getText();
             }
 
             this.sendTabMessage(var1.getId(), var3);
          } else {
-            Client var8 = null;
-
-            for (int var9 = 0; var9 < 3 && var8 == null && Sancho.hasCollectionFactory(); var9++) {
-               var8 = (Client)this.getCore().getClientCollection().get(var1.getId());
-               if (var8 == null) {
-                  SwissArmy.threadSleep(1000);
-               }
-            }
-
             String var5;
-            if (var8 == null) {
+            if (var10 == null) {
                var5 = var1.getId() + ": <unknown>";
             } else {
-               var5 = var8.getId() + ": " + var8.getName();
+               var5 = var10.getId() + ": " + var10.getName();
             }
 
             String var6 = this.getTimeStamp() + var5 + "> " + var1.getText();
