@@ -12,12 +12,16 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 
 ### Changed
 
-- **Folded WebBrowserTab's decompiled inner classes back into one file** (20 split-out
-  `WebBrowserTab$*.java` → nested/anonymous classes inside `WebBrowserTab.java`). Purely
-  structural: the 15 anonymous listeners are inlined, the 5 named classes
-  (`WebBrowserViewFrame`, `WebBrowserViewListener`, the three favorite `Action`s) become
-  nested classes, and the decompiler's `this$0`/`access$NNN` artifacts are gone. No
-  behaviour change; a first, opportunistic step of the inner-class re-merge (see ToDo).
+- **Folded WebBrowserTab's and MenuBar's decompiled inner classes back into their parent
+  files** (20 `WebBrowserTab$*.java` and 26 `MenuBar$*.java` fragments → nested/anonymous
+  classes; 46 files gone). Purely structural: anonymous listeners are inlined at their
+  call sites, named classes (`WebBrowserViewFrame`, the favorite `Action`s,
+  `AlphaInputDialog`, `URLListener`) become nested classes, and the decompiler's
+  `this$0`/`access$NNN` artifacts are removed. Loop-captured variables get an
+  effectively-final copy where a listener needed it. MenuBar's structure was restored
+  from the original `0.9.4-23` source as a template. No behaviour change; the first,
+  opportunistic steps of the inner-class re-merge (see ToDo). WebBrowserTab verified
+  against a live browser tab.
 
 ### Removed
 
