@@ -14,7 +14,7 @@ class WebBrowserTab$7 extends KeyAdapter {
 
    public void keyPressed(KeyEvent var1) {
       NoDuplicatesCombo var2 = (NoDuplicatesCombo)var1.widget;
-      if (var1.character == '\r' || var1.character == 16777296) {
+      if (var1.character == '\r' || var1.keyCode == 16777296) {
          this.this$0.navigate(var2.getText());
          var2.add(var2.getText(), 0);
          var2.setText("");

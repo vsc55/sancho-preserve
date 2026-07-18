@@ -17,9 +17,14 @@ class WebBrowserTab$3 implements TitleListener {
       Browser var2 = (Browser)var1.widget;
       if (var2 != null && !var2.isDisposed()) {
          CTabItem var3 = (CTabItem)var2.getData("cTabItem");
-         var3.setText(var1.title);
-         if (var3 != null && var3 == this.this$0.cTabFolder.getSelection()) {
-            this.this$0.viewFrame.updateCLabelText(var1.title);
+         // Null-check BEFORE setText: a title event can arrive before createBrowserTab
+         // stores "cTabItem" (the Edge backend delivers titles from an async pump), so
+         // deref'ing var3 first threw an NPE and the title stopped updating.
+         if (var3 != null && !var3.isDisposed()) {
+            var3.setText(var1.title);
+            if (var3 == this.this$0.cTabFolder.getSelection()) {
+               this.this$0.viewFrame.updateCLabelText(var1.title);
+            }
          }
       }
    }

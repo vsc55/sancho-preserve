@@ -18,6 +18,13 @@ class IRCConsole$2 implements Runnable {
    }
 
    public void run() {
+      // Posted from the IRC (PircBot) thread via syncExec; the channel could be
+      // closed before this runs. appendNewLine() no-ops when disposed but the
+      // styling below would still touch the disposed StyledText -> guard the lot.
+      if (this.this$0.isDisposed()) {
+         return;
+      }
+
       IRCConsole.access$000(this.this$0).setLength(0);
 
       for (int var1 = 0; var1 < this.val$stringArray.length; var1++) {

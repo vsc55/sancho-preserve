@@ -20,13 +20,24 @@ class WebBrowserTab$1 extends DropTargetAdapter {
    }
 
    public void dragEnter(DropTargetEvent var1) {
-      var1.detail = 1;
+      // Only request DROP_LINK when the source actually offers it; forcing detail=4
+      // unconditionally made SWT reject a COPY-only drag (plain text/selection), so
+      // the drop was silently never delivered. Fall back to COPY, else NONE.
+      boolean var2 = false;
 
-      for (int var2 = 0; var2 < var1.dataTypes.length; var2++) {
-         if (this.val$uRL.isSupportedType(var1.dataTypes[var2])) {
-            var1.detail = 4;
+      for (int var3 = 0; var3 < var1.dataTypes.length; var3++) {
+         if (this.val$uRL.isSupportedType(var1.dataTypes[var3])) {
+            var2 = true;
             break;
          }
+      }
+
+      if (var2 && (var1.operations & 4) != 0) {
+         var1.detail = 4;
+      } else if ((var1.operations & 1) != 0) {
+         var1.detail = 1;
+      } else {
+         var1.detail = 0;
       }
    }
 
