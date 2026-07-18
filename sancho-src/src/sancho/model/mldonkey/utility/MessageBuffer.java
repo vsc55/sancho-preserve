@@ -117,10 +117,12 @@ public class MessageBuffer {
          var2 = this.getInt32();
       }
 
-      if (var2 > 0) {
+      if (var2 > 0 && this.iterator + var2 <= this.byteArray.length) {
          // Decode with an explicit charset so the result never depends on the JVM
          // default (which flipped to UTF-8 in JDK 18, so the same bytes rendered
-         // differently on JDK 17 vs 18+). Modern mldonkey sends UTF-8.
+         // differently on JDK 17 vs 18+). Modern mldonkey sends UTF-8. The bounds
+         // check guards a negative/oversized length (getInt32 can be negative) that
+         // would otherwise throw StringIndexOutOfBounds out of the read loop.
          String var3 = new String(this.byteArray, this.iterator, var2, StandardCharsets.UTF_8);
          this.iterator += var2;
          return var3.intern();
@@ -224,7 +226,8 @@ public class MessageBuffer {
    public String getLastMessage() {
       int var1 = this.byteArray.length;
       byte[] var2 = new byte[var1];
-      System.arraycopy(this.byteArray, 0, var2, 0, var1 - 1);
+      // Copy all var1 bytes; the old var1 - 1 silently dropped the last byte.
+      System.arraycopy(this.byteArray, 0, var2, 0, var1);
       return hexDump(var2, this.lastLength);
    }
 
@@ -233,7 +236,9 @@ public class MessageBuffer {
    }
 
    public static String hexDump(byte[] var0, int var1) {
-      byte var2 = 0;
+      // offset accumulator must be int: as a byte it wrapped after 4096 bytes and
+      // printed wrong offset labels for large messages.
+      int var2 = 0;
       StringBuffer var3 = new StringBuffer(var1);
       int var4 = 0;
 

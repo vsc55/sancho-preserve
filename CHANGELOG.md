@@ -44,6 +44,17 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 - **False "new version" popup from the dead update host.** The version check now
   validates that the fetched string looks like a version before showing the
   "latest version" text / popup, avoiding a bogus prompt (and a null-line NPE).
+- **Minor robustness/leak cleanups.** `Console` now disposes its hand `Cursor`
+  (leaked one handle per console); `GSorter.compareInts` uses `Integer.compare`
+  (no subtraction overflow) and the string tie-break honours the working sort
+  direction; `MessageBuffer.getString` bounds-checks the length field before
+  decoding (a malformed length no longer throws out of the read loop); and the
+  debug `hexDump`/`getLastMessage` no longer drop the last byte or wrap the offset
+  label.
+- **Removed the dead Windows 95/98/ME detection.** `VersionInfo.isWin95` /
+  `isOldWindows` / `oldWindows` never matched a modern `os.version`, so the legacy
+  small-icon and emulated-spinner branches were unreachable; dropped them (`BSpinner`
+  now always uses the native SWT `Spinner`).
 
 ### Changed
 

@@ -49,6 +49,15 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
 - [x] ~~Audit remaining platform code~~ — done: no `_wpf`/platform-suffix files
   remain; fixed macOS external-link opening (checked the removed `carbon` platform
   instead of `cocoa`) and cleaned dead `carbon`/`motif` checks. See CHANGELOG.
+- [ ] **Enable minimize-to-tray on macOS (needs a Mac to test).** `VersionInfo.hasTray`
+  currently excludes `cocoa`, so minimize-to-tray silently no-ops on macOS. SWT
+  supports `Tray` on cocoa (menu-bar item); enabling it needs verification on a real
+  Mac before flipping it on.
+- [ ] **Reconsider `syncExec` from the core reader thread (deadlock risk).**
+  `MainWindow`, `FriendsTab` and `GTreeContentProvider` call `Display.syncExec` from
+  the socket reader thread. It's thread-correct but blocks the reader on the UI
+  thread; convert to `asyncExec` where the result isn't needed synchronously (needs
+  per-site analysis).
 - [ ] **Comparator hardening (optional).** The legacy merge sort is requested to
   tolerate table data that mutates mid-sort. A "proper" fix would snapshot the
   sort keys before sorting — larger and riskier; only worth it if the VM-level

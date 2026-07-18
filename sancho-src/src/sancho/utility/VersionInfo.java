@@ -12,8 +12,6 @@ public class VersionInfo {
    private static String VERSION;
    private static final boolean WEB_SERVICES = true;
    private static final String BRAND = "";
-   private static boolean isWin95;
-   private static boolean oldWindows;
    private static boolean isGNU;
 
    public static boolean useWebServices() {
@@ -37,19 +35,8 @@ public class VersionInfo {
       return var0.equals("win32") || var0.equals("fox") || var0.equals("gtk");
    }
 
-   public static boolean isOldWindows() {
-      if (getOSPlatform().equals("Windows")) {
-         String var0 = System.getProperty("os.version");
-         if (var0 != null && (var0.equals("4.0") || var0.equals("4.10") || var0.equals("4.90") || var0.equals("5.0"))) {
-            return true;
-         }
-      }
-
-      return false;
-   }
-
    public static Image getProgramIcon() {
-      return oldWindows ? SResources.getImage("ProgramIcon") : SResources.getImage("ProgramIcon-128");
+      return SResources.getImage("ProgramIcon-128");
    }
 
    public static Image getTrayIcon() {
@@ -57,7 +44,7 @@ public class VersionInfo {
       if (var0.equals("gtk")) {   // "motif" was a long-removed SWT platform
          return SResources.getImage("tray-22");
       } else {
-         return oldWindows ? SResources.getImage("tray-16") : SResources.getImage("ProgramIcon-128");
+         return SResources.getImage("ProgramIcon-128");
       }
    }
 
@@ -110,10 +97,6 @@ public class VersionInfo {
       }
    }
 
-   public static boolean isWin95() {
-      return isWin95;
-   }
-
    public static String getVersion() {
       return VERSION;
    }
@@ -143,9 +126,6 @@ public class VersionInfo {
 
    static {
       VERSION = readBuildVersion();
-      String var5 = System.getProperty("os.name");
-      isWin95 = var5.equals("Windows 95") || var5.equals("Windows 98") || var5.equals("Windows ME");
-      oldWindows = isOldWindows();
       isGNU = System.getProperty("java.vm.name").startsWith("GNU");
    }
 }

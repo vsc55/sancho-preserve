@@ -97,7 +97,10 @@ public abstract class GSorter extends ViewerSorter implements DisposeListener {
    }
 
    protected int compareInts(int var1, int var2) {
-      return this.workingDirection ? var1 - var2 : var2 - var1;
+      // Integer.compare avoids the overflow of var1 - var2 when the operands
+      // straddle a range > 2^31 (e.g. a negative score vs a large positive one),
+      // which would violate the comparator contract.
+      return this.workingDirection ? Integer.compare(var1, var2) : Integer.compare(var2, var1);
    }
 
    protected int compareLongs(long var1, long var3) {
@@ -126,7 +129,7 @@ public abstract class GSorter extends ViewerSorter implements DisposeListener {
       } else if (var2.equals("")) {
          return -1;
       } else {
-         return this.direction ? var1.compareToIgnoreCase(var2) : var2.compareToIgnoreCase(var1);
+         return this.workingDirection ? var1.compareToIgnoreCase(var2) : var2.compareToIgnoreCase(var1);
       }
    }
 

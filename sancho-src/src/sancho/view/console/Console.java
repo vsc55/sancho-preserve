@@ -175,6 +175,11 @@ public class Console {
       this.input.dispose();
       this.infoDisplay.dispose();
       this.composite.dispose();
+      // handCursor was created in the constructor but never disposed, leaking one
+      // OS cursor handle per Console instance (status/message/IRC/exec consoles).
+      if (this.handCursor != null && !this.handCursor.isDisposed()) {
+         this.handCursor.dispose();
+      }
    }
 
    public boolean isDisposed() {
