@@ -51,7 +51,7 @@ public class SharedFile extends AObject implements IObject_UID, IPreview {
 
    public String getContentRange(int var1) {
       long[] var2 = this.getSubFileSizes();
-      if (var2 != null && var1 <= var2.length) {
+      if (var2 != null && var1 < var2.length) {
          long var3 = 0L;
 
          for (int var5 = 0; var5 < var1; var5++) {

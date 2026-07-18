@@ -98,7 +98,9 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
          this.shell.setImage(VersionInfo.getProgramIcon());
          this.shell.setLayout(new FillLayout());
          this.shell.addShellListener(this);
-         boolean var2 = VersionInfo.hasTray() && PreferenceLoader.loadBoolean("systrayEnabled");
+         boolean var2 = VersionInfo.hasTray()
+            && var1.getSystemTray() != null
+            && PreferenceLoader.loadBoolean("systrayEnabled");
          this.minimizer = (Minimizer)(var2 ? new MinimizerTray(this, this.titleBarText) : new Minimizer(this, this.titleBarText));
          this.minimizer.setTitleBarText();
          Splash.updateText("splash.creatingGUI");

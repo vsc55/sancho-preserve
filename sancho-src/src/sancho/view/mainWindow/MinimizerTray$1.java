@@ -13,7 +13,9 @@ class MinimizerTray$1 implements Listener {
    }
 
    public void handleEvent(Event var1) {
-      Menu var2 = MinimizerTray.access$000(this.this$0).createContextMenu(this.this$0.shell);
-      var2.setVisible(true);
+      Menu var2 = MinimizerTray.access$000(this.this$0);
+      if (var2 != null && !var2.isDisposed()) {
+         var2.setVisible(true);
+      }
    }
 }

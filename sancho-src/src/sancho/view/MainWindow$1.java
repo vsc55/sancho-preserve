@@ -1,5 +1,6 @@
 package sancho.view;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
@@ -12,7 +13,7 @@ class MainWindow$1 implements Listener {
    }
 
    public void handleEvent(Event var1) {
-      if ((var1.stateMask & 262144) != 0 || (var1.stateMask & 65536) != 0) {
+      if ((var1.stateMask & SWT.MOD1) != 0 || (var1.stateMask & 65536) != 0) {
          if ((var1.stateMask & 65536) != 0) {
             if (var1.keyCode == 16777219) {
                int var2 = MainWindow.access$000(this.this$0) - 1;
@@ -38,7 +39,7 @@ class MainWindow$1 implements Listener {
             }
          }
 
-         if ((var1.stateMask & 262144) != 0 && var1.keyCode == 116) {
+         if ((var1.stateMask & SWT.MOD1) != 0 && var1.keyCode == 116) {
             this.this$0.sendTorrentsFromHD();
          }
       }

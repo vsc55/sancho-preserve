@@ -108,11 +108,13 @@ public class MessageEncoder {
    }
 
    private byte[] toBytes(Long var1, byte[] var2, int var3) {
+      // Bit-shift, not the old % / / 256 division (same fix as Short/Integer above):
+      // for a uint64 with bit 63 set (stored as a negative signed long) the signed
+      // division truncated toward zero and only the low byte was correct.
       long var4 = var1;
 
       for (int var6 = 0; var6 < 8; var6++) {
-         var2[var6 + var3] = (byte)((int)(var4 % 256L));
-         var4 /= 256L;
+         var2[var6 + var3] = (byte)(var4 >>> var6 * 8);
       }
 
       return var2;

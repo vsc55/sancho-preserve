@@ -12,6 +12,38 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 
 ### Fixed
 
+- **Client-stats network list could be misparsed (proto ≥ 18).**
+  `ClientStats18.readNetworks` read the per-network "connected servers" count only
+  when the network id was already registered, but that `int32` is always on the wire —
+  so an unknown id (common during startup/reconnect, before the matching
+  `Network_info` arrives) left the count unread and every remaining entry in that
+  stats tick was parsed one field out of alignment. Both fields are now read
+  unconditionally. Self-healed on the next tick before, but showed wrong per-network
+  server counts meanwhile.
+- **Preview `Range` header could crash with an off-by-one.** `File.getContentRange` /
+  `SharedFile.getContentRange` guarded the subfile index with `<= length` then indexed
+  `[index]`, throwing `ArrayIndexOutOfBoundsException` when the index equalled the
+  subfile count. Changed to `< length`.
+- **System tray crashed startup on tray-less Linux (GNOME/Wayland).**
+  `Display.getSystemTray()` returns `null` on platforms `hasTray()` still green-lights,
+  and `new TrayItem(null, 0)` throws `ERROR_NULL_ARGUMENT` — the old `trayItem == null`
+  guard was dead code (a constructor never returns null), so the app died with no
+  window. It now checks the actual tray and falls back to plain window minimize.
+  (Windows always has a tray, so it was never hit there.)
+- **Tray context menu leaked a native `Menu` on every right-click.** `MinimizerTray`
+  called `MenuManager.createContextMenu` per `MenuDetect`, minting a fresh menu each
+  time; it's now built once and reused (the listener still rebuilds the items on show).
+  The tray icon is also disposed on shutdown.
+- **File preview crashed on Linux/macOS.** `File.repSep` normalised path separators via
+  `SwissArmy.replaceAll`, which compiles its "from" argument as a regex — a lone `"\\"`
+  threw `PatternSyntaxException` and then NPE'd on `/`-separator platforms. Switched to
+  literal `String.replace`.
+- **Keyboard shortcuts now use the platform modifier (macOS ⌘).** Ctrl+A/Ctrl+F/Ctrl+T
+  and the tab/link accelerators hardcoded the Ctrl bit; they use `SWT.MOD1` now
+  (unchanged on Windows/Linux, Command on macOS).
+- **`MessageEncoder.toBytes(Long)`** still used the signed `% / /= 256` division that was
+  already fixed for `Short`/`Integer`; a uint64 with bit 63 set serialised only its low
+  byte. Switched to bit-shift. (Latent — no current message sends a `Long`.)
 - **Browser tab title could throw and stop updating.** The `TitleListener`
   dereferenced the `CTabItem` before its own null check; the Edge/WebView2 backend can
   fire a title event before the tab data is set, causing an NPE (and the title/label

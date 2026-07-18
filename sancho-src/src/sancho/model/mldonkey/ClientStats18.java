@@ -15,9 +15,15 @@ public class ClientStats18 extends ClientStats {
       }
 
       for (int var4 = 0; var4 < var2; var4++) {
-         Network var3 = (Network)this.core.getNetworkCollection().get(var1.getInt32());
+         // Each proto>=18 entry is (network_id, connected_servers) — BOTH int32s are
+         // always on the wire. Read both unconditionally; reading the count only when
+         // the network was known desynced the rest of the message (the unread count got
+         // consumed as the next network id) whenever a network id wasn't registered yet.
+         int var5 = var1.getInt32();
+         int var6 = var1.getInt32();
+         Network var3 = (Network)this.core.getNetworkCollection().get(var5);
          if (var3 != null) {
-            this.core.getNetworkCollection().setConnectedServers(var3, var1.getInt32());
+            this.core.getNetworkCollection().setConnectedServers(var3, var6);
          }
 
          this.connectedNetworks[var4] = var3;

@@ -133,7 +133,7 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
 
    public String getContentRange(int var1) {
       long[] var2 = this.getSubFileSizes();
-      if (var2 != null && var1 <= var2.length) {
+      if (var2 != null && var1 < var2.length) {
          long var3 = 0L;
 
          for (int var5 = 0; var5 < var1; var5++) {
@@ -699,13 +699,15 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
    }
 
    private String repSep(String var1) {
+      // Literal char replacement, not SwissArmy.replaceAll: the latter compiles the
+      // "from" string as a regex, so a lone "\\" (single backslash) threw
+      // PatternSyntaxException and then NPE'd — crashing preview on "/"-separator
+      // platforms (Linux/macOS). A no-op when the char is absent, so no guard needed.
       String var2 = java.io.File.separator;
-      if (var2.equals("/") && var1.indexOf("\\") != -1) {
-         var1 = SwissArmy.replaceAll(var1, "\\", "/");
-      }
-
-      if (var2.equals("\\") && var1.indexOf("/") != -1) {
-         var1 = SwissArmy.replaceAll(var1, "/", "\\");
+      if (var2.equals("/")) {
+         var1 = var1.replace('\\', '/');
+      } else if (var2.equals("\\")) {
+         var1 = var1.replace('/', '\\');
       }
 
       return var1;

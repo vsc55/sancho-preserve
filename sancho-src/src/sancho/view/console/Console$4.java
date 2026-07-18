@@ -1,5 +1,6 @@
 package sancho.view.console;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 
@@ -12,7 +13,7 @@ class Console$4 extends KeyAdapter {
    }
 
    public void keyPressed(KeyEvent var1) {
-      if (var1.stateMask == 262144 && var1.character == 6) {
+      if (var1.stateMask == SWT.MOD1 && var1.character == 6) {
          new Console$FindDialog(this.this$0).open();
       }
    }

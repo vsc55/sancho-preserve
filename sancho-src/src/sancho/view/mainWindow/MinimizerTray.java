@@ -6,8 +6,8 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Tray;
 import org.eclipse.swt.widgets.TrayItem;
 import sancho.core.Sancho;
 import sancho.model.mldonkey.ClientStats;
@@ -24,6 +24,7 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
    protected static final String S_UL = ", UL: ";
    private TrayItem trayItem;
    private MenuManager popupMenu;
+   private Menu trayMenu;
    private boolean closeMe = false;
    private MainWindow mainWindow;
 
@@ -44,12 +45,14 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
    }
 
    private void createTrayIcon() {
-      this.trayItem = new TrayItem(this.mainWindow.getShell().getDisplay().getSystemTray(), 0);
-      if (this.trayItem == null) {
-         MessageBox var1 = new MessageBox(new Shell(), 32);
-         var1.setMessage("trayItem is null");
-         var1.open();
-      } else {
+      // getSystemTray() returns null on tray-less platforms (modern GNOME/Wayland,
+      // some gtk) even though hasTray() green-lights them — and new TrayItem(null,0)
+      // throws ERROR_NULL_ARGUMENT, which killed startup. The old "trayItem == null"
+      // guard was dead (a constructor never returns null). Guard the tray itself; when
+      // absent, leave trayItem null and let the app run with plain window minimize.
+      Tray var1 = this.mainWindow.getShell().getDisplay().getSystemTray();
+      if (var1 != null) {
+         this.trayItem = new TrayItem(var1, 0);
          this.trayItem.setImage(VersionInfo.getTrayIcon());
          this.trayItem.setToolTipText(this.titleBarText);
          this.trayItem.addListener(35, new MinimizerTray$1(this));
@@ -61,6 +64,10 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
       this.popupMenu = new MenuManager("");
       this.popupMenu.setRemoveAllWhenShown(true);
       this.popupMenu.addMenuListener(this);
+      // Build the SWT context menu once and reuse it; createContextMenu() mints a new
+      // native Menu on every call, so calling it per right-click leaked one each time.
+      // setRemoveAllWhenShown(true) + the menu listener still rebuild the items on show.
+      this.trayMenu = this.popupMenu.createContextMenu(this.shell);
    }
 
    public boolean close() {
@@ -155,11 +162,15 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
       if (Sancho.hasCollectionFactory()) {
          Sancho.getCore().getClientStats().deleteObserver(this);
       }
+
+      if (this.trayItem != null && !this.trayItem.isDisposed()) {
+         this.trayItem.dispose();
+      }
    }
 
    // $VF: synthetic method
-   static MenuManager access$000(MinimizerTray var0) {
-      return var0.popupMenu;
+   static Menu access$000(MinimizerTray var0) {
+      return var0.trayMenu;
    }
 
    // $VF: synthetic method

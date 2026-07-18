@@ -74,6 +74,23 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
 - [x] ~~Audit remaining platform code~~ — done: no `_wpf`/platform-suffix files
   remain; fixed macOS external-link opening (checked the removed `carbon` platform
   instead of `cocoa`) and cleaned dead `carbon`/`motif` checks. See CHANGELOG.
+- [ ] **macOS: wire the application menu (needs a Mac to test).** No
+  `Display.getSystemMenu()` / `SWT.ID_ABOUT` / `ID_PREFERENCES` / `ID_QUIT` hookup, so
+  the macOS app-menu About/Preferences and ⌘Q don't route to Sancho's dialogs / shutdown
+  (which kills the spawned core). Hook them on cocoa.
+- [ ] **macOS: Ctrl+A / Ctrl+F shortcuts detect a control char, not the key.**
+  `GTableMenuListener$2` (select/deselect-all) and `Console$4` (find) test
+  `character == 1`/`== 6`; the ⌘ modifier now maps via `SWT.MOD1`, but Command doesn't
+  emit control characters the way Ctrl does, so these still won't fire on macOS. Switch
+  them to `keyCode`-based detection and verify on a Mac.
+- [ ] **Gate the WinReg preference page to win32 only.** `CPreferenceManager` adds
+  `WinRegPreferencePage` when `getOSPlatform()=="Windows" || Sancho.debug`, so with
+  `-debug` on Linux/macOS the page appears and its "Update Registry" button writes a
+  `.reg` and shells `regedit.exe` (fails, caught). Drop the `|| Sancho.debug` or add a
+  win32 check. Cosmetic (debug-only).
+- [ ] **Verify bundled icon filename casing on a Linux build.** Linux is case-sensitive;
+  a mis-cased icon key that Windows silently resolves would fail. Spot-check `SResources`
+  lookups against the asset filenames on Linux.
 - [ ] **Enable minimize-to-tray on macOS (needs a Mac to test).** `VersionInfo.hasTray`
   currently excludes `cocoa`, so minimize-to-tray silently no-ops on macOS. SWT
   supports `Tray` on cocoa (menu-bar item); enabling it needs verification on a real
