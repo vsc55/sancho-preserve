@@ -271,7 +271,7 @@ public class RootPreferencePage extends CPreferencePage {
       this.createInformationLabel(var2, "p.delayInfo");
       this.setupIntegerEditor("graphUpdateDelay", "p.r.graphs.updateDelay", 0, 600, var2);
       this.createSeparator(var2);
-      this.setupIntegerEditor("statsUpdateDelay", "p.r.graphs.statsDelay", 1, 600, var2);
+      this.setupIntegerEditor("statsDelay", "p.r.graphs.statsDelay", 1, 600, var2);
       this.setCompositeLayout(var2);
    }
 

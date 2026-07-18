@@ -177,8 +177,10 @@ public class CoreVerbosityDialog extends Dialog {
    protected void createButtonsForButtonBar(Composite var1) {
       Button var2 = this.createButton(var1, 666, SResources.getString("b.deselectAll"), false);
       var2.addSelectionListener(new CoreVerbosityDialog$1(this));
-      this.createButton(var1, 0, IDialogConstants.OK_LABEL, false);
-      this.createButton(var1, 1, IDialogConstants.CANCEL_LABEL, true);
+      // OK is the default button so Enter accepts instead of cancelling (which
+      // discarded the verbosity changes) — same fix as IRCConnectDialog.
+      this.createButton(var1, 0, IDialogConstants.OK_LABEL, true);
+      this.createButton(var1, 1, IDialogConstants.CANCEL_LABEL, false);
    }
 
    protected void buttonPressed(int var1) {

@@ -50,7 +50,7 @@ public class Splash {
          var5.drawImage(SResources.getImage("splashScreen"), 0, 0);
          var5.setForeground(shell.getDisplay().getSystemColor(1));
          var5.drawText(var3 + "...", 15, shell.getBounds().height - 25, true);
-         if (var2 >= 0) {
+         if (var2 >= 0 && var2 < on.length) {
             on[var2] = true;
          }
 

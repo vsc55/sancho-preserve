@@ -12,6 +12,15 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 
 ### Fixed
 
+- **"Core Verbosity" dialog discarded changes on Enter.** Cancel was the default
+  button (same bug as the IRC Connect dialog), so pressing Enter cancelled instead of
+  applying the ticked verbosity keywords. OK is now the default.
+- **The "Update stats tables delay" preference did nothing.** Its editor wrote to a
+  dead key (`statsUpdateDelay`) while the core reads `statsDelay`, so the setting
+  never took effect (and showed 0 instead of the 600 s default). The editor now uses
+  the correct key.
+- **Splash progress guarded against an out-of-range index** (`on[]` is shorter than
+  `boxes[]`), avoiding a possible `ArrayIndexOutOfBounds`.
 - **Base64 broke on inputs over 127 bytes.** `Base64.encode`/`decode` used `byte`
   loop counters and a `byte` output index that overflowed past 127, crashing (array
   index out of bounds) on larger data — e.g. HTTP Basic-auth credentials or a long
