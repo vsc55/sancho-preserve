@@ -12,6 +12,20 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
   Windows/Linux/macOS matrix publishing Windows `.zip` + jar, Linux `.deb` +
   `.rpm`, and macOS `.dmg`. See CHANGELOG.
 
+- [ ] **WebBrowser: restore or retire the Ctrl+click "grab page as .torrent" feature.**
+  `WebBrowserTab.ctrlDown()` is hard-wired to `false` and `setupCtrlKey()` is an empty
+  method with no callers (a lost refactor/decompile artifact), so the Ctrl-modifier
+  branch in `WebBrowserTab$6` never runs. Either wire up Ctrl-state tracking or delete
+  the dead feature. Niche; needs a live browser to verify.
+- [ ] **WebBrowser: decode dropped-URL bytes with an explicit charset.**
+  `UniformResourceLocator.nativeToJava` uses the JVM default charset, which changed to
+  UTF-8 in JDK 18, so a dropped URL with non-ASCII bytes can be mojibake. Decode the
+  Windows ANSI `UniformResourceLocator` format as `windows-1252` (and the Gecko
+  `text/x-moz-url-data` as UTF-16) explicitly. Low; needs a non-ASCII URL drop.
+- [ ] **WebBrowser: per-tab address combo.** `WebBrowserTab.inputCombo` is a single
+  field reassigned on each new tab, so with multiple browser tabs the URL is written
+  to the last-created tab's combo instead of the selected tab's. Store the combo as
+  per-`CTabItem` data. Pre-existing (not a modernization regression); multi-tab only.
 - [ ] **Verify / fix chunk-bar blur on HiDPI (>100% display scaling).** The Downloads
   "chunks" column and the chunk detail dialogs round-trip through
   `ImageData.scaledTo()` (`ChunkImageData` / `ChunkCanvas`), which loses device

@@ -12,6 +12,17 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 
 ### Fixed
 
+- **Browser tab title could throw and stop updating.** The `TitleListener`
+  dereferenced the `CTabItem` before its own null check; the Edge/WebView2 backend can
+  fire a title event before the tab data is set, causing an NPE (and the title/label
+  froze). It now null-checks first.
+- **Dragging a link/text that offered only "copy" did nothing.** Three drop targets
+  (browser URL combo, the `createLinkDropTarget` helper, the link-ripper field) forced
+  `DROP_LINK`, which SWT rejects when the source only advertises `DROP_COPY`, so the
+  drop was silently discarded. They now honour the offered operations.
+- **Keypad Enter in the browser address bar** was compared against `character` (always
+  false) instead of `keyCode`; corrected (was harmless — the normal Enter clause
+  already covered it).
 - **Cancelling a preview transfer froze the GUI up to 4 s.** `TransferDialog.close()`
   busy-waited on the UI thread for the download thread to acknowledge the cancel; it
   now just signals cancel and closes (the download thread stops on its next chunk and
