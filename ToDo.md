@@ -81,8 +81,28 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
   the ~87 pre-23 parents (`git show 0.9.4-23:<path>`). **Done so far: WebBrowserTab (20),
   MenuBar (26), WinRegPreferencePage (6) — 448 → 390 `$` files. See CHANGELOG.** Good
   next candidates with a -23 template: `ResultTableMenuListener` (18), `LinkRipper` (16),
-  `Console` (11), `FileDetailDialog` (10), `CoreFactory` (9). Note: WebBrowserTab/MenuBar
+  `Console` (11), `FileDetailDialog` (10). Note: WebBrowserTab/MenuBar
   still have leftover `varN` in their un-rewritten methods (tidy if revisited).
+  **Done since:** the whole `sancho.core` package (`CoreFactory`/`MLDonkeyCore`/
+  `MLDonkeyCoreMonitor`/`SSHCoreFactory`/`Sancho`), `sancho.utility` (`SwissArmy`/
+  `ObjectMap`/`MyObservable`/`MyObserver`/`VersionInfo`), the `sancho.model.mldonkey`
+  collections (`ACollection_Int` + File/Client/Server/Result/Room/Option/Network/
+  SharedFile), and both custom JFace viewers (`CustomTableViewer` 12, `CustomTreeViewer`
+  14) — all merged **and** fully `varN`-renamed to descriptive names. See CHANGELOG.
+- [ ] **Rename `varN` locals in the rest of `sancho.model`.** The `sancho.model.mldonkey`
+  *collections* are done, but the model *objects* still carry decompiler `varN` in their
+  bodies — e.g. `File` (365), `Client` (121), `Result`, `Server`, `Network`, `SharedFile`,
+  `Option`, `Room`, `User`, and the `utility`/`enums` sub-packages. Purely descriptive
+  renaming (these are mostly already single-file, no `$` merge needed); do it
+  opportunistically when editing a class, compile-checking each.
+- [ ] **Merge `$`-split files AND rename `varN` in `sancho.view`.** This is where most of
+  the remaining split-out inner-class files live (the bulk of the ~360 `$` files) plus
+  heavy `varN` usage. Two combined passes per class: (1) fold the `Foo$N`/`Foo$Bar`
+  fragments back into the parent (inline anonymous listeners, nest named classes, drop
+  `this$0`/`access$NNN`), (2) rename that file's `varN` to descriptive names. Use the
+  `0.9.4-23` template where available. High-volume; do it opportunistically, compile-check
+  each. Good starting candidates: `ResultTableMenuListener` (18), `LinkRipper` (16),
+  `Console` (11), `FileDetailDialog` (10).
 - [ ] **Validate the Windows association exe-path on an installed MSI build.** The
   registry association (Preferences → Windows Registry) now creates the keys correctly and
   takes the executable path from `jpackage.app-path` when installed. Running the dev jar
