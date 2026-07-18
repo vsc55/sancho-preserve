@@ -72,6 +72,7 @@ Sancho used a `0.9.4-NN` snapshot scheme.
 | `0.9.4-71` | Virtual-table render fix (stale/duplicate/stuck rows), IRC nick + connect-dialog fixes | [Release](../../releases/tag/0.9.4-71) |
 | `0.9.4-72` | Audit sweep: tree render, UI-freeze fixes, numeric overflows, ~6 dialog defaults, IRC, browser/DnD, tray & protocol-parsing regressions, cross-platform (macOS ⌘, Linux preview/tray) | [Release](../../releases/tag/0.9.4-72) |
 | `0.9.4-73` | Working localization: translations bundled in the jar, language picker fixed, dialog buttons + Preferences window + stray strings routed through i18n, all 14 locales updated (es_ES 100%) | [Release](../../releases/tag/0.9.4-73) |
+| `0.9.4-74` | Audit fixes: DecimalFormat data race, Windows-registry crash, Download-Complete parse crash, chunk-image cache leak, ETA sort + robustness guards | [Release](../../releases/tag/0.9.4-74) |
 
 **`main`** always holds the newest modernized build; [CHANGELOG.md](CHANGELOG.md)
 and the [Releases](../../releases) page are the authoritative, up-to-date list.
