@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import sancho.utility.SwissArmy;
 import sancho.view.preferences.PreferenceLoader;
+import sancho.view.transfer.downloads.DownloadTreeLabelProvider;
 import sancho.view.viewer.table.GTableLabelProvider;
 import sancho.view.viewer.tree.GTreeContentProvider;
 
@@ -348,8 +349,14 @@ public class CustomTreeViewer extends TreeViewer implements ICustomViewer {
       }
    }
 
-   public synchronized void removeFromCache(Object var1) {
-      this.chunkImageDataCache.remove(var1);
+   public synchronized void removeFromCache(Object element) {
+      this.chunkImageDataCache.remove(element);
+      // The download tree caches its chunk images in the label provider, not here;
+      // prune that (the real) map too so it doesn't grow without bound.
+      IBaseLabelProvider labelProvider = this.getLabelProvider();
+      if (labelProvider instanceof DownloadTreeLabelProvider) {
+         ((DownloadTreeLabelProvider)labelProvider).removeFromCache(element);
+      }
    }
 
    public void replace(Object var1, TreeItem var2) {

@@ -68,6 +68,18 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
 
 ## Housekeeping
 
+- [ ] **Decide what `ClientTableView.updateDisplay` should do with the dead
+  `downloadsAvailableColor` key.** It reads an unregistered preference (→ `null`), so the
+  clients table currently falls back to the default foreground — harmless but the intended
+  color is never applied. Options: wire it to the registered `downloadsAvailableFileColor`
+  (risk: paints the whole table with a highlight color), register a distinct preference +
+  editor, or drop the line. Needs a visual call.
+- [ ] **Two low-value dead preference keys** (audit): `disableUTF8`
+  (`SwissArmy.java:646`) has no default and no UI — likely an intentional hidden/advanced
+  switch (permanently `false` from the UI); `hm_0_protocol` (`PreferenceLoader.java`) is a
+  registered default never read (the host-manager uses `hm_<n>_coreProtocol`). Leave or
+  tidy.
+
 - [x] ~~De-duplicate keys in the base `sancho.properties`~~ — done: `mi.dynamicColumn`
   and `mi.sort` (each duplicated with an identical value) collapsed to one definition
   each. Base is 1101 unique keys.

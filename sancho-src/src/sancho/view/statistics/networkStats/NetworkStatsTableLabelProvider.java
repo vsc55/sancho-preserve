@@ -82,7 +82,9 @@ public class NetworkStatsTableLabelProvider extends GTableLabelProvider implemen
 
    public void dispose() {
       super.dispose();
-      this.boldFont.dispose();
-      this.boldFont = null;
+      if (this.boldFont != null) {
+         this.boldFont.dispose();
+         this.boldFont = null;
+      }
    }
 }

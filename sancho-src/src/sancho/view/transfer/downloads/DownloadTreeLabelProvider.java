@@ -60,10 +60,16 @@ public class DownloadTreeLabelProvider extends GTableLabelProvider implements IT
                int var8 = var6.x + var6.width - 2 - var7.width;
                int var9 = var1.y + 1;
                var1.gc.drawImage(var5, var8, var9);
-               var1.gc.drawText("is the time", var1.x + var1.width, var1.y + 1);
             }
          }
       }
+   }
+
+   // Evict a stale element's cached chunk image. Called by the viewer when a download
+   // is removed/replaced/cleared; without it this map grew unbounded (the viewer used to
+   // prune a different, never-populated field).
+   public void removeFromCache(Object element) {
+      this.chunkImageDataCache.remove(element);
    }
 
    private void drawChunks(Event var1) {

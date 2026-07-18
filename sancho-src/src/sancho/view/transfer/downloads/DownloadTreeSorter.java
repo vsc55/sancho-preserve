@@ -73,17 +73,22 @@ public class DownloadTreeSorter extends GSorter {
             }
             case 9:
                return this.compareInts(var11.getNumChunks(), var12.getNumChunks());
-            case 10:
+            case 10: {
+               // Both empty ETAs must compare equal, else compare(a,b)==compare(b,a)==1
+               // breaks antisymmetry (same class fixed in case 8 / compareStrings).
                this.labelProvider = (ITableLabelProvider)((TreeViewer)var1).getLabelProvider();
-               if (this.labelProvider.getColumnText(var2, this.columnIndex).equals("")) {
+               boolean firstEtaEmpty = this.labelProvider.getColumnText(var2, this.columnIndex).equals("");
+               boolean secondEtaEmpty = this.labelProvider.getColumnText(var3, this.columnIndex).equals("");
+               if (firstEtaEmpty && secondEtaEmpty) {
+                  return 0;
+               } else if (firstEtaEmpty) {
                   return 1;
+               } else if (secondEtaEmpty) {
+                  return -1;
                } else {
-                  if (this.labelProvider.getColumnText(var3, this.columnIndex).equals("")) {
-                     return -1;
-                  }
-
                   return this.compareLongs(var11.getETA(), var12.getETA());
                }
+            }
             case 11:
                return this.compareInts(var11.getPriority(), var12.getPriority());
             case 12:

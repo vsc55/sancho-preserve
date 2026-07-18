@@ -109,11 +109,11 @@ public class SwissArmy {
       return var3.matcher(var0).replaceAll(var2);
    }
 
-   public static String calcStringSizeGrouped(long var0) {
+   public static synchronized String calcStringSizeGrouped(long var0) {
       return dfGrouped.format(var0).intern();
    }
 
-   public static String calcStringSize(long var0) {
+   public static synchronized String calcStringSize(long var0) {
       if (var0 == 0L) {
          return "0";
       } else {

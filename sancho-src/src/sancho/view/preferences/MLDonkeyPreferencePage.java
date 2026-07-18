@@ -238,7 +238,7 @@ public class MLDonkeyPreferencePage extends FieldEditorPreferencePage {
    }
 
    private boolean isBoolean(String var1) {
-      return var1.equalsIgnoreCase("true") || var1.equalsIgnoreCase("false");
+      return var1 != null && (var1.equalsIgnoreCase("true") || var1.equalsIgnoreCase("false"));
    }
 
    private boolean isInteger(String var1) {

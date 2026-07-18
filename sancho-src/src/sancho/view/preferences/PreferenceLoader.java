@@ -266,7 +266,6 @@ public class PreferenceLoader {
       var0.setDefault("coolbarLocked", true);
       var0.setDefault("toolbarSmallButtons", true);
       var0.setDefault("flatInterface", false);
-      var0.setDefault("useGraident", true);
       var0.setDefault("splashScreen", true);
       var0.setDefault("killCoreOnExit", false);
       var0.setDefault("killSpawnedCoreOnExit", true);

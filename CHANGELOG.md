@@ -8,6 +8,39 @@ The upstream project's original changelog (2004–2006) is preserved at
 authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 (`git checkout 0.9.4-23`).
 
+## [Unreleased]
+
+### Fixed
+
+- **Size/rate numbers could intermittently corrupt or crash (data race).**
+  `SwissArmy.calcStringSize` / `calcStringSizeGrouped` weren't `synchronized` yet shared
+  the static `DecimalFormat` (`df000`/`df00`/`dfGrouped`) and `FieldPosition` with the
+  already-synchronized `calcRate`/`percentToString`. The core reader thread formats sizes
+  (shared-file totals, upload table) while the UI thread formats table columns, so the two
+  raced on the non-thread-safe formatters → occasional `ArrayIndexOutOfBoundsException`
+  from `DigitList` or garbled numbers. Both methods are now `synchronized` on the same
+  monitor.
+- **"Update Registry" on the File Extensions tab crashed.** `changedExtPrefs` looped over
+  `registerLinks.length` (4) while indexing `registerExtensions` (length 1) →
+  `ArrayIndexOutOfBoundsException` when the ".torrent" option was left unchanged. Bounded
+  by the array actually indexed.
+- **A malformed line in the download log crashed the Download-Complete window.**
+  `DownloadCompleteItem.parseLine` sliced with an unchecked `indexOf("|")` result; a
+  truncated `ed2k://` line (`indexOf` → -1) threw `StringIndexOutOfBoundsException`. The
+  separators are now bounds-checked.
+- **Chunk-image cache grew without bound.** The downloads tree cached a `ChunkImageData`
+  per row in the label provider but the viewer pruned a different, never-populated field,
+  so removed/finished downloads leaked their chunk buffers for the whole session. The
+  prune now targets the real cache.
+- **ETA-column sort was unstable** with two or more empty-ETA rows (`compare` violated
+  antisymmetry — the case-8 fix pattern was missing here); empty ETAs now compare equal.
+- **Robustness guards:** a null option value no longer NPEs the advanced-options page
+  (`isBoolean(null)`); the network-stats label provider no longer NPEs on dispose before
+  first render; the tray tooltip/restore paths null-check `trayItem` (consistent with the
+  tray-less-platform fallback). Removed a stray decompiled `drawText("is the time", …)`
+  from the download name column and a dead misspelled `useGraident` preference default;
+  the chunk detail canvas now repaints on resize.
+
 ## [0.9.4-73] — 2026-07-18
 
 ### Fixed

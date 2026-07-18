@@ -435,6 +435,7 @@ public class ChunkCanvas extends Canvas implements MyObserver, DisposeListener, 
          int var6 = this.resizedImageData.height;
          if (var3 > 0 && var4 > 0 && (var2 || var3 != var5 || var4 != var6)) {
             this.resizedImageData = this.imageData.scaledTo(var3, var4);
+            this.redraw();
          }
       } else {
          this.rectangle = this.getClientArea();

@@ -51,7 +51,10 @@ public class WinRegPreferencePage extends CPreferencePage {
    }
 
    private boolean changedExtPrefs() {
-      for (int var1 = 0; var1 < this.registerLinks.length; var1++) {
+      // Bound by the array actually indexed (registerExtensions, length 1) — the old
+      // registerLinks.length (4) ran off the end and threw AIOOBE when the ".torrent"
+      // option was left unchanged and "Update Registry" was clicked.
+      for (int var1 = 0; var1 < this.registerExtensions.length; var1++) {
          if (this.registerExtensions[var1].getSelection() != 0) {
             return true;
          }

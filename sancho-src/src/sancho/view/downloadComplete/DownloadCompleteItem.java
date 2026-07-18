@@ -74,6 +74,9 @@ public class DownloadCompleteItem implements IObject_UID {
                this.name = var4.substring(13, var5);
                int var6 = var5 + 1;
                var5 = var4.indexOf("|", var6);
+               if (var5 < 0) {
+                  return false;
+               }
 
                try {
                   this.size = Long.parseLong(var4.substring(var6, var5));
@@ -84,6 +87,10 @@ public class DownloadCompleteItem implements IObject_UID {
 
                var6 = var5 + 1;
                var5 = var4.indexOf("|", var6);
+               if (var5 < 0) {
+                  return false;
+               }
+
                this.hash = var4.substring(var6, var5).toUpperCase();
                return true;
             }

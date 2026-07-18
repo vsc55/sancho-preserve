@@ -122,7 +122,10 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
 
       this.shell.forceActive();
       this.setTitleBarText();
-      this.trayItem.setToolTipText(this.titleBarText);
+      if (this.trayItem != null && !this.trayItem.isDisposed()) {
+         this.trayItem.setToolTipText(this.titleBarText);
+      }
+
       this.isRestoring = false;
    }
 
@@ -155,7 +158,9 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
       var2.append(var1.getTcpDownRateString());
       var2.append(", UL: ");
       var2.append(var1.getTcpUpRateString());
-      this.trayItem.setToolTipText(var2.toString());
+      if (this.trayItem != null && !this.trayItem.isDisposed()) {
+         this.trayItem.setToolTipText(var2.toString());
+      }
    }
 
    public void widgetDisposed(DisposeEvent var1) {
