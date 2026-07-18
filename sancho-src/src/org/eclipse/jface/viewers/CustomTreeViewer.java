@@ -574,6 +574,29 @@ public class CustomTreeViewer extends TreeViewer implements ICustomViewer {
             var5.clear(var18, true);
          }
       }
+
+      // Explicitly render the visible top-level rows from the freshly-sorted content
+      // provider, mirroring CustomTableViewer.myClear. The positional-diff clear above
+      // relies on SWT lazy SetData re-firing, which the modernized SWT/JFace does not
+      // do reliably, so top rows could otherwise render stale ("stuck") after a column
+      // sort or filter switch. Bounded by the screen height (child rows keep using the
+      // expand SetData path).
+      GTreeContentProvider var20 = (GTreeContentProvider)this.getContentProvider();
+      Object var21 = this.getInput();
+      if (var21 != null) {
+         int var22 = var5.getItemHeight();
+         TreeItem var26 = var5.getTopItem();
+         int var23 = var26 != null ? var5.indexOf(var26) : 0;
+         if (var23 < 0) {
+            var23 = 0;
+         }
+
+         int var24 = var22 > 0 ? var5.getClientArea().height / var22 + 2 : var1;
+
+         for (int var25 = var23; var25 < var1 && var25 < var23 + var24; var25++) {
+            var20.updateElement(var5.getItem(var25), var21, var25);
+         }
+      }
    }
 
    protected void myInternalVirtualRefreshAll() {

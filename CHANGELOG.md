@@ -8,6 +8,17 @@ The upstream project's original changelog (2004–2006) is preserved at
 authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 (`git checkout 0.9.4-23`).
 
+## [Unreleased]
+
+### Fixed
+
+- **Downloads/Transfers tree could show stale rows after sorting/filtering** — the
+  same virtual-viewer gap fixed for tables in 0.9.4-71, found by auditing the
+  sibling `CustomTreeViewer`. Its `myClear` relied on SWT lazy `SetData` re-firing
+  (unreliable on modern SWT/JFace), so top-level rows could keep pre-sort content.
+  It now explicitly renders the visible top-level rows from the freshly-sorted
+  content provider, mirroring the table fix.
+
 ## [0.9.4-71] — 2026-07-18
 
 ### Added
