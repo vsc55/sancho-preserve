@@ -2,6 +2,10 @@
 
 [![Build](https://github.com/vsc55/sancho-p2p/actions/workflows/build.yml/badge.svg)](https://github.com/vsc55/sancho-p2p/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/vsc55/sancho-p2p?display_name=tag&sort=date)](https://github.com/vsc55/sancho-p2p/releases)
+[![Downloads](https://img.shields.io/github/downloads/vsc55/sancho-p2p/total)](https://github.com/vsc55/sancho-p2p/releases)
+[![License](https://img.shields.io/badge/license-CPL--1.0-blue)](LICENSE)
+![Java](https://img.shields.io/badge/Java-17%2B-orange?logo=openjdk&logoColor=white)
+![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational)
 
 **Sancho** is a Java/SWT desktop GUI for the **MLDonkey** peer-to-peer client
 (eDonkey2000, Kademlia, BitTorrent and more), originally developed by
@@ -247,7 +251,7 @@ but preserved via the Internet Archive:
 <https://web.archive.org/web/20190304231314/http://sancho.awardspace.com/>
 
 Bundled/used third-party components remain under their own licenses: Eclipse
-SWT/JFace (EPL/CPL), GNU Trove (LGPL), GNU RegExp (LGPL), JSch (BSD-style),
-PircBot. See [LICENSE](LICENSE) and [sancho-src/CPL.txt](sancho-src/CPL.txt).
+SWT/JFace (EPL/CPL), GNU Trove (LGPL), JSch (BSD-style), PircBot. See
+[LICENSE](LICENSE) and [sancho-src/CPL.txt](sancho-src/CPL.txt).
 The upstream project's original changelog (2004–2006) is preserved at
 [`appimage/usr/bin/distrib/ChangeLog`](appimage/usr/bin/distrib/ChangeLog).
