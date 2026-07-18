@@ -44,6 +44,14 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
   an effectively-final copy where a listener needed it. The `0.9.4-23` original was used
   as a structural template where available. No behaviour change; the first, opportunistic
   steps of the inner-class re-merge (see ToDo). Verified: browser tab and all menus work.
+- **Renamed the decompiler's `var1`/`var2`/… locals to descriptive names** across the whole
+  `sancho.core` package (`ICore`, `MLDonkeyCore`, `MLDonkeyCoreMonitor`, `SSHCoreFactory`,
+  `Sancho`) — e.g. `processMessage(int opcode, MessageBuffer buffer)`, `send(short opcode,
+  Object[] args)`, the SSH proxy setup (`proxyHost`/`proxyPort`/`proxy`/`proxyPass`), and
+  `Sancho`'s argument parsing (`arg`/`flag`/`value`). Also modernized `MLDonkeyCore`'s
+  decompiled `Class.forName`/`class$` idiom for the active-tab check into a plain
+  `instanceof SharesTab` / `instanceof TransferTab`, removing the two synthetic `class$…`
+  fields and the synthetic `class$()` method. No behaviour change.
 
 ### Removed
 

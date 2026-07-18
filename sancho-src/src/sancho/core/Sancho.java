@@ -47,20 +47,20 @@ public class Sancho {
       return bHasLoaded;
    }
 
-   public static void addLink(String var0) {
+   public static void addLink(String link) {
       if (linkList == null) {
          linkList = new ArrayList();
       }
 
-      linkList.add(var0);
+      linkList.add(link);
    }
 
-   public static boolean argCheck(char var0, String var1) {
-      return var1.length() == 2 && var1.indexOf(var0) == 1 && (var1.startsWith("-") || var1.startsWith("/"));
+   public static boolean argCheck(char flag, String arg) {
+      return arg.length() == 2 && arg.indexOf(flag) == 1 && (arg.startsWith("-") || arg.startsWith("/"));
    }
 
-   public static boolean argCheck(String var0, String var1) {
-      return (var1.startsWith("-") || var1.startsWith("/")) && var1.substring(1).equals(var0);
+   public static boolean argCheck(String flag, String arg) {
+      return (arg.startsWith("-") || arg.startsWith("/")) && arg.substring(1).equals(flag);
    }
 
    private static void automatedLaunch() {
@@ -79,22 +79,22 @@ public class Sancho {
 
    private static void createLockFile() {
       try {
-         FileOutputStream var0 = new FileOutputStream(ourLockFile);
-         PrintStream var1 = new PrintStream(var0);
-         var1.close();
-         var0.close();
+         FileOutputStream out = new FileOutputStream(ourLockFile);
+         PrintStream printStream = new PrintStream(out);
+         printStream.close();
+         out.close();
          ourLockFile.deleteOnExit();
-      } catch (FileNotFoundException var3) {
-      } catch (IOException var4) {
+      } catch (FileNotFoundException fileNotFound) {
+      } catch (IOException ioException) {
       }
    }
 
-   public static void exit(int var0) {
+   public static void exit(int code) {
       if (stringBuffer.length() > 0) {
          if (VersionInfo.getOSPlatform().equals("Windows") && stringBuffer.length() > 0) {
-            MessageBox var1 = new MessageBox(new Shell(), 34);
-            var1.setMessage(stringBuffer.toString());
-            var1.open();
+            MessageBox messageBox = new MessageBox(new Shell(), 34);
+            messageBox.setMessage(stringBuffer.toString());
+            messageBox.open();
          } else {
             System.out.println(stringBuffer.toString());
          }
@@ -104,7 +104,7 @@ public class Sancho {
          display.dispose();
       }
 
-      System.exit(var0);
+      System.exit(code);
    }
 
    public static ICore getCore() {
@@ -143,21 +143,21 @@ public class Sancho {
    private static void initializeResources() {
       try {
          PreferenceLoader.initialize();
-      } catch (IOException var2) {
-         var2.printStackTrace();
+      } catch (IOException ioException) {
+         ioException.printStackTrace();
          System.exit(2);
       }
 
       SResources.initialize();
       PreferenceLoader.initialize2();
-      File var0 = new File(VersionInfo.getHomeDirectory() + "exit.log");
-      if (var0.exists()) {
-         var0.delete();
+      File exitLog = new File(VersionInfo.getHomeDirectory() + "exit.log");
+      if (exitLog.exists()) {
+         exitLog.delete();
       }
 
-      File var1 = new File(VersionInfo.getHomeDirectory() + "console.msg");
-      if (var1.exists()) {
-         var1.delete();
+      File consoleMsg = new File(VersionInfo.getHomeDirectory() + "console.msg");
+      if (consoleMsg.exists()) {
+         consoleMsg.delete();
       }
    }
 
@@ -184,7 +184,7 @@ public class Sancho {
       Splash.dispose();
    }
 
-   public static void main(String[] var0) {
+   public static void main(String[] args) {
       // Note: tolerance for live model data mutating mid-sort now lives in
       // GSorter.sort() (a local stable merge sort), so the global
       // -Djava.util.Arrays.useLegacyMergeSort flag is no longer needed.
@@ -202,7 +202,7 @@ public class Sancho {
       }
 
       coreFactory = new SSHCoreFactory(display);
-      parseArgs(var0);
+      parseArgs(args);
       initializeResources();
       coreFactory.initialize();
       if (linkList != null) {
@@ -213,17 +213,17 @@ public class Sancho {
       }
 
       if (!debug && !PreferenceLoader.loadBoolean("allowMultipleInstances")) {
-         boolean var1 = false;
+         boolean lockExists = false;
          ourLockFile = new File(VersionInfo.getHomeDirectory() + ".lock");
-         var1 = ourLockFile.exists();
-         if (!var1) {
+         lockExists = ourLockFile.exists();
+         if (!lockExists) {
             deleteLockFile = true;
             createLockFile();
          } else {
-            MessageBox var2 = new MessageBox(new Shell(display), 193);
-            var2.setText(SResources.getString("core.multipleCoresTitle"));
-            var2.setMessage(SResources.getString("core.multipleCoresText"));
-            if (var2.open() == 128) {
+            MessageBox messageBox = new MessageBox(new Shell(display), 193);
+            messageBox.setText(SResources.getString("core.multipleCoresTitle"));
+            messageBox.setMessage(SResources.getString("core.multipleCoresText"));
+            if (messageBox.open() == 128) {
                deleteLockFile = false;
                exit(0);
             } else {
@@ -236,103 +236,103 @@ public class Sancho {
       exit(0);
    }
 
-   public static void parseArgs(String[] var0) {
-      for (int var1 = 0; var1 < var0.length; var1++) {
-         if (!parseSingle(var0[var1])) {
-            if (var0.length > var1 + 1 && parseDouble(var0[var1], var0[var1 + 1])) {
-               var1++;
+   public static void parseArgs(String[] args) {
+      for (int i = 0; i < args.length; i++) {
+         if (!parseSingle(args[i])) {
+            if (args.length > i + 1 && parseDouble(args[i], args[i + 1])) {
+               i++;
             } else {
-               addLink(var0[var1]);
+               addLink(args[i]);
             }
          }
       }
    }
 
-   public static void pDebug(String var0) {
+   public static void pDebug(String message) {
       if (debug || sDebug) {
-         System.err.println("[" + System.currentTimeMillis() + "] " + var0);
+         System.err.println("[" + System.currentTimeMillis() + "] " + message);
       }
    }
 
-   public static synchronized void fDebug(String var0, String var1) {
+   public static synchronized void fDebug(String message, String fileName) {
       try {
-         FileOutputStream var2 = new FileOutputStream(VersionInfo.getHomeDirectory() + var1, true);
-         PrintStream var3 = new PrintStream(var2);
-         var3.print(var0);
-         if (!var0.endsWith("\n")) {
-            var3.print("\n");
+         FileOutputStream out = new FileOutputStream(VersionInfo.getHomeDirectory() + fileName, true);
+         PrintStream printStream = new PrintStream(out);
+         printStream.print(message);
+         if (!message.endsWith("\n")) {
+            printStream.print("\n");
          }
 
-         var3.close();
-         var2.close();
-      } catch (Exception var4) {
-         var4.printStackTrace();
+         printStream.close();
+         out.close();
+      } catch (Exception exception) {
+         exception.printStackTrace();
       }
    }
 
-   public static boolean parseDouble(String var0, String var1) {
-      if (argCheck('c', var0)) {
-         PreferenceLoader.setPrefFile(var1);
+   public static boolean parseDouble(String arg, String value) {
+      if (argCheck('c', arg)) {
+         PreferenceLoader.setPrefFile(value);
          return true;
-      } else if (argCheck('j', var0)) {
-         PreferenceLoader.setHomeDirectory(var1);
+      } else if (argCheck('j', arg)) {
+         PreferenceLoader.setHomeDirectory(value);
          return true;
-      } else if (argCheck('l', var0)) {
-         addLink(var1);
+      } else if (argCheck('l', arg)) {
+         addLink(value);
          return true;
-      } else if (argCheck('r', var0) || argCheck('R', var0)) {
-         PreferenceLoader.jvm = var1;
+      } else if (argCheck('r', arg) || argCheck('R', arg)) {
+         PreferenceLoader.jvm = value;
          return true;
-      } else if (argCheck('f', var0)) {
-         PreferenceLoader.setLocaleString(var1);
+      } else if (argCheck('f', arg)) {
+         PreferenceLoader.setLocaleString(value);
          return true;
-      } else if (argCheck('H', var0) || argCheck('h', var0)) {
-         String[] var2 = SwissArmy.split(var1, ':');
-         if (var2.length == 2) {
+      } else if (argCheck('H', arg) || argCheck('h', arg)) {
+         String[] hostPort = SwissArmy.split(value, ':');
+         if (hostPort.length == 2) {
             try {
-               int var3 = Integer.parseInt(var2[1]);
-               coreFactory.setHostPort(var2[0], var3);
-            } catch (NumberFormatException var5) {
+               int port = Integer.parseInt(hostPort[1]);
+               coreFactory.setHostPort(hostPort[0], port);
+            } catch (NumberFormatException notANumber) {
             }
          }
 
          return true;
-      } else if (argCheck('U', var0) || argCheck('u', var0)) {
-         coreFactory.setUsername(var1);
+      } else if (argCheck('U', arg) || argCheck('u', arg)) {
+         coreFactory.setUsername(value);
          return true;
-      } else if (!argCheck('P', var0) && !argCheck('p', var0)) {
+      } else if (!argCheck('P', arg) && !argCheck('p', arg)) {
          return false;
       } else {
-         coreFactory.setPassword(var1);
+         coreFactory.setPassword(value);
          return true;
       }
    }
 
-   public static boolean parseSingle(String var0) {
-      if (argCheck('?', var0)) {
+   public static boolean parseSingle(String arg) {
+      if (argCheck('?', arg)) {
          printHelp();
          exit(1);
          return false;
-      } else if (argCheck("min", var0)) {
+      } else if (argCheck("min", arg)) {
          startMinimized = true;
          return true;
-      } else if (argCheck("tray", var0)) {
+      } else if (argCheck("tray", arg)) {
          startTray = true;
          return true;
-      } else if (argCheck('v', var0) || argCheck('V', var0)) {
+      } else if (argCheck('v', arg) || argCheck('V', arg)) {
          printVersion();
          exit(1);
          return false;
-      } else if (argCheck('d', var0)) {
+      } else if (argCheck('d', arg)) {
          debug = true;
          return true;
-      } else if (argCheck('b', var0)) {
+      } else if (argCheck('b', arg)) {
          noBrowser = true;
          return true;
-      } else if (argCheck('m', var0)) {
+      } else if (argCheck('m', arg)) {
          monitorMode = true;
          return true;
-      } else if (argCheck('n', var0)) {
+      } else if (argCheck('n', arg)) {
          noCore = true;
          return true;
       } else {
@@ -361,12 +361,12 @@ public class Sancho {
       printOption("tray", "", "cmdline.tray");
    }
 
-   public static void printOption(char var0, String var1, String var2) {
-      stringBuffer.append("  -" + var0 + " " + var1 + " \t" + SResources.getString(var2) + "\n");
+   public static void printOption(char flag, String param, String descKey) {
+      stringBuffer.append("  -" + flag + " " + param + " \t" + SResources.getString(descKey) + "\n");
    }
 
-   public static void printOption(String var0, String var1, String var2) {
-      stringBuffer.append("  -" + var0 + " " + var1 + " \t" + SResources.getString(var2) + "\n");
+   public static void printOption(String flag, String param, String descKey) {
+      stringBuffer.append("  -" + flag + " " + param + " \t" + SResources.getString(descKey) + "\n");
    }
 
    public static void printVersion() {
@@ -375,43 +375,43 @@ public class Sancho {
 
    private static void sendDownloadLinks() {
       if (getCore() != null) {
-         for (int var0 = 0; var0 < linkList.size(); var0++) {
-            SwissArmy.sendLink(getCore(), (String)linkList.get(var0));
+         for (int i = 0; i < linkList.size(); i++) {
+            SwissArmy.sendLink(getCore(), (String)linkList.get(i));
          }
       }
    }
 
    private static void spawnCore() {
       Splash.updateText("splash.spawningCore");
-      File var0 = new File(PreferenceLoader.loadString("coreExecutable"));
-      int var1 = PreferenceLoader.loadInt("hm_0_port");
-      spawnAborted = SwissArmy.portInUse(var1);
+      File coreExe = new File(PreferenceLoader.loadString("coreExecutable"));
+      int port = PreferenceLoader.loadInt("hm_0_port");
+      spawnAborted = SwissArmy.portInUse(port);
       if (spawnAborted) {
          Splash.updateText("splash.spawningAborted");
       } else {
-         if (execConsole == null && var0.exists() && var0.isFile()) {
+         if (execConsole == null && coreExe.exists() && coreExe.isFile()) {
             execConsole = new ExecConsole(display);
-            int var2 = 0;
+            int attempts = 0;
 
-            while (var2++ < 235 && !execConsole.coreStarted()) {
+            while (attempts++ < 235 && !execConsole.coreStarted()) {
                SwissArmy.threadSleep(250);
             }
          }
       }
    }
 
-   public static void send(short var0, Object[] var1) {
+   public static void send(short opcode, Object[] args) {
       if (getCore() != null) {
-         getCore().send(var0, var1);
+         getCore().send(opcode, args);
       }
    }
 
-   public static void send(short var0, Object var1) {
-      send(var0, new Object[]{var1});
+   public static void send(short opcode, Object arg) {
+      send(opcode, new Object[]{arg});
    }
 
-   public static void send(short var0) {
-      send(var0, null);
+   public static void send(short opcode) {
+      send(opcode, null);
    }
 
    public static void threadException(final String message, final Exception exception) {

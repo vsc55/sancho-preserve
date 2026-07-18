@@ -25,6 +25,8 @@ import sancho.model.mldonkey.utility.MessageEncoder;
 import sancho.model.mldonkey.utility.UtilityFactory;
 import sancho.utility.MyObservable;
 import sancho.utility.SwissArmy;
+import sancho.view.SharesTab;
+import sancho.view.TransferTab;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.AbstractTab;
 
@@ -60,18 +62,14 @@ public class MLDonkeyCore extends MyObservable implements ICore {
    protected int timerCounter;
    protected String mldonkeyVersion = "";
    protected int opCode;
-   // $VF: synthetic field
-   static Class class$sancho$view$SharesTab;
-   // $VF: synthetic field
-   static Class class$sancho$view$TransferTab;
 
-   public MLDonkeyCore(Socket var1, String var2, String var3, boolean var4) {
-      this.socket = var1;
-      this.username = var2;
-      this.password = var3;
-      this.pollMode = var4;
+   public MLDonkeyCore(Socket socket, String username, String password, boolean pollMode) {
+      this.socket = socket;
+      this.username = username;
+      this.password = password;
+      this.pollMode = pollMode;
       this.semaphore = false;
-      this.messageEncoder = new MessageEncoder(var1);
+      this.messageEncoder = new MessageEncoder(socket);
       this.updatePreferences();
    }
 
@@ -92,8 +90,8 @@ public class MLDonkeyCore extends MyObservable implements ICore {
    }
 
    protected void enablePollMode() {
-      Object[] var1 = new Object[]{Short.valueOf((short)1), Integer.valueOf(1), Byte.valueOf((byte)1)};
-      this.send((short)47, var1);
+      Object[] args = new Object[]{Short.valueOf((short)1), Integer.valueOf(1), Byte.valueOf((byte)1)};
+      this.send((short)47, args);
    }
 
    public synchronized ClientCollection getClientCollection() {
@@ -184,15 +182,15 @@ public class MLDonkeyCore extends MyObservable implements ICore {
       }
    }
 
-   public void notifyObject(Object var1) {
+   public void notifyObject(Object object) {
       this.setChanged();
-      this.notifyObservers(var1);
+      this.notifyObservers(object);
    }
 
-   private void onIOException(IOException var1) {
+   private void onIOException(IOException exception) {
       this.disconnect();
       this.setChanged();
-      this.notifyObservers(var1);
+      this.notifyObservers(exception);
    }
 
    private void pollStats() {
@@ -200,14 +198,11 @@ public class MLDonkeyCore extends MyObservable implements ICore {
    }
 
    private void pollForStats() {
-      if (this.pollUpStats
-         && (class$sancho$view$SharesTab == null ? (class$sancho$view$SharesTab = class$("sancho.view.SharesTab")) : class$sancho$view$SharesTab)
-            .isInstance(this.activeTab)) {
+      if (this.pollUpStats && this.activeTab instanceof SharesTab) {
          this.send((short)49);
       }
 
-      if ((class$sancho$view$TransferTab == null ? (class$sancho$view$TransferTab = class$("sancho.view.TransferTab")) : class$sancho$view$TransferTab)
-         .isInstance(this.activeTab)) {
+      if (this.activeTab instanceof TransferTab) {
          if (this.getProtocol() >= 23) {
             if (this.pollUploaders) {
                this.send((short)57);
@@ -222,12 +217,12 @@ public class MLDonkeyCore extends MyObservable implements ICore {
       }
    }
 
-   protected void readCoreProtocol(MessageBuffer var1) {
-      this.coreProtocol = var1.getInt32();
+   protected void readCoreProtocol(MessageBuffer buffer) {
+      this.coreProtocol = buffer.getInt32();
       this.activeProtocol = Math.min(this.coreProtocol, 41);
       if (this.activeProtocol > 29) {
-         this.max_to_gui = var1.getInt32();
-         this.max_from_gui = var1.getInt32();
+         this.max_to_gui = buffer.getInt32();
+         this.max_from_gui = buffer.getInt32();
       }
 
       if (this.pollMode) {
@@ -241,17 +236,17 @@ public class MLDonkeyCore extends MyObservable implements ICore {
       this.startTimer();
    }
 
-   void processMessage(int var1, MessageBuffer var2) throws Exception {
-      switch (var1) {
+   void processMessage(int opcode, MessageBuffer buffer) throws Exception {
+      switch (opcode) {
          case 0:
-            this.readCoreProtocol(var2);
+            this.readCoreProtocol(buffer);
             break;
          case 1:
             if (!this.initialized) {
                this.notifyInitialized();
             }
 
-            this.getOptionCollection().read(var2);
+            this.getOptionCollection().read(buffer);
          case 2:
          case 7:
          case 8:
@@ -277,122 +272,122 @@ public class MLDonkeyCore extends MyObservable implements ICore {
          default:
             break;
          case 3:
-            this.getDefineSearchesCollection().read(var2);
+            this.getDefineSearchesCollection().read(buffer);
             break;
          case 4:
-            this.getResultCollection().resultInfo(var2);
+            this.getResultCollection().resultInfo(buffer);
             break;
          case 5:
-            this.getResultCollection().read(var2);
+            this.getResultCollection().read(buffer);
             break;
          case 6:
-            this.getResultCollection().searchWaiting(var2);
+            this.getResultCollection().searchWaiting(buffer);
             break;
          case 9:
-            this.getClientCollection().updateAvailability(var2);
+            this.getClientCollection().updateAvailability(buffer);
             break;
          case 10:
-            this.getFileCollection().addSource(var2);
+            this.getFileCollection().addSource(buffer);
             break;
          case 12:
-            this.getServerCollection().serverUser(var2);
+            this.getServerCollection().serverUser(buffer);
             break;
          case 13:
-            this.getServerCollection().readUpdate(var2);
+            this.getServerCollection().readUpdate(buffer);
             break;
          case 15:
-            this.getClientCollection().read(var2);
+            this.getClientCollection().read(buffer);
             break;
          case 16:
-            this.getClientCollection().readUpdate(var2);
+            this.getClientCollection().readUpdate(buffer);
             break;
          case 18:
-            this.getClientCollection().clientFile(var2);
+            this.getClientCollection().clientFile(buffer);
             break;
          case 19:
-            this.getConsoleMessage().read(var2);
+            this.getConsoleMessage().read(buffer);
             break;
          case 20:
-            this.getNetworkCollection().read(var2);
+            this.getNetworkCollection().read(buffer);
             break;
          case 21:
-            this.getUserCollection().read(var2);
+            this.getUserCollection().read(buffer);
             break;
          case 23:
-            this.getRoomCollection().roomMessage(var2);
+            this.getRoomCollection().roomMessage(buffer);
             break;
          case 24:
-            this.getRoomCollection().addUser(var2);
+            this.getRoomCollection().addUser(buffer);
             break;
          case 26:
-            this.getServerCollection().read(var2);
+            this.getServerCollection().read(buffer);
             break;
          case 27:
-            ClientMessage var3 = UtilityFactory.getClientMessage(this);
-            var3.read(var2);
+            ClientMessage clientMessage = UtilityFactory.getClientMessage(this);
+            clientMessage.read(buffer);
             this.setChanged();
-            this.notifyObservers(var3);
+            this.notifyObservers(clientMessage);
             break;
          case 31:
-            this.getRoomCollection().read(var2);
+            this.getRoomCollection().read(buffer);
             break;
          case 32:
-            this.getRoomCollection().removeUser(var2);
+            this.getRoomCollection().removeUser(buffer);
             break;
          case 34:
-            this.getSharedFileCollection().upload(var2);
+            this.getSharedFileCollection().upload(buffer);
             break;
          case 35:
-            this.getSharedFileCollection().unshared(var2);
+            this.getSharedFileCollection().unshared(buffer);
             break;
          case 36:
-            this.getOptionCollection().addSectionOption(var2);
+            this.getOptionCollection().addSectionOption(buffer);
             break;
          case 38:
-            this.getOptionCollection().addPluginOption(var2);
+            this.getOptionCollection().addPluginOption(buffer);
             break;
          case 46:
-            this.getFileCollection().update(var2);
+            this.getFileCollection().update(buffer);
             break;
          case 47:
             this.disconnect();
             this.semaphore = true;
             break;
          case 48:
-            this.getSharedFileCollection().read(var2);
+            this.getSharedFileCollection().read(buffer);
             break;
          case 49:
             if (!this.initialized) {
                this.notifyInitialized();
             }
 
-            this.getClientStats().read(var2);
+            this.getClientStats().read(buffer);
             break;
          case 50:
-            this.getFileCollection().removeSource(var2);
+            this.getFileCollection().removeSource(buffer);
             break;
          case 51:
-            this.getClientCollection().clean(var2);
-            this.getServerCollection().clean(var2);
+            this.getClientCollection().clean(buffer);
+            this.getServerCollection().clean(buffer);
             this.getFileCollection().clean();
             break;
          case 52:
-            this.getFileCollection().add(var2);
+            this.getFileCollection().add(buffer);
             break;
          case 53:
-            this.getFileCollection().read(var2);
+            this.getFileCollection().read(buffer);
             break;
          case 55:
-            this.getClientCollection().uploaders(var2);
+            this.getClientCollection().uploaders(buffer);
             break;
          case 56:
-            this.getClientCollection().pending(var2);
+            this.getClientCollection().pending(buffer);
             break;
          case 58:
-            this.mldonkeyVersion = var2.getString();
+            this.mldonkeyVersion = buffer.getString();
             break;
          case 59:
-            this.getNetworkCollection().readStats(var2);
+            this.getNetworkCollection().readStats(buffer);
       }
    }
 
@@ -413,23 +408,23 @@ public class MLDonkeyCore extends MyObservable implements ICore {
             this.opCode = this.messageBuffer.readMessage();
             this.processMessage(this.opCode, this.messageBuffer);
          }
-      } catch (SocketException var6) {
-         var6.printStackTrace();
+      } catch (SocketException socketException) {
+         socketException.printStackTrace();
          this.checkIfDenied();
-      } catch (IOException var7) {
+      } catch (IOException ioException) {
          this.checkIfDenied();
-         this.onIOException(var7);
-      } catch (Exception var8) {
-         String var4 = "";
-         int var5 = -1;
+         this.onIOException(ioException);
+      } catch (Exception exception) {
+         String lastMessage = "";
+         int lastLength = -1;
          if (this.messageBuffer != null) {
-            var4 = this.messageBuffer.getLastMessage();
-            var5 = this.messageBuffer.getLastLength();
+            lastMessage = this.messageBuffer.getLastMessage();
+            lastLength = this.messageBuffer.getLastLength();
          }
 
          Sancho.threadException(
-            "Core o(" + this.opCode + ") l(" + var5 + ") p(" + this.coreProtocol + ") m(" + this.getCoreVersion() + ") t(" + this.activeTab + ")\n\n" + var4,
-            var8
+            "Core o(" + this.opCode + ") l(" + lastLength + ") p(" + this.coreProtocol + ") m(" + this.getCoreVersion() + ") t(" + this.activeTab + ")\n\n" + lastMessage,
+            exception
          );
          this.onIOException(new IOException());
       }
@@ -440,19 +435,19 @@ public class MLDonkeyCore extends MyObservable implements ICore {
       }
    }
 
-   public void send(short var1) {
-      this.send(var1, null);
+   public void send(short opcode) {
+      this.send(opcode, null);
    }
 
-   public void send(short var1, Object var2) {
-      this.send(var1, new Object[]{var2});
+   public void send(short opcode, Object arg) {
+      this.send(opcode, new Object[]{arg});
    }
 
-   public void send(short var1, Object[] var2) {
+   public void send(short opcode, Object[] args) {
       try {
-         this.messageEncoder.send(var1, var2);
-      } catch (IOException var4) {
-         this.onIOException(var4);
+         this.messageEncoder.send(opcode, args);
+      } catch (IOException ioException) {
+         this.onIOException(ioException);
       }
    }
 
@@ -460,9 +455,9 @@ public class MLDonkeyCore extends MyObservable implements ICore {
       this.sendInterestedInSources(PreferenceLoader.loadBoolean("mldonkey.InterestedInSources"));
    }
 
-   protected void sendInterestedInSources(boolean var1) {
+   protected void sendInterestedInSources(boolean interested) {
       if (this.getProtocol() >= 27) {
-         this.send((short)64, Byte.valueOf((byte)(var1 ? 1 : 0)));
+         this.send((short)64, Byte.valueOf((byte)(interested ? 1 : 0)));
       }
    }
 
@@ -480,8 +475,8 @@ public class MLDonkeyCore extends MyObservable implements ICore {
       this.send((short)0, Integer.valueOf(41));
    }
 
-   public void setActiveTab(AbstractTab var1) {
-      this.activeTab = var1;
+   public void setActiveTab(AbstractTab tab) {
+      this.activeTab = tab;
       this.pollForStats();
    }
 
@@ -545,14 +540,4 @@ public class MLDonkeyCore extends MyObservable implements ICore {
          this.getResultCollection().updatePreferences();
       }
    }
-
-   // $VF: synthetic method
-   static Class class$(String var0) {
-      try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
-      }
-   }
-
 }

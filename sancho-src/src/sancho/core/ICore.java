@@ -17,9 +17,9 @@ import sancho.utility.MyObserver;
 import sancho.view.utility.AbstractTab;
 
 public interface ICore extends Runnable {
-   void addObserver(MyObserver var1);
+   void addObserver(MyObserver observer);
 
-   void deleteObserver(MyObserver var1);
+   void deleteObserver(MyObserver observer);
 
    void deleteObservers();
 
@@ -69,13 +69,13 @@ public interface ICore extends Runnable {
 
    UserCollection getUserCollection();
 
-   void send(short var1, Object[] var2);
+   void send(short opcode, Object[] args);
 
-   void send(short var1, Object var2);
+   void send(short opcode, Object arg);
 
-   void send(short var1);
+   void send(short opcode);
 
-   void setActiveTab(AbstractTab var1);
+   void setActiveTab(AbstractTab tab);
 
    void updatePreferences();
 }

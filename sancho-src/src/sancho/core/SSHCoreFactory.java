@@ -37,17 +37,17 @@ public class SSHCoreFactory extends CoreFactory {
    private int ssh_prport = -1;
    private int ssh_plport = -1;
 
-   public SSHCoreFactory(Display var1) {
-      super(var1);
+   public SSHCoreFactory(Display display) {
+      super(display);
    }
 
    public String getConnectedString() {
-      String var1 = "";
+      String serverVersion = "";
       if (this.session != null) {
-         var1 = "| " + this.session.getServerVersion();
+         serverVersion = "| " + this.session.getServerVersion();
       }
 
-      return super.getConnectedString() + " " + var1;
+      return super.getConnectedString() + " " + serverVersion;
    }
 
    public void disconnectSSH() {
@@ -55,8 +55,8 @@ public class SSHCoreFactory extends CoreFactory {
          if (this.session != null) {
             try {
                this.session.delPortForwardingL(this.ssh_lport);
-            } catch (JSchException var2) {
-               System.err.println("delPortForwarding: " + var2);
+            } catch (JSchException jschException) {
+               System.err.println("delPortForwarding: " + jschException);
             }
 
             this.session.disconnect();
@@ -75,11 +75,11 @@ public class SSHCoreFactory extends CoreFactory {
       } else {
          try {
             this.jsch = new JSch();
-            String var1 = System.getProperty("file.separator");
-            String var4 = VersionInfo.getUserHomeDirectory() + var1 + ".ssh" + var1;
-            this.jsch.setKnownHosts(var4 + "known_hosts");
-            this.addIdentity(this.jsch, new File(var4 + "id_dsa"), this.ssh_pass);
-            this.addIdentity(this.jsch, new File(var4 + "id_rsa"), this.ssh_pass);
+            String fileSeparator = System.getProperty("file.separator");
+            String sshDir = VersionInfo.getUserHomeDirectory() + fileSeparator + ".ssh" + fileSeparator;
+            this.jsch.setKnownHosts(sshDir + "known_hosts");
+            this.addIdentity(this.jsch, new File(sshDir + "id_dsa"), this.ssh_pass);
+            this.addIdentity(this.jsch, new File(sshDir + "id_rsa"), this.ssh_pass);
             this.session = this.jsch.getSession(this.ssh_user, this.ssh_host, this.ssh_port);
             this.addProxy(this.session);
             this.session.setPassword(this.ssh_pass);
@@ -91,70 +91,70 @@ public class SSHCoreFactory extends CoreFactory {
             }
 
             return 0;
-         } catch (Exception var3) {
-            StringWriter var2 = new StringWriter();
-            var3.printStackTrace(new PrintWriter(var2, true));
+         } catch (Exception exception) {
+            StringWriter stackTrace = new StringWriter();
+            exception.printStackTrace(new PrintWriter(stackTrace, true));
             return this.autoReconnecting
                ? 2
                : this.errorHandling(
-                  SResources.getString("core.sshFailedTitle"), SResources.getString("core.sshFailedText") + "\n" + var3 + "\n---\n" + var2.toString()
+                  SResources.getString("core.sshFailedTitle"), SResources.getString("core.sshFailedText") + "\n" + exception + "\n---\n" + stackTrace.toString()
                );
          }
       }
    }
 
-   private void addProxy(Session var1) {
+   private void addProxy(Session session) {
       if (this.ssh_http_proxy != null && !this.ssh_http_proxy.equals("") && this.ssh_http_proxy.indexOf(":") > 0) {
-         String var9 = this.ssh_http_proxy.substring(0, this.ssh_http_proxy.indexOf(58));
-         int var7 = Integer.parseInt(this.ssh_http_proxy.substring(this.ssh_http_proxy.indexOf(58) + 1));
-         ProxyHTTP var11 = new ProxyHTTP(var9, var7);
+         String proxyHost = this.ssh_http_proxy.substring(0, this.ssh_http_proxy.indexOf(58));
+         int proxyPort = Integer.parseInt(this.ssh_http_proxy.substring(this.ssh_http_proxy.indexOf(58) + 1));
+         ProxyHTTP proxy = new ProxyHTTP(proxyHost, proxyPort);
          if (this.ssh_proxy_user != null && !this.ssh_proxy_user.equals("")) {
-            String var13 = "";
+            String proxyPass = "";
             if (this.ssh_proxy_pass != null) {
-               var13 = this.ssh_proxy_pass;
+               proxyPass = this.ssh_proxy_pass;
             }
 
-            var11.setUserPasswd(this.ssh_proxy_user, var13);
+            proxy.setUserPasswd(this.ssh_proxy_user, proxyPass);
          }
 
-         var1.setProxy(var11);
+         session.setProxy(proxy);
       } else if (this.ssh_socks5_proxy != null && !this.ssh_socks5_proxy.equals("") && this.ssh_socks5_proxy.indexOf(":") > 0) {
-         String var8 = this.ssh_socks5_proxy.substring(0, this.ssh_socks5_proxy.indexOf(58));
-         int var6 = Integer.parseInt(this.ssh_socks5_proxy.substring(this.ssh_socks5_proxy.indexOf(58) + 1));
-         ProxySOCKS5 var10 = new ProxySOCKS5(var8, var6);
+         String proxyHost = this.ssh_socks5_proxy.substring(0, this.ssh_socks5_proxy.indexOf(58));
+         int proxyPort = Integer.parseInt(this.ssh_socks5_proxy.substring(this.ssh_socks5_proxy.indexOf(58) + 1));
+         ProxySOCKS5 proxy = new ProxySOCKS5(proxyHost, proxyPort);
          if (this.ssh_proxy_user != null && !this.ssh_proxy_user.equals("")) {
-            String var12 = "";
+            String proxyPass = "";
             if (this.ssh_proxy_pass != null) {
-               var12 = this.ssh_proxy_pass;
+               proxyPass = this.ssh_proxy_pass;
             }
 
-            var10.setUserPasswd(this.ssh_proxy_user, var12);
+            proxy.setUserPasswd(this.ssh_proxy_user, proxyPass);
          }
 
-         var1.setProxy(var10);
+         session.setProxy(proxy);
       } else if (this.ssh_socks4_proxy != null && !this.ssh_socks4_proxy.equals("") && this.ssh_socks4_proxy.indexOf(":") > 0) {
-         String var3 = this.ssh_socks4_proxy.substring(0, this.ssh_socks4_proxy.indexOf(58));
-         int var2 = Integer.parseInt(this.ssh_socks4_proxy.substring(this.ssh_socks4_proxy.indexOf(58) + 1));
-         ProxySOCKS4 var4 = new ProxySOCKS4(var3, var2);
+         String proxyHost = this.ssh_socks4_proxy.substring(0, this.ssh_socks4_proxy.indexOf(58));
+         int proxyPort = Integer.parseInt(this.ssh_socks4_proxy.substring(this.ssh_socks4_proxy.indexOf(58) + 1));
+         ProxySOCKS4 proxy = new ProxySOCKS4(proxyHost, proxyPort);
          if (this.ssh_proxy_user != null && !this.ssh_proxy_user.equals("")) {
-            String var5 = "";
+            String proxyPass = "";
             if (this.ssh_proxy_pass != null) {
-               var5 = this.ssh_proxy_pass;
+               proxyPass = this.ssh_proxy_pass;
             }
 
-            var4.setUserPasswd(this.ssh_proxy_user, var5);
+            proxy.setUserPasswd(this.ssh_proxy_user, proxyPass);
          }
 
-         var1.setProxy(var4);
+         session.setProxy(proxy);
       }
    }
 
-   private void addIdentity(JSch var1, File var2, String var3) throws JSchException {
-      if (var2.exists()) {
-         if (var3 != null && !var3.equals("")) {
-            var1.addIdentity(var2.getAbsolutePath(), var3);
+   private void addIdentity(JSch jsch, File keyFile, String passphrase) throws JSchException {
+      if (keyFile.exists()) {
+         if (passphrase != null && !passphrase.equals("")) {
+            jsch.addIdentity(keyFile.getAbsolutePath(), passphrase);
          } else {
-            var1.addIdentity(var2.getAbsolutePath());
+            jsch.addIdentity(keyFile.getAbsolutePath());
          }
       }
    }
@@ -163,24 +163,24 @@ public class SSHCoreFactory extends CoreFactory {
       return this.ssh_fwd_p ? String.valueOf(this.ssh_plport) : super.getHTTPPort();
    }
 
-   public void readPreferences(int var1, boolean var2) {
-      super.readPreferences(var1, var2);
-      this.use_ssh = this.use_ssh && !var2 ? this.use_ssh : PreferenceLoader.loadBoolean("hm_" + var1 + "_use_ssh");
-      this.ssh_user = this.ssh_user != null && !var2 ? this.ssh_user : PreferenceLoader.loadString("hm_" + var1 + "_ssh_user");
-      this.ssh_host = this.ssh_host != null && !var2 ? this.ssh_host : PreferenceLoader.loadString("hm_" + var1 + "_ssh_host");
-      this.ssh_pass = this.ssh_pass != null && !var2 ? this.ssh_pass : PreferenceLoader.loadString("hm_" + var1 + "_ssh_pass");
-      this.ssh_port = this.ssh_port != -1 && !var2 ? this.ssh_port : PreferenceLoader.loadInt("hm_" + var1 + "_ssh_port");
-      this.ssh_rhost = this.ssh_rhost != null && !var2 ? this.ssh_rhost : PreferenceLoader.loadString("hm_" + var1 + "_ssh_rhost");
-      this.ssh_rport = this.ssh_rport != -1 && !var2 ? this.ssh_rport : PreferenceLoader.loadInt("hm_" + var1 + "_ssh_rport");
-      this.ssh_lport = this.ssh_lport != -1 && !var2 ? this.ssh_lport : PreferenceLoader.loadInt("hm_" + var1 + "_ssh_lport");
-      this.ssh_fwd_p = this.ssh_fwd_p && !var2 ? this.ssh_fwd_p : PreferenceLoader.loadBoolean("hm_" + var1 + "_ssh_fwd_p");
-      this.ssh_prport = this.ssh_prport != -1 && !var2 ? this.ssh_prport : PreferenceLoader.loadInt("hm_" + var1 + "_ssh_prport");
-      this.ssh_plport = this.ssh_plport != -1 && !var2 ? this.ssh_plport : PreferenceLoader.loadInt("hm_" + var1 + "_ssh_plport");
-      this.ssh_socks5_proxy = this.ssh_socks5_proxy != null && !var2 ? this.ssh_socks5_proxy : PreferenceLoader.loadString("hm_" + var1 + "_ssh_socks5_proxy");
-      this.ssh_socks4_proxy = this.ssh_socks4_proxy != null && !var2 ? this.ssh_socks4_proxy : PreferenceLoader.loadString("hm_" + var1 + "_ssh_socks4_proxy");
-      this.ssh_http_proxy = this.ssh_http_proxy != null && !var2 ? this.ssh_http_proxy : PreferenceLoader.loadString("hm_" + var1 + "_ssh_http_proxy");
-      this.ssh_proxy_user = this.ssh_proxy_user != null && !var2 ? this.ssh_proxy_user : PreferenceLoader.loadString("hm_" + var1 + "_ssh_proxy_user");
-      this.ssh_proxy_pass = this.ssh_proxy_pass != null && !var2 ? this.ssh_proxy_pass : PreferenceLoader.loadString("hm_" + var1 + "_ssh_proxy_pass");
+   public void readPreferences(int hostIndex, boolean reload) {
+      super.readPreferences(hostIndex, reload);
+      this.use_ssh = this.use_ssh && !reload ? this.use_ssh : PreferenceLoader.loadBoolean("hm_" + hostIndex + "_use_ssh");
+      this.ssh_user = this.ssh_user != null && !reload ? this.ssh_user : PreferenceLoader.loadString("hm_" + hostIndex + "_ssh_user");
+      this.ssh_host = this.ssh_host != null && !reload ? this.ssh_host : PreferenceLoader.loadString("hm_" + hostIndex + "_ssh_host");
+      this.ssh_pass = this.ssh_pass != null && !reload ? this.ssh_pass : PreferenceLoader.loadString("hm_" + hostIndex + "_ssh_pass");
+      this.ssh_port = this.ssh_port != -1 && !reload ? this.ssh_port : PreferenceLoader.loadInt("hm_" + hostIndex + "_ssh_port");
+      this.ssh_rhost = this.ssh_rhost != null && !reload ? this.ssh_rhost : PreferenceLoader.loadString("hm_" + hostIndex + "_ssh_rhost");
+      this.ssh_rport = this.ssh_rport != -1 && !reload ? this.ssh_rport : PreferenceLoader.loadInt("hm_" + hostIndex + "_ssh_rport");
+      this.ssh_lport = this.ssh_lport != -1 && !reload ? this.ssh_lport : PreferenceLoader.loadInt("hm_" + hostIndex + "_ssh_lport");
+      this.ssh_fwd_p = this.ssh_fwd_p && !reload ? this.ssh_fwd_p : PreferenceLoader.loadBoolean("hm_" + hostIndex + "_ssh_fwd_p");
+      this.ssh_prport = this.ssh_prport != -1 && !reload ? this.ssh_prport : PreferenceLoader.loadInt("hm_" + hostIndex + "_ssh_prport");
+      this.ssh_plport = this.ssh_plport != -1 && !reload ? this.ssh_plport : PreferenceLoader.loadInt("hm_" + hostIndex + "_ssh_plport");
+      this.ssh_socks5_proxy = this.ssh_socks5_proxy != null && !reload ? this.ssh_socks5_proxy : PreferenceLoader.loadString("hm_" + hostIndex + "_ssh_socks5_proxy");
+      this.ssh_socks4_proxy = this.ssh_socks4_proxy != null && !reload ? this.ssh_socks4_proxy : PreferenceLoader.loadString("hm_" + hostIndex + "_ssh_socks4_proxy");
+      this.ssh_http_proxy = this.ssh_http_proxy != null && !reload ? this.ssh_http_proxy : PreferenceLoader.loadString("hm_" + hostIndex + "_ssh_http_proxy");
+      this.ssh_proxy_user = this.ssh_proxy_user != null && !reload ? this.ssh_proxy_user : PreferenceLoader.loadString("hm_" + hostIndex + "_ssh_proxy_user");
+      this.ssh_proxy_pass = this.ssh_proxy_pass != null && !reload ? this.ssh_proxy_pass : PreferenceLoader.loadString("hm_" + hostIndex + "_ssh_proxy_pass");
    }
 
    public void setDisconnected() {
@@ -189,8 +189,8 @@ public class SSHCoreFactory extends CoreFactory {
    }
 
    public int startCore() {
-      int var1 = this.initializeSSH();
-      return var1 != 2 && var1 != 1 ? super.startCore() : var1;
+      int sshResult = this.initializeSSH();
+      return sshResult != 2 && sshResult != 1 ? super.startCore() : sshResult;
    }
 
    // JSch callback: routes SSH password / passphrase / yes-no / message prompts to the
