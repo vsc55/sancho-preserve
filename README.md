@@ -62,6 +62,7 @@ Sancho used a `0.9.4-NN` snapshot scheme.
 | `0.9.4-65` | Release pipeline off deprecated Node-20 artifact actions | [Release](../../releases/tag/0.9.4-65) |
 | `0.9.4-66` | macOS external-link fix, platform-code cleanup, Dependabot | [Release](../../releases/tag/0.9.4-66) |
 | `0.9.4-67` | Windows **`.msi` installer** (optional association prompt + silent-install support) | [Release](../../releases/tag/0.9.4-67) |
+| `0.9.4-68` | Cleaner build output (shade + checksum warnings), serialized release runs | [Release](../../releases/tag/0.9.4-68) |
 
 **`main`** always holds the newest modernized build; [CHANGELOG.md](CHANGELOG.md)
 and the [Releases](../../releases) page are the authoritative, up-to-date list.
@@ -117,8 +118,9 @@ is also requested in code, so a plain `java -jar` works without it):
 #### Dependencies
 
 Resolved from Maven Central: **Eclipse SWT + JFace**, **GNU Trove**
-(`gnu.trove`, Trove 2.x flat package), **GNU RegExp**, **JSch**, and **PircBot**
-(used by the IRC feature).
+(`gnu.trove`, Trove 2.x flat package), **JSch**, and **PircBot** (used by the IRC
+feature). The abandoned **GNU RegExp** dependency was dropped — regexes now run on
+the JDK's `java.util.regex` behind a thin `sancho.utility.regex` adapter.
 
 **SWT is platform-specific**, so the pom auto-selects the fragment for the build
 machine via OS/arch profiles (`win32`, `gtk.linux.x86_64/aarch64`,
@@ -130,7 +132,8 @@ package (`ICustomViewer`, `CustomTableViewer`, `CustomTreeViewer`), and the JVM
 refuses to load them into the otherwise **signed** JFace jar. So a single,
 platform-independent **signature-stripped JFace** is kept in
 [`local-repo/`](local-repo/) under the `org.sancho.thirdparty` group id and
-consumed via a project-local Maven repository (regenerate with
+consumed via a project-local Maven repository (with `.sha1`/`.md5` checksums so the
+build validates cleanly; regenerate with
 [`tools/unsign-libs.ps1`](tools/unsign-libs.ps1)). SWT itself is used unmodified
 (stock, signed) — nothing is injected into its packages.
 

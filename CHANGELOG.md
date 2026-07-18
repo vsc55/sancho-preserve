@@ -8,6 +8,30 @@ The upstream project's original changelog (2004–2006) is preserved at
 authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 (`git checkout 0.9.4-23`).
 
+## [0.9.4-68] — 2026-07-18
+
+### Changed
+
+- **Cleaner build output.** The uber-jar no longer emits maven-shade
+  "overlapping resource" warnings — the duplicate Eclipse/OSGi build metadata
+  (`.options`, `.api_description`, `about.html`, `about_files/**`,
+  `plugin.properties`) and the per-jar `MANIFEST.MF` are excluded, and the
+  manifest is regenerated with the `Main-Class`. The vendored JFace in
+  `local-repo/` now ships `.sha1`/`.md5` checksums (and `unsign-libs.ps1`
+  writes them) so Maven stops warning about missing checksums. Only the upstream
+  SWT `${osgi.platform}` POM warning (from Eclipse's own artifact) remains.
+
+### Fixed
+
+- **Release runs are serialized** with a `concurrency` group, so moving a tag to
+  re-release cancels the in-flight run instead of leaving two runs deleting,
+  recreating and uploading to the same GitHub Release at once.
+
+### Docs
+
+- README: dropped the stale **GNU RegExp** dependency mention (it was removed in
+  0.9.4-64).
+
 ## [0.9.4-67] — 2026-07-18
 
 ### Added

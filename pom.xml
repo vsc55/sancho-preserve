@@ -11,7 +11,7 @@
          CHANGELOG.md. -59 already used Tree (not the deprecated TableTree), but it
          injects a few classes into org.eclipse.jface.viewers, so JFace is consumed
          unsigned from local-repo. -->
-    <version>0.9.4-67</version>
+    <version>0.9.4-68</version>
     <packaging>jar</packaging>
 
     <name>Sancho</name>
@@ -154,6 +154,10 @@
                                         <exclude>META-INF/*.RSA</exclude>
                                         <exclude>META-INF/ECLIPSE_.*</exclude>
                                         <exclude>module-info.class</exclude>
+                                        <!-- Each input jar has its own MANIFEST.MF; the
+                                             ManifestResourceTransformer below writes a fresh
+                                             one (with Main-Class), so drop the inputs. -->
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
                                         <!-- Eclipse/OSGi build metadata that several SWT/JFace
                                              jars each ship (causes shade "overlapping resource"
                                              warnings); not needed for our plain non-OSGi launch. -->

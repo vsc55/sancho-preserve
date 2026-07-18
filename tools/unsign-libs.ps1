@@ -73,4 +73,15 @@ $jfacePom = Join-Path $work "jface-unsigned-pom.xml"
 
 & mvn -q install:install-file "-Dfile=$jfaceJar" "-DpomFile=$jfacePom" "-DlocalRepositoryPath=$localRepo"
 
+# Generate .sha1/.md5 next to the installed jar/pom. Maven validates checksums when
+# resolving from a file:// repository and warns loudly ("no checksums available")
+# when they are missing, so write them to keep the build output clean.
+$installed = Join-Path $localRepo "org/sancho/thirdparty/org.eclipse.jface/$jfaceVersion-unsigned"
+Get-ChildItem "$installed/*.jar", "$installed/*.pom" | ForEach-Object {
+    foreach ($algo in @("SHA1", "MD5")) {
+        $hash = (Get-FileHash $_.FullName -Algorithm $algo).Hash.ToLower()
+        Set-Content -NoNewline -Path ("{0}.{1}" -f $_.FullName, $algo.ToLower()) -Value $hash
+    }
+}
+
 Write-Host "Done. Unsigned JFace installed into $localRepo"
