@@ -401,7 +401,9 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
    public void update(MyObservable var1, Object var2, int var3) {
       if (this.shell != null && !this.shell.isDisposed() && !this.closing) {
          if (var1 instanceof CoreFactory) {
-            this.shell.getDisplay().syncExec(new MainWindow$2(this, var2));
+            // asyncExec so this core-thread observer callback doesn't block on the
+            // UI thread; the update is fire-and-forget and asyncExec keeps order.
+            this.shell.getDisplay().asyncExec(new MainWindow$2(this, var2));
          }
       }
    }

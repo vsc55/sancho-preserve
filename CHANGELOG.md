@@ -51,6 +51,10 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
   decoding (a malformed length no longer throws out of the read loop); and the
   debug `hexDump`/`getLastMessage` no longer drop the last byte or wrap the offset
   label.
+- **Core reader thread no longer blocks on the UI thread.** The `MainWindow`,
+  `FriendsTab` and `GTreeContentProvider` observer callbacks used `Display.syncExec`
+  from the socket reader thread (a potential deadlock); they now use `asyncExec`
+  like the other content providers.
 - **Removed the dead Windows 95/98/ME detection.** `VersionInfo.isWin95` /
   `isOldWindows` / `oldWindows` never matched a modern `os.version`, so the legacy
   small-icon and emulated-spinner branches were unreachable; dropped them (`BSpinner`

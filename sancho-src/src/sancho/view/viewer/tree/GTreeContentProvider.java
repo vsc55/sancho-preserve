@@ -205,7 +205,10 @@ public abstract class GTreeContentProvider implements IGContentProvider, ITreeCo
    public void update(MyObservable var1, Object var2, int var3) {
       if (this.gView != null && !this.gView.isDisposed()) {
          if (this.gView.isVisible() && this.gView.isActive()) {
-            this.gView.getComposite().getDisplay().syncExec(new GTreeContentProvider$1(this, var1, var2, var3));
+            // asyncExec (not syncExec) so this observer callback doesn't block the
+            // core reader thread on the UI thread; matches the table content
+            // providers and avoids a potential deadlock.
+            this.gView.getComposite().getDisplay().asyncExec(new GTreeContentProvider$1(this, var1, var2, var3));
          } else {
             this.needsRefresh = true;
          }

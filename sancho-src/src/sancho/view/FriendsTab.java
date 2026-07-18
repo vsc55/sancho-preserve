@@ -126,7 +126,9 @@ public class FriendsTab extends AbstractTab implements MyObserver {
 
    public void update(MyObservable var1, Object var2, int var3) {
       if (var2 instanceof ClientMessage && !this.cTabFolder.isDisposed()) {
-         this.cTabFolder.getDisplay().syncExec(new FriendsTab$4(this, var2));
+         // asyncExec so this core-thread observer callback doesn't block on the UI
+         // thread (fire-and-forget UI update; nothing here reads the result).
+         this.cTabFolder.getDisplay().asyncExec(new FriendsTab$4(this, var2));
       }
    }
 
