@@ -12,6 +12,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.BindException;
@@ -472,10 +474,61 @@ public class SwissArmy {
       }
    }
 
-   public static void execInThread(String[] var0, String var1) {
-      SwissArmy$1 var2 = new SwissArmy$1(var1, var0);
-      var2.setDaemon(true);
-      var2.start();
+   public static void execInThread(final String[] cmdArray, final String workingDir) {
+      Thread thread = new Thread() {
+         public void run() {
+            Runtime runtime = Runtime.getRuntime();
+
+            try {
+               File dir = null;
+               if (workingDir != null) {
+                  dir = new File(workingDir);
+               }
+
+               Process process;
+               if (workingDir != null && dir != null && dir.exists()) {
+                  process = runtime.exec(cmdArray, null, dir);
+               } else {
+                  process = runtime.exec(cmdArray);
+               }
+
+               StreamMonitor errorMonitor = new StreamMonitor(process.getErrorStream());
+               StreamMonitor outputMonitor = new StreamMonitor(process.getInputStream());
+               errorMonitor.setDaemon(true);
+               errorMonitor.start();
+               outputMonitor.setDaemon(true);
+               outputMonitor.start();
+               process.waitFor();
+            } catch (Exception error) {
+               error.printStackTrace();
+               Sancho.pDebug("execInThread: " + error);
+            }
+         }
+      };
+      thread.setDaemon(true);
+      thread.start();
+   }
+
+   // Drains a spawned process's stdout/stderr so it can't block on a full pipe buffer.
+   private static class StreamMonitor extends Thread {
+      InputStream inputStream;
+
+      StreamMonitor(InputStream inputStream) {
+         this.inputStream = inputStream;
+      }
+
+      public void run() {
+         try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(this.inputStream));
+
+            while (reader.readLine() != null) {
+            }
+
+            reader.close();
+         } catch (IOException error) {
+            error.printStackTrace();
+         }
+      }
    }
 
    public static byte[] fileToByteArray(String var0) {
