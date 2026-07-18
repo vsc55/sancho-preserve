@@ -83,10 +83,10 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
   `character == 1`/`== 6`; the ⌘ modifier now maps via `SWT.MOD1`, but Command doesn't
   emit control characters the way Ctrl does, so these still won't fire on macOS. Switch
   them to `keyCode`-based detection and verify on a Mac.
-- [x] ~~Gate the WinReg preference page to win32 only~~ — done: dropped the
-  `|| Sancho.debug` in `CPreferenceManager.addWinRegistryPage`, so the Windows-registry
-  page (and its `regedit.exe` shell-out) no longer appears in debug builds on Linux/
-  macOS. Unchanged for real Windows users. See CHANGELOG.
+- [x] ~~Gate the WinReg preference page to win32 only~~ — done: kept the debug
+  preview of the page on any platform, but win32-guarded the `regedit.exe` shell-out in
+  `WinRegPreferencePage.updateRegistry`, so a debug preview on Linux/macOS no longer
+  tries to launch a Windows binary. Unchanged for real Windows users. See CHANGELOG.
 - [ ] **Verify bundled icon filename casing on a Linux build.** Linux is case-sensitive;
   a mis-cased icon key that Windows silently resolves would fail. Spot-check `SResources`
   lookups against the asset filenames on Linux.

@@ -12,10 +12,12 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 
 ### Fixed
 
-- **Windows Registry preference page no longer appears off Windows.** It was gated on
-  `"Windows" || Sancho.debug`, so debug builds on Linux/macOS showed it — and its
-  "Update Registry" button writes a `.reg` and shells `regedit.exe`, which just fails
-  there. Gated to win32 only (unchanged for real Windows users).
+- **Windows Registry preference page tried to run `regedit.exe` off Windows.** In debug
+  builds the page also shows on Linux/macOS (for UI preview), where its "Update Registry"
+  button shelled `regedit.exe` — a Windows binary. The `updateRegistry` shell-out is now
+  win32-guarded (off Windows it shows a "only supported on Windows" message instead), so
+  the page stays previewable in debug but only touches the registry on Windows (unchanged
+  for real Windows users).
 - **Web browser: the address bar could show the wrong tab's URL.**
   `WebBrowserTab.inputCombo` was a single field pointing at the last-created tab, so
   with multiple browser tabs the URL was written to (and read from) that tab's combo

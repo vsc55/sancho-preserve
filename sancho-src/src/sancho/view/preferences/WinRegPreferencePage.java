@@ -3,6 +3,7 @@ package sancho.view.preferences;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -139,14 +140,21 @@ public class WinRegPreferencePage extends CPreferencePage {
    }
 
    private void updateRegistry(String var1) {
-      String[] var2 = new String[]{"regedit.exe", "/s", var1};
-      Runtime var3 = Runtime.getRuntime();
+      // regedit.exe is win32-only; off Windows (e.g. a debug preview of this page on
+      // Linux/macOS) tell the user it's unsupported instead of failing to launch a
+      // Windows binary.
+      if (!VersionInfo.getSWTPlatform().equals("win32")) {
+         MessageDialog.openInformation(this.getShell(), VersionInfo.getName(), SResources.getString("l.regeditWin32Only"));
+      } else {
+         String[] var2 = new String[]{"regedit.exe", "/s", var1};
+         Runtime var3 = Runtime.getRuntime();
 
-      try {
-         Process var4 = var3.exec(var2);
-         var4.waitFor();
-      } catch (Exception var5) {
-         Sancho.pDebug("updateRegistry: " + var5);
+         try {
+            Process var4 = var3.exec(var2);
+            var4.waitFor();
+         } catch (Exception var5) {
+            Sancho.pDebug("updateRegistry: " + var5);
+         }
       }
 
       if (!Sancho.debug) {
