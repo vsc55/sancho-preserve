@@ -1,7 +1,9 @@
 package sancho.model.mldonkey;
 
 import gnu.trove.TIntArrayList;
+import gnu.trove.TIntObjectProcedure;
 import gnu.trove.TLongIntHashMap;
+import gnu.trove.TObjectProcedure;
 import sancho.core.ICore;
 import sancho.core.Sancho;
 import sancho.model.mldonkey.enums.EnumClientType;
@@ -14,51 +16,51 @@ public class ClientCollection extends ACollection_Int {
    private ObjectMap pendingWeakMap = new ObjectMap(true);
    private ObjectMap uploadersWeakMap = new ObjectMap(true);
 
-   ClientCollection(ICore var1) {
-      super(var1);
+   ClientCollection(ICore core) {
+      super(core);
    }
 
-   public void clean(MessageBuffer var1) {
-      int[] var2 = var1.getInt32List();
+   public void clean(MessageBuffer buffer) {
+      int[] ids = buffer.getInt32List();
       synchronized (this) {
-         this.cleanHistoryMap.put(System.currentTimeMillis(), var2.length);
+         this.cleanHistoryMap.put(System.currentTimeMillis(), ids.length);
       }
 
-      this.retainEntries(new ACollection_Int$CleanIntMap(new TIntArrayList(var2)));
+      this.retainEntries(new CleanIntMap(new TIntArrayList(ids)));
       this.cleanDeadClients();
    }
 
    public void cleanDeadClients() {
-      this.retainEntries(new ClientCollection$CleanDeadClients(this));
+      this.retainEntries(new CleanDeadClients());
    }
 
-   public static void removeAllFriends(ICore var0) {
-      var0.send((short)17);
+   public static void removeAllFriends(ICore core) {
+      core.send((short)17);
    }
 
-   public void clientFile(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      Client var3 = this.getClient(var2);
-      if (var3 != null) {
-         boolean var4 = var3.hasFiles();
-         var3.readClientFile(var1);
-         if (!var4) {
-            this.updateWeak(var3);
+   public void clientFile(MessageBuffer buffer) {
+      int id = buffer.getInt32();
+      Client client = this.getClient(id);
+      if (client != null) {
+         boolean hadFiles = client.hasFiles();
+         client.readClientFile(buffer);
+         if (!hadFiles) {
+            this.updateWeak(client);
          }
       } else {
-         Sancho.pDebug("Client " + var2 + " not found");
+         Sancho.pDebug("Client " + id + " not found");
       }
    }
 
    public void dispose() {
       this.friendsWeakMap.deleteObservers();
       this.uploadersWeakMap.deleteObservers();
-      this.forEachValue(new ClientCollection$DisposeAll());
+      this.forEachValue(new DisposeAll());
       super.dispose();
    }
 
-   public Client getClient(int var1) {
-      return (Client)super.get(var1);
+   public Client getClient(int id) {
+      return (Client)super.get(id);
    }
 
    public ObjectMap getFriendsWeakMap() {
@@ -77,118 +79,123 @@ public class ClientCollection extends ACollection_Int {
       return this.uploadersWeakMap;
    }
 
-   public void pending(MessageBuffer var1) {
-      this.processMap(this.pendingWeakMap, var1);
+   public void pending(MessageBuffer buffer) {
+      this.processMap(this.pendingWeakMap, buffer);
    }
 
-   public void processMap(ObjectMap var1, MessageBuffer var2) {
-      int[] var3 = var2.getInt32List();
+   public void processMap(ObjectMap weakMap, MessageBuffer buffer) {
+      int[] ids = buffer.getInt32List();
 
-      for (int var4 = 0; var4 < var3.length; var4++) {
-         this.core.send((short)36, Integer.valueOf(var3[var4]));
-         if (this.containsKey(var3[var4])) {
-            var1.addOrUpdate(this.get(var3[var4]));
+      for (int i = 0; i < ids.length; i++) {
+         this.core.send((short)36, Integer.valueOf(ids[i]));
+         if (this.containsKey(ids[i])) {
+            weakMap.addOrUpdate(this.get(ids[i]));
          }
       }
 
-      TIntArrayList var5 = new TIntArrayList(var3);
-      Object[] var6 = var1.getKeyArray();
+      TIntArrayList idList = new TIntArrayList(ids);
+      Object[] keys = weakMap.getKeyArray();
 
-      for (int var7 = 0; var7 < var6.length; var7++) {
-         Client var8 = (Client)var6[var7];
-         if (!var5.contains(var8.getId())) {
-            var1.remove(var8);
-            if (var8.countObservers() == 0) {
-               this.removeSource(var8.getId(), var8);
+      for (int i = 0; i < keys.length; i++) {
+         Client client = (Client)keys[i];
+         if (!idList.contains(client.getId())) {
+            weakMap.remove(client);
+            if (client.countObservers() == 0) {
+               this.removeSource(client.getId(), client);
             }
          }
       }
    }
 
-   public void read(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      Client var3 = (Client)this.get(var2);
-      if (var3 != null) {
-         var3.read(var2, var1);
+   public void read(MessageBuffer buffer) {
+      int id = buffer.getInt32();
+      Client client = (Client)this.get(id);
+      if (client != null) {
+         client.read(id, buffer);
       } else {
-         var3 = this.core.getCollectionFactory().getClient();
-         var3.read(var2, var1);
-         this.put(var2, var3);
+         client = this.core.getCollectionFactory().getClient();
+         client.read(id, buffer);
+         this.put(id, client);
       }
 
-      this.updateWeak(var3);
+      this.updateWeak(client);
    }
 
-   public void readUpdate(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      if (this.containsKey(var2)) {
-         this.getClient(var2).readUpdate(var1);
-      }
-   }
-
-   public void removeSource(int var1, Client var2) {
-      if (!this.friendsWeakMap.containsKey(var2) && !this.uploadersWeakMap.containsKey(var2) && !this.pendingWeakMap.containsKey(var2)) {
-         this.remove(var1);
+   public void readUpdate(MessageBuffer buffer) {
+      int id = buffer.getInt32();
+      if (this.containsKey(id)) {
+         this.getClient(id).readUpdate(buffer);
       }
    }
 
-   public void updateAvailability(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      int var3 = var1.getInt32();
-      String var4 = var1.getString(false);
-      File var5 = (File)this.core.getFileCollection().get(var2);
-      Client var6 = (Client)this.get(var3);
-      if (var6 != null && var5 != null) {
-         var6.putAvail(var2, var4);
+   public void removeSource(int id, Client client) {
+      if (!this.friendsWeakMap.containsKey(client) && !this.uploadersWeakMap.containsKey(client) && !this.pendingWeakMap.containsKey(client)) {
+         this.remove(id);
       }
    }
 
-   public void updateUploaders(ICore var1) {
+   public void updateAvailability(MessageBuffer buffer) {
+      int fileId = buffer.getInt32();
+      int clientId = buffer.getInt32();
+      String avail = buffer.getString(false);
+      File file = (File)this.core.getFileCollection().get(fileId);
+      Client client = (Client)this.get(clientId);
+      if (client != null && file != null) {
+         client.putAvail(fileId, avail);
+      }
+   }
+
+   public void updateUploaders(ICore core) {
       synchronized (this.uploadersWeakMap) {
-         Object[] var3 = this.uploadersWeakMap.getKeyArray();
+         Object[] keys = this.uploadersWeakMap.getKeyArray();
 
-         for (int var4 = 0; var4 < var3.length; var4++) {
-            Client var5 = (Client)var3[var4];
-            var1.send((short)36, Integer.valueOf(var5.getId()));
+         for (int i = 0; i < keys.length; i++) {
+            Client client = (Client)keys[i];
+            core.send((short)36, Integer.valueOf(client.getId()));
          }
       }
    }
 
-   public void updateFriends(Client var1) {
-      if (var1.getEnumClientType() == EnumClientType.FRIEND) {
-         this.friendsWeakMap.addOrUpdate(var1);
+   public void updateFriends(Client client) {
+      if (client.getEnumClientType() == EnumClientType.FRIEND) {
+         this.friendsWeakMap.addOrUpdate(client);
       } else {
-         this.friendsWeakMap.remove(var1);
+         this.friendsWeakMap.remove(client);
       }
    }
 
-   public void updateWeak(Client var1) {
-      this.updateFriends(var1);
+   public void updateWeak(Client client) {
+      this.updateFriends(client);
       if (this.core.getProtocol() < 23) {
-         if (var1.isUploader() && var1.isConnected()) {
-            this.uploadersWeakMap.addOrUpdate(var1);
+         if (client.isUploader() && client.isConnected()) {
+            this.uploadersWeakMap.addOrUpdate(client);
          } else {
-            this.uploadersWeakMap.remove(var1);
+            this.uploadersWeakMap.remove(client);
          }
       }
    }
 
-   public void uploaders(MessageBuffer var1) {
-      this.processMap(this.uploadersWeakMap, var1);
+   public void uploaders(MessageBuffer buffer) {
+      this.processMap(this.uploadersWeakMap, buffer);
    }
 
-   // $VF: synthetic method
-   static ObjectMap access$000(ClientCollection var0) {
-      return var0.friendsWeakMap;
+   // Trove retainEntries filter: keep a client only while it's still observed or held by
+   // one of the friends / uploaders / pending maps; drop the dead ones.
+   private class CleanDeadClients implements TIntObjectProcedure {
+      public boolean execute(int id, Object value) {
+         Client client = (Client)value;
+         return client.countObservers() != 0
+            || ClientCollection.this.friendsWeakMap.containsKey(client)
+            || ClientCollection.this.uploadersWeakMap.containsKey(client)
+            || ClientCollection.this.pendingWeakMap.containsKey(client);
+      }
    }
 
-   // $VF: synthetic method
-   static ObjectMap access$100(ClientCollection var0) {
-      return var0.uploadersWeakMap;
-   }
-
-   // $VF: synthetic method
-   static ObjectMap access$200(ClientCollection var0) {
-      return var0.pendingWeakMap;
+   // Trove forEachValue: drop every client's observers (on collection dispose).
+   private static class DisposeAll implements TObjectProcedure {
+      public boolean execute(Object value) {
+         ((Client)value).deleteObservers();
+         return true;
+      }
    }
 }

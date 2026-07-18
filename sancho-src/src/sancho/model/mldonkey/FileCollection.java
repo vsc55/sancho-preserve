@@ -10,6 +10,7 @@ import sancho.utility.SwissArmy;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.transfer.FileClient;
 import sancho.view.utility.SResources;
+import gnu.trove.TObjectProcedure;
 
 public class FileCollection extends ACollection_Int2 {
    private static final String RS_ACTIVE = SResources.getString("l.active");
@@ -26,16 +27,16 @@ public class FileCollection extends ACollection_Int2 {
    public boolean verboseNumbers = true;
    boolean requiresRefresh;
 
-   FileCollection(ICore var1) {
-      super(var1);
+   FileCollection(ICore core) {
+      super(core);
       this.totalArray = new long[12];
       this.updatePreferences();
    }
 
    public synchronized boolean requiresRefresh() {
-      boolean var1 = this.requiresRefresh;
+      boolean current = this.requiresRefresh;
       this.requiresRefresh = false;
-      return var1;
+      return current;
    }
 
    public synchronized void setRequiresRefresh() {
@@ -43,256 +44,256 @@ public class FileCollection extends ACollection_Int2 {
       this.requiresRefresh = true;
    }
 
-   public void add(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      File var3 = this.getFile(var2);
-      if (var3 != null) {
-         var3.read(var2, var1);
-         if (!var3.isActive()) {
-            this.removeHash(var3.getMD4());
+   public void add(MessageBuffer buffer) {
+      int id = buffer.getInt32();
+      File file = this.getFile(id);
+      if (file != null) {
+         file.read(id, buffer);
+         if (!file.isActive()) {
+            this.removeHash(file.getMD4());
          }
 
-         if (var3.isInteresting()) {
-            this.addToUpdated(var3);
+         if (file.isInteresting()) {
+            this.addToUpdated(file);
          } else {
-            this.addToRemoved(var3);
+            this.addToRemoved(file);
          }
       } else {
-         var3 = this.core.getCollectionFactory().getFile();
-         var3.read(var2, var1);
-         this.putFile(var2, var3);
-         if (var3.isActive()) {
-            this.addHash(var3.getMD4());
+         file = this.core.getCollectionFactory().getFile();
+         file.read(id, buffer);
+         this.putFile(id, file);
+         if (file.isActive()) {
+            this.addHash(file.getMD4());
          }
 
-         if (var3.isInteresting()) {
-            this.addToAdded(var3);
+         if (file.isInteresting()) {
+            this.addToAdded(file);
          } else {
-            this.addToRemoved(var3);
+            this.addToRemoved(file);
          }
       }
 
       this.setChanged();
    }
 
-   public void addHash(String var1) {
-      if (!this.containsHash(var1)) {
-         this.hashList.add(var1.toUpperCase());
+   public void addHash(String hash) {
+      if (!this.containsHash(hash)) {
+         this.hashList.add(hash.toUpperCase());
       }
    }
 
-   public void addSource(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      int var3 = var1.getInt32();
-      Client var4 = (Client)this.core.getClientCollection().get(var3);
-      File var5 = (File)this.get(var2);
-      if (var5 != null && var4 != null) {
-         var5.addSource(var4);
-         this.addFileToUpdated(var5);
+   public void addSource(MessageBuffer buffer) {
+      int fileId = buffer.getInt32();
+      int clientId = buffer.getInt32();
+      Client client = (Client)this.core.getClientCollection().get(clientId);
+      File file = (File)this.get(fileId);
+      if (file != null && client != null) {
+         file.addSource(client);
+         this.addFileToUpdated(file);
       }
    }
 
    public void clean() {
-      this.forEachValue(new FileCollection$ManualCleanAll());
+      this.forEachValue(new ManualCleanAll());
       this.setRequiresRefresh();
    }
 
    public synchronized Object[] getAllInteresting() {
-      FileCollection$GetAllInteresting var1 = new FileCollection$GetAllInteresting();
-      this.forEachValue(var1);
+      GetAllInteresting collector = new GetAllInteresting();
+      this.forEachValue(collector);
       this.clearAllLists();
-      return var1.getArray();
+      return collector.getArray();
    }
 
    public void commitAll() {
-      this.forEachValue(new FileCollection$CommitAll());
+      this.forEachValue(new CommitAll());
    }
 
-   public boolean containsHash(String var1) {
-      return var1.equals("00000000000000000000000000000000") ? false : this.hashList.contains(var1.toUpperCase());
+   public boolean containsHash(String hash) {
+      return hash.equals(S_EMPTY_HASH) ? false : this.hashList.contains(hash.toUpperCase());
    }
 
    public void dispose() {
-      this.forEachValue(new FileCollection$DisposeAll());
+      this.forEachValue(new DisposeAll());
       super.dispose();
    }
 
-   public void dllink(String var1) {
-      this.core.send((short)8, var1);
+   public void dllink(String link) {
+      this.core.send((short)8, link);
    }
 
    public boolean eta2() {
       return this.eta2;
    }
 
-   public File getFile(int var1) {
-      return (File)this.get(var1);
+   public File getFile(int id) {
+      return (File)this.get(id);
    }
 
    public synchronized String getHeaderText() {
-      StringBuffer var1 = new StringBuffer(128);
-      Object[] var2 = this.getValues();
+      StringBuffer text = new StringBuffer(128);
+      Object[] values = this.getValues();
 
-      for (int var3 = 0; var3 < this.totalArray.length; var3++) {
-         this.totalArray[var3] = 0L;
+      for (int i = 0; i < this.totalArray.length; i++) {
+         this.totalArray[i] = 0L;
       }
 
-      for (int var5 = 0; var5 < var2.length; var5++) {
-         File var4 = (File)var2[var5];
-         if (var4.isInteresting()) {
+      for (int i = 0; i < values.length; i++) {
+         File file = (File)values[i];
+         if (file.isInteresting()) {
             this.totalArray[0]++;
-            if (var4.getFileStateEnum() == EnumFileState.QUEUED) {
-               this.totalArray[1] = this.totalArray[1] + var4.getSize();
-               this.totalArray[2] = this.totalArray[2] + var4.getDownloaded();
+            if (file.getFileStateEnum() == EnumFileState.QUEUED) {
+               this.totalArray[1] = this.totalArray[1] + file.getSize();
+               this.totalArray[2] = this.totalArray[2] + file.getDownloaded();
                this.totalArray[3]++;
-            } else if (var4.getFileStateEnum() == EnumFileState.DOWNLOADED) {
+            } else if (file.getFileStateEnum() == EnumFileState.DOWNLOADED) {
                this.totalArray[4]++;
-               this.totalArray[5] = this.totalArray[5] + var4.getSize();
-            } else if (var4.getFileStateEnum() == EnumFileState.PAUSED) {
-               this.totalArray[6] = this.totalArray[6] + var4.getSize();
-               this.totalArray[7] = this.totalArray[7] + var4.getDownloaded();
+               this.totalArray[5] = this.totalArray[5] + file.getSize();
+            } else if (file.getFileStateEnum() == EnumFileState.PAUSED) {
+               this.totalArray[6] = this.totalArray[6] + file.getSize();
+               this.totalArray[7] = this.totalArray[7] + file.getDownloaded();
                this.totalArray[8]++;
             } else {
-               this.totalArray[9] = this.totalArray[9] + var4.getSize();
-               this.totalArray[10] = this.totalArray[10] + var4.getDownloaded();
+               this.totalArray[9] = this.totalArray[9] + file.getSize();
+               this.totalArray[10] = this.totalArray[10] + file.getDownloaded();
                this.totalArray[11]++;
             }
          }
       }
 
-      var1.append(RS_DOWNLOADS);
-      var1.append("(");
-      var1.append(this.totalArray[0]);
-      var1.append(")");
-      var1.append(": ");
-      var1.append(this.totalArray[11]);
-      var1.append(" ");
-      var1.append(RS_ACTIVE);
+      text.append(RS_DOWNLOADS);
+      text.append("(");
+      text.append(this.totalArray[0]);
+      text.append(")");
+      text.append(": ");
+      text.append(this.totalArray[11]);
+      text.append(" ");
+      text.append(RS_ACTIVE);
       if (this.totalArray[11] > 0L) {
-         var1.append(" (");
-         var1.append(SwissArmy.calcStringSize(this.totalArray[10]));
-         var1.append(" / ");
-         var1.append(SwissArmy.calcStringSize(this.totalArray[9]));
-         var1.append(")");
+         text.append(" (");
+         text.append(SwissArmy.calcStringSize(this.totalArray[10]));
+         text.append(" / ");
+         text.append(SwissArmy.calcStringSize(this.totalArray[9]));
+         text.append(")");
       }
 
       if (this.totalArray[8] > 0L) {
-         var1.append(", ");
-         var1.append(RS_PAUSED);
-         var1.append(": ");
-         var1.append(this.totalArray[8]);
-         var1.append(" (");
-         var1.append(SwissArmy.calcStringSize(this.totalArray[7]));
-         var1.append(" / ");
-         var1.append(SwissArmy.calcStringSize(this.totalArray[6]));
-         var1.append(")");
+         text.append(", ");
+         text.append(RS_PAUSED);
+         text.append(": ");
+         text.append(this.totalArray[8]);
+         text.append(" (");
+         text.append(SwissArmy.calcStringSize(this.totalArray[7]));
+         text.append(" / ");
+         text.append(SwissArmy.calcStringSize(this.totalArray[6]));
+         text.append(")");
       }
 
       if (this.totalArray[3] > 0L) {
-         var1.append(", ");
-         var1.append(RS_QUEUED);
-         var1.append(": ");
-         var1.append(this.totalArray[3]);
-         var1.append(" (");
-         var1.append(SwissArmy.calcStringSize(this.totalArray[2]));
-         var1.append(" / ");
-         var1.append(SwissArmy.calcStringSize(this.totalArray[1]));
-         var1.append(")");
+         text.append(", ");
+         text.append(RS_QUEUED);
+         text.append(": ");
+         text.append(this.totalArray[3]);
+         text.append(" (");
+         text.append(SwissArmy.calcStringSize(this.totalArray[2]));
+         text.append(" / ");
+         text.append(SwissArmy.calcStringSize(this.totalArray[1]));
+         text.append(")");
       }
 
       if (this.totalArray[4] > 0L) {
-         var1.append(", ");
-         var1.append(RS_DOWNLOADED);
-         var1.append(": ");
-         var1.append(this.totalArray[4]);
-         var1.append(" (");
-         var1.append(SwissArmy.calcStringSize(this.totalArray[5]));
-         var1.append(")");
+         text.append(", ");
+         text.append(RS_DOWNLOADED);
+         text.append(": ");
+         text.append(this.totalArray[4]);
+         text.append(" (");
+         text.append(SwissArmy.calcStringSize(this.totalArray[5]));
+         text.append(")");
       }
 
-      return var1.toString().intern();
+      return text.toString().intern();
    }
 
-   public void putFile(int var1, File var2) {
-      if (var2.isInteresting()) {
-         this.addHash(var2.getMD4());
+   public void putFile(int id, File file) {
+      if (file.isInteresting()) {
+         this.addHash(file.getMD4());
       }
 
-      this.put(var1, var2);
+      this.put(id, file);
    }
 
-   public void read(MessageBuffer var1) {
-      int var2 = var1.getUInt16();
+   public void read(MessageBuffer buffer) {
+      int count = buffer.getUInt16();
       this.clear();
       this.hashList.clear();
 
-      for (int var3 = 0; var3 < var2; var3++) {
-         File var4 = this.core.getCollectionFactory().getFile();
-         var4.read(var1);
-         this.putFile(var4.getId(), var4);
-         if (var4.isActive()) {
-            this.addHash(var4.getMD4());
+      for (int i = 0; i < count; i++) {
+         File file = this.core.getCollectionFactory().getFile();
+         file.read(buffer);
+         this.putFile(file.getId(), file);
+         if (file.isActive()) {
+            this.addHash(file.getMD4());
          }
 
-         if (var4.isInteresting()) {
-            this.addToAdded(var4);
+         if (file.isInteresting()) {
+            this.addToAdded(file);
          }
       }
 
       this.setRequiresRefresh();
    }
 
-   public void removeHash(String var1) {
-      this.hashList.remove(var1.toUpperCase());
+   public void removeHash(String hash) {
+      this.hashList.remove(hash.toUpperCase());
    }
 
-   public void setBrothers(int[] var1) {
-      String var2 = "set_brothers";
+   public void setBrothers(int[] ids) {
+      String command = "set_brothers";
 
-      for (int var3 = 0; var3 < var1.length; var3++) {
-         var2 = var2 + " " + var1[var3];
+      for (int i = 0; i < ids.length; i++) {
+         command = command + " " + ids[i];
       }
 
-      this.core.send((short)29, var2);
+      this.core.send((short)29, command);
    }
 
-   public void removeSource(MessageBuffer var1) {
-      File var2 = this.getFile(var1.getInt32());
-      if (var2 != null) {
-         var2.removeSource(var1);
-         this.addFileToUpdated(var2);
+   public void removeSource(MessageBuffer buffer) {
+      File file = this.getFile(buffer.getInt32());
+      if (file != null) {
+         file.removeSource(buffer);
+         this.addFileToUpdated(file);
       }
    }
 
    public void requestAllFileInfos() {
-      this.forEachValue(new FileCollection$RequestAllFileInfos());
+      this.forEachValue(new RequestAllFileInfos());
    }
 
    public void sendUpdate() {
       if (this.hasChanged()) {
          if (this.updateDelay > 0) {
-            long var1 = System.currentTimeMillis();
-            if (this.lastUpdate + (long)(this.updateDelay * 777) > var1) {
+            long now = System.currentTimeMillis();
+            if (this.lastUpdate + (long)(this.updateDelay * 777) > now) {
                return;
             }
 
-            this.lastUpdate = var1;
+            this.lastUpdate = now;
          }
 
          this.notifyObservers();
       }
    }
 
-   public void sendUpdate(FileClient var1, int var2) {
+   public void sendUpdate(FileClient fileClient, int columnIndex) {
       this.setChanged();
-      this.notifyObservers(var1, var2);
+      this.notifyObservers(fileClient, columnIndex);
    }
 
-   public void update(MessageBuffer var1) {
-      File var2 = this.getFile(var1.getInt32());
-      if (var2 != null) {
-         var2.readUpdate(var1);
-         this.addToUpdated(var2);
+   public void update(MessageBuffer buffer) {
+      File file = this.getFile(buffer.getInt32());
+      if (file != null) {
+         file.readUpdate(buffer);
+         this.addToUpdated(file);
          this.setChanged();
       }
    }
@@ -303,8 +304,69 @@ public class FileCollection extends ACollection_Int2 {
       this.verboseNumbers = PreferenceLoader.loadBoolean("verboseNumbers");
    }
 
-   public void addFileToUpdated(File var1) {
-      this.addToUpdated(var1);
+   public void addFileToUpdated(File file) {
+      this.addToUpdated(file);
       this.setChanged();
+   }
+
+   // Trove forEachValue: save every finished download under its own name.
+   private static class CommitAll implements TObjectProcedure {
+      public boolean execute(Object value) {
+         File file = (File)value;
+         if (file.getFileStateEnum() == EnumFileState.DOWNLOADED) {
+            file.saveFileAs(file.getName());
+         }
+
+         return true;
+      }
+   }
+
+   // Trove forEachValue: dispose every file (on collection dispose).
+   private static class DisposeAll implements TObjectProcedure {
+      public boolean execute(Object value) {
+         ((File)value).dispose();
+         return true;
+      }
+   }
+
+   // Trove forEachValue: gather the files worth showing in the transfer view.
+   private static class GetAllInteresting implements TObjectProcedure {
+      List arrayList = new ArrayList();
+
+      public GetAllInteresting() {
+      }
+
+      public Object[] getArray() {
+         return this.arrayList.toArray();
+      }
+
+      public boolean execute(Object value) {
+         File file = (File)value;
+         if (file.isInteresting()) {
+            this.arrayList.add(file);
+         }
+
+         return true;
+      }
+   }
+
+   // Trove forEachValue: run a manual clean on every file.
+   private static class ManualCleanAll implements TObjectProcedure {
+      public boolean execute(Object value) {
+         ((File)value).manualClean();
+         return true;
+      }
+   }
+
+   // Trove forEachValue: ask the core for fresh info on every downloading file.
+   private static class RequestAllFileInfos implements TObjectProcedure {
+      public boolean execute(Object value) {
+         File file = (File)value;
+         if (file.getFileStateEnum() == EnumFileState.DOWNLOADING) {
+            file.requestFileInfo();
+         }
+
+         return true;
+      }
    }
 }

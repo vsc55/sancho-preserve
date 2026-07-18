@@ -3,74 +3,111 @@ package sancho.model.mldonkey;
 import sancho.core.ICore;
 import sancho.model.mldonkey.enums.EnumNetwork;
 import sancho.model.mldonkey.utility.MessageBuffer;
+import gnu.trove.TObjectObjectProcedure;
+import java.util.ArrayList;
+import sancho.model.mldonkey.enums.EnumTagType;
 
 public class OptionCollection extends ACollection_Hash {
    private static final String S_MAX_U = "max_ultrapeers";
    private static final String S_MAX_S = "max_connected_servers";
 
-   OptionCollection(ICore var1) {
-      super(var1);
+   OptionCollection(ICore core) {
+      super(core);
    }
 
-   public int getMaxConnected(Network var1) {
-      if (var1.getEnumNetwork() == EnumNetwork.SOULSEEK) {
+   public int getMaxConnected(Network network) {
+      if (network.getEnumNetwork() == EnumNetwork.SOULSEEK) {
          return 1;
       } else {
          try {
-            if (!var1.hasServers() && !var1.hasSupernodes()) {
+            if (!network.hasServers() && !network.hasSupernodes()) {
                return 1;
             } else {
-               String var2 = var1.getEnumNetwork().getDefaultOptionPrefix();
-               Option var3 = (Option)this.get(var2 + (var1.hasSupernodes() ? "max_ultrapeers" : "max_connected_servers"));
-               return var3 == null ? 1 : Integer.parseInt(var3.getValue());
+               String prefix = network.getEnumNetwork().getDefaultOptionPrefix();
+               Option option = (Option)this.get(prefix + (network.hasSupernodes() ? S_MAX_U : S_MAX_S));
+               return option == null ? 1 : Integer.parseInt(option.getValue());
             }
-         } catch (Exception var4) {
+         } catch (Exception exception) {
             return 1;
          }
       }
    }
 
-   public void read(MessageBuffer var1) {
-      int var2 = var1.getUInt16();
+   public void read(MessageBuffer buffer) {
+      int count = buffer.getUInt16();
 
-      for (int var5 = 0; var5 < var2; var5++) {
-         String var3 = var1.getString();
-         Option var4 = (Option)this.get(var3);
-         if (var4 == null) {
-            var4 = this.core.getCollectionFactory().getOption();
+      for (int i = 0; i < count; i++) {
+         String name = buffer.getString();
+         Option option = (Option)this.get(name);
+         if (option == null) {
+            option = this.core.getCollectionFactory().getOption();
          }
 
-         var4.read(var3, var1);
-         this.put(var3, var4);
+         option.read(name, buffer);
+         this.put(name, option);
       }
 
       this.setChanged();
       this.notifyObservers();
    }
 
-   public void addSectionOption(MessageBuffer var1) {
-      String var2 = var1.getString();
-      String var3 = var1.getString();
-      String var4 = var1.getString();
-      Option var5 = (Option)this.get(var4);
-      if (var5 != null) {
-         var5.addSectionOption(var2, var3, var4, var1);
+   public void addSectionOption(MessageBuffer buffer) {
+      String section = buffer.getString();
+      String description = buffer.getString();
+      String name = buffer.getString();
+      Option option = (Option)this.get(name);
+      if (option != null) {
+         option.addSectionOption(section, description, name, buffer);
       }
    }
 
-   public void addPluginOption(MessageBuffer var1) {
-      String var2 = var1.getString();
-      String var3 = var1.getString();
-      String var4 = var1.getString();
-      Option var5 = (Option)this.get(var4);
-      if (var5 != null) {
-         var5.addPluginOption(var2, var3, var4, var1);
+   public void addPluginOption(MessageBuffer buffer) {
+      String section = buffer.getString();
+      String description = buffer.getString();
+      String name = buffer.getString();
+      Option option = (Option)this.get(name);
+      if (option != null) {
+         option.addPluginOption(section, description, name, buffer);
       }
    }
 
    public String[] getAllIntOptions() {
-      OptionCollection$GetAllIntOptionsProcedure var1 = new OptionCollection$GetAllIntOptionsProcedure();
-      this.forEachEntry(var1);
-      return var1.getOptionList();
+      GetAllIntOptionsProcedure collector = new GetAllIntOptionsProcedure();
+      this.forEachEntry(collector);
+      return collector.getOptionList();
+   }
+
+   // Trove forEachEntry: collect the names of every option holding an integer value.
+   private static class GetAllIntOptionsProcedure implements TObjectObjectProcedure {
+      ArrayList stringList = new ArrayList();
+
+      public boolean execute(Object key, Object value) {
+         String name = (String)key;
+         Option option = (Option)value;
+         if (this.isInt(option)) {
+            this.stringList.add(name);
+         }
+
+         return true;
+      }
+
+      protected boolean isInt(Option option) {
+         if (option.getType() == EnumTagType.INT) {
+            return true;
+         } else {
+            try {
+               Integer.parseInt(option.getValue());
+               return true;
+            } catch (NumberFormatException notAnInt) {
+               return false;
+            }
+         }
+      }
+
+      public String[] getOptionList() {
+         String[] names = new String[this.stringList.size()];
+         this.stringList.toArray(names);
+         return names;
+      }
    }
 }

@@ -11,6 +11,8 @@ import sancho.model.mldonkey.utility.MessageBuffer;
 import sancho.utility.SwissArmy;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.SResources;
+import gnu.trove.TIntObjectProcedure;
+import gnu.trove.TObjectProcedure;
 
 public class ServerCollection extends ACollection_Int2 {
    private static final String RS_SERVERS = SResources.getString("tab.servers");
@@ -22,8 +24,8 @@ public class ServerCollection extends ACollection_Int2 {
    protected long donkeyNumUsers;
    protected long donkeyNumFiles;
 
-   ServerCollection(ICore var1) {
-      super(var1);
+   ServerCollection(ICore core) {
+      super(core);
       this.updatePreferences();
    }
 
@@ -43,25 +45,25 @@ public class ServerCollection extends ACollection_Int2 {
       return SwissArmy.calcStringSizeGrouped(this.donkeyNumUsers);
    }
 
-   public void addServer(Network var1, InetAddress var2, short var3) {
-      if (var2 != null && var1 != null) {
-         Object[] var4 = new Object[]{Integer.valueOf(var1.getId()), var2.getAddress(), Short.valueOf(var3)};
-         this.core.send((short)54, var4);
+   public void addServer(Network network, InetAddress address, short port) {
+      if (address != null && network != null) {
+         Object[] payload = new Object[]{Integer.valueOf(network.getId()), address.getAddress(), Short.valueOf(port)};
+         this.core.send((short)54, payload);
       }
    }
 
-   public void addServerList(String var1) {
-      String var2 = var1.toLowerCase().endsWith(".met") ? "server.met" : "ocl";
-      this.core.send((short)29, "urladd " + var2 + " " + var1);
+   public void addServerList(String url) {
+      String kind = url.toLowerCase().endsWith(".met") ? "server.met" : "ocl";
+      this.core.send((short)29, "urladd " + kind + " " + url);
    }
 
-   public void clean(MessageBuffer var1) {
-      int[] var2 = var1.getInt32List();
+   public void clean(MessageBuffer buffer) {
+      int[] ids = buffer.getInt32List();
       synchronized (this) {
-         this.cleanHistoryMap.put(System.currentTimeMillis(), var2.length);
+         this.cleanHistoryMap.put(System.currentTimeMillis(), ids.length);
       }
 
-      this.retainEntries(new ACollection_Int$CleanIntMap(new TIntArrayList(var2)));
+      this.retainEntries(new CleanIntMap(new TIntArrayList(ids)));
       this.setChanged();
       this.notifyObservers();
    }
@@ -78,10 +80,10 @@ public class ServerCollection extends ACollection_Int2 {
       return this.numConnected;
    }
 
-   public int getConnected(EnumNetwork var1) {
-      ServerCollection$CountNetworkConnected var2 = new ServerCollection$CountNetworkConnected(var1);
-      this.forEachValue(var2);
-      return var2.getCount();
+   public int getConnected(EnumNetwork enumNetwork) {
+      CountNetworkConnected counter = new CountNetworkConnected(enumNetwork);
+      this.forEachValue(counter);
+      return counter.getCount();
    }
 
    public synchronized TLongIntHashMap getHistoryMap() {
@@ -92,33 +94,33 @@ public class ServerCollection extends ACollection_Int2 {
       return this.getValues();
    }
 
-   private void put(int var1, Server var2) {
-      if (var2 != null) {
-         super.put(var1, var2);
-         this.addToAdded(var2);
-         if (var2.isConnected()) {
+   private void put(int id, Server server) {
+      if (server != null) {
+         super.put(id, server);
+         this.addToAdded(server);
+         if (server.isConnected()) {
             this.setConnected(1);
          }
       }
    }
 
-   public void read(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      int var3 = var1.getInt32();
-      Network var4 = (Network)this.core.getNetworkCollection().get(var3);
-      if (var4 != null) {
-         if (this.displayNodes || var4.hasServers()) {
-            Server var5 = (Server)this.get(var2);
-            if (var5 != null) {
-               var5.read(var2, var3, var1);
-               if (var5.getStateEnum() != EnumHostState.REMOVE_HOST) {
-                  this.addToUpdated(var5);
+   public void read(MessageBuffer buffer) {
+      int id = buffer.getInt32();
+      int networkId = buffer.getInt32();
+      Network network = (Network)this.core.getNetworkCollection().get(networkId);
+      if (network != null) {
+         if (this.displayNodes || network.hasServers()) {
+            Server server = (Server)this.get(id);
+            if (server != null) {
+               server.read(id, networkId, buffer);
+               if (server.getStateEnum() != EnumHostState.REMOVE_HOST) {
+                  this.addToUpdated(server);
                }
             } else {
-               var5 = this.core.getCollectionFactory().getServer();
-               var5.read(var2, var3, var1);
-               if (var5.getStateEnum() != EnumHostState.REMOVE_HOST) {
-                  this.put(var5.getId(), var5);
+               server = this.core.getCollectionFactory().getServer();
+               server.read(id, networkId, buffer);
+               if (server.getStateEnum() != EnumHostState.REMOVE_HOST) {
+                  this.put(server.getId(), server);
                }
             }
 
@@ -128,12 +130,12 @@ public class ServerCollection extends ACollection_Int2 {
       }
    }
 
-   public void readUpdate(MessageBuffer var1) {
-      Server var2 = (Server)this.get(var1.getInt32());
-      if (var2 != null) {
-         var2.readUpdate(var1);
-         if (var2.getStateEnum() != EnumHostState.REMOVE_HOST) {
-            this.addToUpdated(var2);
+   public void readUpdate(MessageBuffer buffer) {
+      Server server = (Server)this.get(buffer.getInt32());
+      if (server != null) {
+         server.readUpdate(buffer);
+         if (server.getStateEnum() != EnumHostState.REMOVE_HOST) {
+            this.addToUpdated(server);
             this.setChanged();
             this.notifyObservers();
          }
@@ -141,80 +143,147 @@ public class ServerCollection extends ACollection_Int2 {
    }
 
    public synchronized String getHeaderString() {
-      StringBuffer var1 = new StringBuffer(64);
-      var1.append(RS_SERVERS);
-      var1.append(": ");
-      var1.append(this.getConnected());
-      var1.append(" / ");
-      var1.append(this.size());
-      var1.append(" ");
-      var1.append(RS_CONNECTED);
+      StringBuffer text = new StringBuffer(64);
+      text.append(RS_SERVERS);
+      text.append(": ");
+      text.append(this.getConnected());
+      text.append(" / ");
+      text.append(this.size());
+      text.append(" ");
+      text.append(RS_CONNECTED);
       this.updateDonkeyTotals();
       if (this.getDonkeyNumServers() > 0L) {
-         var1.append(" ");
-         var1.append(" ");
-         var1.append(" ");
-         var1.append(" ");
-         var1.append("(");
-         var1.append(EnumNetwork.DONKEY.getName());
-         var1.append(": ");
-         var1.append(this.getDonkeyNumServersString());
-         var1.append("/");
-         var1.append(this.getDonkeyNumUsersString());
-         var1.append("/");
-         var1.append(this.getDonkeyNumFilesString());
-         var1.append(")");
+         text.append(" ");
+         text.append(" ");
+         text.append(" ");
+         text.append(" ");
+         text.append("(");
+         text.append(EnumNetwork.DONKEY.getName());
+         text.append(": ");
+         text.append(this.getDonkeyNumServersString());
+         text.append("/");
+         text.append(this.getDonkeyNumUsersString());
+         text.append("/");
+         text.append(this.getDonkeyNumFilesString());
+         text.append(")");
       }
 
-      return var1.toString();
+      return text.toString();
    }
 
    public synchronized void updateDonkeyTotals() {
-      ServerCollection$CountDonkeyTotals var1 = new ServerCollection$CountDonkeyTotals();
-      this.forEachValue(var1);
-      this.donkeyNumFiles = var1.getNumFiles();
-      this.donkeyNumUsers = var1.getNumUsers();
-      this.donkeyNumServers = var1.getNumServers();
+      CountDonkeyTotals counter = new CountDonkeyTotals();
+      this.forEachValue(counter);
+      this.donkeyNumFiles = counter.getNumFiles();
+      this.donkeyNumUsers = counter.getNumUsers();
+      this.donkeyNumServers = counter.getNumServers();
    }
 
-   public Object remove(int var1) {
-      Server var2 = (Server)super.get(var1);
-      if (var2 != null && var2.isConnected()) {
+   public Object remove(int id) {
+      Server server = (Server)super.get(id);
+      if (server != null && server.isConnected()) {
          this.setConnected(-1);
       }
 
-      return super.remove(var1);
+      return super.remove(id);
    }
 
-   public void remove(Server var1) {
-      super.remove(var1.getId());
-      this.addToRemoved(var1);
+   public void remove(Server server) {
+      super.remove(server.getId());
+      this.addToRemoved(server);
       this.setChanged();
       this.notifyObservers();
    }
 
-   public void removeAll(EnumNetwork var1) {
-      this.retainEntries(new ServerCollection$RemoveNetworkServers(var1));
+   public void removeAll(EnumNetwork enumNetwork) {
+      this.retainEntries(new RemoveNetworkServers(enumNetwork));
       this.setChanged();
       this.notifyObservers();
    }
 
-   public void serverUser(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      Server var3 = (Server)this.get(var2);
-      if (var3 != null) {
-         var3.serverUser(var1);
-         this.addToUpdated(var3);
+   public void serverUser(MessageBuffer buffer) {
+      int id = buffer.getInt32();
+      Server server = (Server)this.get(id);
+      if (server != null) {
+         server.serverUser(buffer);
+         this.addToUpdated(server);
       } else if (Sancho.debug) {
-         Sancho.pDebug("su-nf:" + var2);
+         Sancho.pDebug("su-nf:" + id);
       }
    }
 
-   public void setConnected(int var1) {
-      this.numConnected += var1;
+   public void setConnected(int delta) {
+      this.numConnected += delta;
    }
 
    public void updatePreferences() {
       this.displayNodes = PreferenceLoader.loadBoolean("displayNodes");
+   }
+
+   // Trove forEachValue: total servers/users/files across all eDonkey servers.
+   private static class CountDonkeyTotals implements TObjectProcedure {
+      private long numFiles;
+      private long numUsers;
+      private long numServers;
+
+      public boolean execute(Object value) {
+         Server server = (Server)value;
+         if (server.getEnumNetwork() == EnumNetwork.DONKEY) {
+            this.numServers++;
+            this.numUsers = this.numUsers + server.getNumUsers();
+            this.numFiles = this.numFiles + server.getNumFiles();
+         }
+
+         return true;
+      }
+
+      public long getNumServers() {
+         return this.numServers;
+      }
+
+      public long getNumFiles() {
+         return this.numFiles;
+      }
+
+      public long getNumUsers() {
+         return this.numUsers;
+      }
+   }
+
+   // Trove forEachValue: count connected servers on a given network.
+   private static class CountNetworkConnected implements TObjectProcedure {
+      private int counter;
+      private EnumNetwork networkEnum;
+
+      public CountNetworkConnected(EnumNetwork networkEnum) {
+         this.networkEnum = networkEnum;
+      }
+
+      public boolean execute(Object value) {
+         Server server = (Server)value;
+         if (server.isConnected() && server.getEnumNetwork() == this.networkEnum) {
+            this.counter++;
+         }
+
+         return true;
+      }
+
+      public int getCount() {
+         return this.counter;
+      }
+   }
+
+   // Trove retainEntries filter: drop every server belonging to a given network.
+   private static class RemoveNetworkServers implements TIntObjectProcedure {
+      private EnumNetwork enumNetwork;
+
+      public RemoveNetworkServers(EnumNetwork enumNetwork) {
+         this.enumNetwork = enumNetwork;
+      }
+
+      public boolean execute(int id, Object value) {
+         Server server = (Server)value;
+         return this.enumNetwork != server.getEnumNetwork();
+      }
    }
 }

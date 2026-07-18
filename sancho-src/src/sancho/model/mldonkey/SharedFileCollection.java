@@ -3,29 +3,30 @@ package sancho.model.mldonkey;
 import sancho.core.ICore;
 import sancho.model.mldonkey.utility.MessageBuffer;
 import sancho.utility.SwissArmy;
+import gnu.trove.TObjectProcedure;
 
 public class SharedFileCollection extends ACollection_Int2 {
    long totalSize;
    String totalSizeString;
 
-   SharedFileCollection(ICore var1) {
-      super(var1);
+   SharedFileCollection(ICore core) {
+      super(core);
    }
 
-   public void read(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      SharedFile var3 = (SharedFile)this.get(var2);
-      if (var3 != null) {
-         if (var3.readUpdate(var2, var1)) {
-            this.addToUpdated(var3);
+   public void read(MessageBuffer buffer) {
+      int id = buffer.getInt32();
+      SharedFile sharedFile = (SharedFile)this.get(id);
+      if (sharedFile != null) {
+         if (sharedFile.readUpdate(id, buffer)) {
+            this.addToUpdated(sharedFile);
             this.setChanged();
-            this.notifyObservers(var3);
+            this.notifyObservers(sharedFile);
          }
       } else {
-         var3 = this.core.getCollectionFactory().getSharedFile();
-         var3.read(var2, var1);
-         this.put(var2, var3);
-         this.addToAdded(var3);
+         sharedFile = this.core.getCollectionFactory().getSharedFile();
+         sharedFile.read(id, buffer);
+         this.put(id, sharedFile);
+         this.addToAdded(sharedFile);
          this.calculateTotalSize();
          this.setChanged();
          this.notifyObservers();
@@ -36,34 +37,49 @@ public class SharedFileCollection extends ACollection_Int2 {
       this.core.send((short)29, "reshare");
    }
 
-   public void unshared(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      if (this.containsKey(var2)) {
-         this.addToRemoved(this.remove(var2));
+   public void unshared(MessageBuffer buffer) {
+      int id = buffer.getInt32();
+      if (this.containsKey(id)) {
+         this.addToRemoved(this.remove(id));
          this.calculateTotalSize();
          this.setChanged();
          this.notifyObservers();
       }
    }
 
-   public void upload(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      SharedFile var3 = (SharedFile)this.get(var2);
-      if (var3 != null && var3.upload(var2, var1)) {
-         this.addToUpdated(var3);
+   public void upload(MessageBuffer buffer) {
+      int id = buffer.getInt32();
+      SharedFile sharedFile = (SharedFile)this.get(id);
+      if (sharedFile != null && sharedFile.upload(id, buffer)) {
+         this.addToUpdated(sharedFile);
          this.setChanged();
          this.notifyObservers();
       }
    }
 
    public synchronized void calculateTotalSize() {
-      SharedFileCollection$CalculateTotalSize var1 = new SharedFileCollection$CalculateTotalSize();
-      this.forEachValue(var1);
-      this.totalSize = var1.getTotal();
+      CalculateTotalSize sizer = new CalculateTotalSize();
+      this.forEachValue(sizer);
+      this.totalSize = sizer.getTotal();
       this.totalSizeString = SwissArmy.calcStringSize(this.totalSize);
    }
 
    public synchronized String getTotalSizeString() {
       return this.totalSizeString != null ? this.totalSizeString : "0";
+   }
+
+   // Trove forEachValue: sum the size of every shared file.
+   private static class CalculateTotalSize implements TObjectProcedure {
+      long total;
+
+      public boolean execute(Object value) {
+         SharedFile sharedFile = (SharedFile)value;
+         this.total = this.total + sharedFile.getSize();
+         return true;
+      }
+
+      public long getTotal() {
+         return this.total;
+      }
    }
 }

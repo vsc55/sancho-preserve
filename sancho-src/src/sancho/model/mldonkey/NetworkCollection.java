@@ -4,98 +4,185 @@ import sancho.core.ICore;
 import sancho.core.Sancho;
 import sancho.model.mldonkey.enums.EnumNetwork;
 import sancho.model.mldonkey.utility.MessageBuffer;
+import gnu.trove.TObjectProcedure;
+import sancho.utility.SwissArmy;
+import sancho.view.utility.SResources;
 
 public class NetworkCollection extends ACollection_Int implements ICollection {
    public static int CHANGED_STATS = 1;
 
-   NetworkCollection(ICore var1) {
-      super(var1);
+   NetworkCollection(ICore core) {
+      super(core);
    }
 
-   public Network getByEnum(EnumNetwork var1) {
-      NetworkCollection$GetNetworkByEnum var2 = new NetworkCollection$GetNetworkByEnum(var1);
-      this.forEachValue(var2);
-      return var2.getNetwork();
+   public Network getByEnum(EnumNetwork enumNetwork) {
+      GetNetworkByEnum finder = new GetNetworkByEnum(enumNetwork);
+      this.forEachValue(finder);
+      return finder.getNetwork();
    }
 
    public int getEnabledAndSearchable() {
-      NetworkCollection$CountEnabledAndSearchable var1 = new NetworkCollection$CountEnabledAndSearchable();
-      this.forEachValue(var1);
-      return var1.getCount();
+      CountEnabledAndSearchable counter = new CountEnabledAndSearchable();
+      this.forEachValue(counter);
+      return counter.getCount();
    }
 
-   public EnumNetwork getNetworkEnum(int var1) {
-      Network var2;
-      return (var2 = (Network)this.get(var1)) != null ? var2.getEnumNetwork() : EnumNetwork.UNKNOWN;
+   public EnumNetwork getNetworkEnum(int id) {
+      Network network;
+      return (network = (Network)this.get(id)) != null ? network.getEnumNetwork() : EnumNetwork.UNKNOWN;
    }
 
    public void getAllStats() {
-      NetworkCollection$GetAllStats var1 = new NetworkCollection$GetAllStats();
-      this.forEachValue(var1);
+      GetAllStats collector = new GetAllStats();
+      this.forEachValue(collector);
    }
 
-   public String getAllNetworkStats(String var1) {
-      NetworkCollection$GetNetworkStats var2 = new NetworkCollection$GetNetworkStats(var1);
-      this.forEachValue(var2);
-      return var2.getResultString();
+   public String getAllNetworkStats(String newLine) {
+      GetNetworkStats collector = new GetNetworkStats(newLine);
+      this.forEachValue(collector);
+      return collector.getResultString();
    }
 
    public Network[] getNetworks() {
-      Object[] var1 = this.getValues();
-      Network[] var2 = new Network[var1.length];
+      Object[] values = this.getValues();
+      Network[] networks = new Network[values.length];
 
-      for (int var3 = 0; var3 < var1.length; var3++) {
-         var2[var3] = (Network)var1[var3];
+      for (int i = 0; i < values.length; i++) {
+         networks[i] = (Network)values[i];
       }
 
-      return var2;
+      return networks;
    }
 
-   public void read(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      boolean var3 = true;
-      Network var4 = (Network)this.get(var2);
-      if (var4 != null) {
-         boolean var5 = var4.isEnabled();
-         int var6 = var4.numConnectedServers();
-         var4.read(var2, var1);
-         if (var5 == var4.isEnabled() && var6 == var4.numConnectedServers()) {
-            var3 = false;
+   public void read(MessageBuffer buffer) {
+      int id = buffer.getInt32();
+      boolean changed = true;
+      Network network = (Network)this.get(id);
+      if (network != null) {
+         boolean wasEnabled = network.isEnabled();
+         int previousConnected = network.numConnectedServers();
+         network.read(id, buffer);
+         if (wasEnabled == network.isEnabled() && previousConnected == network.numConnectedServers()) {
+            changed = false;
          }
       } else {
-         var4 = this.core.getCollectionFactory().getNetwork();
-         var4.read(var2, var1);
-         this.put(var2, var4);
-         var4.getStats();
+         network = this.core.getCollectionFactory().getNetwork();
+         network.read(id, buffer);
+         this.put(id, network);
+         network.getStats();
       }
 
-      if (var3) {
+      if (changed) {
          this.setChanged();
-         this.notifyObservers(var4);
+         this.notifyObservers(network);
       }
    }
 
-   public void readStats(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      Network var3 = (Network)this.get(var2);
-      if (var3 != null) {
-         var3.readStats(var1);
-         int var4 = 0;
-         var4 |= CHANGED_STATS;
+   public void readStats(MessageBuffer buffer) {
+      int id = buffer.getInt32();
+      Network network = (Network)this.get(id);
+      if (network != null) {
+         network.readStats(buffer);
+         int changeFlags = 0;
+         changeFlags |= CHANGED_STATS;
          this.setChanged();
-         this.notifyObservers(var3, var4);
+         this.notifyObservers(network, changeFlags);
       } else {
-         Sancho.pDebug("readStats failed: " + var2);
+         Sancho.pDebug("readStats failed: " + id);
       }
    }
 
-   protected void setConnectedServers(Network var1, int var2) {
-      if (var1 != null) {
-         if (var1.numConnectedServers() != var2) {
-            var1.setConnectedServers(var2);
+   protected void setConnectedServers(Network network, int connectedServers) {
+      if (network != null) {
+         if (network.numConnectedServers() != connectedServers) {
+            network.setConnectedServers(connectedServers);
             this.setChanged();
-            this.notifyObservers(var1);
+            this.notifyObservers(network);
          }
+      }
+   }
+
+   // Trove forEachValue: count the networks that are both enabled and searchable.
+   private static class CountEnabledAndSearchable implements TObjectProcedure {
+      private int counter;
+
+      public boolean execute(Object value) {
+         Network network = (Network)value;
+         if (network.isEnabled() && network.isSearchable()) {
+            this.counter++;
+         }
+
+         return true;
+      }
+
+      public int getCount() {
+         return this.counter;
+      }
+   }
+
+   // Trove forEachValue: request stats for every enabled network.
+   private static class GetAllStats implements TObjectProcedure {
+      public boolean execute(Object value) {
+         Network network = (Network)value;
+         if (network.isEnabled()) {
+            network.getStats();
+         }
+
+         return true;
+      }
+   }
+
+   // Trove forEachValue: find the network matching a given EnumNetwork.
+   private static class GetNetworkByEnum implements TObjectProcedure {
+      EnumNetwork enumNetwork;
+      Network foundNetworkInfo = null;
+
+      public GetNetworkByEnum(EnumNetwork enumNetwork) {
+         this.enumNetwork = enumNetwork;
+      }
+
+      public boolean execute(Object value) {
+         Network network = (Network)value;
+         if (network.equals(this.enumNetwork)) {
+            this.foundNetworkInfo = network;
+         }
+
+         return true;
+      }
+
+      public Network getNetwork() {
+         return this.foundNetworkInfo;
+      }
+   }
+
+   // Trove forEachValue: build a human-readable stats block for every network.
+   private static class GetNetworkStats implements TObjectProcedure {
+      StringBuffer stringBuffer = new StringBuffer();
+      String nl;
+
+      public GetNetworkStats(String newLine) {
+         this.nl = newLine;
+      }
+
+      public boolean execute(Object value) {
+         Network network = (Network)value;
+         this.stringBuffer.append(this.nl + SResources.getString("stats.network") + ": ");
+         this.stringBuffer.append(network.getName());
+         if (network.isEnabled()) {
+            this.stringBuffer.append(" (" + SResources.getString("stats.enabled") + ")" + this.nl);
+         } else {
+            this.stringBuffer.append(" (" + SResources.getString("stats.disabled") + ")" + this.nl);
+         }
+
+         this.stringBuffer.append(SResources.getString("stats.downloaded") + ": ");
+         this.stringBuffer.append(SwissArmy.calcStringSize(network.getDownloaded()) + this.nl);
+         this.stringBuffer.append(SResources.getString("stats.uploaded") + ": ");
+         this.stringBuffer.append(SwissArmy.calcStringSize(network.getUploaded()) + this.nl);
+         return true;
+      }
+
+      public String getResultString() {
+         return this.stringBuffer.toString();
       }
    }
 }
