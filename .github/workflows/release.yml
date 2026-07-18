@@ -83,12 +83,18 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y rpm fakeroot binutils
 
-      - name: Install WiX 3.14 (Windows, for the .msi installer)
+      - name: Ensure WiX 3.14 on PATH (Windows, for the .msi installer)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          choco install wixtoolset --version=3.14.1 -y --no-progress
-          "C:\Program Files (x86)\WiX Toolset v3.14\bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+          # windows-latest already ships WiX 3.14; install (unpinned, no downgrade)
+          # only if candle.exe is missing, then make sure its bin is on PATH so
+          # jpackage can find candle/light.
+          $bin = "C:\Program Files (x86)\WiX Toolset v3.14\bin"
+          if (-not (Test-Path (Join-Path $bin "candle.exe"))) {
+            choco install wixtoolset -y --no-progress
+          }
+          if (Test-Path $bin) { $bin | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8 }
 
       - name: Package
         shell: pwsh
