@@ -68,409 +68,409 @@ public class SwissArmy {
    static Pattern hrefRE;
    static Pattern envRE;
 
-   public static boolean containsFake(String var0) {
-      return fakeRE != null && var0 != null && fakeRE.matcher(var0).find();
+   public static boolean containsFake(String text) {
+      return fakeRE != null && text != null && fakeRE.matcher(text).find();
    }
 
-   public static String[] split(String var0, char var1) {
-      Pattern var2 = null;
-      String var3 = "([^" + var1 + "])*";
+   public static String[] split(String input, char delimiter) {
+      Pattern pattern = null;
+      String regex = "([^" + delimiter + "])*";
 
       try {
-         var2 = Pattern.compile(var3);
-      } catch (PatternSyntaxException var8) {
-         var8.printStackTrace();
+         pattern = Pattern.compile(regex);
+      } catch (PatternSyntaxException syntaxException) {
+         syntaxException.printStackTrace();
       }
 
-      ArrayList var4 = new ArrayList();
-      if (var0 != null) {
-         Matcher var5 = var2.matcher(var0);
+      ArrayList tokens = new ArrayList();
+      if (input != null) {
+         Matcher matcher = pattern.matcher(input);
 
-         while (var5.find()) {
-            String var7 = var5.group();
-            if (!var7.equals("")) {
-               var4.add(var7);
+         while (matcher.find()) {
+            String token = matcher.group();
+            if (!token.equals("")) {
+               tokens.add(token);
             }
          }
       }
 
-      String[] var9 = new String[var4.size()];
-      var4.toArray(var9);
-      return var9;
+      String[] result = new String[tokens.size()];
+      tokens.toArray(result);
+      return result;
    }
 
-   public static String replaceAll(String var0, String var1, String var2) {
-      Pattern var3 = null;
+   public static String replaceAll(String input, String regex, String replacement) {
+      Pattern pattern = null;
 
       try {
-         var3 = Pattern.compile(var1);
-      } catch (PatternSyntaxException var5) {
-         var5.printStackTrace();
+         pattern = Pattern.compile(regex);
+      } catch (PatternSyntaxException syntaxException) {
+         syntaxException.printStackTrace();
       }
 
-      return var3.matcher(var0).replaceAll(var2);
+      return pattern.matcher(input).replaceAll(replacement);
    }
 
-   public static synchronized String calcStringSizeGrouped(long var0) {
-      return dfGrouped.format(var0).intern();
+   public static synchronized String calcStringSizeGrouped(long size) {
+      return dfGrouped.format(size).intern();
    }
 
-   public static synchronized String calcStringSize(long var0) {
-      if (var0 == 0L) {
+   public static synchronized String calcStringSize(long size) {
+      if (size == 0L) {
          return "0";
       } else {
-         double var2 = (double)var0;
+         double value = (double)size;
          if (!humanReadable) {
-            return dfGrouped.format(var2).intern();
+            return dfGrouped.format(value).intern();
          } else {
-            StringBuffer var4 = new StringBuffer(10);
-            if (var2 >= 1.0995116E12F && !maxMegabytes) {
-               df000.format(var2 / 1.0995116E12F, var4, FP);
-               return var4.append(S_STB).toString().intern();
-            } else if (var2 >= 1.0737418E9F && !maxMegabytes) {
-               df000.format(var2 / 1.0737418E9F, var4, FP);
-               return var4.append(S_SGB).toString().intern();
-            } else if (var2 >= 1048576.0) {
-               df00.format(var2 / 1048576.0, var4, FP);
-               return var4.append(S_SMB).toString().intern();
-            } else if (var2 >= 1024.0) {
-               df00.format(var2 / 1024.0, var4, FP);
-               return var4.append(S_SKB).toString().intern();
+            StringBuffer buffer = new StringBuffer(10);
+            if (value >= 1.0995116E12F && !maxMegabytes) {
+               df000.format(value / 1.0995116E12F, buffer, FP);
+               return buffer.append(S_STB).toString().intern();
+            } else if (value >= 1.0737418E9F && !maxMegabytes) {
+               df000.format(value / 1.0737418E9F, buffer, FP);
+               return buffer.append(S_SGB).toString().intern();
+            } else if (value >= 1048576.0) {
+               df00.format(value / 1048576.0, buffer, FP);
+               return buffer.append(S_SMB).toString().intern();
+            } else if (value >= 1024.0) {
+               df00.format(value / 1024.0, buffer, FP);
+               return buffer.append(S_SKB).toString().intern();
             } else {
-               return String.valueOf(var0).intern();
+               return String.valueOf(size).intern();
             }
          }
       }
    }
 
-   public static String calcStringOfSeconds(long var0) {
-      StringBuffer var2 = new StringBuffer(10);
-      if (var0 < 60L) {
-         return var2.append(var0).append(S_S).toString().intern();
+   public static String calcStringOfSeconds(long seconds) {
+      StringBuffer buffer = new StringBuffer(10);
+      if (seconds < 60L) {
+         return buffer.append(seconds).append(S_S).toString().intern();
       } else {
-         long var3 = var0 / secondsInDay;
-         if (var3 > 9999L) {
+         long days = seconds / secondsInDay;
+         if (days > 9999L) {
             return "";
          } else {
-            long var5 = var0 - var3 * secondsInDay;
-            long var7 = var5 / secondsInHour;
-            var5 -= var7 * secondsInHour;
-            long var9 = var5 / 60L;
-            var5 -= var9 * 60L;
-            if (var3 > 0L) {
-               return var2.append(var3).append(S_D).toString().intern();
-            } else if (var7 > 0L) {
-               var2.append(var7).append(S_H);
-               if (var9 > 0L) {
-                  var2.append(" ").append(var9).append(S_M);
+            long remainder = seconds - days * secondsInDay;
+            long hours = remainder / secondsInHour;
+            remainder -= hours * secondsInHour;
+            long minutes = remainder / 60L;
+            remainder -= minutes * 60L;
+            if (days > 0L) {
+               return buffer.append(days).append(S_D).toString().intern();
+            } else if (hours > 0L) {
+               buffer.append(hours).append(S_H);
+               if (minutes > 0L) {
+                  buffer.append(" ").append(minutes).append(S_M);
                }
 
-               return var2.toString().intern();
-            } else if (var9 > 0L) {
-               var2.append(var9).append(S_M);
-               if (var5 > 0L) {
-                  var2.append(" ").append(var5).append(S_S);
+               return buffer.toString().intern();
+            } else if (minutes > 0L) {
+               buffer.append(minutes).append(S_M);
+               if (remainder > 0L) {
+                  buffer.append(" ").append(remainder).append(S_S);
                }
 
-               return var2.toString().intern();
+               return buffer.toString().intern();
             } else {
-               return var2.append(var9).append(S_M).toString().intern();
+               return buffer.append(minutes).append(S_M).toString().intern();
             }
          }
       }
    }
 
-   public static String calcStringOfSecondsFull(long var0) {
-      StringBuffer var2 = new StringBuffer(10);
-      if (var0 < 60L) {
-         return var2.append(var0).append(S_S).toString().intern();
+   public static String calcStringOfSecondsFull(long seconds) {
+      StringBuffer buffer = new StringBuffer(10);
+      if (seconds < 60L) {
+         return buffer.append(seconds).append(S_S).toString().intern();
       } else {
-         long var3 = var0 / secondsInDay;
-         long var5 = var0 - var3 * secondsInDay;
-         long var7 = var5 / secondsInHour;
-         var5 -= var7 * secondsInHour;
-         long var9 = var5 / 60L;
-         var5 -= var9 * 60L;
-         boolean var11 = false;
-         if (var3 > 0L) {
-            var2.append(var3).append(S_D);
-            var11 = true;
+         long days = seconds / secondsInDay;
+         long remainder = seconds - days * secondsInDay;
+         long hours = remainder / secondsInHour;
+         remainder -= hours * secondsInHour;
+         long minutes = remainder / 60L;
+         remainder -= minutes * 60L;
+         boolean hasOutput = false;
+         if (days > 0L) {
+            buffer.append(days).append(S_D);
+            hasOutput = true;
          }
 
-         if (var7 > 0L) {
-            if (var11) {
-               var2.append(" ");
+         if (hours > 0L) {
+            if (hasOutput) {
+               buffer.append(" ");
             }
 
-            var2.append(var7).append(S_H);
-            var11 = true;
+            buffer.append(hours).append(S_H);
+            hasOutput = true;
          }
 
-         if (var9 > 0L) {
-            if (var11) {
-               var2.append(" ");
+         if (minutes > 0L) {
+            if (hasOutput) {
+               buffer.append(" ");
             }
 
-            var2.append(var9).append(S_M);
-            var11 = true;
+            buffer.append(minutes).append(S_M);
+            hasOutput = true;
          }
 
-         if (var5 > 0L) {
-            if (var11) {
-               var2.append(" ");
+         if (remainder > 0L) {
+            if (hasOutput) {
+               buffer.append(" ");
             }
 
-            var2.append(var5).append(S_S);
+            buffer.append(remainder).append(S_S);
          }
 
-         return var2.toString().intern();
+         return buffer.toString().intern();
       }
    }
 
-   public static String calcUptime(long var0) {
-      long var2 = 0L;
-      long var4 = System.currentTimeMillis();
-      if (var4 > var0) {
-         var2 = (var4 - var0) / 1000L;
+   public static String calcUptime(long startTime) {
+      long uptimeSeconds = 0L;
+      long now = System.currentTimeMillis();
+      if (now > startTime) {
+         uptimeSeconds = (now - startTime) / 1000L;
       }
 
-      return calcStringOfSeconds(var2);
+      return calcStringOfSeconds(uptimeSeconds);
    }
 
-   public static String calcTimeOfSeconds(long var0) {
-      StringBuffer var2 = new StringBuffer(10);
-      long var3 = var0 / 60L / 60L;
-      long var5 = var0 - var3 * 60L * 60L;
-      long var7 = var5 / 60L;
-      var5 -= var7 * 60L;
-      if (var3 > 0L) {
-         var2.append(var3);
-         var2.append(S_H);
+   public static String calcTimeOfSeconds(long seconds) {
+      StringBuffer buffer = new StringBuffer(10);
+      long hours = seconds / 60L / 60L;
+      long remainder = seconds - hours * 60L * 60L;
+      long minutes = remainder / 60L;
+      remainder -= minutes * 60L;
+      if (hours > 0L) {
+         buffer.append(hours);
+         buffer.append(S_H);
       }
 
-      if (var7 > 0L) {
-         var2.append(var7);
-         var2.append(S_M);
+      if (minutes > 0L) {
+         buffer.append(minutes);
+         buffer.append(S_M);
       }
 
-      if (var5 > 0L) {
-         var2.append(var5);
-         var2.append(S_S);
+      if (remainder > 0L) {
+         buffer.append(remainder);
+         buffer.append(S_S);
       }
 
-      return var2.toString();
+      return buffer.toString();
    }
 
-   public static String calcStringOfMD4(byte[] var0) {
-      if (var0 == null) {
+   public static String calcStringOfMD4(byte[] hash) {
+      if (hash == null) {
          return S_NULL_MD4;
       } else {
-         StringBuffer var1 = new StringBuffer(32);
-         int var2 = var0.length;
+         StringBuffer buffer = new StringBuffer(32);
+         int length = hash.length;
 
-         for (int var4 = 0; var4 < var2; var4++) {
-            short var3 = (short)(var0[var4] & 255);
-            if (var3 <= 15) {
-               var1.append(0);
+         for (int i = 0; i < length; i++) {
+            short b = (short)(hash[i] & 255);
+            if (b <= 15) {
+               buffer.append(0);
             }
 
-            var1.append(Integer.toHexString(var3));
+            buffer.append(Integer.toHexString(b));
          }
 
-         return var1.toString().intern();
+         return buffer.toString().intern();
       }
    }
 
-   public static long stringSizeToLong(String var0, String var1) {
+   public static long stringSizeToLong(String value, String unit) {
       // multiplier must be long: 2^40 (TB) overflows int, so the old code left it 0
       // and every "TB" size converted to 0 bytes. double keeps precision at GB/TB.
-      long var2 = 1L;
-      if (var1.equalsIgnoreCase(S_KB)) {
-         var2 = 1024L;
-      } else if (var1.equalsIgnoreCase(S_MB)) {
-         var2 = 1048576L;
-      } else if (var1.equalsIgnoreCase(S_GB)) {
-         var2 = 1073741824L;
-      } else if (var1.equalsIgnoreCase(S_TB)) {
-         var2 = 1099511627776L;
+      long multiplier = 1L;
+      if (unit.equalsIgnoreCase(S_KB)) {
+         multiplier = 1024L;
+      } else if (unit.equalsIgnoreCase(S_MB)) {
+         multiplier = 1048576L;
+      } else if (unit.equalsIgnoreCase(S_GB)) {
+         multiplier = 1073741824L;
+      } else if (unit.equalsIgnoreCase(S_TB)) {
+         multiplier = 1099511627776L;
       }
 
-      double var3;
+      double number;
       try {
-         var3 = Double.parseDouble(var0);
-      } catch (NumberFormatException var5) {
-         var3 = 1.0;
+         number = Double.parseDouble(value);
+      } catch (NumberFormatException notANumber) {
+         number = 1.0;
       }
 
-      return (long)(var3 * (double)var2);
+      return (long)(number * (double)multiplier);
    }
 
-   public static int log2(int var0) {
-      int var1;
-      for (var1 = -1; var0 > 0; var1++) {
-         var0 >>= 1;
+   public static int log2(int value) {
+      int result;
+      for (result = -1; value > 0; result++) {
+         value >>= 1;
       }
 
-      return var1;
+      return result;
    }
 
-   public static int countBits(int var0) {
-      var0 = (var0 >>> 1 & 1431655765) + (var0 & 1431655765);
-      var0 = (var0 >>> 2 & 858993459) + (var0 & 858993459);
-      var0 = (var0 >>> 4 & 252645135) + (var0 & 252645135);
-      var0 = (var0 >>> 8 & 16711935) + (var0 & 16711935);
-      return (var0 >>> 16) + (var0 & 65535);
+   public static int countBits(int value) {
+      value = (value >>> 1 & 1431655765) + (value & 1431655765);
+      value = (value >>> 2 & 858993459) + (value & 858993459);
+      value = (value >>> 4 & 252645135) + (value & 252645135);
+      value = (value >>> 8 & 16711935) + (value & 16711935);
+      return (value >>> 16) + (value & 65535);
    }
 
-   public static void threadSleep(int var0) {
+   public static void threadSleep(int millis) {
       try {
-         Thread.sleep((long)var0);
-      } catch (InterruptedException var2) {
+         Thread.sleep((long)millis);
+      } catch (InterruptedException interrupted) {
       }
    }
 
-   public static String replaceEnvVars(String var0) {
-      if (var0 == null) {
-         return var0;
+   public static String replaceEnvVars(String input) {
+      if (input == null) {
+         return input;
       }
 
-      Matcher var1 = envRE.matcher(var0);
-      if (!var1.find()) {
-         return var0;
+      Matcher matcher = envRE.matcher(input);
+      if (!matcher.find()) {
+         return input;
       } else {
-         String var2 = "";
-         int var3 = 0;
+         String result = "";
+         int lastEnd = 0;
 
          do {
-            int var5 = var1.start(1);
-            var2 = var2 + var0.substring(var3, var5);
-            var3 = var1.end(1);
-            String var6 = var0.substring(var5, var3);
-            String var7 = replaceAll(var6, "%", "");
+            int start = matcher.start(1);
+            result = result + input.substring(lastEnd, start);
+            lastEnd = matcher.end(1);
+            String token = input.substring(start, lastEnd);
+            String varName = replaceAll(token, "%", "");
 
             try {
-               String var8 = System.getenv(var7);
-               if (var8 != null) {
-                  var6 = var8;
+               String envValue = System.getenv(varName);
+               if (envValue != null) {
+                  token = envValue;
                }
-            } catch (Exception var10) {
-            } catch (Error var11) {
+            } catch (Exception ignoredException) {
+            } catch (Error ignoredError) {
             }
 
-            var2 = var2 + var6;
-         } while (var1.find());
+            result = result + token;
+         } while (matcher.find());
 
-         return var2 + var0.substring(var3);
+         return result + input.substring(lastEnd);
       }
    }
 
-   public static String[] parseLinks(String[] var0) {
-      Pattern var1 = PreferenceLoader.loadBoolean("linkRipperShowAll") ? linksRE2 : linksRE1;
-      ArrayList var2 = new ArrayList();
-      Object var3 = null;
+   public static String[] parseLinks(String[] lines) {
+      Pattern pattern = PreferenceLoader.loadBoolean("linkRipperShowAll") ? linksRE2 : linksRE1;
+      ArrayList links = new ArrayList();
+      Object link = null;
 
-      for (int var5 = 0; var5 < var0.length; var5++) {
-         if (var0[var5] != null) {
-            Matcher var4 = var1.matcher(var0[var5]);
-            if (var4.find()) {
-               var3 = var4.group();
-               if (!var2.contains(var3)) {
-                  var2.add(var3);
+      for (int i = 0; i < lines.length; i++) {
+         if (lines[i] != null) {
+            Matcher matcher = pattern.matcher(lines[i]);
+            if (matcher.find()) {
+               link = matcher.group();
+               if (!links.contains(link)) {
+                  links.add(link);
                }
             }
          }
       }
 
-      String[] var6 = new String[var2.size()];
-      var2.toArray(var6);
-      Arrays.sort(var6, String.CASE_INSENSITIVE_ORDER);
-      return var6;
+      String[] result = new String[links.size()];
+      links.toArray(result);
+      Arrays.sort(result, String.CASE_INSENSITIVE_ORDER);
+      return result;
    }
 
-   public static String[] parseLinks(String var0) {
-      ArrayList var1 = new ArrayList();
-      if (var0 != null) {
-         Matcher var6 = hrefRE.matcher(var0);
+   public static String[] parseLinks(String html) {
+      ArrayList matches = new ArrayList();
+      if (html != null) {
+         Matcher matcher = hrefRE.matcher(html);
 
-         while (var6.find()) {
-            var1.add(var6.group());
+         while (matcher.find()) {
+            matches.add(matcher.group());
          }
       }
 
-      StringBuffer var3 = new StringBuffer();
-      String[] var4 = new String[var1.size()];
+      StringBuffer buffer = new StringBuffer();
+      String[] result = new String[matches.size()];
 
-      for (int var5 = 0; var5 < var4.length; var5++) {
-         var3.setLength(0);
-         var3.append((String)var1.get(var5));
-         int var2 = var3.indexOf("=");
-         if (var2 != -1 && var3.length() > var2 + 1) {
-            var3.delete(0, var2 + 1);
+      for (int i = 0; i < result.length; i++) {
+         buffer.setLength(0);
+         buffer.append((String)matches.get(i));
+         int equalsIndex = buffer.indexOf("=");
+         if (equalsIndex != -1 && buffer.length() > equalsIndex + 1) {
+            buffer.delete(0, equalsIndex + 1);
          }
 
-         var3.deleteCharAt(var3.length() - 1);
-         lrTrim(var3);
-         var4[var5] = replaceAll(var3.toString(), "\"", "");
+         buffer.deleteCharAt(buffer.length() - 1);
+         lrTrim(buffer);
+         result[i] = replaceAll(buffer.toString(), "\"", "");
       }
 
-      return parseLinks(var4);
+      return parseLinks(result);
    }
 
-   public static void lrTrim(StringBuffer var0) {
-      while (var0.length() > 0 && (var0.charAt(0) == '"' || var0.charAt(0) == ' ')) {
-         var0.deleteCharAt(0);
+   public static void lrTrim(StringBuffer buffer) {
+      while (buffer.length() > 0 && (buffer.charAt(0) == '"' || buffer.charAt(0) == ' ')) {
+         buffer.deleteCharAt(0);
       }
 
-      int var1 = 0;
+      int lastIndex = 0;
 
-      while ((var1 = var0.length() - 1) > 0 && (var0.charAt(var1) == '"' || var0.charAt(var1) == ' ')) {
-         var0.deleteCharAt(var1);
+      while ((lastIndex = buffer.length() - 1) > 0 && (buffer.charAt(lastIndex) == '"' || buffer.charAt(lastIndex) == ' ')) {
+         buffer.deleteCharAt(lastIndex);
       }
    }
 
-   public static String getRandomString(int var0) {
-      Random var1 = new Random();
-      var1.setSeed(System.currentTimeMillis());
-      StringBuffer var2 = new StringBuffer(var0);
-      byte var4 = 26;
+   public static String getRandomString(int length) {
+      Random random = new Random();
+      random.setSeed(System.currentTimeMillis());
+      StringBuffer buffer = new StringBuffer(length);
+      byte range = 26;
 
-      for (int var5 = 0; var5 < var0; var5++) {
-         int var3 = 97 + var1.nextInt(var4);
-         var2.append((char)var3);
+      for (int i = 0; i < length; i++) {
+         int code = 97 + random.nextInt(range);
+         buffer.append((char)code);
       }
 
-      return var2.toString();
+      return buffer.toString();
    }
 
-   public static Object[] toArray(Collection var0) {
-      ArrayList var1 = new ArrayList(var0.size());
+   public static Object[] toArray(Collection collection) {
+      ArrayList list = new ArrayList(collection.size());
 
       try {
-         Iterator var2 = var0.iterator();
+         Iterator iterator = collection.iterator();
 
-         while (var2.hasNext()) {
-            var1.add(var2.next());
+         while (iterator.hasNext()) {
+            list.add(iterator.next());
          }
-      } catch (NoSuchElementException var3) {
+      } catch (NoSuchElementException noSuchElement) {
       }
 
-      return var1.toArray();
+      return list.toArray();
    }
 
-   public static void clear(Map var0) {
-      int var1 = var0.size();
+   public static void clear(Map map) {
+      int remaining = map.size();
 
       try {
-         Iterator var2 = var0.entrySet().iterator();
+         Iterator iterator = map.entrySet().iterator();
 
-         while (--var1 >= 0) {
+         while (--remaining >= 0) {
             try {
-               var2.next();
-               var2.remove();
-            } catch (NoSuchElementException var4) {
+               iterator.next();
+               iterator.remove();
+            } catch (NoSuchElementException noSuchElement) {
             }
          }
-      } catch (NoSuchElementException var5) {
+      } catch (NoSuchElementException noSuchElement) {
       }
    }
 
@@ -531,45 +531,45 @@ public class SwissArmy {
       }
    }
 
-   public static byte[] fileToByteArray(String var0) {
-      File var1 = new File(var0);
-      if (var1.exists()) {
-         ByteArrayOutputStream var2 = new ByteArrayOutputStream();
-         short var3 = 8192;
-         byte[] var4 = new byte[var3];
+   public static byte[] fileToByteArray(String path) {
+      File file = new File(path);
+      if (file.exists()) {
+         ByteArrayOutputStream out = new ByteArrayOutputStream();
+         short bufferSize = 8192;
+         byte[] buffer = new byte[bufferSize];
 
          try {
-            BufferedInputStream var5 = new BufferedInputStream(new FileInputStream(var1));
+            BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
 
-            int var6;
-            while ((var6 = var5.read(var4, 0, var3)) != -1) {
-               var2.write(var4, 0, var6);
+            int bytesRead;
+            while ((bytesRead = in.read(buffer, 0, bufferSize)) != -1) {
+               out.write(buffer, 0, bytesRead);
             }
 
-            var5.close();
-            var2.close();
-            return var2.toByteArray();
-         } catch (IOException var7) {
-            Sancho.pDebug(var7.toString());
-            var7.printStackTrace();
+            in.close();
+            out.close();
+            return out.toByteArray();
+         } catch (IOException ioException) {
+            Sancho.pDebug(ioException.toString());
+            ioException.printStackTrace();
             return null;
          }
       } else {
-         Sancho.pDebug("File not found (permissions?): " + var1.getAbsolutePath());
+         Sancho.pDebug("File not found (permissions?): " + file.getAbsolutePath());
          return null;
       }
    }
 
-   public static void sendLocalTorrent(String var0, ICore var1) {
+   public static void sendLocalTorrent(String path, ICore core) {
       if (Sancho.hasCollectionFactory()) {
-         Network var2 = var1.getNetworkCollection().getByEnum(EnumNetwork.BT);
-         if (var2 != null) {
-            byte[] var3 = fileToByteArray(replaceAll(var0, "\"", ""));
-            if (var3 != null) {
-               byte[] var4 = new byte[]{-1, -1};
-               Object[] var5 = new Object[]{Integer.valueOf(var2.getId()), var4, Integer.valueOf(var3.length + 2), Short.valueOf((short)0), var3};
-               Sancho.send((short)63, var5);
-               Sancho.pDebug("Sent Size: " + var3.length);
+         Network network = core.getNetworkCollection().getByEnum(EnumNetwork.BT);
+         if (network != null) {
+            byte[] data = fileToByteArray(replaceAll(path, "\"", ""));
+            if (data != null) {
+               byte[] header = new byte[]{-1, -1};
+               Object[] args = new Object[]{Integer.valueOf(network.getId()), header, Integer.valueOf(data.length + 2), Short.valueOf((short)0), data};
+               Sancho.send((short)63, args);
+               Sancho.pDebug("Sent Size: " + data.length);
                // (removed a threadSleep(1000) that ran on the UI thread after the
                // send was already flushed, freezing the GUI ~1s per local torrent.)
             }
@@ -577,12 +577,12 @@ public class SwissArmy {
       }
    }
 
-   public static boolean isSupportedProtocol(String var0) {
-      String[] var1 = new String[]{"http:", "ftp:", "ssh:", "ed2k:", "magnet:", "sig2dat:"};
-      String var2 = var0.toLowerCase();
+   public static boolean isSupportedProtocol(String link) {
+      String[] protocols = new String[]{"http:", "ftp:", "ssh:", "ed2k:", "magnet:", "sig2dat:"};
+      String lower = link.toLowerCase();
 
-      for (int var3 = 0; var3 < var1.length; var3++) {
-         if (var2.startsWith(var1[var3])) {
+      for (int i = 0; i < protocols.length; i++) {
+         if (lower.startsWith(protocols[i])) {
             return true;
          }
       }
@@ -590,104 +590,104 @@ public class SwissArmy {
       return false;
    }
 
-   public static boolean portInUse(int var0) {
+   public static boolean portInUse(int port) {
       try {
-         ServerSocket var1 = new ServerSocket(var0);
-         var1.close();
+         ServerSocket serverSocket = new ServerSocket(port);
+         serverSocket.close();
          return false;
-      } catch (BindException var3) {
+      } catch (BindException bindException) {
          return true;
-      } catch (IOException var4) {
+      } catch (IOException ioException) {
          return true;
       }
    }
 
-   public static String sfdl2ed2k(String var0) {
-      int var1 = var0.indexOf("|");
-      if (var1 < 0) {
-         return var0;
+   public static String sfdl2ed2k(String link) {
+      int firstBar = link.indexOf("|");
+      if (firstBar < 0) {
+         return link;
       } else {
-         int var2 = var0.indexOf("|", var1 + 1);
-         if (var2 < 0) {
-            return var0;
+         int secondBar = link.indexOf("|", firstBar + 1);
+         if (secondBar < 0) {
+            return link;
          } else {
-            var0 = "ed2k://|file" + var0.substring(var2);
-            return replaceAll(var0, "\"", "");
+            link = "ed2k://|file" + link.substring(secondBar);
+            return replaceAll(link, "\"", "");
          }
       }
    }
 
-   public static void sendLink(ICore var0, String var1) {
-      String var2 = var1.toLowerCase();
-      if (var2.startsWith("sfdl://")) {
-         var1 = sfdl2ed2k(var1);
-         var2 = sfdl2ed2k(var2);
+   public static void sendLink(ICore core, String link) {
+      String lower = link.toLowerCase();
+      if (lower.startsWith("sfdl://")) {
+         link = sfdl2ed2k(link);
+         lower = sfdl2ed2k(lower);
       }
 
-      if (var0 != null && Sancho.hasCollectionFactory()) {
-         Network var3 = var0.getNetworkCollection().getByEnum(EnumNetwork.BT);
-         Sancho.pDebug("Network: " + (var3 != null ? "BT" : "null"));
-         if (var0.getProtocol() > 25 && var3 != null && !isSupportedProtocol(var2)) {
-            sendLocalTorrent(var1, var0);
-         } else if (!var2.startsWith("ftp:") && !var2.startsWith("ssh:") && (!var2.startsWith("http:") || var2.endsWith("torrent") || var2.endsWith("tor"))) {
-            Sancho.send((short)8, var1);
+      if (core != null && Sancho.hasCollectionFactory()) {
+         Network network = core.getNetworkCollection().getByEnum(EnumNetwork.BT);
+         Sancho.pDebug("Network: " + (network != null ? "BT" : "null"));
+         if (core.getProtocol() > 25 && network != null && !isSupportedProtocol(lower)) {
+            sendLocalTorrent(link, core);
+         } else if (!lower.startsWith("ftp:") && !lower.startsWith("ssh:") && (!lower.startsWith("http:") || lower.endsWith("torrent") || lower.endsWith("tor"))) {
+            Sancho.send((short)8, link);
          } else {
-            Sancho.send((short)29, "http " + var1);
+            Sancho.send((short)29, "http " + link);
          }
       }
    }
 
    public static int readLastFile() {
-      File var0 = new File(VersionInfo.getHomeDirectory() + ".last");
-      if (!var0.exists()) {
+      File file = new File(VersionInfo.getHomeDirectory() + ".last");
+      if (!file.exists()) {
          return 0;
       } else {
-         BufferedReader var1 = null;
+         BufferedReader reader = null;
 
-         byte var4;
+         byte result;
          try {
-            var1 = new BufferedReader(new FileReader(var0));
-            String var2 = var1.readLine();
+            reader = new BufferedReader(new FileReader(file));
+            String line = reader.readLine();
 
             try {
-               return Integer.parseInt(var2);
-            } catch (NumberFormatException var18) {
+               return Integer.parseInt(line);
+            } catch (NumberFormatException notANumber) {
                return 0;
             }
-         } catch (FileNotFoundException var19) {
+         } catch (FileNotFoundException fileNotFound) {
             return 0;
-         } catch (IOException var20) {
-            var4 = 0;
+         } catch (IOException ioException) {
+            result = 0;
          } finally {
             try {
-               if (var1 != null) {
-                  var1.close();
+               if (reader != null) {
+                  reader.close();
                }
-            } catch (IOException var17) {
+            } catch (IOException closeException) {
                return 0;
             }
          }
 
-         return var4;
+         return result;
       }
    }
 
-   public static void writeLastFile(int var0) {
-      File var1 = new File(VersionInfo.getHomeDirectory() + ".last");
+   public static void writeLastFile(int index) {
+      File file = new File(VersionInfo.getHomeDirectory() + ".last");
 
       try {
-         FileOutputStream var2 = new FileOutputStream(var1);
-         PrintStream var3 = new PrintStream(var2);
-         var3.println(var0);
-         var3.close();
-         var2.close();
-      } catch (FileNotFoundException var5) {
-      } catch (IOException var6) {
+         FileOutputStream out = new FileOutputStream(file);
+         PrintStream printStream = new PrintStream(out);
+         printStream.println(index);
+         printStream.close();
+         out.close();
+      } catch (FileNotFoundException fileNotFound) {
+      } catch (IOException ioException) {
       }
    }
 
-   public static String stringNoAccel(String var0) {
-      return replaceAll(var0, "&", "&&");
+   public static String stringNoAccel(String text) {
+      return replaceAll(text, "&", "&&");
    }
 
    public static synchronized void updatePreferences() {
@@ -695,56 +695,56 @@ public class SwissArmy {
       dfPercent = updateDF(PreferenceLoader.loadInt("dlPercentDecimals"));
       humanReadable = PreferenceLoader.loadBoolean("humanReadable");
       maxMegabytes = PreferenceLoader.loadBoolean("maxMegabytes");
-      int var0 = PreferenceLoader.loadInt("humanReadableDecimals");
+      int decimals = PreferenceLoader.loadInt("humanReadableDecimals");
       disableUTF8 = PreferenceLoader.loadBoolean("disableUTF8");
-      if (var0 < 0) {
+      if (decimals < 0) {
          df00 = new DecimalFormat("0.0");
          df000 = new DecimalFormat("0.00");
       } else {
-         df00 = updateDF(var0);
-         df000 = updateDF(var0);
+         df00 = updateDF(decimals);
+         df000 = updateDF(decimals);
       }
    }
 
-   public static synchronized String calcRate(float var0) {
-      StringBuffer var1 = new StringBuffer(8);
-      df000.format((double)var0, var1, FP);
-      return var1.toString().intern();
+   public static synchronized String calcRate(float rate) {
+      StringBuffer buffer = new StringBuffer(8);
+      df000.format((double)rate, buffer, FP);
+      return buffer.toString().intern();
    }
 
-   public static synchronized String percentToString(float var0) {
-      StringBuffer var1 = new StringBuffer(10);
-      dfPercent.format((double)var0, var1, FP);
-      var1.append("%");
-      return var1.toString().intern();
+   public static synchronized String percentToString(float percent) {
+      StringBuffer buffer = new StringBuffer(10);
+      dfPercent.format((double)percent, buffer, FP);
+      buffer.append("%");
+      return buffer.toString().intern();
    }
 
-   public static synchronized String rateToString(float var0) {
-      return dfRate.format((double)(var0 / 1000.0F)).intern();
+   public static synchronized String rateToString(float rate) {
+      return dfRate.format((double)(rate / 1000.0F)).intern();
    }
 
-   public static int UTF8Length(String var0) {
-      byte[] var1;
+   public static int UTF8Length(String text) {
+      byte[] bytes;
       try {
-         var1 = var0.getBytes("UTF8");
-      } catch (UnsupportedEncodingException var3) {
-         var1 = var0.getBytes();
+         bytes = text.getBytes("UTF8");
+      } catch (UnsupportedEncodingException unsupportedEncoding) {
+         bytes = text.getBytes();
       }
 
-      return var1.length;
+      return bytes.length;
    }
 
-   public static DecimalFormat updateDF(int var0) {
-      String var1 = "0";
-      if (var0 > 0) {
-         var1 = var1 + ".";
+   public static DecimalFormat updateDF(int decimals) {
+      String pattern = "0";
+      if (decimals > 0) {
+         pattern = pattern + ".";
 
-         for (int var2 = 0; var2 < var0; var2++) {
-            var1 = var1 + "0";
+         for (int i = 0; i < decimals; i++) {
+            pattern = pattern + "0";
          }
       }
 
-      return new DecimalFormat(var1);
+      return new DecimalFormat(pattern);
    }
 
    static {
@@ -752,23 +752,23 @@ public class SwissArmy {
 
       try {
          fakeRE = Pattern.compile("fake", Pattern.CASE_INSENSITIVE);
-      } catch (PatternSyntaxException var6) {
+      } catch (PatternSyntaxException syntaxException) {
          fakeRE = null;
       }
 
       secondsInDay = 86400L;
       secondsInHour = 3600L;
-      String var0 = "(ed2k://\\|file\\|[^\\|]+\\|(\\d+)\\|([\\dabcdef]+)\\|)|(sig2dat:///?\\|File:[^\\|]+\\|Length:.+?\\|UUHash:.+?\\=.+?\\=)|(magnet:\\?xt=.+)|(\"http://.+\\.torrent\\?[^>]+\")|(http://.+\\.torrent)";
-      String var1 = var0 + "|(http://.+)" + "|(ftp://.+)";
-      String var2 = "href.*?=.+?>";
-      String var3 = "(%.+?%)";
+      String baseLinksRegex = "(ed2k://\\|file\\|[^\\|]+\\|(\\d+)\\|([\\dabcdef]+)\\|)|(sig2dat:///?\\|File:[^\\|]+\\|Length:.+?\\|UUHash:.+?\\=.+?\\=)|(magnet:\\?xt=.+)|(\"http://.+\\.torrent\\?[^>]+\")|(http://.+\\.torrent)";
+      String allLinksRegex = baseLinksRegex + "|(http://.+)" + "|(ftp://.+)";
+      String hrefRegex = "href.*?=.+?>";
+      String envRegex = "(%.+?%)";
 
       try {
-         linksRE1 = Pattern.compile(var0, Pattern.CASE_INSENSITIVE);
-         linksRE2 = Pattern.compile(var0 + var1, Pattern.CASE_INSENSITIVE);
-         hrefRE = Pattern.compile(var2, Pattern.CASE_INSENSITIVE);
-         envRE = Pattern.compile(var3, Pattern.CASE_INSENSITIVE);
-      } catch (PatternSyntaxException var5) {
+         linksRE1 = Pattern.compile(baseLinksRegex, Pattern.CASE_INSENSITIVE);
+         linksRE2 = Pattern.compile(baseLinksRegex + allLinksRegex, Pattern.CASE_INSENSITIVE);
+         hrefRE = Pattern.compile(hrefRegex, Pattern.CASE_INSENSITIVE);
+         envRE = Pattern.compile(envRegex, Pattern.CASE_INSENSITIVE);
+      } catch (PatternSyntaxException syntaxException) {
       }
    }
 }

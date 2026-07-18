@@ -6,23 +6,23 @@ public class MyObservable {
    private boolean changed = false;
    private Vector obs;
 
-   public synchronized void addObserver(MyObserver var1) {
-      if (var1 == null) {
+   public synchronized void addObserver(MyObserver observer) {
+      if (observer == null) {
          throw new NullPointerException();
       } else {
          if (this.obs == null) {
             this.obs = new Vector();
          }
 
-         if (!this.obs.contains(var1)) {
-            this.obs.addElement(var1);
+         if (!this.obs.contains(observer)) {
+            this.obs.addElement(observer);
          }
       }
    }
 
-   public synchronized void deleteObserver(MyObserver var1) {
+   public synchronized void deleteObserver(MyObserver observer) {
       if (this.obs != null) {
-         this.obs.removeElement(var1);
+         this.obs.removeElement(observer);
       }
    }
 
@@ -52,23 +52,23 @@ public class MyObservable {
       this.notifyObservers(null);
    }
 
-   public void notifyObservers(Object var1) {
-      this.notifyObservers(var1, 0);
+   public void notifyObservers(Object arg) {
+      this.notifyObservers(arg, 0);
    }
 
-   public void notifyObservers(Object var1, int var2) {
-      Object[] var3;
+   public void notifyObservers(Object arg, int flags) {
+      Object[] observers;
       synchronized (this) {
          if (!this.changed || this.obs == null) {
             return;
          }
 
-         var3 = this.obs.toArray();
+         observers = this.obs.toArray();
          this.clearChanged();
       }
 
-      for (int var5 = var3.length - 1; var5 >= 0; var5--) {
-         ((MyObserver)var3[var5]).update(this, var1, var2);
+      for (int i = observers.length - 1; i >= 0; i--) {
+         ((MyObserver)observers[i]).update(this, arg, flags);
       }
    }
 }

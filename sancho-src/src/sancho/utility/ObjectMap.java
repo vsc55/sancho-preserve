@@ -16,8 +16,8 @@ public class ObjectMap extends MyObservable {
    private Map removedMap;
    private Map updatedMap;
 
-   public ObjectMap(boolean var1) {
-      if (var1) {
+   public ObjectMap(boolean weak) {
+      if (weak) {
          this.mainMap = new WeakHashMap();
       } else {
          this.mainMap = new HashMap();
@@ -48,88 +48,88 @@ public class ObjectMap extends MyObservable {
       return this.updatedMap;
    }
 
-   public boolean add(Object var1) {
-      if (var1 == null) {
+   public boolean add(Object key) {
+      if (key == null) {
          return false;
       } else {
-         boolean var2 = false;
+         boolean added = false;
          synchronized (this) {
-            if (!this.mainMap.containsKey(var1)) {
-               this.mainMap.put(var1, null);
+            if (!this.mainMap.containsKey(key)) {
+               this.mainMap.put(key, null);
                if (this.countObservers() > 0) {
-                  this.getAddedMap().put(var1, null);
+                  this.getAddedMap().put(key, null);
                }
 
-               var2 = true;
+               added = true;
             }
          }
 
-         if (var2) {
+         if (added) {
             this.setChanged();
             this.notifyObservers(null, 0);
          }
 
-         return var2;
+         return added;
       }
    }
 
-   public synchronized boolean containsKey(Object var1) {
-      return this.mainMap.containsKey(var1);
+   public synchronized boolean containsKey(Object key) {
+      return this.mainMap.containsKey(key);
    }
 
-   public void remove(Object[] var1) {
-      boolean var2 = false;
+   public void remove(Object[] keys) {
+      boolean removed = false;
       synchronized (this) {
-         for (int var4 = 0; var4 < var1.length; var4++) {
-            if (this.mainMap.containsKey(var1[var4])) {
-               var2 = true;
-               this.mainMap.remove(var1[var4]);
+         for (int i = 0; i < keys.length; i++) {
+            if (this.mainMap.containsKey(keys[i])) {
+               removed = true;
+               this.mainMap.remove(keys[i]);
                if (this.countObservers() > 0) {
-                  this.getRemovedMap().put(var1[var4], null);
+                  this.getRemovedMap().put(keys[i], null);
                }
             }
          }
       }
 
-      if (var2) {
+      if (removed) {
          this.setChanged();
          this.notifyObservers(null, 2);
       }
    }
 
-   public void remove(Object var1) {
-      boolean var2 = false;
+   public void remove(Object key) {
+      boolean removed = false;
       synchronized (this) {
-         if (this.mainMap.containsKey(var1)) {
-            this.mainMap.remove(var1);
+         if (this.mainMap.containsKey(key)) {
+            this.mainMap.remove(key);
             if (this.countObservers() > 0) {
-               this.getRemovedMap().put(var1, null);
+               this.getRemovedMap().put(key, null);
             }
 
-            var2 = true;
+            removed = true;
          }
       }
 
-      if (var2) {
+      if (removed) {
          this.setChanged();
          this.notifyObservers(null, 2);
       }
    }
 
-   public void addOrUpdate(Object var1) {
-      if (var1 != null) {
-         boolean var2 = false;
-         if (!this.add(var1)) {
+   public void addOrUpdate(Object key) {
+      if (key != null) {
+         boolean updated = false;
+         if (!this.add(key)) {
             if (this.countObservers() > 0) {
                synchronized (this) {
-                  this.getUpdatedMap().put(var1, null);
+                  this.getUpdatedMap().put(key, null);
                }
             }
 
-            var2 = true;
+            updated = true;
          }
 
-         if (var2) {
+         if (updated) {
             this.setChanged();
             this.notifyObservers(null, 1);
          }
@@ -141,9 +141,9 @@ public class ObjectMap extends MyObservable {
    }
 
    public synchronized Object[] getAndClearAdded() {
-      Object[] var1 = SwissArmy.toArray(this.getAddedMap().keySet());
+      Object[] keys = SwissArmy.toArray(this.getAddedMap().keySet());
       this.clearAdded();
-      return var1;
+      return keys;
    }
 
    public synchronized boolean removed() {
@@ -151,23 +151,23 @@ public class ObjectMap extends MyObservable {
    }
 
    public synchronized Object[] getAndClearRemoved() {
-      Object[] var1 = SwissArmy.toArray(this.getRemovedMap().keySet());
+      Object[] keys = SwissArmy.toArray(this.getRemovedMap().keySet());
       this.clearRemoved();
-      return var1;
+      return keys;
    }
 
    public synchronized boolean updated() {
       return this.updatedMap != null && this.updatedMap.size() > 0;
    }
 
-   public synchronized Object removeFromMain(Object var1) {
-      return this.mainMap.remove(var1);
+   public synchronized Object removeFromMain(Object key) {
+      return this.mainMap.remove(key);
    }
 
    public synchronized Object[] getAndClearUpdated() {
-      Object[] var1 = SwissArmy.toArray(this.getUpdatedMap().keySet());
+      Object[] keys = SwissArmy.toArray(this.getUpdatedMap().keySet());
       this.clearUpdated();
-      return var1;
+      return keys;
    }
 
    public synchronized void clearAdded() {
@@ -194,8 +194,8 @@ public class ObjectMap extends MyObservable {
       this.clearUpdated();
    }
 
-   public synchronized boolean contains(Object var1) {
-      return this.mainMap.containsKey(var1);
+   public synchronized boolean contains(Object key) {
+      return this.mainMap.containsKey(key);
    }
 
    public synchronized Object[] getKeyArray() {
@@ -206,30 +206,30 @@ public class ObjectMap extends MyObservable {
       return this.mainMap.size();
    }
 
-   public synchronized Result getResult(int var1) {
-      Map var2 = this.mainMap;
-      int var3 = var2.size();
+   public synchronized Result getResult(int id) {
+      Map map = this.mainMap;
+      int remaining = map.size();
 
       try {
-         Iterator var4 = var2.keySet().iterator();
+         Iterator iterator = map.keySet().iterator();
 
-         while (--var3 >= 0) {
+         while (--remaining >= 0) {
             try {
-               Result var5 = (Result)var4.next();
-               if (var5 != null && var5.getId() == var1) {
-                  return var5;
+               Result result = (Result)iterator.next();
+               if (result != null && result.getId() == id) {
+                  return result;
                }
-            } catch (NoSuchElementException var6) {
+            } catch (NoSuchElementException noSuchElement) {
             }
          }
-      } catch (NoSuchElementException var7) {
+      } catch (NoSuchElementException noSuchElement) {
       }
 
       return null;
    }
 
-   public void notifyObject(Object var1) {
+   public void notifyObject(Object object) {
       this.setChanged();
-      this.notifyObservers(var1);
+      this.notifyObservers(object);
    }
 }

@@ -48,10 +48,13 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
   `sancho.core` package (`ICore`, `MLDonkeyCore`, `MLDonkeyCoreMonitor`, `SSHCoreFactory`,
   `Sancho`) — e.g. `processMessage(int opcode, MessageBuffer buffer)`, `send(short opcode,
   Object[] args)`, the SSH proxy setup (`proxyHost`/`proxyPort`/`proxy`/`proxyPass`), and
-  `Sancho`'s argument parsing (`arg`/`flag`/`value`). Also modernized `MLDonkeyCore`'s
-  decompiled `Class.forName`/`class$` idiom for the active-tab check into a plain
-  `instanceof SharesTab` / `instanceof TransferTab`, removing the two synthetic `class$…`
-  fields and the synthetic `class$()` method. No behaviour change.
+  `Sancho`'s argument parsing (`arg`/`flag`/`value`) — and the whole `sancho.utility` package
+  (`SwissArmy`, `ObjectMap`, `MyObservable`, `MyObserver`, `VersionInfo`), e.g.
+  `calcStringSize(long size)`, `replaceAll(input, regex, replacement)`, `fileToByteArray`,
+  the link/regex helpers, and the observer plumbing (`observer`/`arg`/`flags`). Also
+  modernized `MLDonkeyCore`'s decompiled `Class.forName`/`class$` idiom for the active-tab
+  check into a plain `instanceof SharesTab` / `instanceof TransferTab`, removing the two
+  synthetic `class$…` fields and the synthetic `class$()` method. No behaviour change.
 
 ### Removed
 

@@ -31,8 +31,8 @@ public class VersionInfo {
    }
 
    public static boolean hasTray() {
-      String var0 = SWT.getPlatform();
-      return var0.equals("win32") || var0.equals("fox") || var0.equals("gtk");
+      String platform = SWT.getPlatform();
+      return platform.equals("win32") || platform.equals("fox") || platform.equals("gtk");
    }
 
    public static Image getProgramIcon() {
@@ -40,8 +40,8 @@ public class VersionInfo {
    }
 
    public static Image getTrayIcon() {
-      String var0 = SWT.getPlatform();
-      if (var0.equals("gtk")) {   // "motif" was a long-removed SWT platform
+      String platform = SWT.getPlatform();
+      if (platform.equals("gtk")) {   // "motif" was a long-removed SWT platform
          return SResources.getImage("tray-22");
       } else {
          return SResources.getImage("ProgramIcon-128");
@@ -53,14 +53,14 @@ public class VersionInfo {
    }
 
    public static String getUserHomeDirectory() {
-      String var0;
-      return (var0 = PreferenceLoader.getHomeDirectory()) != null ? var0 : System.getProperty("user.home");
+      String homeDirectory;
+      return (homeDirectory = PreferenceLoader.getHomeDirectory()) != null ? homeDirectory : System.getProperty("user.home");
    }
 
    public static String getHomeDirectory() {
-      String var0;
-      return (var0 = PreferenceLoader.getHomeDirectory()) != null
-         ? var0
+      String homeDirectory;
+      return (homeDirectory = PreferenceLoader.getHomeDirectory()) != null
+         ? homeDirectory
          : System.getProperty("user.home") + System.getProperty("file.separator") + "." + getName() + System.getProperty("file.separator");
    }
 
@@ -89,11 +89,11 @@ public class VersionInfo {
    }
 
    public static String getSWTPlatform() {
-      String var0 = SWT.getPlatform();
-      if (var0.equals("fox")) {
+      String platform = SWT.getPlatform();
+      if (platform.equals("fox")) {
          return System.getProperty("os.name").length() > 7 && System.getProperty("os.name").startsWith("Windows") ? "win32-fox" : "fox";
       } else {
-         return var0;
+         return platform;
       }
    }
 
@@ -118,7 +118,7 @@ public class VersionInfo {
                return v;
             }
          }
-      } catch (IOException var2) {
+      } catch (IOException ioException) {
       }
 
       return "0.9.4-dev";
