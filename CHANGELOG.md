@@ -8,7 +8,7 @@ The upstream project's original changelog (2004–2006) is preserved at
 authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 (`git checkout 0.9.4-23`).
 
-## [Unreleased]
+## [0.9.7] — 2026-07-19
 
 ### Changed
 
@@ -28,6 +28,10 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 
 - Corrected stale README content: dropped references to the removed IRC client, the abandoned
   `pircbot` dependency, and the deleted `sancho.utility.regex` adapter.
+- **VS Code workspace encoding.** `.vscode/settings.json` forced the default (and Java) to
+  ISO-8859-1, so UTF-8 files (`.md`, and the 16 `.java` using `—`/`•`/`✓`/`…`) opened as mojibake and
+  risked corruption on save. The default is now `utf8`, with ISO-8859-1 scoped to `[properties]` only
+  (Java properties must stay Latin-1). Matches the pom's `sourceEncoding = UTF-8`.
 
 ## [0.9.6] — 2026-07-19
 

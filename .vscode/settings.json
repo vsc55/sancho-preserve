@@ -2,8 +2,8 @@
     "snyk.advanced.autoSelectOrganization": true,
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.compile.nullAnalysis.mode": "disabled",
-    "files.encoding": "iso88591",
-    "[java]": {
+    "files.encoding": "utf8",
+    "[properties]": {
         "files.encoding": "iso88591"
     }
 }
