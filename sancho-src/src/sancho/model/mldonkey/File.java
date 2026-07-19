@@ -84,10 +84,10 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
    protected boolean containsFake;
    protected FileState state;
 
-   File(ICore var1) {
-      super(var1);
-      this.state = UtilityFactory.getFileState(var1);
-      this.format = UtilityFactory.getFormat(var1);
+   File(ICore core) {
+      super(core);
+      this.state = UtilityFactory.getFileState(core);
+      this.format = UtilityFactory.getFormat(core);
       this.clientWeakMap = new ObjectMap(true);
    }
 
@@ -99,12 +99,12 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       return this.fileClientSet;
    }
 
-   public synchronized void addChangedBits(int var1) {
-      this.changedBits |= var1;
+   public synchronized void addChangedBits(int bits) {
+      this.changedBits |= bits;
    }
 
-   public synchronized void removeChangedBits(int var1) {
-      this.changedBits &= ~var1;
+   public synchronized void removeChangedBits(int bits) {
+      this.changedBits &= ~bits;
    }
 
    public synchronized int getChangedBits() {
@@ -115,8 +115,8 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       this.changedBits = 0;
    }
 
-   public synchronized boolean hasChangedBit(int var1) {
-      return (this.changedBits & var1) != 0;
+   public synchronized boolean hasChangedBit(int bits) {
+      return (this.changedBits & bits) != 0;
    }
 
    public String[] getSubFileNames() {
@@ -131,40 +131,40 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       return null;
    }
 
-   public String getContentRange(int var1) {
-      long[] var2 = this.getSubFileSizes();
-      if (var2 != null && var1 < var2.length) {
-         long var3 = 0L;
+   public String getContentRange(int index) {
+      long[] sizes = this.getSubFileSizes();
+      if (sizes != null && index < sizes.length) {
+         long start = 0L;
 
-         for (int var5 = 0; var5 < var1; var5++) {
-            var3 += var2[var5];
+         for (int i = 0; i < index; i++) {
+            start += sizes[i];
          }
 
-         long var6 = var3 + var2[var1] - 1L;
-         return "bytes=" + var3 + "-" + var6;
+         long end = start + sizes[index] - 1L;
+         return "bytes=" + start + "-" + end;
       } else {
          return "";
       }
    }
 
-   protected void addFileClient(FileClient var1) {
-      this.getFileClientSet().add(var1);
+   protected void addFileClient(FileClient fileClient) {
+      this.getFileClientSet().add(fileClient);
       this.addChangedBits(512);
       this.notifyChangedProperties();
    }
 
-   public void addSource(Client var1) {
-      if (!this.clientWeakMap.contains(var1)) {
-         this.clientWeakMap.add(var1);
-         var1.addObserver(this);
+   public void addSource(Client client) {
+      if (!this.clientWeakMap.contains(client)) {
+         this.clientWeakMap.add(client);
+         client.addObserver(this);
          this.addChangedBits(512);
-         if (var1.isTransferring()) {
+         if (client.isTransferring()) {
             this.numConnectedClients++;
             this.setActiveSources(1);
-            if (this.findFileClient(var1) == null) {
-               this.addClientToFileClientSet(var1);
+            if (this.findFileClient(client) == null) {
+               this.addClientToFileClientSet(client);
             }
-         } else if (var1.isConnected()) {
+         } else if (client.isConnected()) {
             this.numConnectedClients++;
          }
 
@@ -180,23 +180,23 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       return String.valueOf(this.getNumComments());
    }
 
-   public void addClientToFileClientSet(Client var1) {
-      FileClient var2 = new FileClient(this, var1);
-      this.addFileClient(var2);
-      this.core.getFileCollection().sendUpdate(var2, 1);
+   public void addClientToFileClientSet(Client client) {
+      FileClient fileClient = new FileClient(this, client);
+      this.addFileClient(fileClient);
+      this.core.getFileCollection().sendUpdate(fileClient, 1);
    }
 
    protected void calcDownloadedString() {
-      String var1 = this.getDownloadedString();
+      String previousDownloadedString = this.getDownloadedString();
       this.downloadedString = SwissArmy.calcStringSize(this.getDownloaded());
-      if (!var1.equals(this.downloadedString)) {
+      if (!previousDownloadedString.equals(this.downloadedString)) {
          this.addChangedBits(4);
       }
 
-      String var2 = this.getPercentString();
-      long var3 = this.getSize();
-      this.percent = var3 > 0L ? (float)this.getDownloaded() / (float)var3 * 100.0F : 0.0F;
-      if (!var2.equals(this.getPercentString())) {
+      String previousPercentString = this.getPercentString();
+      long size = this.getSize();
+      this.percent = size > 0L ? (float)this.getDownloaded() / (float)size * 100.0F : 0.0F;
+      if (!previousPercentString.equals(this.getPercentString())) {
          this.addChangedBits(32);
       }
    }
@@ -208,21 +208,21 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
          this.etaSeconds = (long)((float)(this.getSize() - this.getDownloaded()) / (this.getRate() + 1.0F));
       }
 
-      String var1 = this.getEtaString();
-      EnumFileState var2 = this.getFileStateEnum();
-      boolean var3 = this.core.getFileCollection().eta2();
-      if (var2 != EnumFileState.QUEUED && var2 != EnumFileState.DOWNLOADED && var2 != EnumFileState.PAUSED) {
+      String previousEtaString = this.getEtaString();
+      EnumFileState state = this.getFileStateEnum();
+      boolean useEta2 = this.core.getFileCollection().eta2();
+      if (state != EnumFileState.QUEUED && state != EnumFileState.DOWNLOADED && state != EnumFileState.PAUSED) {
          this.etaString = SwissArmy.calcStringOfSeconds(this.etaSeconds);
-         if (var3) {
-            long var4 = this.getDownloaded();
-            long var6 = this.getSize() - var4;
-            if (var4 != 0L && var6 != 0L && this.getAge() != 0L) {
+         if (useEta2) {
+            long downloaded = this.getDownloaded();
+            long remaining = this.getSize() - downloaded;
+            if (downloaded != 0L && remaining != 0L && this.getAge() != 0L) {
                if (this.ageTS == 0L) {
                   this.ageTS = System.currentTimeMillis();
                }
 
-               long var8 = this.getAge() + (System.currentTimeMillis() - this.ageTS) / 1000L;
-               this.eta2Seconds = var6 * var8 / var4;
+               long ageSeconds = this.getAge() + (System.currentTimeMillis() - this.ageTS) / 1000L;
+               this.eta2Seconds = remaining * ageSeconds / downloaded;
                this.eta2String = SwissArmy.calcStringOfSeconds(this.eta2Seconds);
             } else {
                this.eta2String = "-";
@@ -231,7 +231,7 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
          }
       } else {
          this.etaString = "-";
-         if (var3) {
+         if (useEta2) {
             this.eta2Seconds = Long.MAX_VALUE;
             this.eta2String = "-";
          }
@@ -241,7 +241,7 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
          this.etaString = "-";
       }
 
-      if (!var1.equals(this.etaString)) {
+      if (!previousEtaString.equals(this.etaString)) {
          this.addChangedBits(8);
       }
    }
@@ -259,14 +259,14 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       this.deleteObservers();
    }
 
-   public boolean equals(Object var1) {
-      return var1 instanceof File && this.getId() == ((File)var1).getId();
+   public boolean equals(Object other) {
+      return other instanceof File && this.getId() == ((File)other).getId();
    }
 
-   public synchronized FileClient findFileClient(Client var1) {
-      for (Object var3o : this.getFileClientSet()) { FileClient var3 = (FileClient)var3o;
-         if (var1 == var3.getClient()) {
-            return var3;
+   public synchronized FileClient findFileClient(Client client) {
+      for (Object fileClientObj : this.getFileClientSet()) { FileClient fileClient = (FileClient)fileClientObj;
+         if (client == fileClient.getClient()) {
+            return fileClient;
          }
       }
 
@@ -293,7 +293,7 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       return this.avail;
    }
 
-   public String getAvails(Network var1) {
+   public String getAvails(Network network) {
       return "";
    }
 
@@ -301,9 +301,9 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       if (this.chunkAges == null) {
          return null;
       } else {
-         int[] var1 = new int[this.chunkAges.length];
-         System.arraycopy(this.chunkAges, 0, var1, 0, this.chunkAges.length);
-         return var1;
+         int[] ages = new int[this.chunkAges.length];
+         System.arraycopy(this.chunkAges, 0, ages, 0, this.chunkAges.length);
+         return ages;
       }
    }
 
@@ -356,8 +356,8 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
    }
 
    public synchronized String getExtension() {
-      int var1 = this.getName().lastIndexOf(".");
-      return var1 != -1 ? this.getName().substring(var1 + 1).toLowerCase().intern() : "";
+      int dotIndex = this.getName().lastIndexOf(".");
+      return dotIndex != -1 ? this.getName().substring(dotIndex + 1).toLowerCase().intern() : "";
    }
 
    public String getED2K() {
@@ -444,12 +444,12 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       if (this.name == null) {
          return "";
       } else {
-         EnumNetwork var1 = this.getEnumNetwork();
-         if (var1 != EnumNetwork.GNUT && var1 != EnumNetwork.GNUT2) {
+         EnumNetwork network = this.getEnumNetwork();
+         if (network != EnumNetwork.GNUT && network != EnumNetwork.GNUT2) {
             return this.name;
          } else {
-            String var2 = String.valueOf('\u0000');
-            return SwissArmy.replaceAll(this.name, var2, "");
+            String nullChar = String.valueOf('\u0000');
+            return SwissArmy.replaceAll(this.name, nullChar, "");
          }
       }
    }
@@ -503,11 +503,11 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
    }
 
    public synchronized String getRateString() {
-      EnumFileState var1 = this.getFileStateEnum();
-      if (var1 != EnumFileState.PAUSED && var1 != EnumFileState.QUEUED && var1 != EnumFileState.DOWNLOADED) {
+      EnumFileState state = this.getFileStateEnum();
+      if (state != EnumFileState.PAUSED && state != EnumFileState.QUEUED && state != EnumFileState.DOWNLOADED) {
          return this.getRate() == 0.0F ? "-" : SwissArmy.rateToString(this.getRate());
       } else {
-         return var1.getName();
+         return state.getName();
       }
    }
 
@@ -520,11 +520,11 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
    }
 
    public synchronized Image getCommentImage() {
-      int var1 = this.getAvgRating();
-      if (var1 < 0) {
+      int rating = this.getAvgRating();
+      if (rating < 0) {
          return SResources.getImage("blank-16");
       } else {
-         switch (var1) {
+         switch (rating) {
             case 1:
                return SResources.getImage("filerating1");
             case 2:
@@ -542,11 +542,11 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
    }
 
    public synchronized Image getAvgRatingImage() {
-      int var1 = this.getAvgRating();
-      if (var1 < 0) {
+      int rating = this.getAvgRating();
+      if (rating < 0) {
          return null;
       } else {
-         switch (var1) {
+         switch (rating) {
             case 1:
                return SResources.getImage("dotrating1");
             case 2:
@@ -564,10 +564,10 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
    }
 
    public synchronized String getRelativeAvailString() {
-      StringBuffer var1 = new StringBuffer();
-      var1.append(this.relativeAvail);
-      var1.append("%");
-      return var1.toString().intern();
+      StringBuffer buffer = new StringBuffer();
+      buffer.append(this.relativeAvail);
+      buffer.append("%");
+      return buffer.toString().intern();
    }
 
    public synchronized long getSize() {
@@ -583,12 +583,12 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
    }
 
    public String getSourcesString() {
-      int var1 = this.getSources();
-      if (var1 == 0) {
+      int sources = this.getSources();
+      if (sources == 0) {
          return "-";
       } else {
-         int var2 = this.getActiveSources();
-         return var2 > 0 ? var1 + "(" + var2 + ")" : String.valueOf(var1).intern();
+         int activeSources = this.getActiveSources();
+         return activeSources > 0 ? sources + "(" + activeSources + ")" : String.valueOf(sources).intern();
       }
    }
 
@@ -617,23 +617,23 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
    }
 
    public boolean isActive() {
-      EnumFileState var1 = this.getFileStateEnum();
-      return var1 == EnumFileState.DOWNLOADING || var1 == EnumFileState.PAUSED || var1 == EnumFileState.QUEUED;
+      EnumFileState state = this.getFileStateEnum();
+      return state == EnumFileState.DOWNLOADING || state == EnumFileState.PAUSED || state == EnumFileState.QUEUED;
    }
 
    public boolean isInteresting() {
-      EnumFileState var1 = this.getFileStateEnum();
-      return var1 == EnumFileState.DOWNLOADING || var1 == EnumFileState.PAUSED || var1 == EnumFileState.DOWNLOADED || var1 == EnumFileState.QUEUED;
+      EnumFileState state = this.getFileStateEnum();
+      return state == EnumFileState.DOWNLOADING || state == EnumFileState.PAUSED || state == EnumFileState.DOWNLOADED || state == EnumFileState.QUEUED;
    }
 
    public void manualClean() {
       synchronized (this.clientWeakMap) {
-         Object[] var2 = this.clientWeakMap.getKeyArray();
+         Object[] clients = this.clientWeakMap.getKeyArray();
 
-         for (int var3 = 0; var3 < var2.length; var3++) {
-            Client var4 = (Client)var2[var3];
-            if (!this.core.getClientCollection().containsKey(var4.getId())) {
-               this.clientWeakMap.removeFromMain(var4);
+         for (int i = 0; i < clients.length; i++) {
+            Client client = (Client)clients[i];
+            if (!this.core.getClientCollection().containsKey(client.getId())) {
+               this.clientWeakMap.removeFromMain(client);
             }
          }
       }
@@ -645,188 +645,188 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       this.removeChangedBits(1024);
    }
 
-   public String preview(int var1) {
-      return this.preview((String)null, var1);
+   public String preview(int index) {
+      return this.preview((String)null, index);
    }
 
-   protected String getTempFileName(int var1) {
-      String var2 = PreferenceLoader.loadString("previewWorkingDirectory");
-      if (var2 != null && !var2.equals("")) {
-         if (!var2.endsWith(java.io.File.separator)) {
-            var2 = var2 + java.io.File.separator;
+   protected String getTempFileName(int index) {
+      String workingDir = PreferenceLoader.loadString("previewWorkingDirectory");
+      if (workingDir != null && !workingDir.equals("")) {
+         if (!workingDir.endsWith(java.io.File.separator)) {
+            workingDir = workingDir + java.io.File.separator;
          }
 
-         String[] var3 = new String[]{"ed2k", "bitprint", "sha1", "ttr", "md5", "sig2dat", "bt"};
+         String[] urnPrefixes = new String[]{"ed2k", "bitprint", "sha1", "ttr", "md5", "sig2dat", "bt"};
 
-         for (int var4 = 0; var4 < var3.length; var4++) {
-            String var5 = "urn_" + var3[var4] + "_" + this.getHash().toUpperCase();
-            java.io.File var6 = new java.io.File(var2 + var5);
-            if (var6.exists()) {
-               return var5;
+         for (int i = 0; i < urnPrefixes.length; i++) {
+            String urnName = "urn_" + urnPrefixes[i] + "_" + this.getHash().toUpperCase();
+            java.io.File urnFile = new java.io.File(workingDir + urnName);
+            if (urnFile.exists()) {
+               return urnName;
             }
          }
       }
 
-      String var8 = this.getEnumNetwork().getTempFilePrefix() + this.getHash().toUpperCase();
-      String[] var9 = this.getSubFileNames();
-      if (var1 >= 0 && var9 != null && var9.length > var1) {
-         String var10 = var8 + java.io.File.separator + var9[var1];
-         String var11 = var2 + var10;
-         java.io.File var7 = new java.io.File(var11);
-         if (var7.exists()) {
-            return var10;
+      String tempName = this.getEnumNetwork().getTempFilePrefix() + this.getHash().toUpperCase();
+      String[] subFileNames = this.getSubFileNames();
+      if (index >= 0 && subFileNames != null && subFileNames.length > index) {
+         String subPath = tempName + java.io.File.separator + subFileNames[index];
+         String fullPath = workingDir + subPath;
+         java.io.File subFile = new java.io.File(fullPath);
+         if (subFile.exists()) {
+            return subPath;
          }
       }
 
-      return var8;
+      return tempName;
    }
 
-   public String preview(Program var1, int var2) {
-      String var3 = PreferenceLoader.loadString("previewWorkingDirectory");
-      String var4 = this.getTempFileName(var2);
-      if (!var3.equals("") && !var3.endsWith(java.io.File.separator)) {
-         var3 = var3 + java.io.File.separator;
+   public String preview(Program program, int index) {
+      String workingDir = PreferenceLoader.loadString("previewWorkingDirectory");
+      String fileName = this.getTempFileName(index);
+      if (!workingDir.equals("") && !workingDir.endsWith(java.io.File.separator)) {
+         workingDir = workingDir + java.io.File.separator;
       }
 
-      var4 = this.repSep(var4);
-      if (var4.startsWith(java.io.File.separator)) {
-         var4 = var4.substring(1);
+      fileName = this.repSep(fileName);
+      if (fileName.startsWith(java.io.File.separator)) {
+         fileName = fileName.substring(1);
       }
 
-      String var5 = var3 + var4;
-      var1.execute(var5);
-      return var5;
+      String path = workingDir + fileName;
+      program.execute(path);
+      return path;
    }
 
-   private String repSep(String var1) {
+   private String repSep(String path) {
       // Literal char replacement, not SwissArmy.replaceAll: the latter compiles the
       // "from" string as a regex, so a lone "\\" (single backslash) threw
       // PatternSyntaxException and then NPE'd — crashing preview on "/"-separator
       // platforms (Linux/macOS). A no-op when the char is absent, so no guard needed.
-      String var2 = java.io.File.separator;
-      if (var2.equals("/")) {
-         var1 = var1.replace('\\', '/');
-      } else if (var2.equals("\\")) {
-         var1 = var1.replace('/', '\\');
+      String separator = java.io.File.separator;
+      if (separator.equals("/")) {
+         path = path.replace('\\', '/');
+      } else if (separator.equals("\\")) {
+         path = path.replace('/', '\\');
       }
 
-      return var1;
+      return path;
    }
 
    public String getPreviewURL() {
-      CoreFactory var1 = Sancho.getCoreFactory();
-      String var2 = "";
-      if (!var1.getPassword().equals("")) {
-         var2 = var1.getUsername() + ":" + var1.getPassword() + "@";
+      CoreFactory coreFactory = Sancho.getCoreFactory();
+      String auth = "";
+      if (!coreFactory.getPassword().equals("")) {
+         auth = coreFactory.getUsername() + ":" + coreFactory.getPassword() + "@";
       }
 
-      return "http://" + var2 + var1.getHostname() + ":" + var1.getHTTPPort() + "/preview_download?q=" + this.getId();
+      return "http://" + auth + coreFactory.getHostname() + ":" + coreFactory.getHTTPPort() + "/preview_download?q=" + this.getId();
    }
 
-   public String preview(String var1, int var2) {
-      String var3 = PreferenceLoader.loadString("previewExecutable");
-      String var4 = PreferenceLoader.loadString("previewWorkingDirectory");
-      boolean var5 = PreferenceLoader.loadBoolean("previewUseHttp");
-      String var6 = PreferenceLoader.loadString("previewExtensions");
-      if (!var6.equals("")) {
-         StringTokenizer var7 = new StringTokenizer(var6, ";");
-         String var8 = "";
-         String var9 = "";
+   public String preview(String executableOverride, int index) {
+      String executable = PreferenceLoader.loadString("previewExecutable");
+      String workingDir = PreferenceLoader.loadString("previewWorkingDirectory");
+      boolean useHttp = PreferenceLoader.loadBoolean("previewUseHttp");
+      String extensions = PreferenceLoader.loadString("previewExtensions");
+      if (!extensions.equals("")) {
+         StringTokenizer tokenizer = new StringTokenizer(extensions, ";");
+         String extension = "";
+         String extExecutable = "";
 
-         while (var7.hasMoreTokens()) {
-            var8 = var7.nextToken();
-            if (var7.hasMoreTokens()) {
-               var9 = var7.nextToken();
-               if (this.getName().toLowerCase().endsWith(var8.toLowerCase())) {
-                  var3 = var9;
+         while (tokenizer.hasMoreTokens()) {
+            extension = tokenizer.nextToken();
+            if (tokenizer.hasMoreTokens()) {
+               extExecutable = tokenizer.nextToken();
+               if (this.getName().toLowerCase().endsWith(extension.toLowerCase())) {
+                  executable = extExecutable;
                }
             }
          }
       }
 
-      if (var1 != null) {
-         var3 = var1;
+      if (executableOverride != null) {
+         executable = executableOverride;
       }
 
-      String var12 = this.getPreviewURL();
-      String var14 = this.getTempFileName(var2);
-      int var16 = 0;
-      if (var14.indexOf("/") != -1) {
-         var16 = var14.lastIndexOf("/");
+      String url = this.getPreviewURL();
+      String fileName = this.getTempFileName(index);
+      int sepIndex = 0;
+      if (fileName.indexOf("/") != -1) {
+         sepIndex = fileName.lastIndexOf("/");
       }
 
-      if (var14.indexOf("\\") != -1) {
-         int var10 = var14.lastIndexOf("\\");
-         var16 = Math.max(var10, var16);
+      if (fileName.indexOf("\\") != -1) {
+         int backslashIndex = fileName.lastIndexOf("\\");
+         sepIndex = Math.max(backslashIndex, sepIndex);
       }
 
-      if (var16 > 0) {
-         String var17 = var14.substring(0, var16);
-         var17 = this.repSep(var17);
-         String var11 = var14.substring(var16);
-         if (var11.length() > 0) {
-            var11 = var11.substring(1);
+      if (sepIndex > 0) {
+         String dir = fileName.substring(0, sepIndex);
+         dir = this.repSep(dir);
+         String remainder = fileName.substring(sepIndex);
+         if (remainder.length() > 0) {
+            remainder = remainder.substring(1);
          }
 
-         if (!var4.equals("") && !var4.endsWith(java.io.File.separator)) {
-            var4 = var4 + java.io.File.separator;
+         if (!workingDir.equals("") && !workingDir.endsWith(java.io.File.separator)) {
+            workingDir = workingDir + java.io.File.separator;
          }
 
-         var4 = var4 + var17;
-         var14 = var11;
+         workingDir = workingDir + dir;
+         fileName = remainder;
       }
 
-      String var19 = "";
-      if (var3.equals("")) {
+      String result = "";
+      if (executable.equals("")) {
          this.core.send((short)30, Integer.valueOf(this.getId()));
       } else {
-         String[] var21 = new String[]{var3, var5 ? var12 : var14};
-         if (!var5) {
-            var19 = "";
-            if (!var4.equals("")) {
-               var19 = var19 + var4;
-               if (!var4.endsWith(java.io.File.separator)) {
-                  var19 = var19 + java.io.File.separator;
+         String[] args = new String[]{executable, useHttp ? url : fileName};
+         if (!useHttp) {
+            result = "";
+            if (!workingDir.equals("")) {
+               result = result + workingDir;
+               if (!workingDir.endsWith(java.io.File.separator)) {
+                  result = result + java.io.File.separator;
                }
             }
 
-            var19 = var19 + var14;
+            result = result + fileName;
          }
 
-         SwissArmy.execInThread(var21, var4.equals("") ? null : var4);
+         SwissArmy.execInThread(args, workingDir.equals("") ? null : workingDir);
       }
 
-      return var19;
+      return result;
    }
 
-   public void read(int var1, MessageBuffer var2) {
+   public void read(int id, MessageBuffer buffer) {
       synchronized (this) {
-         this.id = var1;
-         this.networkEnum = this.readNetwork(var2.getInt32());
-         this.names = var2.getStringList();
-         this.md4 = var2.getMd4();
-         this.size = this.readSize(var2);
-         this.downloaded = this.readDownloaded(var2);
+         this.id = id;
+         this.networkEnum = this.readNetwork(buffer.getInt32());
+         this.names = buffer.getStringList();
+         this.md4 = buffer.getMd4();
+         this.size = this.readSize(buffer);
+         this.downloaded = this.readDownloaded(buffer);
          this.calcDownloadedString();
-         this.sources = var2.getInt32();
-         this.numClients = var2.getInt32();
-         this.readState(var2);
-         this.setChunks(var2.getString(false));
-         this.readAvailability(var2);
-         this.readRate(var2);
-         this.chunkAges = this.readChunkAges(var2);
-         this.age = this.readAge(var2);
-         this.getFormat().read(var2);
-         this.name = var2.getString();
-         this.setLastSeen(var2.getInt32());
-         this.setPriority(var2.getSignedInt32());
-         this.readComment(var2);
-         this.readUIDs(var2);
-         this.readSubFiles(var2);
-         this.readMagic(var2);
-         this.readFileComments(var2);
-         this.readUser(var2);
-         this.readGroup(var2);
+         this.sources = buffer.getInt32();
+         this.numClients = buffer.getInt32();
+         this.readState(buffer);
+         this.setChunks(buffer.getString(false));
+         this.readAvailability(buffer);
+         this.readRate(buffer);
+         this.chunkAges = this.readChunkAges(buffer);
+         this.age = this.readAge(buffer);
+         this.getFormat().read(buffer);
+         this.name = buffer.getString();
+         this.setLastSeen(buffer.getInt32());
+         this.setPriority(buffer.getSignedInt32());
+         this.readComment(buffer);
+         this.readUIDs(buffer);
+         this.readSubFiles(buffer);
+         this.readMagic(buffer);
+         this.readFileComments(buffer);
+         this.readUser(buffer);
+         this.readGroup(buffer);
          this.calcETA();
          this.calcFileType();
          this.fakeCheck();
@@ -839,19 +839,19 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       this.notifyChangedProperties();
    }
 
-   protected void readUser(MessageBuffer var1) {
+   protected void readUser(MessageBuffer buffer) {
    }
 
-   protected void readGroup(MessageBuffer var1) {
+   protected void readGroup(MessageBuffer buffer) {
    }
 
-   protected void readSubFiles(MessageBuffer var1) {
+   protected void readSubFiles(MessageBuffer buffer) {
    }
 
-   protected void readMagic(MessageBuffer var1) {
+   protected void readMagic(MessageBuffer buffer) {
    }
 
-   protected void readFileComments(MessageBuffer var1) {
+   protected void readFileComments(MessageBuffer buffer) {
    }
 
    protected void fakeCheck() {
@@ -864,8 +864,8 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       }
 
       if (!this.containsFake) {
-         for (int var1 = 0; var1 < this.names.length; var1++) {
-            this.containsFake = SwissArmy.containsFake(this.names[var1]);
+         for (int i = 0; i < this.names.length; i++) {
+            this.containsFake = SwissArmy.containsFake(this.names[i]);
             if (this.containsFake) {
                break;
             }
@@ -873,126 +873,126 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       }
    }
 
-   protected void readUIDs(MessageBuffer var1) {
+   protected void readUIDs(MessageBuffer buffer) {
    }
 
-   public void read(MessageBuffer var1) {
-      this.read(var1.getInt32(), var1);
+   public void read(MessageBuffer buffer) {
+      this.read(buffer.getInt32(), buffer);
    }
 
-   protected long readAge(MessageBuffer var1) {
+   protected long readAge(MessageBuffer buffer) {
       if (this.core.getFileCollection().eta2()) {
          this.ageTS = System.currentTimeMillis();
       }
 
       try {
-         return Long.parseLong(var1.getString(false));
-      } catch (NumberFormatException var3) {
+         return Long.parseLong(buffer.getString(false));
+      } catch (NumberFormatException notANumber) {
          return 0L;
       }
    }
 
-   protected int[] readChunkAges(MessageBuffer var1) {
-      String[] var2 = var1.getStringList(false);
-      int[] var3 = new int[var2.length];
+   protected int[] readChunkAges(MessageBuffer buffer) {
+      String[] tokens = buffer.getStringList(false);
+      int[] ages = new int[tokens.length];
 
-      for (int var4 = 0; var4 < var2.length; var4++) {
+      for (int i = 0; i < tokens.length; i++) {
          // Guard the parse like readAge() does: a non-numeric/empty token from the
          // core must not throw out of the read loop (which would break the socket
          // message stream). Default that chunk's age to 0.
          try {
-            var3[var4] = (int)(System.currentTimeMillis() / 1000L) - Integer.parseInt(var2[var4]);
-         } catch (NumberFormatException var6) {
-            var3[var4] = 0;
+            ages[i] = (int)(System.currentTimeMillis() / 1000L) - Integer.parseInt(tokens[i]);
+         } catch (NumberFormatException notANumber) {
+            ages[i] = 0;
          }
       }
 
-      return var3;
+      return ages;
    }
 
-   protected void readComment(MessageBuffer var1) {
+   protected void readComment(MessageBuffer buffer) {
    }
 
-   protected long readDownloaded(MessageBuffer var1) {
-      return (long)var1.getInt32() & 4294967295L;
+   protected long readDownloaded(MessageBuffer buffer) {
+      return (long)buffer.getInt32() & 4294967295L;
    }
 
-   protected void readRate(MessageBuffer var1) {
-      float var2 = var1.getFloat();
-      if (this.rate != var2) {
+   protected void readRate(MessageBuffer buffer) {
+      float newRate = buffer.getFloat();
+      if (this.rate != newRate) {
          this.addChangedBits(64);
       }
 
-      this.rate = var2;
+      this.rate = newRate;
    }
 
-   protected long readSize(MessageBuffer var1) {
-      return (long)var1.getInt32() & 4294967295L;
+   protected long readSize(MessageBuffer buffer) {
+      return (long)buffer.getInt32() & 4294967295L;
    }
 
-   protected void readState(MessageBuffer var1) {
-      boolean var2 = this.isInteresting();
-      EnumFileState var3 = this.getFileStateEnum();
-      this.state.read(var1);
+   protected void readState(MessageBuffer buffer) {
+      boolean wasInteresting = this.isInteresting();
+      EnumFileState previousState = this.getFileStateEnum();
+      this.state.read(buffer);
       this.fileStateEnum = this.state.getState();
-      if (var2 && !this.isInteresting()) {
+      if (wasInteresting && !this.isInteresting()) {
          this.addChangedBits(256);
       }
 
-      if (var3 != this.getFileStateEnum()) {
+      if (previousState != this.getFileStateEnum()) {
          this.addChangedBits(128);
          if (this.state.getState() == EnumFileState.DOWNLOADED
             && PreferenceLoader.loadBoolean("downloadCompleteLog")
             && this.getName() != null
             && !this.getName().equals("")) {
             try {
-               PrintWriter var4 = new PrintWriter(new BufferedWriter(new FileWriter(new java.io.File(VersionInfo.getDownloadLogFile()), true)));
-               var4.write(System.currentTimeMillis() + " " + this.getED2K() + "\n");
-               var4.close();
-            } catch (FileNotFoundException var6) {
-               Sancho.pDebug(var6.toString());
-            } catch (IOException var7) {
-               Sancho.pDebug(var7.toString());
+               PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(new java.io.File(VersionInfo.getDownloadLogFile()), true)));
+               writer.write(System.currentTimeMillis() + " " + this.getED2K() + "\n");
+               writer.close();
+            } catch (FileNotFoundException fileNotFound) {
+               Sancho.pDebug(fileNotFound.toString());
+            } catch (IOException ioException) {
+               Sancho.pDebug(ioException.toString());
             }
          }
       }
    }
 
-   public void readUpdate(MessageBuffer var1) {
+   public void readUpdate(MessageBuffer buffer) {
       synchronized (this) {
-         this.downloaded = this.readDownloaded(var1);
+         this.downloaded = this.readDownloaded(buffer);
          this.calcDownloadedString();
-         this.readRate(var1);
-         this.setLastSeen(var1.getInt32());
+         this.readRate(buffer);
+         this.setLastSeen(buffer.getInt32());
          this.calcETA();
       }
 
       this.notifyChangedProperties();
    }
 
-   public FileClient removeFileClient(Client var1) {
-      FileClient var2 = this.findFileClient(var1);
-      if (var2 != null) {
-         this.getFileClientSet().remove(var2);
+   public FileClient removeFileClient(Client client) {
+      FileClient fileClient = this.findFileClient(client);
+      if (fileClient != null) {
+         this.getFileClientSet().remove(fileClient);
          this.addChangedBits(512);
          this.notifyChangedProperties();
       }
 
-      return var2;
+      return fileClient;
    }
 
-   public void removeSource(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      Client var3 = (Client)this.core.getClientCollection().get(var2);
-      if (var3 != null) {
-         this.clientWeakMap.remove(var3);
-         var3.deleteObserver(this);
-         if (var3.countObservers() == 0) {
-            if (var3.isConnected() && this.numConnectedClients > 0) {
+   public void removeSource(MessageBuffer buffer) {
+      int id = buffer.getInt32();
+      Client client = (Client)this.core.getClientCollection().get(id);
+      if (client != null) {
+         this.clientWeakMap.remove(client);
+         client.deleteObserver(this);
+         if (client.countObservers() == 0) {
+            if (client.isConnected() && this.numConnectedClients > 0) {
                this.numConnectedClients--;
             }
 
-            this.core.getClientCollection().removeSource(var2, var3);
+            this.core.getClientCollection().removeSource(id, client);
          }
 
          this.addChangedBits(512);
@@ -1000,69 +1000,69 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       }
    }
 
-   public void saveFileAs(String var1) {
-      Object[] var2 = new Object[]{Integer.valueOf(this.getId()), var1};
-      this.core.send((short)13, var2);
+   public void saveFileAs(String name) {
+      Object[] args = new Object[]{Integer.valueOf(this.getId()), name};
+      this.core.send((short)13, args);
    }
 
-   public void sendPriority(boolean var1, int var2) {
-      Object[] var3 = new Object[]{Integer.valueOf(this.getId()), null};
-      if (var1) {
-         var2 += this.getPriority();
+   public void sendPriority(boolean relative, int priority) {
+      Object[] args = new Object[]{Integer.valueOf(this.getId()), null};
+      if (relative) {
+         priority += this.getPriority();
       }
 
-      var3[1] = Integer.valueOf(var2);
-      this.core.send((short)51, var3);
+      args[1] = Integer.valueOf(priority);
+      this.core.send((short)51, args);
    }
 
-   public void sendPriority(EnumPriority var1) {
-      this.sendPriority(false, var1.getMaxValue());
+   public void sendPriority(EnumPriority priority) {
+      this.sendPriority(false, priority.getMaxValue());
    }
 
-   public void setActiveSources(int var1) {
-      int var2 = this.getActiveSources();
+   public void setActiveSources(int delta) {
+      int previousActiveSources = this.getActiveSources();
       synchronized (this) {
-         if (var1 == 0) {
+         if (delta == 0) {
             this.activeSources = 0;
-            Object[] var4 = this.clientWeakMap.getKeyArray();
+            Object[] clients = this.clientWeakMap.getKeyArray();
 
-            for (int var5 = 0; var5 < var4.length; var5++) {
-               Client var6 = (Client)var4[var5];
-               if (var6.isTransferring()) {
+            for (int i = 0; i < clients.length; i++) {
+               Client client = (Client)clients[i];
+               if (client.isTransferring()) {
                   this.activeSources++;
                }
             }
          } else {
-            this.activeSources += var1;
+            this.activeSources += delta;
          }
       }
 
-      if (var2 != this.getActiveSources()) {
+      if (previousActiveSources != this.getActiveSources()) {
          this.addChangedBits(1);
          this.notifyChangedProperties();
       }
    }
 
-   protected void readAvailability(MessageBuffer var1) {
-      this.avail = var1.getString(false);
+   protected void readAvailability(MessageBuffer buffer) {
+      this.avail = buffer.getString(false);
       this.setRelativeAvail();
    }
 
-   protected void setChunks(String var1) {
-      this.chunks = var1;
+   protected void setChunks(String chunks) {
+      this.chunks = chunks;
       this.numChunks = 0;
 
-      for (int var3 = 0; var3 < this.chunks.length(); var3++) {
-         char var2 = this.chunks.charAt(var3);
-         if (var2 == '2' || var2 == '3') {
+      for (int i = 0; i < this.chunks.length(); i++) {
+         char c = this.chunks.charAt(i);
+         if (c == '2' || c == '3') {
             this.numChunks++;
          }
       }
    }
 
-   public void setComment(String var1) {
-      String var2 = "comment " + this.getMD4() + " \"" + var1 + "\"";
-      this.core.send((short)29, var2);
+   public void setComment(String comment) {
+      String command = "comment " + this.getMD4() + " \"" + comment + "\"";
+      this.core.send((short)29, command);
       this.core.send((short)37, Integer.valueOf(this.getId()));
    }
 
@@ -1070,130 +1070,130 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       this.core.send((short)37, Integer.valueOf(this.getId()));
    }
 
-   public void chown(String var1) {
+   public void chown(String user) {
    }
 
-   public void chgrp(String var1) {
+   public void chgrp(String group) {
    }
 
    protected void calcFileType() {
-      int var1 = this.getName().lastIndexOf(".");
-      String var2 = this.name.substring(var1 + 1, this.name.length());
-      EnumExtension var3 = EnumExtension.GET_EXT(var2);
-      this.extensionEnum = var3 != null ? var3 : EnumExtension.UNKNOWN;
+      int dotIndex = this.getName().lastIndexOf(".");
+      String extension = this.name.substring(dotIndex + 1, this.name.length());
+      EnumExtension extensionEnum = EnumExtension.GET_EXT(extension);
+      this.extensionEnum = extensionEnum != null ? extensionEnum : EnumExtension.UNKNOWN;
    }
 
-   protected void setLastSeen(int var1) {
-      int var2 = this.getLastSeen();
-      this.lastSeen = var1;
-      if (var2 != this.lastSeen) {
+   protected void setLastSeen(int lastSeen) {
+      int previousLastSeen = this.getLastSeen();
+      this.lastSeen = lastSeen;
+      if (previousLastSeen != this.lastSeen) {
          this.addChangedBits(16);
       }
    }
 
-   public void rename(String var1) {
-      var1 = "rename " + this.getId() + " \"" + var1 + "\"";
-      this.core.send((short)29, var1);
+   public void rename(String name) {
+      name = "rename " + this.getId() + " \"" + name + "\"";
+      this.core.send((short)29, name);
       this.core.send((short)37, Integer.valueOf(this.id));
    }
 
-   protected EnumNetwork readNetwork(int var1) {
-      return this.core.getNetworkCollection().getNetworkEnum(var1);
+   protected EnumNetwork readNetwork(int networkId) {
+      return this.core.getNetworkCollection().getNetworkEnum(networkId);
    }
 
-   protected void setPriority(int var1) {
-      this.priority = var1;
-      this.priorityEnum = EnumPriority.intToEnum(var1);
+   protected void setPriority(int priority) {
+      this.priority = priority;
+      this.priorityEnum = EnumPriority.intToEnum(priority);
    }
 
    public void setRelativeAvail() {
-      int var1 = this.relativeAvail;
+      int previousRelativeAvail = this.relativeAvail;
       this.relativeAvail = 0;
-      int var2 = 0;
-      int var3 = 0;
+      int total = 0;
+      int available = 0;
       if (this.avail == null) {
          this.avail = "";
       }
 
-      String var4 = this.getChunks();
-      if (this.avail.length() > 0 && this.avail.length() == var4.length()) {
-         for (int var5 = 0; var5 < this.avail.length(); var5++) {
-            if (var4.charAt(var5) == '0' || var4.charAt(var5) == '1') {
-               var2++;
-               if (this.avail.charAt(var5) > 0) {
-                  var3++;
+      String chunks = this.getChunks();
+      if (this.avail.length() > 0 && this.avail.length() == chunks.length()) {
+         for (int i = 0; i < this.avail.length(); i++) {
+            if (chunks.charAt(i) == '0' || chunks.charAt(i) == '1') {
+               total++;
+               if (this.avail.charAt(i) > 0) {
+                  available++;
                }
             }
          }
 
-         if (var2 > 0) {
-            this.relativeAvail = (int)((float)var3 / (float)var2 * 100.0F);
+         if (total > 0) {
+            this.relativeAvail = (int)((float)available / (float)total * 100.0F);
          }
       }
 
-      if (var1 != this.relativeAvail) {
+      if (previousRelativeAvail != this.relativeAvail) {
          this.addChangedBits(2);
       }
    }
 
-   public void setState(EnumFileState var1) {
-      EnumFileState var2 = this.getFileStateEnum();
-      Object[] var3 = new Object[2];
-      byte var4 = 23;
-      var3[0] = Integer.valueOf(this.id);
-      if (var2 == EnumFileState.PAUSED && var1 == EnumFileState.DOWNLOADING) {
-         var3[1] = Byte.valueOf((byte)1);
-      } else if ((var2 == EnumFileState.DOWNLOADING || var2 == EnumFileState.QUEUED) && var1 == EnumFileState.PAUSED) {
-         var3[1] = Byte.valueOf((byte)0);
+   public void setState(EnumFileState newState) {
+      EnumFileState currentState = this.getFileStateEnum();
+      Object[] args = new Object[2];
+      byte opcode = 23;
+      args[0] = Integer.valueOf(this.id);
+      if (currentState == EnumFileState.PAUSED && newState == EnumFileState.DOWNLOADING) {
+         args[1] = Byte.valueOf((byte)1);
+      } else if ((currentState == EnumFileState.DOWNLOADING || currentState == EnumFileState.QUEUED) && newState == EnumFileState.PAUSED) {
+         args[1] = Byte.valueOf((byte)0);
       } else {
-         if (var1 != EnumFileState.CANCELLED) {
+         if (newState != EnumFileState.CANCELLED) {
             return;
          }
 
-         var4 = 11;
-         var3 = new Object[]{Integer.valueOf(this.id)};
+         opcode = 11;
+         args = new Object[]{Integer.valueOf(this.id)};
       }
 
-      this.core.send(var4, var3);
+      this.core.send(opcode, args);
    }
 
-   protected boolean checkFileNum(Client var1) {
+   protected boolean checkFileNum(Client client) {
       return true;
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
-      if (var1 instanceof Client) {
-         if (var2 == null) {
-            Client var4 = (Client)var1;
-            if ((var3 & 4) != 0) {
-               if (this.checkFileNum(var4)) {
+   public void update(MyObservable observable, Object arg, int flags) {
+      if (observable instanceof Client) {
+         if (arg == null) {
+            Client client = (Client)observable;
+            if ((flags & 4) != 0) {
+               if (this.checkFileNum(client)) {
                   this.setActiveSources(1);
-                  FileClient var5 = this.findFileClient(var4);
-                  byte var6 = 0;
-                  if (var5 == null) {
-                     var5 = new FileClient(this, var4);
-                     var6 = 1;
-                     this.addFileClient(var5);
+                  FileClient fileClient = this.findFileClient(client);
+                  byte updateType = 0;
+                  if (fileClient == null) {
+                     fileClient = new FileClient(this, client);
+                     updateType = 1;
+                     this.addFileClient(fileClient);
                   }
 
-                  this.core.getFileCollection().sendUpdate(var5, var6);
+                  this.core.getFileCollection().sendUpdate(fileClient, updateType);
                }
             } else {
-               FileClient var7;
-               if ((var3 & 8) != 0 && (var7 = this.removeFileClient(var4)) != null) {
+               FileClient removedFileClient;
+               if ((flags & 8) != 0 && (removedFileClient = this.removeFileClient(client)) != null) {
                   this.setActiveSources(-1);
-                  this.core.getFileCollection().sendUpdate(var7, 2);
+                  this.core.getFileCollection().sendUpdate(removedFileClient, 2);
                }
             }
 
-            if ((var3 & 1) != 0) {
+            if ((flags & 1) != 0) {
                this.numConnectedClients++;
-            } else if ((var3 & 2) != 0 && this.numConnectedClients > 0) {
+            } else if ((flags & 2) != 0 && this.numConnectedClients > 0) {
                this.numConnectedClients--;
             }
          }
 
-         this.clientWeakMap.addOrUpdate(var1);
+         this.clientWeakMap.addOrUpdate(observable);
       }
    }
 

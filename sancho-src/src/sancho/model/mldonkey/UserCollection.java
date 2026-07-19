@@ -4,22 +4,22 @@ import sancho.core.ICore;
 import sancho.model.mldonkey.utility.MessageBuffer;
 
 public class UserCollection extends ACollection_Int {
-   UserCollection(ICore var1) {
-      super(var1);
+   UserCollection(ICore core) {
+      super(core);
    }
 
-   public void read(MessageBuffer var1) {
-      int var2 = var1.getInt32();
-      User var3 = (User)this.get(var2);
-      if (var3 != null) {
-         var3.read(var2, var1);
+   public void read(MessageBuffer buffer) {
+      int id = buffer.getInt32();
+      User user = (User)this.get(id);
+      if (user != null) {
+         user.read(id, buffer);
       } else {
-         var3 = this.core.getCollectionFactory().getUser();
-         var3.read(var2, var1);
-         this.put(var2, var3);
+         user = this.core.getCollectionFactory().getUser();
+         user.read(id, buffer);
+         this.put(id, user);
       }
 
       this.setChanged();
-      this.notifyObservers(var3);
+      this.notifyObservers(user);
    }
 }

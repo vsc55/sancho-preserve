@@ -5,8 +5,8 @@ import sancho.core.ICore;
 public abstract class AObject {
    protected ICore core;
 
-   AObject(ICore var1) {
-      this.core = var1;
+   AObject(ICore core) {
+      this.core = core;
    }
 
    public final ICore getCore() {

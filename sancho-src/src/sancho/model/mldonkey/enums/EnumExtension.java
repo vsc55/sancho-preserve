@@ -14,35 +14,35 @@ public class EnumExtension extends AbstractEnum {
    public static final EnumExtension EMULECOLLECTION = new EnumExtension(128, "emulecollection");
    protected static final TreeMap EXT_MAP = new TreeMap();
 
-   private EnumExtension(int var1, String var2) {
-      super(var1, "e.extension." + var2);
+   private EnumExtension(int value, String name) {
+      super(value, "e.extension." + name);
    }
 
-   private static synchronized void ADD_TO_MAP(EnumExtension var0, String[] var1) {
-      for (int var2 = 0; var2 < var1.length; var2++) {
-         EXT_MAP.put(var1[var2], var0);
+   private static synchronized void ADD_TO_MAP(EnumExtension extension, String[] extensions) {
+      for (int i = 0; i < extensions.length; i++) {
+         EXT_MAP.put(extensions[i], extension);
       }
    }
 
-   public static synchronized EnumExtension GET_EXT(String var0) {
-      EnumExtension var1 = (EnumExtension)EXT_MAP.get(var0);
-      if (var1 == null) {
-         int var2 = var0.length();
-         if (var2 == 3) {
-            String var3 = var0.toLowerCase();
-            if (var3.startsWith("r")) {
-               String var4 = var3.substring(1);
+   public static synchronized EnumExtension GET_EXT(String extension) {
+      EnumExtension result = (EnumExtension)EXT_MAP.get(extension);
+      if (result == null) {
+         int length = extension.length();
+         if (length == 3) {
+            String lowerCase = extension.toLowerCase();
+            if (lowerCase.startsWith("r")) {
+               String numberPart = lowerCase.substring(1);
 
                try {
-                  Integer.parseInt(var4);
-                  var1 = ARCHIVE;
-               } catch (Exception var6) {
+                  Integer.parseInt(numberPart);
+                  result = ARCHIVE;
+               } catch (Exception exception) {
                }
             }
          }
       }
 
-      return var1;
+      return result;
    }
 
    static {

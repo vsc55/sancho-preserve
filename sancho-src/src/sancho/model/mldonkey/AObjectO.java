@@ -6,8 +6,8 @@ import sancho.utility.MyObservable;
 public abstract class AObjectO extends MyObservable implements IObject {
    protected ICore core;
 
-   AObjectO(ICore var1) {
-      this.core = var1;
+   AObjectO(ICore core) {
+      this.core = core;
    }
 
    public final ICore getCore() {

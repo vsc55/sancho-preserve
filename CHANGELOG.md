@@ -8,6 +8,21 @@ The upstream project's original changelog (2004–2006) is preserved at
 authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 (`git checkout 0.9.4-23`).
 
+## [Unreleased]
+
+### Changed
+
+- **Renamed the decompiler's `var1`/`var2`/… locals to descriptive names across the rest
+  of `sancho.model`** — the 87 model classes outside the already-cleaned collections:
+  the domain objects (`File`, `Client`, `Result`, `Server`, `Network`, `SharedFile`,
+  `Option`, `Room`, `User` and their protocol-version subclasses like `File41`/`Client19`),
+  the `enums` sub-package (hand-rolled `AbstractEnum` + `EnumNetwork`/`EnumTagType`/…), and
+  the `utility` wire-format sub-package (`MessageBuffer`, `MessageEncoder`, `Query`,
+  `SearchQuery`, `Addr`, `Tag`, `Format`/`Format_OGx`, the `NetworkStat` trio, …). Only
+  locals, parameters, catch/loop variables were renamed — no fields, method/class names,
+  control flow, or literals changed. `sancho.model` now has zero `varN`. No behaviour
+  change (verified: full 747-file compile clean).
+
 ## [0.9.4-75] — 2026-07-19
 
 ### Fixed

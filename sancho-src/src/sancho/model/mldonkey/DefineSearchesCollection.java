@@ -4,10 +4,10 @@ import sancho.core.ICore;
 import sancho.model.mldonkey.utility.MessageBuffer;
 
 public class DefineSearchesCollection extends ACollection_Hash {
-   DefineSearchesCollection(ICore var1) {
-      super(var1);
+   DefineSearchesCollection(ICore core) {
+      super(core);
    }
 
-   public void read(MessageBuffer var1) {
+   public void read(MessageBuffer buffer) {
    }
 }

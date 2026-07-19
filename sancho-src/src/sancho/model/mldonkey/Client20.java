@@ -7,8 +7,8 @@ import sancho.utility.SwissArmy;
 public class Client20 extends Client19 {
    protected int connectedTime;
 
-   public Client20(ICore var1) {
-      super(var1);
+   public Client20(ICore core) {
+      super(core);
    }
 
    public synchronized int getConnectedTime() {
@@ -19,9 +19,9 @@ public class Client20 extends Client19 {
       return SwissArmy.calcStringOfSeconds((long)this.getConnectedTime());
    }
 
-   protected boolean readMore(MessageBuffer var1) {
-      boolean var2 = super.readMore(var1);
-      this.connectedTime = var1.getInt32();
-      return var2;
+   protected boolean readMore(MessageBuffer buffer) {
+      boolean changed = super.readMore(buffer);
+      this.connectedTime = buffer.getInt32();
+      return changed;
    }
 }

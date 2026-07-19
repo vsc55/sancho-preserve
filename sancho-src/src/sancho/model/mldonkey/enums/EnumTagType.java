@@ -17,12 +17,12 @@ public class EnumTagType extends AbstractEnum {
    public static final EnumTagType INT_LIST = new EnumTagType(2048, "Int List");
    public static final EnumTagType STRING_LIST = new EnumTagType(4096, "String List");
 
-   private EnumTagType(int var1, String var2) {
-      super(var1, var2);
+   private EnumTagType(int value, String name) {
+      super(value, name);
    }
 
-   public static EnumTagType optionByteToEnum(byte var0) {
-      switch (var0) {
+   public static EnumTagType optionByteToEnum(byte value) {
+      switch (value) {
          case 1:
             return BOOL;
          case 2:
@@ -32,35 +32,35 @@ public class EnumTagType extends AbstractEnum {
       }
    }
 
-   public static EnumTagType stringToEnum(String var0) {
-      if (var0.equalsIgnoreCase("String")) {
+   public static EnumTagType stringToEnum(String name) {
+      if (name.equalsIgnoreCase("String")) {
          return STRING;
-      } else if (var0.equalsIgnoreCase("Ip List")) {
+      } else if (name.equalsIgnoreCase("Ip List")) {
          return IP_LIST;
-      } else if (var0.equalsIgnoreCase("Int")) {
+      } else if (name.equalsIgnoreCase("Int")) {
          return INT;
-      } else if (var0.equalsIgnoreCase("Bool")) {
+      } else if (name.equalsIgnoreCase("Bool")) {
          return BOOL;
-      } else if (var0.equalsIgnoreCase("Ip")) {
+      } else if (name.equalsIgnoreCase("Ip")) {
          return IP;
-      } else if (var0.equalsIgnoreCase("Addr")) {
+      } else if (name.equalsIgnoreCase("Addr")) {
          return ADDR;
-      } else if (var0.equalsIgnoreCase("Integer")) {
+      } else if (name.equalsIgnoreCase("Integer")) {
          return INT;
-      } else if (var0.equalsIgnoreCase("Float")) {
+      } else if (name.equalsIgnoreCase("Float")) {
          return FLOAT;
-      } else if (var0.equalsIgnoreCase("Md4")) {
+      } else if (name.equalsIgnoreCase("Md4")) {
          return MD4;
-      } else if (var0.equalsIgnoreCase("Sha1")) {
+      } else if (name.equalsIgnoreCase("Sha1")) {
          return SHA1;
-      } else if (var0.equalsIgnoreCase("Int64")) {
+      } else if (name.equalsIgnoreCase("Int64")) {
          return INT64;
-      } else if (var0.equalsIgnoreCase("Int List")) {
+      } else if (name.equalsIgnoreCase("Int List")) {
          return INT_LIST;
-      } else if (var0.equalsIgnoreCase("String List")) {
+      } else if (name.equalsIgnoreCase("String List")) {
          return STRING_LIST;
       } else {
-         Sancho.pDebug("EnumTagType unknown: [" + var0 + "]");
+         Sancho.pDebug("EnumTagType unknown: [" + name + "]");
          return STRING;
       }
    }

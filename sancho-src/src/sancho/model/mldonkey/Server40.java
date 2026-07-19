@@ -11,8 +11,8 @@ public class Server40 extends Server32 {
    long lowidUsers;
    int ping;
 
-   Server40(ICore var1) {
-      super(var1);
+   Server40(ICore core) {
+      super(core);
    }
 
    public synchronized String getVersion() {
@@ -39,12 +39,12 @@ public class Server40 extends Server32 {
       return this.ping;
    }
 
-   protected void read40(MessageBuffer var1) {
-      this.version = var1.getString();
-      this.maxUsers = var1.getUInt64();
-      this.lowidUsers = var1.getUInt64();
-      this.softLimit = var1.getUInt64();
-      this.hardLimit = var1.getUInt64();
-      this.ping = var1.getInt32();
+   protected void read40(MessageBuffer buffer) {
+      this.version = buffer.getString();
+      this.maxUsers = buffer.getUInt64();
+      this.lowidUsers = buffer.getUInt64();
+      this.softLimit = buffer.getUInt64();
+      this.hardLimit = buffer.getUInt64();
+      this.ping = buffer.getInt32();
    }
 }

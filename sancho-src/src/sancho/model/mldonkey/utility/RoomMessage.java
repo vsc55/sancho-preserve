@@ -24,15 +24,15 @@ public class RoomMessage {
       return this.roomNumber;
    }
 
-   public void read(MessageBuffer var1) {
+   public void read(MessageBuffer buffer) {
       synchronized (this) {
-         this.roomNumber = var1.getInt32();
-         this.enumMessage = EnumMessage.intToEnum(var1.getInt8());
+         this.roomNumber = buffer.getInt32();
+         this.enumMessage = EnumMessage.intToEnum(buffer.getInt8());
          if (this.enumMessage != EnumMessage.SERVER) {
-            this.fromInt = var1.getInt32();
+            this.fromInt = buffer.getInt32();
          }
 
-         this.message = var1.getString();
+         this.message = buffer.getString();
       }
    }
 }

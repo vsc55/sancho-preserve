@@ -36,26 +36,26 @@ public class Server extends AObject {
    private Map userMap;
    private EnumNetwork networkEnum;
 
-   Server(ICore var1) {
-      super(var1);
-      this.state = UtilityFactory.getHostState(var1);
-      this.addr = UtilityFactory.getAddr(var1);
+   Server(ICore core) {
+      super(core);
+      this.state = UtilityFactory.getHostState(core);
+      this.addr = UtilityFactory.getAddr(core);
    }
 
-   public synchronized void addUserInfo(User var1) {
-      this.getUserMap().put(var1, null);
+   public synchronized void addUserInfo(User user) {
+      this.getUserMap().put(user, null);
    }
 
    public void blacklist() {
       this.core.send((short)29, "bs " + this.getAddr().toString());
    }
 
-   public void checkConnected(EnumHostState var1) {
-      EnumHostState var2 = this.getStateEnum();
-      if (var1 != null && var1 != var2) {
-         if (var2 == EnumHostState.CONNECTED) {
+   public void checkConnected(EnumHostState previousState) {
+      EnumHostState currentState = this.getStateEnum();
+      if (previousState != null && previousState != currentState) {
+         if (currentState == EnumHostState.CONNECTED) {
             this.core.getServerCollection().setConnected(1);
-         } else if (var1 == EnumHostState.CONNECTED) {
+         } else if (previousState == EnumHostState.CONNECTED) {
             this.core.getServerCollection().setConnected(-1);
          }
       }
@@ -75,8 +75,8 @@ public class Server extends AObject {
       this.setState(EnumHostState.NOT_CONNECTED);
    }
 
-   public boolean equals(Object var1) {
-      return var1 instanceof Server && this.getId() == ((Server)var1).getId();
+   public boolean equals(Object object) {
+      return object instanceof Server && this.getId() == ((Server)object).getId();
    }
 
    public Addr getAddr() {
@@ -97,8 +97,8 @@ public class Server extends AObject {
 
    public Image getHighLowImage() {
       if (this.getEnumNetwork() == EnumNetwork.DONKEY && this.isConnected()) {
-         boolean var1 = this.getState().getRank() == -2;
-         return SResources.getImage(var1 ? "bulb-green" : "bulb-red");
+         boolean highId = this.getState().getRank() == -2;
+         return SResources.getImage(highId ? "bulb-green" : "bulb-red");
       } else {
          return null;
       }
@@ -160,9 +160,9 @@ public class Server extends AObject {
 
    public synchronized Tag[] getTagList() {
       if (this.tagList != null && this.tagList.length != 0) {
-         Tag[] var1 = new Tag[this.tagList.length];
-         System.arraycopy(this.tagList, 0, var1, 0, this.tagList.length);
-         return var1;
+         Tag[] tags = new Tag[this.tagList.length];
+         System.arraycopy(this.tagList, 0, tags, 0, this.tagList.length);
+         return tags;
       } else {
          return new Tag[0];
       }
@@ -225,14 +225,14 @@ public class Server extends AObject {
    }
 
    public void togglePreferred() {
-      String var1 = "preferred " + (this.isPreferred() ? "false" : "true") + " " + this.getAddr().toString();
-      this.core.send((short)29, var1);
+      String command = "preferred " + (this.isPreferred() ? "false" : "true") + " " + this.getAddr().toString();
+      this.core.send((short)29, command);
    }
 
-   public void rename(String var1) {
+   public void rename(String name) {
    }
 
-   protected void read40(MessageBuffer var1) {
+   protected void read40(MessageBuffer buffer) {
    }
 
    public synchronized String getVersion() {
@@ -279,59 +279,59 @@ public class Server extends AObject {
       return SwissArmy.calcStringSizeGrouped((long)this.getPing());
    }
 
-   public void read(int var1, int var2, MessageBuffer var3) {
-      EnumHostState var4 = this.getStateEnum();
+   public void read(int id, int networkId, MessageBuffer buffer) {
+      EnumHostState previousState = this.getStateEnum();
       synchronized (this) {
-         this.id = var1;
-         this.networkEnum = this.readNetworkEnum(var2);
-         this.addr.read(var3);
-         this.port = this.readPort(var3);
-         this.score = var3.getInt32();
-         this.tagList = var3.getTagList();
-         this.numUsers = this.readNUsers(var3);
-         this.numFiles = this.readNFiles(var3);
-         this.stateEnum = this.state.read(var3);
-         this.name = var3.getString();
-         this.description = var3.getString();
-         this.preferred = this.readPreferred(var3);
-         this.read40(var3);
+         this.id = id;
+         this.networkEnum = this.readNetworkEnum(networkId);
+         this.addr.read(buffer);
+         this.port = this.readPort(buffer);
+         this.score = buffer.getInt32();
+         this.tagList = buffer.getTagList();
+         this.numUsers = this.readNUsers(buffer);
+         this.numFiles = this.readNFiles(buffer);
+         this.stateEnum = this.state.read(buffer);
+         this.name = buffer.getString();
+         this.description = buffer.getString();
+         this.preferred = this.readPreferred(buffer);
+         this.read40(buffer);
       }
 
-      this.checkConnected(var4);
+      this.checkConnected(previousState);
       this.checkRemovedState();
    }
 
-   public void read(MessageBuffer var1) {
-      this.read(var1.getInt32(), var1.getInt32(), var1);
+   public void read(MessageBuffer buffer) {
+      this.read(buffer.getInt32(), buffer.getInt32(), buffer);
    }
 
-   protected EnumNetwork readNetworkEnum(int var1) {
-      return this.core.getNetworkCollection().getNetworkEnum(var1);
+   protected EnumNetwork readNetworkEnum(int networkId) {
+      return this.core.getNetworkCollection().getNetworkEnum(networkId);
    }
 
-   protected boolean readPreferred(MessageBuffer var1) {
+   protected boolean readPreferred(MessageBuffer buffer) {
       return false;
    }
 
-   protected long readNUsers(MessageBuffer var1) {
-      return (long)var1.getInt32();
+   protected long readNUsers(MessageBuffer buffer) {
+      return (long)buffer.getInt32();
    }
 
-   protected long readNFiles(MessageBuffer var1) {
-      return (long)var1.getInt32();
+   protected long readNFiles(MessageBuffer buffer) {
+      return (long)buffer.getInt32();
    }
 
-   protected int readPort(MessageBuffer var1) {
-      return (int)((long)var1.getUInt16() & 65535L);
+   protected int readPort(MessageBuffer buffer) {
+      return (int)((long)buffer.getUInt16() & 65535L);
    }
 
-   public void readUpdate(MessageBuffer var1) {
-      EnumHostState var2 = this.getStateEnum();
+   public void readUpdate(MessageBuffer buffer) {
+      EnumHostState previousState = this.getStateEnum();
       synchronized (this) {
-         this.stateEnum = this.state.read(var1);
+         this.stateEnum = this.state.read(buffer);
       }
 
-      this.checkConnected(var2);
+      this.checkConnected(previousState);
       this.checkRemovedState();
    }
 
@@ -339,25 +339,25 @@ public class Server extends AObject {
       this.setState(EnumHostState.REMOVE_HOST);
    }
 
-   public void serverUser(MessageBuffer var1) {
-      User var2 = (User)this.core.getUserCollection().get(var1.getInt32());
-      if (var2 != null) {
-         this.addUserInfo(var2);
+   public void serverUser(MessageBuffer buffer) {
+      User user = (User)this.core.getUserCollection().get(buffer.getInt32());
+      if (user != null) {
+         this.addUserInfo(user);
       }
    }
 
-   public void setState(EnumHostState var1) {
-      byte var2 = 0;
-      if (var1 == EnumHostState.NOT_CONNECTED) {
-         var2 = 22;
-      } else if (var1 == EnumHostState.REMOVE_HOST) {
-         var2 = 9;
-      } else if (var1 == EnumHostState.CONNECTING || var1 == EnumHostState.CONNECTED) {
-         var2 = 21;
+   public void setState(EnumHostState state) {
+      byte opcode = 0;
+      if (state == EnumHostState.NOT_CONNECTED) {
+         opcode = 22;
+      } else if (state == EnumHostState.REMOVE_HOST) {
+         opcode = 9;
+      } else if (state == EnumHostState.CONNECTING || state == EnumHostState.CONNECTED) {
+         opcode = 21;
       }
 
-      if (var2 != 0) {
-         this.core.send(var2, Integer.valueOf(this.getId()));
+      if (opcode != 0) {
+         this.core.send(opcode, Integer.valueOf(this.getId()));
       }
    }
 }

@@ -24,8 +24,8 @@ public class ClientStats extends AObjectO {
    public static final DecimalFormat df000 = new DecimalFormat("0.00");
    public static final FieldPosition FP = new FieldPosition(1);
 
-   ClientStats(ICore var1) {
-      super(var1);
+   ClientStats(ICore core) {
+      super(core);
    }
 
    public synchronized long getNumDownloadedFiles() {
@@ -65,25 +65,25 @@ public class ClientStats extends AObjectO {
    }
 
    public String getDownloadToolTip() {
-      StringBuffer var1 = new StringBuffer(64);
-      var1.append("TCP: ");
-      var1.append(this.getTcpDownRateString());
-      var1.append(" | UDP: ");
-      var1.append(this.getUdpDownRateString());
-      var1.append(" | Total: ");
-      var1.append(this.getTotalDownRateString());
-      return var1.toString();
+      StringBuffer text = new StringBuffer(64);
+      text.append("TCP: ");
+      text.append(this.getTcpDownRateString());
+      text.append(" | UDP: ");
+      text.append(this.getUdpDownRateString());
+      text.append(" | Total: ");
+      text.append(this.getTotalDownRateString());
+      return text.toString();
    }
 
    public String getUploadToolTip() {
-      StringBuffer var1 = new StringBuffer(64);
-      var1.append("TCP: ");
-      var1.append(this.getTcpUpRateString());
-      var1.append(" | UDP: ");
-      var1.append(this.getUdpUpRateString());
-      var1.append(" | Total: ");
-      var1.append(this.getTotalUpRateString());
-      return var1.toString();
+      StringBuffer text = new StringBuffer(64);
+      text.append("TCP: ");
+      text.append(this.getTcpUpRateString());
+      text.append(" | UDP: ");
+      text.append(this.getUdpUpRateString());
+      text.append(" | Total: ");
+      text.append(this.getTotalUpRateString());
+      return text.toString();
    }
 
    public String getTcpUpRateString() {
@@ -122,40 +122,40 @@ public class ClientStats extends AObjectO {
       return this.uploadCounter;
    }
 
-   public synchronized void read(MessageBuffer var1) {
-      this.uploadCounter = var1.getUInt64();
-      this.downloadCounter = var1.getUInt64();
-      this.sharedCounter = var1.getUInt64();
-      this.numSharedFiles = var1.getInt32();
-      this.tcpUploadRate = (float)var1.getInt32() / 1024.0F;
-      this.tcpDownloadRate = (float)var1.getInt32() / 1024.0F;
-      this.udpUploadRate = (float)var1.getInt32() / 1024.0F;
-      this.udpDownloadRate = (float)var1.getInt32() / 1024.0F;
-      this.numDownloadingFiles = var1.getInt32();
-      this.numDownloadedFiles = var1.getInt32();
-      this.readNetworks(var1);
+   public synchronized void read(MessageBuffer buffer) {
+      this.uploadCounter = buffer.getUInt64();
+      this.downloadCounter = buffer.getUInt64();
+      this.sharedCounter = buffer.getUInt64();
+      this.numSharedFiles = buffer.getInt32();
+      this.tcpUploadRate = (float)buffer.getInt32() / 1024.0F;
+      this.tcpDownloadRate = (float)buffer.getInt32() / 1024.0F;
+      this.udpUploadRate = (float)buffer.getInt32() / 1024.0F;
+      this.udpDownloadRate = (float)buffer.getInt32() / 1024.0F;
+      this.numDownloadingFiles = buffer.getInt32();
+      this.numDownloadedFiles = buffer.getInt32();
+      this.readNetworks(buffer);
       this.setChanged();
       this.notifyObservers();
    }
 
-   public void readNetworks(MessageBuffer var1) {
-      int var2 = var1.getUInt16();
-      if (this.connectedNetworks == null || this.connectedNetworks.length != var2) {
-         this.connectedNetworks = new Network[var2];
+   public void readNetworks(MessageBuffer buffer) {
+      int count = buffer.getUInt16();
+      if (this.connectedNetworks == null || this.connectedNetworks.length != count) {
+         this.connectedNetworks = new Network[count];
       }
 
-      for (int var3 = 0; var3 < var2; var3++) {
-         this.connectedNetworks[var3] = (Network)this.core.getNetworkCollection().get(var1.getInt32());
+      for (int i = 0; i < count; i++) {
+         this.connectedNetworks[i] = (Network)this.core.getNetworkCollection().get(buffer.getInt32());
       }
    }
 
-   public static String toKBs(float var0, boolean var1) {
-      StringBuffer var2 = new StringBuffer();
-      df000.format((double)var0, var2, FP);
-      if (!var1) {
-         var2.append(" KB/s");
+   public static String toKBs(float rate, boolean hideUnit) {
+      StringBuffer text = new StringBuffer();
+      df000.format((double)rate, text, FP);
+      if (!hideUnit) {
+         text.append(" KB/s");
       }
 
-      return var2.toString();
+      return text.toString();
    }
 }

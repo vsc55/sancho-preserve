@@ -13,8 +13,8 @@ public class HostState {
       return -1;
    }
 
-   protected static int readRank(byte var0) {
-      switch (var0) {
+   protected static int readRank(byte stateByte) {
+      switch (stateByte) {
          case 4:
             return -1;
          case 10:
@@ -24,15 +24,15 @@ public class HostState {
       }
    }
 
-   public synchronized EnumHostState read(MessageBuffer var1) {
-      byte var2 = var1.getByte();
-      EnumHostState var3 = EnumHostState.byteToEnum(var2);
-      if (var3 != EnumHostState.CONNECTED_AND_QUEUED && var3 != EnumHostState.NOT_CONNECTED_WAS_QUEUED) {
-         this.rank = readRank(var2);
+   public synchronized EnumHostState read(MessageBuffer buffer) {
+      byte stateByte = buffer.getByte();
+      EnumHostState hostState = EnumHostState.byteToEnum(stateByte);
+      if (hostState != EnumHostState.CONNECTED_AND_QUEUED && hostState != EnumHostState.NOT_CONNECTED_WAS_QUEUED) {
+         this.rank = readRank(stateByte);
       } else {
-         this.rank = var1.getInt32();
+         this.rank = buffer.getInt32();
       }
 
-      return var3;
+      return hostState;
    }
 }

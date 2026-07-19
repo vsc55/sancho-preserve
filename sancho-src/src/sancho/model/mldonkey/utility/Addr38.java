@@ -504,8 +504,8 @@ public class Addr38 extends Addr34 {
       "Other"
    };
 
-   public synchronized void readCountryCode(MessageBuffer var1) {
-      this.countryCode = var1.getInt8();
+   public synchronized void readCountryCode(MessageBuffer buffer) {
+      this.countryCode = buffer.getInt8();
    }
 
    public synchronized Image getImage() {

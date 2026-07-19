@@ -14,11 +14,11 @@ public class FileState {
       return this.state;
    }
 
-   public void read(MessageBuffer var1) {
+   public void read(MessageBuffer buffer) {
       synchronized (this) {
-         this.state = EnumFileState.byteToEnum(var1.getByte());
+         this.state = EnumFileState.byteToEnum(buffer.getByte());
          if (this.state == EnumFileState.ABORTED) {
-            this.reason = var1.getString();
+            this.reason = buffer.getString();
          }
       }
    }

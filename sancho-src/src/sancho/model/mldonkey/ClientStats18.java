@@ -4,29 +4,29 @@ import sancho.core.ICore;
 import sancho.model.mldonkey.utility.MessageBuffer;
 
 public class ClientStats18 extends ClientStats {
-   ClientStats18(ICore var1) {
-      super(var1);
+   ClientStats18(ICore core) {
+      super(core);
    }
 
-   public void readNetworks(MessageBuffer var1) {
-      int var2 = var1.getUInt16();
-      if (this.connectedNetworks == null || this.connectedNetworks.length != var2) {
-         this.connectedNetworks = new Network[var2];
+   public void readNetworks(MessageBuffer buffer) {
+      int count = buffer.getUInt16();
+      if (this.connectedNetworks == null || this.connectedNetworks.length != count) {
+         this.connectedNetworks = new Network[count];
       }
 
-      for (int var4 = 0; var4 < var2; var4++) {
+      for (int i = 0; i < count; i++) {
          // Each proto>=18 entry is (network_id, connected_servers) — BOTH int32s are
          // always on the wire. Read both unconditionally; reading the count only when
          // the network was known desynced the rest of the message (the unread count got
          // consumed as the next network id) whenever a network id wasn't registered yet.
-         int var5 = var1.getInt32();
-         int var6 = var1.getInt32();
-         Network var3 = (Network)this.core.getNetworkCollection().get(var5);
-         if (var3 != null) {
-            this.core.getNetworkCollection().setConnectedServers(var3, var6);
+         int networkId = buffer.getInt32();
+         int connectedServers = buffer.getInt32();
+         Network network = (Network)this.core.getNetworkCollection().get(networkId);
+         if (network != null) {
+            this.core.getNetworkCollection().setConnectedServers(network, connectedServers);
          }
 
-         this.connectedNetworks[var4] = var3;
+         this.connectedNetworks[i] = network;
       }
    }
 }

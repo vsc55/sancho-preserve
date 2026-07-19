@@ -7,9 +7,9 @@ public abstract class AbstractEnum {
    protected int value;
    protected String name;
 
-   protected AbstractEnum(int var1, String var2) {
-      this.value = var1;
-      this.name = var1 == 0 ? "" : SResources.getString(var2);
+   protected AbstractEnum(int value, String resourceKey) {
+      this.value = value;
+      this.name = value == 0 ? "" : SResources.getString(resourceKey);
    }
 
    public String getName() {

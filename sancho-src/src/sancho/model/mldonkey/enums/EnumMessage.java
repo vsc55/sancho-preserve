@@ -6,12 +6,12 @@ public class EnumMessage extends AbstractEnum {
    public static final EnumMessage PUBLIC = new EnumMessage(2, "public");
    public static final EnumMessage PRIVATE = new EnumMessage(4, "pivate");
 
-   private EnumMessage(int var1, String var2) {
-      super(var1, "e.message." + var2);
+   private EnumMessage(int value, String name) {
+      super(value, "e.message." + name);
    }
 
-   public static final EnumMessage intToEnum(int var0) {
-      switch (var0) {
+   public static final EnumMessage intToEnum(int value) {
+      switch (value) {
          case 0:
             return SERVER;
          case 1:

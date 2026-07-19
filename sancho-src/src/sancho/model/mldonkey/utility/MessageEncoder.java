@@ -15,63 +15,63 @@ public class MessageEncoder {
    private short opCode;
    private Socket socket;
 
-   public MessageEncoder(Socket var1) {
-      this.socket = var1;
+   public MessageEncoder(Socket socket) {
+      this.socket = socket;
       this.header = new byte[6];
       this.numberBuffer = new byte[8];
       this.baOutputStream = new ByteArrayOutputStream();
    }
 
-   private void appendNumber(Number var1) {
-      byte var2;
-      if (var1 instanceof Short) {
-         var2 = 2;
-         this.numberBuffer = this.toBytes((Short)var1, this.numberBuffer, 0);
-      } else if (var1 instanceof Integer) {
-         var2 = 4;
-         this.numberBuffer = this.toBytes((Integer)var1, this.numberBuffer, 0);
+   private void appendNumber(Number number) {
+      byte length;
+      if (number instanceof Short) {
+         length = 2;
+         this.numberBuffer = this.toBytes((Short)number, this.numberBuffer, 0);
+      } else if (number instanceof Integer) {
+         length = 4;
+         this.numberBuffer = this.toBytes((Integer)number, this.numberBuffer, 0);
       } else {
-         var2 = 8;
-         this.numberBuffer = this.toBytes((Long)var1, this.numberBuffer, 0);
+         length = 8;
+         this.numberBuffer = this.toBytes((Long)number, this.numberBuffer, 0);
       }
 
-      this.baOutputStream.write(this.numberBuffer, 0, var2);
+      this.baOutputStream.write(this.numberBuffer, 0, length);
    }
 
-   private void appendObject(Object var1) {
-      if (var1 instanceof Byte) {
-         this.baOutputStream.write((Byte)var1);
-      } else if (var1 instanceof Number) {
-         this.appendNumber((Number)var1);
-      } else if (var1 instanceof String) {
-         String var2 = (String)var1;
+   private void appendObject(Object object) {
+      if (object instanceof Byte) {
+         this.baOutputStream.write((Byte)object);
+      } else if (object instanceof Number) {
+         this.appendNumber((Number)object);
+      } else if (object instanceof String) {
+         String text = (String)object;
 
-         byte[] var3;
+         byte[] bytes;
          try {
-            var3 = var2.getBytes("UTF8");
-         } catch (UnsupportedEncodingException var5) {
-            var3 = var2.getBytes();
+            bytes = text.getBytes("UTF8");
+         } catch (UnsupportedEncodingException unsupportedEncoding) {
+            bytes = text.getBytes();
          }
 
-         this.appendNumber(Short.valueOf((short)var3.length));
-         this.baOutputStream.write(var3, 0, var3.length);
+         this.appendNumber(Short.valueOf((short)bytes.length));
+         this.baOutputStream.write(bytes, 0, bytes.length);
       }
    }
 
-   private int createContent(Object[] var1) {
-      for (int var2 = 0; var2 < var1.length; var2++) {
-         if (var1[var2] instanceof byte[]) {
-            byte[] var5 = (byte[])var1[var2];
-            this.baOutputStream.write(var5, 0, var5.length);
-         } else if (var1[var2].getClass().isArray()) {
-            Object[] var3 = (Object[])var1[var2];
-            this.appendNumber(Short.valueOf((short)var3.length));
+   private int createContent(Object[] values) {
+      for (int i = 0; i < values.length; i++) {
+         if (values[i] instanceof byte[]) {
+            byte[] bytes = (byte[])values[i];
+            this.baOutputStream.write(bytes, 0, bytes.length);
+         } else if (values[i].getClass().isArray()) {
+            Object[] elements = (Object[])values[i];
+            this.appendNumber(Short.valueOf((short)elements.length));
 
-            for (int var4 = 0; var4 < var3.length; var4++) {
-               this.appendObject(var3[var4]);
+            for (int j = 0; j < elements.length; j++) {
+               this.appendObject(elements[j]);
             }
          } else {
-            this.appendObject(var1[var2]);
+            this.appendObject(values[i]);
          }
       }
 
@@ -83,52 +83,52 @@ public class MessageEncoder {
       this.header = this.toBytes(Short.valueOf(this.opCode), this.header, 4);
    }
 
-   public void send(short var1, Object[] var2) throws IOException {
-      this.opCode = var1;
+   public void send(short opCode, Object[] args) throws IOException {
+      this.opCode = opCode;
       this.length = 2;
       this.baOutputStream.reset();
-      if (var2 != null) {
-         this.length = this.length + this.createContent(var2);
+      if (args != null) {
+         this.length = this.length + this.createContent(args);
       }
 
       this.createHeader();
       this.write();
    }
 
-   private byte[] toBytes(Integer var1, byte[] var2, int var3) {
-      int var4 = var1;
-      var2[0 + var3] = (byte)(var4 & 0xFF);
-      var2[1 + var3] = (byte)((var4 & 65535) >> 8);
-      var2[2 + var3] = (byte)((var4 & 16777215) >> 16);
+   private byte[] toBytes(Integer value, byte[] buffer, int offset) {
+      int intValue = value;
+      buffer[0 + offset] = (byte)(intValue & 0xFF);
+      buffer[1 + offset] = (byte)((intValue & 65535) >> 8);
+      buffer[2 + offset] = (byte)((intValue & 16777215) >> 16);
       // Mask 0x7FFFFFFF cleared bit 31, so any int with the high bit set (large
       // ids, IP-as-int) had a corrupted top byte on the wire. Just shift; the
       // (byte) cast keeps the low 8 bits.
-      var2[3 + var3] = (byte)(var4 >> 24);
-      return var2;
+      buffer[3 + offset] = (byte)(intValue >> 24);
+      return buffer;
    }
 
-   private byte[] toBytes(Long var1, byte[] var2, int var3) {
+   private byte[] toBytes(Long value, byte[] buffer, int offset) {
       // Bit-shift, not the old % / / 256 division (same fix as Short/Integer above):
       // for a uint64 with bit 63 set (stored as a negative signed long) the signed
       // division truncated toward zero and only the low byte was correct.
-      long var4 = var1;
+      long longValue = value;
 
-      for (int var6 = 0; var6 < 8; var6++) {
-         var2[var6 + var3] = (byte)(var4 >>> var6 * 8);
+      for (int i = 0; i < 8; i++) {
+         buffer[i + offset] = (byte)(longValue >>> i * 8);
       }
 
-      return var2;
+      return buffer;
    }
 
-   private byte[] toBytes(Short var1, byte[] var2, int var3) {
+   private byte[] toBytes(Short value, byte[] buffer, int offset) {
       // Bit-based, not the old % / / 256 division: for a short with the high bit set
       // (a port 32768..65535 narrowed to a negative short) the signed division
       // truncated toward zero and put the wrong high byte on the wire, so the core
       // got a bogus port. Extracting the two low bytes preserves all 16 bits.
-      short var4 = var1;
-      var2[var3] = (byte)(var4 & 0xFF);
-      var2[var3 + 1] = (byte)(var4 >> 8 & 0xFF);
-      return var2;
+      short shortValue = value;
+      buffer[offset] = (byte)(shortValue & 0xFF);
+      buffer[offset + 1] = (byte)(shortValue >> 8 & 0xFF);
+      return buffer;
    }
 
    public void write() throws IOException {

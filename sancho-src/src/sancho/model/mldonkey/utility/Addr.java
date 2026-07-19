@@ -8,24 +8,24 @@ public class Addr {
    private byte[] byteArray;
    private String ipString;
 
-   public int compareTo(Object var1) {
-      if (var1 instanceof Addr) {
-         Addr var2 = (Addr)var1;
-         if (this.hasHostName() && !var2.hasHostName()) {
+   public int compareTo(Object object) {
+      if (object instanceof Addr) {
+         Addr other = (Addr)object;
+         if (this.hasHostName() && !other.hasHostName()) {
             return 1;
-         } else if (!this.hasHostName() && var2.hasHostName()) {
+         } else if (!this.hasHostName() && other.hasHostName()) {
             return -1;
-         } else if (this.hasHostName() && var2.hasHostName()) {
-            return this.getIpString().compareToIgnoreCase(var2.getIpString());
-         } else if (this.getByteAddress() == null && var2.getByteAddress() == null) {
+         } else if (this.hasHostName() && other.hasHostName()) {
+            return this.getIpString().compareToIgnoreCase(other.getIpString());
+         } else if (this.getByteAddress() == null && other.getByteAddress() == null) {
             // Both firewalled/unknown -> equal. Returning 1 here (as before) for
             // both a.compareTo(b) and b.compareTo(a) broke antisymmetry and made
             // TimSort throw "Comparison method violates its general contract".
             return 0;
-         } else if (var2.getByteAddress() == null) {
+         } else if (other.getByteAddress() == null) {
             return 1;
          } else {
-            return this.getByteAddress() == null ? -1 : compare(this.getByteAddress(), var2.getByteAddress());
+            return this.getByteAddress() == null ? -1 : compare(this.getByteAddress(), other.getByteAddress());
          }
       } else {
          return -1;
@@ -40,15 +40,15 @@ public class Addr {
       if (this.ipString != null) {
          return this.ipString;
       } else if (this.byteArray != null) {
-         StringBuffer var1 = new StringBuffer(16);
-         var1.append(this.byteArray[0] & 255);
-         var1.append(".");
-         var1.append(this.byteArray[1] & 255);
-         var1.append(".");
-         var1.append(this.byteArray[2] & 255);
-         var1.append(".");
-         var1.append(this.byteArray[3] & 255);
-         return var1.toString().intern();
+         StringBuffer buffer = new StringBuffer(16);
+         buffer.append(this.byteArray[0] & 255);
+         buffer.append(".");
+         buffer.append(this.byteArray[1] & 255);
+         buffer.append(".");
+         buffer.append(this.byteArray[2] & 255);
+         buffer.append(".");
+         buffer.append(this.byteArray[3] & 255);
+         return buffer.toString().intern();
       } else {
          return "";
       }
@@ -58,27 +58,27 @@ public class Addr {
       return this.byteArray == null && this.ipString != null;
    }
 
-   public synchronized void read(boolean var1, MessageBuffer var2) {
-      if (var1) {
-         this.ipString = var2.getString();
+   public synchronized void read(boolean isHostName, MessageBuffer buffer) {
+      if (isHostName) {
+         this.ipString = buffer.getString();
          this.byteArray = null;
       } else {
          if (this.byteArray == null) {
             this.byteArray = new byte[4];
          }
 
-         var2.getIP(this.byteArray);
+         buffer.getIP(this.byteArray);
          this.ipString = null;
       }
 
-      this.readCountryCode(var2);
+      this.readCountryCode(buffer);
    }
 
-   public void readCountryCode(MessageBuffer var1) {
+   public void readCountryCode(MessageBuffer buffer) {
    }
 
-   public void read(MessageBuffer var1) {
-      this.read(var1.getBool(), var1);
+   public void read(MessageBuffer buffer) {
+      this.read(buffer.getBool(), buffer);
    }
 
    public synchronized void setUnknown() {
@@ -101,19 +101,19 @@ public class Addr {
       return "N/A";
    }
 
-   private static int compare(byte[] var0, byte[] var1) {
-      if (var0 == var1) {
+   private static int compare(byte[] left, byte[] right) {
+      if (left == right) {
          return 0;
-      } else if (var0 == null) {
+      } else if (left == null) {
          return -1;
-      } else if (var1 == null) {
+      } else if (right == null) {
          return 1;
       } else {
-         for (int var4 = 0; var4 < var0.length; var4++) {
-            int var2 = var0[var4] & 255;
-            int var3 = var1[var4] & 255;
-            if (var2 != var3) {
-               return var2 - var3;
+         for (int i = 0; i < left.length; i++) {
+            int leftByte = left[i] & 255;
+            int rightByte = right[i] & 255;
+            if (leftByte != rightByte) {
+               return leftByte - rightByte;
             }
          }
 

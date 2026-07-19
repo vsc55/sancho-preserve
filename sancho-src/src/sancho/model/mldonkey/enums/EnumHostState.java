@@ -21,12 +21,12 @@ public class EnumHostState extends AbstractEnum {
    public static final EnumHostState BLACKLISTED = new EnumHostState(256, "blacklisted");
    public static final EnumHostState NOT_CONNECTED_WAS_QUEUED = new EnumHostState(512, "notConnectedWasQueued");
 
-   private EnumHostState(int var1, String var2) {
-      super(var1, "e.state." + var2);
+   private EnumHostState(int value, String name) {
+      super(value, "e.state." + name);
    }
 
-   public static EnumHostState byteToEnum(byte var0) {
-      switch (var0) {
+   public static EnumHostState byteToEnum(byte value) {
+      switch (value) {
          case 0:
             return NOT_CONNECTED;
          case 1:

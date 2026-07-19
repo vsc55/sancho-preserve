@@ -79,28 +79,28 @@ public class Format {
       return this.mp3_year == null ? "" : this.mp3_year;
    }
 
-   public synchronized void read(MessageBuffer var1) {
-      this.format = EnumFormat.byteToEnum(var1.getByte());
+   public synchronized void read(MessageBuffer buffer) {
+      this.format = EnumFormat.byteToEnum(buffer.getByte());
       if (this.format == EnumFormat.GENERIC) {
-         this.extension = var1.getString();
-         this.kind = var1.getString();
+         this.extension = buffer.getString();
+         this.kind = buffer.getString();
       } else if (this.format == EnumFormat.AVI) {
-         this.avi_codec = var1.getString();
-         this.avi_width = var1.getInt32();
-         this.avi_height = var1.getInt32();
-         this.avi_fps = var1.getInt32();
-         this.avi_rate = var1.getInt32();
+         this.avi_codec = buffer.getString();
+         this.avi_width = buffer.getInt32();
+         this.avi_height = buffer.getInt32();
+         this.avi_fps = buffer.getInt32();
+         this.avi_rate = buffer.getInt32();
       } else if (this.format == EnumFormat.MP3) {
-         this.mp3_title = var1.getString();
-         this.mp3_artist = var1.getString();
-         this.mp3_album = var1.getString();
-         this.mp3_year = var1.getString();
-         this.mp3_comment = var1.getString();
-         this.mp3_tracknum = var1.getInt32();
-         this.mp3_genre = var1.getInt32();
+         this.mp3_title = buffer.getString();
+         this.mp3_artist = buffer.getString();
+         this.mp3_album = buffer.getString();
+         this.mp3_year = buffer.getString();
+         this.mp3_comment = buffer.getString();
+         this.mp3_tracknum = buffer.getInt32();
+         this.mp3_genre = buffer.getInt32();
       } else if (this.format == EnumFormat.OGX) {
-         Format_OGx var2 = UtilityFactory.getFormat_OGx();
-         var2.read(var1);
+         Format_OGx format = UtilityFactory.getFormat_OGx();
+         format.read(buffer);
       }
    }
 }

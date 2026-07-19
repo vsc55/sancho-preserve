@@ -14,19 +14,19 @@ public class File41 extends File36 {
    FileComment[] fileComments;
    int avgRating = -1;
 
-   File41(ICore var1) {
-      super(var1);
+   File41(ICore core) {
+      super(core);
    }
 
-   public void chown(String var1) {
-      String var2 = "chown \"" + var1 + "\" " + this.getId();
-      this.core.send((short)29, var2);
+   public void chown(String user) {
+      String command = "chown \"" + user + "\" " + this.getId();
+      this.core.send((short)29, command);
       this.core.send((short)37, Integer.valueOf(this.getId()));
    }
 
-   public void chgrp(String var1) {
-      String var2 = "chgrp \"" + var1 + "\" " + this.getId();
-      this.core.send((short)29, var2);
+   public void chgrp(String group) {
+      String command = "chgrp \"" + group + "\" " + this.getId();
+      this.core.send((short)29, command);
       this.core.send((short)37, Integer.valueOf(this.getId()));
    }
 
@@ -42,68 +42,68 @@ public class File41 extends File36 {
       return this.avgRating;
    }
 
-   protected void readSubFiles(MessageBuffer var1) {
-      int var2 = var1.getUInt16();
-      if (var2 > 0) {
-         this.subFileNames = new String[var2];
-         this.subFileSizes = new long[var2];
-         this.subFileMagics = new String[var2];
+   protected void readSubFiles(MessageBuffer buffer) {
+      int count = buffer.getUInt16();
+      if (count > 0) {
+         this.subFileNames = new String[count];
+         this.subFileSizes = new long[count];
+         this.subFileMagics = new String[count];
 
-         for (int var3 = 0; var3 < var2; var3++) {
-            this.subFileNames[var3] = var1.getString();
-            this.subFileSizes[var3] = var1.getUInt64();
-            this.subFileMagics[var3] = var1.getString();
+         for (int i = 0; i < count; i++) {
+            this.subFileNames[i] = buffer.getString();
+            this.subFileSizes[i] = buffer.getUInt64();
+            this.subFileMagics[i] = buffer.getString();
          }
       }
    }
 
-   protected void readUser(MessageBuffer var1) {
-      this.user = var1.getString();
+   protected void readUser(MessageBuffer buffer) {
+      this.user = buffer.getString();
    }
 
-   protected void readGroup(MessageBuffer var1) {
-      this.group = var1.getString();
+   protected void readGroup(MessageBuffer buffer) {
+      this.group = buffer.getString();
    }
 
-   protected void readMagic(MessageBuffer var1) {
-      this.magic = var1.getString();
+   protected void readMagic(MessageBuffer buffer) {
+      this.magic = buffer.getString();
    }
 
-   protected void readFileComments(MessageBuffer var1) {
-      int var2 = var1.getUInt16();
-      if (var2 > 0) {
+   protected void readFileComments(MessageBuffer buffer) {
+      int count = buffer.getUInt16();
+      if (count > 0) {
          this.avgRating = 0;
-         int var3 = 0;
+         int previousCount = 0;
          if (this.fileComments != null) {
-            var3 = this.fileComments.length;
+            previousCount = this.fileComments.length;
          }
 
-         if (var3 != var2) {
+         if (previousCount != count) {
             this.addChangedBits(2048);
          }
 
-         this.fileComments = new FileComment[var2];
-         int var4 = 0;
-         int var5 = 0;
+         this.fileComments = new FileComment[count];
+         int ratedCount = 0;
+         int ratingSum = 0;
 
-         for (int var6 = 0; var6 < var2; var6++) {
-            this.fileComments[var6] = UtilityFactory.getFileComment(this.core);
-            this.fileComments[var6].read(var1);
-            int var7 = this.fileComments[var6].getRating();
-            if (var7 < 0) {
-               var7 = 0;
-            } else if (var7 > 5) {
-               var7 = 5;
+         for (int i = 0; i < count; i++) {
+            this.fileComments[i] = UtilityFactory.getFileComment(this.core);
+            this.fileComments[i].read(buffer);
+            int rating = this.fileComments[i].getRating();
+            if (rating < 0) {
+               rating = 0;
+            } else if (rating > 5) {
+               rating = 5;
             }
 
-            if (var7 > 0) {
-               var4++;
-               var5 += var7;
+            if (rating > 0) {
+               ratedCount++;
+               ratingSum += rating;
             }
          }
 
-         if (var4 > 0) {
-            this.avgRating = (int)Math.round((double)var5 / (double)var4);
+         if (ratedCount > 0) {
+            this.avgRating = (int)Math.round((double)ratingSum / (double)ratedCount);
          }
       }
    }
@@ -119,8 +119,8 @@ public class File41 extends File36 {
    protected void fakeCheck() {
       super.fakeCheck();
       if (!this.containsFake && this.fileComments != null) {
-         for (int var1 = 0; var1 < this.fileComments.length; var1++) {
-            this.containsFake = SwissArmy.containsFake(this.fileComments[var1].getComment());
+         for (int i = 0; i < this.fileComments.length; i++) {
+            this.containsFake = SwissArmy.containsFake(this.fileComments[i].getComment());
             if (this.containsFake) {
                break;
             }
@@ -136,9 +136,9 @@ public class File41 extends File36 {
       if (this.subFileNames == null) {
          return null;
       } else {
-         String[] var1 = new String[this.subFileMagics.length];
-         System.arraycopy(this.subFileMagics, 0, var1, 0, this.subFileMagics.length);
-         return var1;
+         String[] magics = new String[this.subFileMagics.length];
+         System.arraycopy(this.subFileMagics, 0, magics, 0, this.subFileMagics.length);
+         return magics;
       }
    }
 

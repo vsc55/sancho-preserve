@@ -14,23 +14,23 @@ public class Query {
    private String string1;
    private String string2;
 
-   public Query(ICore var1) {
-      this.core = var1;
+   public Query(ICore core) {
+      this.core = core;
    }
 
-   public void addQuery(Query var1) {
-      this.queryList.add(var1);
+   public void addQuery(Query query) {
+      this.queryList.add(query);
    }
 
    public int queryListSize() {
       return this.queryList.size();
    }
 
-   public void addQueryToList(List var1, Query var2) {
-      Object[] var3 = var2.toObjectArray();
+   public void addQueryToList(List list, Query query) {
+      Object[] objects = query.toObjectArray();
 
-      for (int var4 = 0; var4 < var3.length; var4++) {
-         var1.add(var3[var4]);
+      for (int i = 0; i < objects.length; i++) {
+         list.add(objects[i]);
       }
    }
 
@@ -43,80 +43,80 @@ public class Query {
    }
 
    public Query[] getQueryList() {
-      Query[] var1 = new Query[this.queryList.size()];
-      this.queryList.toArray(var1);
-      return var1;
+      Query[] queries = new Query[this.queryList.size()];
+      this.queryList.toArray(queries);
+      return queries;
    }
 
-   public void read(MessageBuffer var1) {
-      this.enumQuery = EnumQuery.byteToEnum(var1.getByte());
+   public void read(MessageBuffer buffer) {
+      this.enumQuery = EnumQuery.byteToEnum(buffer.getByte());
       if (this.enumQuery != EnumQuery.AND && this.enumQuery != EnumQuery.OR && this.enumQuery != EnumQuery.HIDDEN) {
          if (this.enumQuery == EnumQuery.ANDNOT) {
             this.query1 = this.createQuery();
-            this.query1.read(var1);
+            this.query1.read(buffer);
             this.query2 = this.createQuery();
-            this.query2.read(var1);
+            this.query2.read(buffer);
          } else if (this.enumQuery == EnumQuery.MODULE) {
-            this.string1 = var1.getString();
+            this.string1 = buffer.getString();
             this.query1 = this.createQuery();
-            this.query1.read(var1);
+            this.query1.read(buffer);
          } else {
-            this.string1 = var1.getString();
-            this.string2 = var1.getString();
+            this.string1 = buffer.getString();
+            this.string2 = buffer.getString();
          }
       } else {
-         int var2 = var1.getUInt16();
+         int count = buffer.getUInt16();
 
-         for (int var4 = 0; var4 < var2; var4++) {
-            Query var3 = this.createQuery();
-            var3.read(var1);
-            this.queryList.add(var3);
+         for (int i = 0; i < count; i++) {
+            Query query = this.createQuery();
+            query.read(buffer);
+            this.queryList.add(query);
          }
       }
    }
 
-   public void setEnumQuery(EnumQuery var1) {
-      this.enumQuery = var1;
+   public void setEnumQuery(EnumQuery enumQuery) {
+      this.enumQuery = enumQuery;
    }
 
-   public void setQuery1(Query var1) {
-      this.query1 = var1;
+   public void setQuery1(Query query) {
+      this.query1 = query;
    }
 
-   public void setQuery2(Query var1) {
-      this.query2 = var1;
+   public void setQuery2(Query query) {
+      this.query2 = query;
    }
 
-   public void setString1(String var1) {
-      this.string1 = var1;
+   public void setString1(String text) {
+      this.string1 = text;
    }
 
-   public void setString2(String var1) {
-      this.string2 = var1;
+   public void setString2(String text) {
+      this.string2 = text;
    }
 
    public Object[] toObjectArray() {
-      ArrayList var1 = new ArrayList();
-      var1.add(Byte.valueOf(this.enumQuery.getByteValue()));
+      ArrayList list = new ArrayList();
+      list.add(Byte.valueOf(this.enumQuery.getByteValue()));
       if (this.enumQuery != EnumQuery.AND && this.enumQuery != EnumQuery.OR && this.enumQuery != EnumQuery.HIDDEN) {
          if (this.enumQuery == EnumQuery.ANDNOT) {
-            this.addQueryToList(var1, this.query1);
-            this.addQueryToList(var1, this.query2);
+            this.addQueryToList(list, this.query1);
+            this.addQueryToList(list, this.query2);
          } else if (this.enumQuery == EnumQuery.MODULE) {
-            var1.add(this.string1);
-            this.addQueryToList(var1, this.query1);
+            list.add(this.string1);
+            this.addQueryToList(list, this.query1);
          } else {
-            var1.add(this.string1);
-            var1.add(this.string2);
+            list.add(this.string1);
+            list.add(this.string2);
          }
       } else {
-         var1.add(Short.valueOf((short)this.queryList.size()));
+         list.add(Short.valueOf((short)this.queryList.size()));
 
-         for (int var2 = 0; var2 < this.queryList.size(); var2++) {
-            this.addQueryToList(var1, (Query)this.queryList.get(var2));
+         for (int i = 0; i < this.queryList.size(); i++) {
+            this.addQueryToList(list, (Query)this.queryList.get(i));
          }
       }
 
-      return var1.toArray();
+      return list.toArray();
    }
 }

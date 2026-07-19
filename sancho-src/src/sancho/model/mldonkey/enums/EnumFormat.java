@@ -7,12 +7,12 @@ public class EnumFormat extends AbstractEnum {
    public static final EnumFormat MP3 = new EnumFormat(8, "mp3");
    public static final EnumFormat OGX = new EnumFormat(16, "ogx");
 
-   private EnumFormat(int var1, String var2) {
-      super(var1, "e.format." + var2);
+   private EnumFormat(int value, String name) {
+      super(value, "e.format." + name);
    }
 
-   public static EnumFormat byteToEnum(byte var0) {
-      switch (var0) {
+   public static EnumFormat byteToEnum(byte value) {
+      switch (value) {
          case 1:
             return GENERIC;
          case 2:

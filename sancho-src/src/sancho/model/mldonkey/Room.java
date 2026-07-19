@@ -14,8 +14,8 @@ public class Room extends AObject {
    protected EnumNetwork networkEnum;
    protected ObjectMap userMap = null;
 
-   Room(ICore var1) {
-      super(var1);
+   Room(ICore core) {
+      super(core);
    }
 
    public synchronized String getName() {
@@ -46,29 +46,29 @@ public class Room extends AObject {
       return this.networkEnum.getImage();
    }
 
-   public void read(MessageBuffer var1) {
-      this.read(var1.getInt32(), var1);
+   public void read(MessageBuffer buffer) {
+      this.read(buffer.getInt32(), buffer);
    }
 
-   public void read(int var1, MessageBuffer var2) {
+   public void read(int id, MessageBuffer buffer) {
       synchronized (this) {
-         this.id = var1;
-         this.networkEnum = this.readNetworkEnum(var2);
-         this.name = var2.getString();
-         this.roomState = EnumRoomState.intToEnum(var2.getInt8());
+         this.id = id;
+         this.networkEnum = this.readNetworkEnum(buffer);
+         this.name = buffer.getString();
+         this.roomState = EnumRoomState.intToEnum(buffer.getInt8());
       }
    }
 
-   protected EnumNetwork readNetworkEnum(MessageBuffer var1) {
-      return this.core.getNetworkCollection().getNetworkEnum(var1.getInt32());
+   protected EnumNetwork readNetworkEnum(MessageBuffer buffer) {
+      return this.core.getNetworkCollection().getNetworkEnum(buffer.getInt32());
    }
 
-   public void addUser(User var1) {
-      this.getUserMap().add(var1);
+   public void addUser(User user) {
+      this.getUserMap().add(user);
    }
 
-   public void removeUser(User var1) {
-      this.getUserMap().remove(var1);
+   public void removeUser(User user) {
+      this.getUserMap().remove(user);
    }
 
    public ObjectMap getUserMap() {
@@ -87,8 +87,8 @@ public class Room extends AObject {
       this.setRoomState(EnumRoomState.OPEN);
    }
 
-   public void setRoomState(EnumRoomState var1) {
-      Object[] var2 = new Object[]{Integer.valueOf(this.getId()), Byte.valueOf(var1.getByteValue())};
-      this.core.send((short)48, var2);
+   public void setRoomState(EnumRoomState state) {
+      Object[] args = new Object[]{Integer.valueOf(this.getId()), Byte.valueOf(state.getByteValue())};
+      this.core.send((short)48, args);
    }
 }

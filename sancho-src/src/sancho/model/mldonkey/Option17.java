@@ -9,27 +9,27 @@ public class Option17 extends Option {
    private String optionDefault;
    private String optionHelp;
 
-   public Option17(ICore var1) {
-      super(var1);
+   public Option17(ICore core) {
+      super(core);
    }
 
-   public void addPluginOption(String var1, String var2, String var3, MessageBuffer var4) {
-      super.addPluginOption(var1, var2, var3, var4);
+   public void addPluginOption(String plugin, String description, String name, MessageBuffer buffer) {
+      super.addPluginOption(plugin, description, name, buffer);
       synchronized (this) {
-         this.optionHelp = var4.getString();
-         this.value = var4.getString();
-         this.optionDefault = var4.getString();
-         this.advanced = var4.getBool();
+         this.optionHelp = buffer.getString();
+         this.value = buffer.getString();
+         this.optionDefault = buffer.getString();
+         this.advanced = buffer.getBool();
       }
    }
 
-   public void addSectionOption(String var1, String var2, String var3, MessageBuffer var4) {
-      super.addSectionOption(var1, var2, var3, var4);
+   public void addSectionOption(String section, String description, String name, MessageBuffer buffer) {
+      super.addSectionOption(section, description, name, buffer);
       synchronized (this) {
-         this.optionHelp = var4.getString();
-         this.value = var4.getString();
-         this.optionDefault = var4.getString();
-         this.advanced = var4.getBool();
+         this.optionHelp = buffer.getString();
+         this.value = buffer.getString();
+         this.optionDefault = buffer.getString();
+         this.advanced = buffer.getBool();
       }
    }
 
@@ -45,7 +45,7 @@ public class Option17 extends Option {
       return this.advanced;
    }
 
-   protected EnumTagType readType(MessageBuffer var1) {
-      return EnumTagType.stringToEnum(var1.getString());
+   protected EnumTagType readType(MessageBuffer buffer) {
+      return EnumTagType.stringToEnum(buffer.getString());
    }
 }

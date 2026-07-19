@@ -92,64 +92,64 @@ public class Client19 extends Client {
    protected long uploaded;
    protected String uploadFilename;
 
-   public Client19(ICore var1) {
-      super(var1);
+   public Client19(ICore core) {
+      super(core);
    }
 
    protected String calcClientSoftwareImageString() {
-      String var1 = this.software.toLowerCase();
+      String software = this.software.toLowerCase();
       if (this.getEnumNetwork() == EnumNetwork.DONKEY) {
-         if (var1.startsWith("emu") || var1.startsWith("em+") || var1.startsWith("imp") || var1.startsWith("vcd")) {
+         if (software.startsWith("emu") || software.startsWith("em+") || software.startsWith("imp") || software.startsWith("vcd")) {
             return "emule";
          }
 
-         if (var1.startsWith("sza")) {
+         if (software.startsWith("sza")) {
             return "shareaza";
          }
 
-         if (var1.startsWith("amu")) {
+         if (software.startsWith("amu")) {
             return "amule";
          }
 
-         if (var1.startsWith("edk")) {
+         if (software.startsWith("edk")) {
             return "edonkey";
          }
 
-         if (var1.startsWith("lph")) {
+         if (software.startsWith("lph")) {
             return "lphant";
          }
 
-         if (var1.startsWith("hyd")) {
+         if (software.startsWith("hyd")) {
             return "hydranode";
          }
 
-         if (var1.startsWith("ovr")) {
+         if (software.startsWith("ovr")) {
             return "hybrid";
          }
 
-         if (var1.startsWith("cdk")) {
+         if (software.startsWith("cdk")) {
             return "cdonkey";
          }
 
-         if (var1.startsWith("lmu") || var1.startsWith("xmu")) {
+         if (software.startsWith("lmu") || software.startsWith("xmu")) {
             return "lmule";
          }
 
-         if (var1.startsWith("tml") || var1.startsWith("nml") || var1.startsWith("oml")) {
+         if (software.startsWith("tml") || software.startsWith("nml") || software.startsWith("oml")) {
             return "mldonkey";
          }
       }
 
-      for (int var2 = 0; var2 < nameArray.length; var2++) {
-         if (var1.startsWith(nameArray[var2])) {
-            return nameArray[var2];
+      for (int i = 0; i < nameArray.length; i++) {
+         if (software.startsWith(nameArray[i])) {
+            return nameArray[i];
          }
       }
 
-      if (var1.startsWith("windows")) {
+      if (software.startsWith("windows")) {
          return "microsoft";
       } else {
-         return var1.startsWith("cachelogic") ? "mainline" : "client_unknown";
+         return software.startsWith("cachelogic") ? "mainline" : "client_unknown";
       }
    }
 
@@ -179,10 +179,10 @@ public class Client19 extends Client {
 
    public String getUploadFilename() {
       if (!this.isUploader() && this.getStateEnum() == EnumHostState.CONNECTED_DOWNLOADING) {
-         int var1 = this.getStateFileNum();
-         File var2;
-         if (var1 != -1 && (var2 = this.core.getFileCollection().getFile(var1)) != null) {
-            return var2.getName();
+         int fileNum = this.getStateFileNum();
+         File file;
+         if (fileNum != -1 && (file = this.core.getFileCollection().getFile(fileNum)) != null) {
+            return file.getName();
          }
       }
 
@@ -197,20 +197,20 @@ public class Client19 extends Client {
       return this.isUploader;
    }
 
-   protected boolean readMore(MessageBuffer var1) {
-      boolean var2 = false;
-      long var3 = this.getDownloaded();
-      long var5 = this.getUploaded();
-      this.software = var1.getString();
-      this.downloaded = var1.getUInt64();
-      this.uploaded = var1.getUInt64();
-      this.uploadFilename = var1.getString();
+   protected boolean readMore(MessageBuffer buffer) {
+      boolean changed = false;
+      long previousDownloaded = this.getDownloaded();
+      long previousUploaded = this.getUploaded();
+      this.software = buffer.getString();
+      this.downloaded = buffer.getUInt64();
+      this.uploaded = buffer.getUInt64();
+      this.uploadFilename = buffer.getString();
       this.clientSoftwareImageString = this.calcClientSoftwareImageString().intern();
       this.isUploader = !this.uploadFilename.equals("");
-      if (var3 != this.downloaded || var5 != this.uploaded) {
-         var2 = true;
+      if (previousDownloaded != this.downloaded || previousUploaded != this.uploaded) {
+         changed = true;
       }
 
-      return var2;
+      return changed;
    }
 }

@@ -14,8 +14,8 @@ public class Network18 extends Network {
    private boolean upload;
    private boolean virtual;
 
-   Network18(ICore var1) {
-      super(var1);
+   Network18(ICore core) {
+      super(core);
    }
 
    public synchronized boolean hasChat() {
@@ -54,14 +54,14 @@ public class Network18 extends Network {
       return this.connectedServers;
    }
 
-   public void read(int var1, MessageBuffer var2) {
-      super.read(var1, var2);
+   public void read(int id, MessageBuffer buffer) {
+      super.read(id, buffer);
       synchronized (this) {
-         this.connectedServers = var2.getInt32();
-         int var4 = var2.getUInt16();
+         this.connectedServers = buffer.getInt32();
+         int flagCount = buffer.getUInt16();
 
-         for (int var5 = 0; var5 < var4; var5++) {
-            switch (var2.getUInt16()) {
+         for (int i = 0; i < flagCount; i++) {
+            switch (buffer.getUInt16()) {
                case 0:
                   this.servers = true;
                   break;
@@ -90,11 +90,11 @@ public class Network18 extends Network {
       }
    }
 
-   public void read(MessageBuffer var1) {
-      this.read(var1.getInt32(), var1);
+   public void read(MessageBuffer buffer) {
+      this.read(buffer.getInt32(), buffer);
    }
 
-   protected synchronized void setConnectedServers(int var1) {
-      this.connectedServers = var1;
+   protected synchronized void setConnectedServers(int connectedServers) {
+      this.connectedServers = connectedServers;
    }
 }

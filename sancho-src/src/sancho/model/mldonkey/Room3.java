@@ -6,14 +6,14 @@ import sancho.model.mldonkey.utility.MessageBuffer;
 public class Room3 extends Room {
    private int numUsers;
 
-   Room3(ICore var1) {
-      super(var1);
+   Room3(ICore core) {
+      super(core);
    }
 
-   public void read(int var1, MessageBuffer var2) {
-      super.read(var1, var2);
+   public void read(int id, MessageBuffer buffer) {
+      super.read(id, buffer);
       synchronized (this) {
-         this.numUsers = var2.getInt32();
+         this.numUsers = buffer.getInt32();
       }
    }
 

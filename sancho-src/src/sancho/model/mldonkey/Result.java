@@ -55,8 +55,8 @@ public class Result extends AObject implements IObject_UID {
    protected Tag[] tagList;
    protected String type;
 
-   Result(ICore var1) {
-      super(var1);
+   Result(ICore core) {
+      super(core);
    }
 
    public synchronized boolean downloaded() {
@@ -75,8 +75,8 @@ public class Result extends AObject implements IObject_UID {
       return this.containsProfanity;
    }
 
-   public boolean equals(Object var1) {
-      return var1 instanceof Result && this.getId() == ((Result)var1).getId();
+   public boolean equals(Object object) {
+      return object instanceof Result && this.getId() == ((Result)object).getId();
    }
 
    public synchronized int getAvail() {
@@ -116,8 +116,8 @@ public class Result extends AObject implements IObject_UID {
    }
 
    public String getCompleteSourcesString() {
-      int var1 = this.getCompleteSources();
-      return var1 != -1 ? String.valueOf(var1).intern() : "";
+      int completeSources = this.getCompleteSources();
+      return completeSources != -1 ? String.valueOf(completeSources).intern() : "";
    }
 
    public String getED2K() {
@@ -132,9 +132,9 @@ public class Result extends AObject implements IObject_UID {
 
    protected void calcFormat() {
       if (this.format == null || this.format.equals("")) {
-         int var1 = this.getName().lastIndexOf(".");
-         if (var1 != -1) {
-            this.format = this.getName().substring(var1 + 1).toLowerCase().intern();
+         int dotIndex = this.getName().lastIndexOf(".");
+         if (dotIndex != -1) {
+            this.format = this.getName().substring(dotIndex + 1).toLowerCase().intern();
          }
       }
    }
@@ -160,18 +160,18 @@ public class Result extends AObject implements IObject_UID {
    }
 
    public String getName() {
-      String[] var1 = this.getNames();
-      if (var1.length < 1) {
+      String[] names = this.getNames();
+      if (names.length < 1) {
          return "";
       } else {
-         String var2 = var1[0];
-         EnumNetwork var3 = this.getEnumNetwork();
-         if (var3 == EnumNetwork.GNUT || var3 == EnumNetwork.GNUT2) {
-            String var4 = String.valueOf('\u0000');
-            var2 = SwissArmy.replaceAll(var2, var4, "");
+         String name = names[0];
+         EnumNetwork network = this.getEnumNetwork();
+         if (network == EnumNetwork.GNUT || network == EnumNetwork.GNUT2) {
+            String nullChar = String.valueOf('\u0000');
+            name = SwissArmy.replaceAll(name, nullChar, "");
          }
 
-         return var2;
+         return name;
       }
    }
 
@@ -185,12 +185,12 @@ public class Result extends AObject implements IObject_UID {
 
    public synchronized String getRatingString() {
       if (this.core.getResultCollection().verboseNumbers) {
-         StringBuffer var1 = new StringBuffer();
-         var1.append(this.rating.getName());
-         var1.append("(");
-         var1.append(this.getAvail());
-         var1.append(")");
-         return var1.toString().intern();
+         StringBuffer buffer = new StringBuffer();
+         buffer.append(this.rating.getName());
+         buffer.append("(");
+         buffer.append(this.getAvail());
+         buffer.append(")");
+         return buffer.toString().intern();
       } else {
          return String.valueOf(this.getAvail());
       }
@@ -206,9 +206,9 @@ public class Result extends AObject implements IObject_UID {
 
    public synchronized Tag[] getTagList() {
       if (this.tagList != null && this.tagList.length != 0) {
-         Tag[] var1 = new Tag[this.tagList.length];
-         System.arraycopy(this.tagList, 0, var1, 0, this.tagList.length);
-         return var1;
+         Tag[] tags = new Tag[this.tagList.length];
+         System.arraycopy(this.tagList, 0, tags, 0, this.tagList.length);
+         return tags;
       } else {
          return new Tag[0];
       }
@@ -219,78 +219,78 @@ public class Result extends AObject implements IObject_UID {
    }
 
    public String getToolTipContent() {
-      StringBuffer var1 = new StringBuffer();
-      String[] var2 = this.getUIDs();
-      if (var2 != null) {
-         for (int var3 = 0; var3 < var2.length; var3++) {
-            var1.append(var2[var3]);
-            var1.append("\n");
+      StringBuffer buffer = new StringBuffer();
+      String[] uids = this.getUIDs();
+      if (uids != null) {
+         for (int i = 0; i < uids.length; i++) {
+            buffer.append(uids[i]);
+            buffer.append("\n");
          }
       } else if (this.getEnumNetwork() == EnumNetwork.DONKEY) {
-         var1.append(RS_MD4);
-         var1.append(this.getMD4().toUpperCase());
-         var1.append("\n");
+         buffer.append(RS_MD4);
+         buffer.append(this.getMD4().toUpperCase());
+         buffer.append("\n");
       }
 
-      var1.append(RS_NETWORK);
-      var1.append(this.getEnumNetwork().getName());
-      var1.append("\n");
+      buffer.append(RS_NETWORK);
+      buffer.append(this.getEnumNetwork().getName());
+      buffer.append("\n");
       if (!this.getFormat().equals("")) {
-         var1.append(RS_FORMAT);
-         var1.append(this.getFormat());
-         var1.append("\n");
+         buffer.append(RS_FORMAT);
+         buffer.append(this.getFormat());
+         buffer.append("\n");
       }
 
-      var1.append(RS_SIZE);
-      var1.append(this.getSizeString());
-      Tag[] var6 = this.getTagList();
+      buffer.append(RS_SIZE);
+      buffer.append(this.getSizeString());
+      Tag[] tags = this.getTagList();
 
-      for (int var5 = 0; var5 < var6.length; var5++) {
-         Tag var4 = var6[var5];
-         var1.append("\n");
-         var1.append(this.localizeTagName(var4.getName()));
-         var1.append(": ");
-         if (var4.getType() == EnumType.STRING) {
-            var1.append(var4.getStringValue());
+      for (int i = 0; i < tags.length; i++) {
+         Tag tag = tags[i];
+         buffer.append("\n");
+         buffer.append(this.localizeTagName(tag.getName()));
+         buffer.append(": ");
+         if (tag.getType() == EnumType.STRING) {
+            buffer.append(tag.getStringValue());
          } else {
-            var1.append(var4.getValue());
+            buffer.append(tag.getValue());
          }
       }
 
       if (this.downloaded()) {
-         var1.append("\n");
-         var1.append(RS_ADOWNLOADED);
+         buffer.append("\n");
+         buffer.append(RS_ADOWNLOADED);
       }
 
-      return var1.toString();
+      return buffer.toString();
    }
 
-   protected String localizeTagName(String var1) {
-      String var2 = this.lookupTagName(var1);
-      return var2 == null ? var1 : SResources.getString(var2);
+   protected String localizeTagName(String tagName) {
+      String resourceKey = this.lookupTagName(tagName);
+      return resourceKey == null ? tagName : SResources.getString(resourceKey);
    }
 
-   protected String lookupTagName(String var1) {
-      if (var1.equalsIgnoreCase("length")) {
+   protected String lookupTagName(String tagName) {
+      if (tagName.equalsIgnoreCase("length")) {
          return "s.r.tag.length";
-      } else if (var1.equalsIgnoreCase("time")) {
+      } else if (tagName.equalsIgnoreCase("time")) {
          return "s.r.tag.time";
-      } else if (var1.equalsIgnoreCase("seconds")) {
+      } else if (tagName.equalsIgnoreCase("seconds")) {
          return "s.r.tag.seconds";
-      } else if (var1.equalsIgnoreCase("codec")) {
+      } else if (tagName.equalsIgnoreCase("codec")) {
          return "s.r.tag.codec";
-      } else if (var1.equalsIgnoreCase("resolution")) {
+      } else if (tagName.equalsIgnoreCase("resolution")) {
          return "s.r.tag.resolution";
-      } else if (var1.equalsIgnoreCase("sampleRate")) {
+      } else if (tagName.equalsIgnoreCase("sampleRate")) {
          return "s.r.tag.samplerate";
-      } else if (var1.equalsIgnoreCase("bitrate")) {
+      } else if (tagName.equalsIgnoreCase("bitrate")) {
          return "s.r.tag.bitrate";
-      } else if (var1.equalsIgnoreCase("quality")) {
+      } else if (tagName.equalsIgnoreCase("quality")) {
          return "s.r.tag.quality";
-      } else if (var1.equalsIgnoreCase("availability")) {
+      } else if (tagName.equalsIgnoreCase("availability")) {
          return "s.r.tag.availability";
       } else {
-         return var1.equalsIgnoreCase("completesources") ? "s.r.tag.completesources" : null;
+         return tagName.equalsIgnoreCase("completesources") ? "s.r.tag.completesources" : null;
       }
    }
 
@@ -314,26 +314,26 @@ public class Result extends AObject implements IObject_UID {
       this.tag_codec = "";
       this.tag_length = "";
 
-      for (int var2 = 0; var2 < this.tagList.length; var2++) {
-         String var1 = this.tagList[var2].getName();
-         if (var1.equals("length") || var1.equals("time") || var1.equals("seconds")) {
-            this.tag_length = this.tagList[var2].getStringValue();
-         } else if (var1.equals("codec") || var1.equals("resolution") || var1.equals("sampleRate")) {
-            this.tag_codec = this.tagList[var2].getStringValue();
-         } else if (var1.equals("bitrate")) {
-            this.tag_bitrate = this.tagList[var2].getValue();
-         } else if (var1.equals("completesources")) {
-            this.tag_completesources = this.tagList[var2].getValue();
-         } else if (var1.equals("quality")) {
-            StringTokenizer var3 = new StringTokenizer(this.tagList[var2].getStringValue());
-            if (var3.hasMoreTokens()) {
+      for (int i = 0; i < this.tagList.length; i++) {
+         String tagName = this.tagList[i].getName();
+         if (tagName.equals("length") || tagName.equals("time") || tagName.equals("seconds")) {
+            this.tag_length = this.tagList[i].getStringValue();
+         } else if (tagName.equals("codec") || tagName.equals("resolution") || tagName.equals("sampleRate")) {
+            this.tag_codec = this.tagList[i].getStringValue();
+         } else if (tagName.equals("bitrate")) {
+            this.tag_bitrate = this.tagList[i].getValue();
+         } else if (tagName.equals("completesources")) {
+            this.tag_completesources = this.tagList[i].getValue();
+         } else if (tagName.equals("quality")) {
+            StringTokenizer tokenizer = new StringTokenizer(this.tagList[i].getStringValue());
+            if (tokenizer.hasMoreTokens()) {
                try {
-                  this.tag_bitrate = Integer.parseInt(var3.nextToken());
-               } catch (Exception var5) {
+                  this.tag_bitrate = Integer.parseInt(tokenizer.nextToken());
+               } catch (Exception exception) {
                }
             }
-         } else if (var1.equals("availability")) {
-            this.tag_availability = this.tagList[var2].getValue();
+         } else if (tagName.equals("availability")) {
+            this.tag_availability = this.tagList[i].getValue();
          }
 
          if (this.tag_availability == 0) {
@@ -342,23 +342,23 @@ public class Result extends AObject implements IObject_UID {
       }
    }
 
-   protected void readUIDs(MessageBuffer var1) {
-      this.md4 = var1.getMd4();
+   protected void readUIDs(MessageBuffer buffer) {
+      this.md4 = buffer.getMd4();
    }
 
-   public void read(int var1, MessageBuffer var2) {
+   public void read(int id, MessageBuffer buffer) {
       synchronized (this) {
-         this.id = var1;
-         this.networkEnum = this.readNetworkEnum(var2);
-         this.names = var2.getStringList();
-         this.readUIDs(var2);
-         this.size = this.readSize(var2);
-         this.format = var2.getString();
+         this.id = id;
+         this.networkEnum = this.readNetworkEnum(buffer);
+         this.names = buffer.getStringList();
+         this.readUIDs(buffer);
+         this.size = this.readSize(buffer);
+         this.format = buffer.getString();
          this.calcFormat();
-         this.type = var2.getString();
-         this.tagList = var2.getTagList();
-         this.comment = var2.getString();
-         this.downloaded = var2.getBool();
+         this.type = buffer.getString();
+         this.tagList = buffer.getTagList();
+         this.comment = buffer.getString();
+         this.downloaded = buffer.getBool();
          this.regexFilters();
          this.parseTags();
          this.setRating();
@@ -366,25 +366,25 @@ public class Result extends AObject implements IObject_UID {
       }
    }
 
-   public void read(MessageBuffer var1) {
-      this.read(var1.getInt32(), var1);
+   public void read(MessageBuffer buffer) {
+      this.read(buffer.getInt32(), buffer);
    }
 
-   protected long readSize(MessageBuffer var1) {
-      return (long)var1.getInt32() & 4294967295L;
+   protected long readSize(MessageBuffer buffer) {
+      return (long)buffer.getInt32() & 4294967295L;
    }
 
    protected void regexFilters() {
       if (this.core.getResultCollection().filterPornography || this.core.getResultCollection().filterProfanity) {
-         for (int var1 = 0; var1 < this.names.length; var1++) {
-            if (profanityFilterRE != null && profanityFilterRE.matcher(this.names[var1]).find()) {
+         for (int i = 0; i < this.names.length; i++) {
+            if (profanityFilterRE != null && profanityFilterRE.matcher(this.names[i]).find()) {
                this.containsProfanity = true;
                if (this.containsPornography) {
                   break;
                }
             }
 
-            if (pornographyFilterRE != null && pornographyFilterRE.matcher(this.names[var1]).find()) {
+            if (pornographyFilterRE != null && pornographyFilterRE.matcher(this.names[i]).find()) {
                this.containsPornography = true;
                if (this.containsProfanity) {
                   break;
@@ -392,7 +392,7 @@ public class Result extends AObject implements IObject_UID {
             }
 
             if (!this.containsFake) {
-               this.containsFake = SwissArmy.containsFake(this.names[var1]);
+               this.containsFake = SwissArmy.containsFake(this.names[i]);
             }
          }
       }
@@ -403,12 +403,12 @@ public class Result extends AObject implements IObject_UID {
    }
 
    protected void calcFileType() {
-      EnumExtension var1 = EnumExtension.GET_EXT(this.getFormat());
-      this.extensionEnum = var1 != null ? var1 : EnumExtension.UNKNOWN;
+      EnumExtension extension = EnumExtension.GET_EXT(this.getFormat());
+      this.extensionEnum = extension != null ? extension : EnumExtension.UNKNOWN;
    }
 
-   protected EnumNetwork readNetworkEnum(MessageBuffer var1) {
-      return this.core.getNetworkCollection().getNetworkEnum(var1.getInt32());
+   protected EnumNetwork readNetworkEnum(MessageBuffer buffer) {
+      return this.core.getNetworkCollection().getNetworkEnum(buffer.getInt32());
    }
 
    protected void setRating() {
@@ -418,7 +418,7 @@ public class Result extends AObject implements IObject_UID {
    static {
       try {
          profanityFilterRE = Pattern.compile("fuck|shit", Pattern.CASE_INSENSITIVE);
-      } catch (PatternSyntaxException var3) {
+      } catch (PatternSyntaxException patternSyntaxException) {
          profanityFilterRE = null;
       }
 
@@ -426,13 +426,13 @@ public class Result extends AObject implements IObject_UID {
          pornographyFilterRE = Pattern.compile(
             "fuck|shit|porn|pr0n|pussy|xxx|sex|erotic|anal|lolita|sluts|fetish|naked|incest|bondage|masturbat|blow.*job|barely.*legal", Pattern.CASE_INSENSITIVE
          );
-      } catch (PatternSyntaxException var2) {
+      } catch (PatternSyntaxException patternSyntaxException) {
          pornographyFilterRE = null;
       }
 
       try {
          fakeRE = Pattern.compile("fake", Pattern.CASE_INSENSITIVE);
-      } catch (PatternSyntaxException var1) {
+      } catch (PatternSyntaxException patternSyntaxException) {
          fakeRE = null;
       }
    }

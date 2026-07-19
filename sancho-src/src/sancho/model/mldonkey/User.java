@@ -18,9 +18,9 @@ public class User extends AObject {
    private int serverId;
    private Tag[] tags;
 
-   User(ICore var1) {
-      super(var1);
-      this.addr = UtilityFactory.getAddr(var1);
+   User(ICore core) {
+      super(core);
+      this.addr = UtilityFactory.getAddr(core);
    }
 
    public void addAsFriend() {
@@ -52,30 +52,30 @@ public class User extends AObject {
    }
 
    public synchronized String getTagsString() {
-      StringBuffer var1 = new StringBuffer();
+      StringBuffer text = new StringBuffer();
 
-      for (int var2 = 0; var2 < this.tags.length; var2++) {
-         var1.append(S_OSB);
-         var1.append(this.tags[var2]);
-         var1.append(S_CSB);
+      for (int i = 0; i < this.tags.length; i++) {
+         text.append(S_OSB);
+         text.append(this.tags[i]);
+         text.append(S_CSB);
       }
 
-      return var1.toString();
+      return text.toString();
    }
 
-   public synchronized void read(int var1, MessageBuffer var2) {
+   public synchronized void read(int id, MessageBuffer buffer) {
       synchronized (this) {
-         this.id = var1;
-         this.md4 = var2.getMd4();
-         this.name = var2.getString();
-         this.addr.read(false, var2);
-         this.port = var2.getUInt16();
-         this.tags = var2.getTagList();
-         this.serverId = var2.getInt32();
+         this.id = id;
+         this.md4 = buffer.getMd4();
+         this.name = buffer.getString();
+         this.addr.read(false, buffer);
+         this.port = buffer.getUInt16();
+         this.tags = buffer.getTagList();
+         this.serverId = buffer.getInt32();
       }
    }
 
-   public void read(MessageBuffer var1) {
-      this.read(var1.getInt32(), var1);
+   public void read(MessageBuffer buffer) {
+      this.read(buffer.getInt32(), buffer);
    }
 }

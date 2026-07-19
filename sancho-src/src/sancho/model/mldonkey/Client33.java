@@ -4,17 +4,17 @@ import sancho.core.ICore;
 import sancho.model.mldonkey.utility.MessageBuffer;
 
 public class Client33 extends Client23 {
-   public Client33(ICore var1) {
-      super(var1);
+   public Client33(ICore core) {
+      super(core);
    }
 
-   protected boolean readMore(MessageBuffer var1) {
-      boolean var2 = super.readMore(var1);
-      String var3 = var1.getString();
-      if (var3.length() > 0) {
-         this.software = this.software + " " + var3;
+   protected boolean readMore(MessageBuffer buffer) {
+      boolean changed = super.readMore(buffer);
+      String extra = buffer.getString();
+      if (extra.length() > 0) {
+         this.software = this.software + " " + extra;
       }
 
-      return var2;
+      return changed;
    }
 }

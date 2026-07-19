@@ -7,19 +7,19 @@ public class SharedFile37 extends SharedFile31 {
    String[] subFileNames;
    long[] subFileSizes;
 
-   SharedFile37(ICore var1) {
-      super(var1);
+   SharedFile37(ICore core) {
+      super(core);
    }
 
-   protected void readSubFiles(MessageBuffer var1) {
-      int var2 = var1.getUInt16();
-      if (var2 > 0) {
-         this.subFileNames = new String[var2];
-         this.subFileSizes = new long[var2];
+   protected void readSubFiles(MessageBuffer buffer) {
+      int count = buffer.getUInt16();
+      if (count > 0) {
+         this.subFileNames = new String[count];
+         this.subFileSizes = new long[count];
 
-         for (int var3 = 0; var3 < var2; var3++) {
-            this.subFileNames[var3] = var1.getString();
-            this.subFileSizes[var3] = var1.getUInt64();
+         for (int i = 0; i < count; i++) {
+            this.subFileNames[i] = buffer.getString();
+            this.subFileSizes[i] = buffer.getUInt64();
          }
       }
    }
@@ -28,9 +28,9 @@ public class SharedFile37 extends SharedFile31 {
       if (this.subFileNames == null) {
          return null;
       } else {
-         String[] var1 = new String[this.subFileNames.length];
-         System.arraycopy(this.subFileNames, 0, var1, 0, this.subFileNames.length);
-         return var1;
+         String[] namesCopy = new String[this.subFileNames.length];
+         System.arraycopy(this.subFileNames, 0, namesCopy, 0, this.subFileNames.length);
+         return namesCopy;
       }
    }
 
@@ -38,9 +38,9 @@ public class SharedFile37 extends SharedFile31 {
       if (this.subFileSizes == null) {
          return null;
       } else {
-         long[] var1 = new long[this.subFileSizes.length];
-         System.arraycopy(this.subFileSizes, 0, var1, 0, this.subFileSizes.length);
-         return var1;
+         long[] sizesCopy = new long[this.subFileSizes.length];
+         System.arraycopy(this.subFileSizes, 0, sizesCopy, 0, this.subFileSizes.length);
+         return sizesCopy;
       }
    }
 }

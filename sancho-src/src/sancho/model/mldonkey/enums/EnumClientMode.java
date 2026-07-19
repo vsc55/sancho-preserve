@@ -7,12 +7,12 @@ public class EnumClientMode extends AbstractEnum {
    public static final EnumClientMode DIRECT = new EnumClientMode(1, "direct");
    public static final EnumClientMode FIREWALLED = new EnumClientMode(2, "firewalled");
 
-   private EnumClientMode(int var1, String var2) {
-      super(var1, "e.clientmode." + var2);
+   private EnumClientMode(int value, String name) {
+      super(value, "e.clientmode." + name);
    }
 
-   public static EnumClientMode byteToEnum(byte var0) {
-      switch (var0) {
+   public static EnumClientMode byteToEnum(byte value) {
+      switch (value) {
          case 1:
             return FIREWALLED;
          default:

@@ -3,8 +3,8 @@ package sancho.model.mldonkey;
 import sancho.core.ICore;
 
 public class Client23 extends Client21 {
-   public Client23(ICore var1) {
-      super(var1);
+   public Client23(ICore core) {
+      super(core);
    }
 
    public void connect() {

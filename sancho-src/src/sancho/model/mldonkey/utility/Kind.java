@@ -9,8 +9,8 @@ public class Kind {
    private byte[] hash;
    protected Addr addr;
 
-   Kind(ICore var1) {
-      this.addr = UtilityFactory.getAddr(var1);
+   Kind(ICore core) {
+      this.addr = UtilityFactory.getAddr(core);
    }
 
    public synchronized String getHash() {
@@ -25,20 +25,20 @@ public class Kind {
       return this.port;
    }
 
-   public synchronized EnumClientMode read(MessageBuffer var1) {
-      EnumClientMode var2 = EnumClientMode.byteToEnum(var1.getByte());
-      if (var2 == EnumClientMode.DIRECT) {
-         this.addr.read(false, var1);
-         this.port = var1.getUInt16();
+   public synchronized EnumClientMode read(MessageBuffer buffer) {
+      EnumClientMode clientMode = EnumClientMode.byteToEnum(buffer.getByte());
+      if (clientMode == EnumClientMode.DIRECT) {
+         this.addr.read(false, buffer);
+         this.port = buffer.getUInt16();
       } else {
-         this.addr.read(true, var1);
-         this.hash = var1.getMd4();
-         this.readAddr(var1);
+         this.addr.read(true, buffer);
+         this.hash = buffer.getMd4();
+         this.readAddr(buffer);
       }
 
-      return var2;
+      return clientMode;
    }
 
-   public void readAddr(MessageBuffer var1) {
+   public void readAddr(MessageBuffer buffer) {
    }
 }

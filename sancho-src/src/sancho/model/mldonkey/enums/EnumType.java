@@ -12,12 +12,12 @@ public class EnumType extends AbstractEnum {
    public static final EnumType U_INT8 = new EnumType(32, "UINT8");
    public static final EnumType PAIR = new EnumType(64, "PAIR");
 
-   private EnumType(int var1, String var2) {
-      super(var1, var2);
+   private EnumType(int value, String name) {
+      super(value, name);
    }
 
-   public static EnumType byteToEnum(byte var0) {
-      switch (var0) {
+   public static EnumType byteToEnum(byte value) {
+      switch (value) {
          case 0:
             return UNSIGNED_INT;
          case 1:

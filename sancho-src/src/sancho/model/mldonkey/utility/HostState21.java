@@ -5,13 +5,13 @@ import sancho.model.mldonkey.enums.EnumHostState;
 public class HostState21 extends HostState {
    protected int fileNum = -1;
 
-   public synchronized EnumHostState read(MessageBuffer var1) {
-      EnumHostState var2 = super.read(var1);
-      if (var2 == EnumHostState.CONNECTED_DOWNLOADING) {
-         this.fileNum = var1.getInt32();
+   public synchronized EnumHostState read(MessageBuffer buffer) {
+      EnumHostState hostState = super.read(buffer);
+      if (hostState == EnumHostState.CONNECTED_DOWNLOADING) {
+         this.fileNum = buffer.getInt32();
       }
 
-      return var2;
+      return hostState;
    }
 
    public synchronized int getFileNum() {

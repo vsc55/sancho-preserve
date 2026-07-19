@@ -12,22 +12,22 @@ public class Option extends AObject {
    protected EnumTagType type;
    protected String value;
 
-   Option(ICore var1) {
-      super(var1);
+   Option(ICore core) {
+      super(core);
    }
 
-   public synchronized void addPluginOption(String var1, String var2, String var3, MessageBuffer var4) {
-      this.plugin = var1;
-      this.description = var2;
-      this.name = var3;
-      this.type = this.readType(var4);
+   public synchronized void addPluginOption(String plugin, String description, String name, MessageBuffer buffer) {
+      this.plugin = plugin;
+      this.description = description;
+      this.name = name;
+      this.type = this.readType(buffer);
    }
 
-   public synchronized void addSectionOption(String var1, String var2, String var3, MessageBuffer var4) {
-      this.section = var1;
-      this.description = var2;
-      this.name = var3;
-      this.type = this.readType(var4);
+   public synchronized void addSectionOption(String section, String description, String name, MessageBuffer buffer) {
+      this.section = section;
+      this.description = description;
+      this.name = name;
+      this.type = this.readType(buffer);
    }
 
    public String getDefaultValue() {
@@ -62,22 +62,22 @@ public class Option extends AObject {
       return false;
    }
 
-   public void read(MessageBuffer var1) {
-      this.read(var1.getString(), var1);
+   public void read(MessageBuffer buffer) {
+      this.read(buffer.getString(), buffer);
    }
 
-   public void read(String var1, MessageBuffer var2) {
+   public void read(String name, MessageBuffer buffer) {
       synchronized (this) {
-         this.name = var1;
-         this.value = var2.getString();
+         this.name = name;
+         this.value = buffer.getString();
       }
    }
 
-   protected EnumTagType readType(MessageBuffer var1) {
-      return EnumTagType.optionByteToEnum(var1.getByte());
+   protected EnumTagType readType(MessageBuffer buffer) {
+      return EnumTagType.optionByteToEnum(buffer.getByte());
    }
 
-   public void setValue(String var1) {
-      this.core.send((short)28, new Object[]{this.getName(), var1});
+   public void setValue(String value) {
+      this.core.send((short)28, new Object[]{this.getName(), value});
    }
 }

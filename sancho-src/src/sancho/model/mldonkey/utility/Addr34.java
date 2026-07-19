@@ -3,10 +3,10 @@ package sancho.model.mldonkey.utility;
 public class Addr34 extends Addr {
    boolean blocked;
 
-   public void read(MessageBuffer var1) {
-      this.read(var1.getBool(), var1);
+   public void read(MessageBuffer buffer) {
+      this.read(buffer.getBool(), buffer);
       synchronized (this) {
-         this.blocked = var1.getBool();
+         this.blocked = buffer.getBool();
       }
    }
 

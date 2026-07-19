@@ -11,12 +11,12 @@ public class EnumFileState extends AbstractEnum {
    public static final EnumFileState ABORTED = new EnumFileState(64, "aborted");
    public static final EnumFileState QUEUED = new EnumFileState(128, "queued");
 
-   private EnumFileState(int var1, String var2) {
-      super(var1, "e.fileState." + var2);
+   private EnumFileState(int value, String name) {
+      super(value, "e.fileState." + name);
    }
 
-   public static EnumFileState byteToEnum(byte var0) {
-      switch (var0) {
+   public static EnumFileState byteToEnum(byte value) {
+      switch (value) {
          case 0:
             return DOWNLOADING;
          case 1:

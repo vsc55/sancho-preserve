@@ -89,12 +89,11 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
   collections (`ACollection_Int` + File/Client/Server/Result/Room/Option/Network/
   SharedFile), and both custom JFace viewers (`CustomTableViewer` 12, `CustomTreeViewer`
   14) — all merged **and** fully `varN`-renamed to descriptive names. See CHANGELOG.
-- [ ] **Rename `varN` locals in the rest of `sancho.model`.** The `sancho.model.mldonkey`
-  *collections* are done, but the model *objects* still carry decompiler `varN` in their
-  bodies — e.g. `File` (365), `Client` (121), `Result`, `Server`, `Network`, `SharedFile`,
-  `Option`, `Room`, `User`, and the `utility`/`enums` sub-packages. Purely descriptive
-  renaming (these are mostly already single-file, no `$` merge needed); do it
-  opportunistically when editing a class, compile-checking each.
+- [x] ~~**Rename `varN` locals in the rest of `sancho.model`.**~~ — done: all 87 model
+  classes outside the already-cleaned collections (domain objects `File`/`Client`/`Result`/
+  `Server`/`Network`/`SharedFile`/`Option`/`Room`/`User` + protocol subclasses, the `enums`
+  sub-package, and the `utility` wire-format sub-package) renamed to descriptive names.
+  `sancho.model` now has zero `varN`; full 747-file compile clean. See CHANGELOG.
 - [ ] **Merge `$`-split files AND rename `varN` in `sancho.view`.** This is where most of
   the remaining split-out inner-class files live (the bulk of the ~360 `$` files) plus
   heavy `varN` usage. Two combined passes per class: (1) fold the `Foo$N`/`Foo$Bar`

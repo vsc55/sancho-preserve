@@ -6,12 +6,12 @@ public class EnumRoomState extends AbstractEnum {
    public static final EnumRoomState CLOSED = new EnumRoomState(2, "closed");
    public static final EnumRoomState PAUSED = new EnumRoomState(4, "paused");
 
-   private EnumRoomState(int var1, String var2) {
-      super(var1, "e.roomState." + var2);
+   private EnumRoomState(int value, String name) {
+      super(value, "e.roomState." + name);
    }
 
-   public static EnumRoomState intToEnum(int var0) {
-      switch (var0) {
+   public static EnumRoomState intToEnum(int value) {
+      switch (value) {
          case 0:
             return OPEN;
          case 1:

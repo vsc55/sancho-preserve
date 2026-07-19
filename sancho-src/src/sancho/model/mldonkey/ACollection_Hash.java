@@ -14,13 +14,13 @@ public abstract class ACollection_Hash extends MyObservable implements ICollecti
       this(null);
    }
 
-   ACollection_Hash(ICore var1) {
-      this.core = var1;
+   ACollection_Hash(ICore core) {
+      this.core = core;
       this.infoMap = new THashMap();
    }
 
-   public synchronized boolean containsKey(Object var1) {
-      return this.infoMap.contains(var1);
+   public synchronized boolean containsKey(Object key) {
+      return this.infoMap.contains(key);
    }
 
    public void dispose() {
@@ -31,20 +31,20 @@ public abstract class ACollection_Hash extends MyObservable implements ICollecti
       return this.infoMap.entrySet();
    }
 
-   public synchronized boolean forEachEntry(TObjectObjectProcedure var1) {
-      return this.infoMap.forEachEntry(var1);
+   public synchronized boolean forEachEntry(TObjectObjectProcedure procedure) {
+      return this.infoMap.forEachEntry(procedure);
    }
 
-   public synchronized Object get(Object var1) {
-      return this.infoMap.get(var1);
+   public synchronized Object get(Object key) {
+      return this.infoMap.get(key);
    }
 
    public synchronized Set keySet() {
       return this.infoMap.keySet();
    }
 
-   public synchronized Object put(Object var1, Object var2) {
-      return this.infoMap.put(var1, var2);
+   public synchronized Object put(Object key, Object value) {
+      return this.infoMap.put(key, value);
    }
 
    public synchronized int size() {

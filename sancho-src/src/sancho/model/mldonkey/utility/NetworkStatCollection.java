@@ -42,34 +42,34 @@ public class NetworkStatCollection {
       return this.name != null ? this.name : "";
    }
 
-   public void read(MessageBuffer var1) {
+   public void read(MessageBuffer buffer) {
       synchronized (this) {
-         this.name = var1.getString();
-         this.uptimeSeconds = var1.getInt32();
-         int var3 = var1.getUInt16();
+         this.name = buffer.getString();
+         this.uptimeSeconds = buffer.getInt32();
+         int count = buffer.getUInt16();
          this.networkStatArray = null;
-         if (var3 > 0) {
+         if (count > 0) {
             this.tSeen = 0;
             this.tBanned = 0;
             this.tRequest = 0;
             this.tDownload = 0L;
             this.tUpload = 0L;
-            this.networkStatArray = new NetworkStat[var3 + 1];
+            this.networkStatArray = new NetworkStat[count + 1];
 
-            for (int var4 = 0; var4 < var3; var4++) {
-               NetworkStat var5 = UtilityFactory.getNetworkStat(this);
-               var5.read(var1);
-               this.networkStatArray[var4] = var5;
-               this.tSeen = this.tSeen + var5.getSeen();
-               this.tBanned = this.tBanned + var5.getBanned();
-               this.tRequest = this.tRequest + var5.getRequest();
-               this.tDownload = this.tDownload + var5.getDownload();
-               this.tUpload = this.tUpload + var5.getUpload();
+            for (int i = 0; i < count; i++) {
+               NetworkStat stat = UtilityFactory.getNetworkStat(this);
+               stat.read(buffer);
+               this.networkStatArray[i] = stat;
+               this.tSeen = this.tSeen + stat.getSeen();
+               this.tBanned = this.tBanned + stat.getBanned();
+               this.tRequest = this.tRequest + stat.getRequest();
+               this.tDownload = this.tDownload + stat.getDownload();
+               this.tUpload = this.tUpload + stat.getUpload();
             }
 
-            NetworkStatTotal var8 = UtilityFactory.getNetworkStatTotal(this);
-            var8.read(this.tSeen, this.tBanned, this.tRequest, this.tDownload, this.tUpload);
-            this.networkStatArray[var3] = var8;
+            NetworkStatTotal total = UtilityFactory.getNetworkStatTotal(this);
+            total.read(this.tSeen, this.tBanned, this.tRequest, this.tDownload, this.tUpload);
+            this.networkStatArray[count] = total;
          }
       }
    }

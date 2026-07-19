@@ -16,19 +16,19 @@ public class EnumRating extends AbstractEnum {
    public static final EnumRating LOW = new EnumRating(16, "low");
    public static final EnumRating FAKE = new EnumRating(32, "fake");
 
-   private EnumRating(int var1, String var2) {
-      super(var1, "e.rating." + var2);
+   private EnumRating(int value, String name) {
+      super(value, "e.rating." + name);
    }
 
-   public static EnumRating intToEnum(int var0) {
-      if (var0 > 100) {
+   public static EnumRating intToEnum(int value) {
+      if (value > 100) {
          return EXCELLENT;
-      } else if (var0 > 50) {
+      } else if (value > 50) {
          return VERY_HIGH;
-      } else if (var0 > 10) {
+      } else if (value > 10) {
          return HIGH;
       } else {
-         return var0 > 5 ? NORMAL : LOW;
+         return value > 5 ? NORMAL : LOW;
       }
    }
 

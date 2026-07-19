@@ -17,12 +17,12 @@ public class EnumQuery extends AbstractEnum {
    public static final EnumQuery MP3_BITRATE = new EnumQuery(4096, "MP3_BITRATE");
    public static final EnumQuery HIDDEN = new EnumQuery(8192, "HIDDEN");
 
-   private EnumQuery(int var1, String var2) {
-      super(var1, var2);
+   private EnumQuery(int value, String name) {
+      super(value, name);
    }
 
-   public static EnumQuery byteToEnum(byte var0) {
-      switch (var0) {
+   public static EnumQuery byteToEnum(byte value) {
+      switch (value) {
          case 0:
             return AND;
          case 1:

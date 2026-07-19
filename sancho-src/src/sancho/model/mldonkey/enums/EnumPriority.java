@@ -8,24 +8,24 @@ public class EnumPriority extends AbstractEnum {
    public static final EnumPriority VERY_HIGH = new EnumPriority(16, "very_high", 20);
    int maxValue;
 
-   private EnumPriority(int var1, String var2, int var3) {
-      super(var1, "e.priority." + var2);
-      this.maxValue = var3;
+   private EnumPriority(int value, String name, int maxValue) {
+      super(value, "e.priority." + name);
+      this.maxValue = maxValue;
    }
 
    public int getMaxValue() {
       return this.maxValue;
    }
 
-   public static EnumPriority intToEnum(int var0) {
-      if (var0 < LOW.getMaxValue()) {
+   public static EnumPriority intToEnum(int value) {
+      if (value < LOW.getMaxValue()) {
          return VERY_LOW;
-      } else if (var0 < NORMAL.getMaxValue()) {
+      } else if (value < NORMAL.getMaxValue()) {
          return LOW;
-      } else if (var0 == NORMAL.getMaxValue()) {
+      } else if (value == NORMAL.getMaxValue()) {
          return NORMAL;
       } else {
-         return var0 <= HIGH.getMaxValue() ? HIGH : VERY_HIGH;
+         return value <= HIGH.getMaxValue() ? HIGH : VERY_HIGH;
       }
    }
 }

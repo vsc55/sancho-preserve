@@ -34,25 +34,25 @@ public class SearchQuery {
    private int networkId;
    private byte searchType;
 
-   public SearchQuery(ICore var1) {
-      this.core = var1;
-      this.andQuery = UtilityFactory.getQuery(var1);
+   public SearchQuery(ICore core) {
+      this.core = core;
+      this.andQuery = UtilityFactory.getQuery(core);
       this.andQuery.setEnumQuery(EnumQuery.AND);
-      this.orQuery = UtilityFactory.getQuery(var1);
+      this.orQuery = UtilityFactory.getQuery(core);
       this.orQuery.setEnumQuery(EnumQuery.OR);
       this.searchType = 1;
       this.networkId = 0;
    }
 
-   public void addKeyword(String var1) {
-      if (var1 != null) {
-         Query var2 = UtilityFactory.getQuery(this.core);
-         var2.setEnumQuery(EnumQuery.KEYWORDS);
-         var2.setString1("Keyword");
-         var2.setString2(var1);
+   public void addKeyword(String keyword) {
+      if (keyword != null) {
+         Query query = UtilityFactory.getQuery(this.core);
+         query.setEnumQuery(EnumQuery.KEYWORDS);
+         query.setString1("Keyword");
+         query.setString2(keyword);
          this.keyWords++;
          if (this.keyWords == 1) {
-            this.firstQuery = var2;
+            this.firstQuery = query;
          } else {
             switch (this.currentType) {
                case 1:
@@ -60,186 +60,186 @@ public class SearchQuery {
                      this.orQuery.addQuery(this.firstQuery);
                   }
 
-                  this.orQuery.addQuery(var2);
+                  this.orQuery.addQuery(query);
                   this.firstQuery = null;
                   break;
                case 3:
-                  this.andNotList.add(var2);
+                  this.andNotList.add(query);
                   break;
                default:
                   if (this.firstQuery != null) {
                      this.andQuery.addQuery(this.firstQuery);
                   }
 
-                  this.andQuery.addQuery(var2);
+                  this.andQuery.addQuery(query);
                   this.firstQuery = null;
             }
          }
       }
    }
 
-   public void addQueryToAnd(EnumQuery var1, String var2, String var3) {
-      Query var4 = UtilityFactory.getQuery(this.core);
-      var4.setEnumQuery(var1);
-      var4.setString1(var2);
-      var4.setString2(var3);
-      this.andQuery.addQuery(var4);
+   public void addQueryToAnd(EnumQuery enumQuery, String name, String value) {
+      Query query = UtilityFactory.getQuery(this.core);
+      query.setEnumQuery(enumQuery);
+      query.setString1(name);
+      query.setString2(value);
+      this.andQuery.addQuery(query);
    }
 
    public int getSearchId() {
       return searchId++;
    }
 
-   public String parseWord(String var1) {
-      if (var1.startsWith("-")) {
+   public String parseWord(String word) {
+      if (word.startsWith("-")) {
          this.currentType = 3;
-         return var1.substring(1);
-      } else if (var1.startsWith("+")) {
+         return word.substring(1);
+      } else if (word.startsWith("+")) {
          this.currentType = 2;
-         return var1.substring(1);
-      } else if (var1.equalsIgnoreCase("|")) {
+         return word.substring(1);
+      } else if (word.equalsIgnoreCase("|")) {
          this.currentType = 1;
          return null;
-      } else if (var1.equalsIgnoreCase("AND")) {
+      } else if (word.equalsIgnoreCase("AND")) {
          this.currentType = 2;
          return null;
-      } else if (var1.equalsIgnoreCase("OR")) {
+      } else if (word.equalsIgnoreCase("OR")) {
          this.currentType = 1;
          return null;
-      } else if (var1.equalsIgnoreCase("ANDNOT")) {
+      } else if (word.equalsIgnoreCase("ANDNOT")) {
          this.currentType = 3;
          return null;
       } else {
-         return var1;
+         return word;
       }
    }
 
    public void send() {
-      Query var2;
+      Query query;
       if (this.firstQuery != null) {
          if (this.andQuery.queryListSize() >= 1) {
             this.andQuery.addQuery(this.firstQuery);
-            var2 = this.andQuery;
+            query = this.andQuery;
          } else {
-            var2 = this.firstQuery;
+            query = this.firstQuery;
          }
       } else if (this.orQuery.queryListSize() >= 1 && this.andQuery.queryListSize() >= 1) {
          this.andQuery.addQuery(this.orQuery);
-         var2 = this.andQuery;
+         query = this.andQuery;
       } else if (this.orQuery.queryListSize() >= 1) {
-         var2 = this.orQuery;
+         query = this.orQuery;
       } else {
-         var2 = this.andQuery;
+         query = this.andQuery;
       }
 
-      Query var1;
+      Query rootQuery;
       if (this.andNotList.size() > 0) {
-         Query var3;
+         Query andNotQuery;
          if (this.andNotList.size() > 1) {
-            var3 = UtilityFactory.getQuery(this.core);
-            var3.setEnumQuery(EnumQuery.OR);
+            andNotQuery = UtilityFactory.getQuery(this.core);
+            andNotQuery.setEnumQuery(EnumQuery.OR);
 
-            for (int var4 = 0; var4 < this.andNotList.size(); var4++) {
-               var3.addQuery((Query)this.andNotList.get(var4));
+            for (int i = 0; i < this.andNotList.size(); i++) {
+               andNotQuery.addQuery((Query)this.andNotList.get(i));
             }
          } else {
-            var3 = (Query)this.andNotList.get(0);
+            andNotQuery = (Query)this.andNotList.get(0);
          }
 
-         var1 = UtilityFactory.getQuery(this.core);
-         var1.setEnumQuery(EnumQuery.ANDNOT);
-         var1.setQuery1(var2);
-         var1.setQuery2(var3);
+         rootQuery = UtilityFactory.getQuery(this.core);
+         rootQuery.setEnumQuery(EnumQuery.ANDNOT);
+         rootQuery.setQuery1(query);
+         rootQuery.setQuery2(andNotQuery);
       } else {
-         var1 = var2;
+         rootQuery = query;
       }
 
-      ArrayList var6 = new ArrayList();
-      var6.add(Integer.valueOf(searchId));
-      Object[] var7 = var1.toObjectArray();
+      ArrayList list = new ArrayList();
+      list.add(Integer.valueOf(searchId));
+      Object[] objects = rootQuery.toObjectArray();
 
-      for (int var5 = 0; var5 < var7.length; var5++) {
-         var6.add(var7[var5]);
+      for (int i = 0; i < objects.length; i++) {
+         list.add(objects[i]);
       }
 
-      var6.add(Integer.valueOf(this.maxSearchResults));
-      var6.add(Byte.valueOf(this.searchType));
-      var6.add(Integer.valueOf(this.networkId));
-      this.core.send((short)42, var6.toArray());
+      list.add(Integer.valueOf(this.maxSearchResults));
+      list.add(Byte.valueOf(this.searchType));
+      list.add(Integer.valueOf(this.networkId));
+      this.core.send((short)42, list.toArray());
    }
 
-   public void setFormat(String var1) {
-      this.addQueryToAnd(EnumQuery.FORMAT, "", var1);
+   public void setFormat(String format) {
+      this.addQueryToAnd(EnumQuery.FORMAT, "", format);
    }
 
    public void setLocalSearch() {
       this.searchType = 0;
    }
 
-   public void setMaxSearchResults(int var1) {
-      this.maxSearchResults = var1;
+   public void setMaxSearchResults(int maxSearchResults) {
+      this.maxSearchResults = maxSearchResults;
    }
 
-   public void setMaxSize(long var1) {
-      this.addQueryToAnd(EnumQuery.MAXSIZE, "", String.valueOf(var1));
+   public void setMaxSize(long maxSize) {
+      this.addQueryToAnd(EnumQuery.MAXSIZE, "", String.valueOf(maxSize));
    }
 
-   public void setMedia(String var1) {
-      this.addQueryToAnd(EnumQuery.MEDIA, "", var1);
+   public void setMedia(String media) {
+      this.addQueryToAnd(EnumQuery.MEDIA, "", media);
    }
 
-   public void setMinSize(long var1) {
-      this.addQueryToAnd(EnumQuery.MINSIZE, "", String.valueOf(var1));
+   public void setMinSize(long minSize) {
+      this.addQueryToAnd(EnumQuery.MINSIZE, "", String.valueOf(minSize));
    }
 
-   public void setMp3Album(String var1) {
-      this.addQueryToAnd(EnumQuery.MP3_ALBUM, "", var1);
+   public void setMp3Album(String album) {
+      this.addQueryToAnd(EnumQuery.MP3_ALBUM, "", album);
    }
 
-   public void setMp3Artist(String var1) {
-      this.addQueryToAnd(EnumQuery.MP3_ARTIST, "", var1);
+   public void setMp3Artist(String artist) {
+      this.addQueryToAnd(EnumQuery.MP3_ARTIST, "", artist);
    }
 
-   public void setMp3Bitrate(String var1) {
-      this.addQueryToAnd(EnumQuery.MP3_BITRATE, "", var1);
+   public void setMp3Bitrate(String bitrate) {
+      this.addQueryToAnd(EnumQuery.MP3_BITRATE, "", bitrate);
    }
 
-   public void setMp3Title(String var1) {
-      this.addQueryToAnd(EnumQuery.MP3_TITLE, "", var1);
+   public void setMp3Title(String title) {
+      this.addQueryToAnd(EnumQuery.MP3_TITLE, "", title);
    }
 
-   public void setNetwork(int var1) {
-      this.networkId = var1;
+   public void setNetwork(int networkId) {
+      this.networkId = networkId;
    }
 
-   public void setSearchString(String var1) {
-      String[] var2 = SwissArmy.split(var1, ' ');
-      String var3 = "";
-      boolean var4 = false;
+   public void setSearchString(String searchString) {
+      String[] words = SwissArmy.split(searchString, ' ');
+      String phrase = "";
+      boolean inQuote = false;
 
-      for (int var5 = 0; var5 < var2.length; var5++) {
-         if (var2[var5].startsWith("\"") && !var4) {
-            var4 = true;
-            if (var2[var5].length() > 1) {
-               var3 = var3 + (var3.equals("") ? "" : " ") + var2[var5].substring(1);
+      for (int i = 0; i < words.length; i++) {
+         if (words[i].startsWith("\"") && !inQuote) {
+            inQuote = true;
+            if (words[i].length() > 1) {
+               phrase = phrase + (phrase.equals("") ? "" : " ") + words[i].substring(1);
             }
-         } else if (var2[var5].endsWith("\"") && var4) {
-            if (var2[var5].length() > 2) {
-               String var6 = var2[var5].substring(0, var2[var5].length() - 1);
-               var3 = var3 + (var3.equals("") ? "" : " ") + var6;
-               this.addKeyword(this.parseWord(var3));
-               var3 = "";
-               var4 = false;
+         } else if (words[i].endsWith("\"") && inQuote) {
+            if (words[i].length() > 2) {
+               String word = words[i].substring(0, words[i].length() - 1);
+               phrase = phrase + (phrase.equals("") ? "" : " ") + word;
+               this.addKeyword(this.parseWord(phrase));
+               phrase = "";
+               inQuote = false;
             }
-         } else if (var4) {
-            var3 = var3 + (var3.equals("") ? "" : " ") + var2[var5];
+         } else if (inQuote) {
+            phrase = phrase + (phrase.equals("") ? "" : " ") + words[i];
          } else {
-            this.addKeyword(this.parseWord(var2[var5]));
+            this.addKeyword(this.parseWord(words[i]));
          }
       }
 
-      if (!var3.equals("")) {
-         this.addKeyword(this.parseWord(var3));
+      if (!phrase.equals("")) {
+         this.addKeyword(this.parseWord(phrase));
       }
    }
 

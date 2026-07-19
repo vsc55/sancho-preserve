@@ -14,13 +14,13 @@ public class ClientMessage {
       return this.messageText;
    }
 
-   public synchronized void read(MessageBuffer var1) {
-      this.id = var1.getInt32();
-      this.messageText = var1.getString();
+   public synchronized void read(MessageBuffer buffer) {
+      this.id = buffer.getInt32();
+      this.messageText = buffer.getString();
    }
 
-   public static void sendMessage(ICore var0, int var1, String var2) {
-      Object[] var3 = new Object[]{Integer.valueOf(var1), var2};
-      var0.send((short)43, var3);
+   public static void sendMessage(ICore core, int id, String text) {
+      Object[] args = new Object[]{Integer.valueOf(id), text};
+      core.send((short)43, args);
    }
 }

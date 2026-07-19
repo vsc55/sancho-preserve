@@ -4,15 +4,15 @@ import sancho.core.ICore;
 import sancho.model.mldonkey.utility.MessageBuffer;
 
 public class Server28 extends Server {
-   Server28(ICore var1) {
-      super(var1);
+   Server28(ICore core) {
+      super(core);
    }
 
-   protected long readNUsers(MessageBuffer var1) {
-      return var1.getUInt64();
+   protected long readNUsers(MessageBuffer buffer) {
+      return buffer.getUInt64();
    }
 
-   protected long readNFiles(MessageBuffer var1) {
-      return var1.getUInt64();
+   protected long readNFiles(MessageBuffer buffer) {
+      return buffer.getUInt64();
    }
 }

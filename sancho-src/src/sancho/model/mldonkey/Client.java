@@ -47,10 +47,10 @@ public class Client extends AObjectO {
    protected EnumHostState stateEnum;
    protected EnumClientMode clientModeEnum;
 
-   Client(ICore var1) {
-      super(var1);
-      this.state = UtilityFactory.getHostState(var1);
-      this.kind = UtilityFactory.getKind(var1);
+   Client(ICore core) {
+      super(core);
+      this.state = UtilityFactory.getHostState(core);
+      this.kind = UtilityFactory.getKind(core);
    }
 
    public void addAsFriend() {
@@ -63,8 +63,8 @@ public class Client extends AObjectO {
    public void disconnect() {
    }
 
-   public boolean equals(Object var1) {
-      return var1 instanceof Client && this.getId() == ((Client)var1).getId();
+   public boolean equals(Object object) {
+      return object instanceof Client && this.getId() == ((Client)object).getId();
    }
 
    public Addr getAddr() {
@@ -91,8 +91,8 @@ public class Client extends AObjectO {
       return this.clientFilesMap;
    }
 
-   public synchronized Map getClientFilesResultMap(Object var1) {
-      return this.clientFilesMap == null ? null : (Map)this.clientFilesMap.get(var1);
+   public synchronized Map getClientFilesResultMap(Object directory) {
+      return this.clientFilesMap == null ? null : (Map)this.clientFilesMap.get(directory);
    }
 
    public synchronized EnumClientMode getClientModeEnum() {
@@ -108,21 +108,21 @@ public class Client extends AObjectO {
    }
 
    public String getDetailedClientActivity() {
-      EnumHostState var1 = this.getStateEnum();
-      StringBuffer var2 = new StringBuffer();
-      var2.append(var1.getName());
-      if (var1 == EnumHostState.CONNECTED_DOWNLOADING && this.getStateFileNum() != -1) {
-         var2.append("(");
-         var2.append(this.getState().getFileNum());
-         var2.append(")");
-         return var2.toString().intern();
-      } else if (var1 != EnumHostState.CONNECTED_DOWNLOADING && this.getStateRank() > 0) {
-         var2.append(" (Q: ");
-         var2.append(this.getState().getRank());
-         var2.append(")");
-         return var2.toString().intern();
+      EnumHostState state = this.getStateEnum();
+      StringBuffer text = new StringBuffer();
+      text.append(state.getName());
+      if (state == EnumHostState.CONNECTED_DOWNLOADING && this.getStateFileNum() != -1) {
+         text.append("(");
+         text.append(this.getState().getFileNum());
+         text.append(")");
+         return text.toString().intern();
+      } else if (state != EnumHostState.CONNECTED_DOWNLOADING && this.getStateRank() > 0) {
+         text.append(" (Q: ");
+         text.append(this.getState().getRank());
+         text.append(")");
+         return text.toString().intern();
       } else {
-         return var2.toString().intern();
+         return text.toString().intern();
       }
    }
 
@@ -146,38 +146,38 @@ public class Client extends AObjectO {
       return this.networkEnum;
    }
 
-   public synchronized String getFileAvailability(int var1) {
-      return (String)this.getAvailMap().get(var1);
+   public synchronized String getFileAvailability(int fileId) {
+      return (String)this.getAvailMap().get(fileId);
    }
 
-   public synchronized String getFileAvailabilityPercentString(File var1) {
-      float var2 = this.getFileAvailabilityPercent(var1);
-      return var2 < 0.0F ? "" : SwissArmy.percentToString(var2);
+   public synchronized String getFileAvailabilityPercentString(File file) {
+      float percent = this.getFileAvailabilityPercent(file);
+      return percent < 0.0F ? "" : SwissArmy.percentToString(percent);
    }
 
-   public synchronized float getFileAvailabilityPercent(File var1) {
-      int var2 = var1.getId();
-      String var3 = this.getFileAvailability(var2);
-      if (var3 == null) {
+   public synchronized float getFileAvailabilityPercent(File file) {
+      int fileId = file.getId();
+      String availability = this.getFileAvailability(fileId);
+      if (availability == null) {
          return -1.0F;
       } else {
-         String var4 = var1.getChunks();
-         if (var3.length() > 0 && var3.length() == var4.length()) {
-            int var5 = 0;
-            int var6 = 0;
+         String chunks = file.getChunks();
+         if (availability.length() > 0 && availability.length() == chunks.length()) {
+            int availableCount = 0;
+            int totalCount = 0;
 
-            for (int var7 = 0; var7 < var4.length(); var7++) {
-               int var8 = var4.charAt(var7) - '0';
-               int var9 = var3.charAt(var7) - '0';
-               if (var8 < 2) {
-                  var6++;
-                  if (var9 > 0) {
-                     var5++;
+            for (int i = 0; i < chunks.length(); i++) {
+               int chunkState = chunks.charAt(i) - '0';
+               int availState = availability.charAt(i) - '0';
+               if (chunkState < 2) {
+                  totalCount++;
+                  if (availState > 0) {
+                     availableCount++;
                   }
                }
             }
 
-            return var6 == 0 ? -1.0F : (float)var5 / (float)var6 * 100.0F;
+            return totalCount == 0 ? -1.0F : (float)availableCount / (float)totalCount * 100.0F;
          } else {
             return -1.0F;
          }
@@ -190,8 +190,8 @@ public class Client extends AObjectO {
 
    public Map getFirstResultMap() {
       synchronized (this) {
-         String var2 = (String)this.getFileDirectories()[0];
-         return this.getClientFilesResultMap(var2);
+         String directory = (String)this.getFileDirectories()[0];
+         return this.getClientFilesResultMap(directory);
       }
    }
 
@@ -224,8 +224,8 @@ public class Client extends AObjectO {
    }
 
    public synchronized Image getSUIImage() {
-      byte var1 = this.getSUI();
-      switch (var1) {
+      byte sui = this.getSUI();
+      switch (sui) {
          case 0:
             return SResources.getImage("bulb-red");
          case 1:
@@ -235,18 +235,18 @@ public class Client extends AObjectO {
       }
    }
 
-   public int getNumChunks(int var1) {
-      int var2 = 0;
-      String var3 = this.getFileAvailability(var1);
-      if (var3 != null) {
-         for (int var4 = 0; var4 < var3.length(); var4++) {
-            if (var3.charAt(var4) == '1') {
-               var2++;
+   public int getNumChunks(int fileId) {
+      int count = 0;
+      String availability = this.getFileAvailability(fileId);
+      if (availability != null) {
+         for (int i = 0; i < availability.length(); i++) {
+            if (availability.charAt(i) == '1') {
+               count++;
             }
          }
       }
 
-      return var2;
+      return count;
    }
 
    public synchronized int getPort() {
@@ -313,128 +313,128 @@ public class Client extends AObjectO {
       return this.isConnected(this.getStateEnum());
    }
 
-   public boolean isConnected(AbstractEnum var1) {
-      return var1 == EnumHostState.CONNECTED_DOWNLOADING
-         || var1 == EnumHostState.CONNECTED_INITIATING
-         || var1 == EnumHostState.CONNECTED_AND_QUEUED
-         || var1 == EnumHostState.CONNECTED;
+   public boolean isConnected(AbstractEnum state) {
+      return state == EnumHostState.CONNECTED_DOWNLOADING
+         || state == EnumHostState.CONNECTED_INITIATING
+         || state == EnumHostState.CONNECTED_AND_QUEUED
+         || state == EnumHostState.CONNECTED;
    }
 
    public boolean isTransferring() {
       return this.isTransferring(this.getStateEnum());
    }
 
-   public boolean isTransferring(AbstractEnum var1) {
-      return var1 == EnumHostState.CONNECTED_DOWNLOADING;
+   public boolean isTransferring(AbstractEnum state) {
+      return state == EnumHostState.CONNECTED_DOWNLOADING;
    }
 
-   public boolean isTransferring(int var1) {
-      return this.isTransferring() && this.getStateFileNum() == var1;
+   public boolean isTransferring(int fileNum) {
+      return this.isTransferring() && this.getStateFileNum() == fileNum;
    }
 
    public boolean isUploader() {
       return false;
    }
 
-   public boolean onChangedState(AbstractEnum var1) {
-      boolean var2 = false;
+   public boolean onChangedState(AbstractEnum previousState) {
+      boolean changed = false;
       this.setChanged();
-      byte var3 = 0;
-      if (var1 != this.getStateEnum()) {
+      byte changeType = 0;
+      if (previousState != this.getStateEnum()) {
          if (this.isTransferring()) {
-            if (this.isConnected(var1)) {
-               var3 = 4;
+            if (this.isConnected(previousState)) {
+               changeType = 4;
             } else {
-               var3 = 5;
+               changeType = 5;
             }
-         } else if (this.isTransferring(var1)) {
+         } else if (this.isTransferring(previousState)) {
             if (this.isConnected()) {
-               var3 = 8;
+               changeType = 8;
             } else {
-               var3 = 10;
+               changeType = 10;
             }
-         } else if (this.isConnected(var1)) {
+         } else if (this.isConnected(previousState)) {
             if (!this.isConnected()) {
-               var3 = 2;
+               changeType = 2;
             }
          } else if (this.isConnected()) {
-            var3 = 1;
+            changeType = 1;
          }
       }
 
-      if (var3 != 0) {
-         var2 = true;
-         this.notifyObservers(null, var3);
+      if (changeType != 0) {
+         changed = true;
+         this.notifyObservers(null, changeType);
       }
 
       this.clearChanged();
-      return var2;
+      return changed;
    }
 
-   public void putAvail(int var1, String var2) {
+   public void putAvail(int fileId, String availability) {
       synchronized (this) {
-         this.getAvailMap().put(var1, var2);
+         this.getAvailMap().put(fileId, availability);
       }
 
       this.setChanged();
       this.notifyObservers(null, 16);
    }
 
-   public void read(int var1, MessageBuffer var2) {
-      EnumHostState var3 = this.getStateEnum();
-      EnumClientType var4 = this.getEnumClientType();
-      boolean var5 = false;
+   public void read(int id, MessageBuffer buffer) {
+      EnumHostState previousState = this.getStateEnum();
+      EnumClientType previousType = this.getEnumClientType();
+      boolean changed = false;
       synchronized (this) {
-         this.id = var1;
-         this.networkEnum = this.core.getNetworkCollection().getNetworkEnum(var2.getInt32());
-         this.clientModeEnum = this.kind.read(var2);
-         this.stateEnum = this.state.read(var2);
-         this.enumClientType = EnumClientType.byteToEnum(var2.getByte());
-         this.tag = var2.getTagList();
-         this.name = var2.getString();
-         this.rating = var2.getInt32();
-         var5 = this.readMore(var2);
+         this.id = id;
+         this.networkEnum = this.core.getNetworkCollection().getNetworkEnum(buffer.getInt32());
+         this.clientModeEnum = this.kind.read(buffer);
+         this.stateEnum = this.state.read(buffer);
+         this.enumClientType = EnumClientType.byteToEnum(buffer.getByte());
+         this.tag = buffer.getTagList();
+         this.name = buffer.getString();
+         this.rating = buffer.getInt32();
+         changed = this.readMore(buffer);
       }
 
-      this.onChangedType(var4);
-      boolean var7 = this.onChangedState(var3);
-      if (!var7 && var5) {
+      this.onChangedType(previousType);
+      boolean stateChanged = this.onChangedState(previousState);
+      if (!stateChanged && changed) {
          this.setChanged();
          this.notifyObservers();
       }
    }
 
-   protected void onChangedType(AbstractEnum var1) {
-      if (var1 != null && var1 != this.getEnumClientType()) {
+   protected void onChangedType(AbstractEnum previousType) {
+      if (previousType != null && previousType != this.getEnumClientType()) {
          this.core.getClientCollection().updateFriends(this);
       }
    }
 
-   protected boolean readMore(MessageBuffer var1) {
-      this.chatPort = var1.getInt32();
+   protected boolean readMore(MessageBuffer buffer) {
+      this.chatPort = buffer.getInt32();
       return false;
    }
 
-   public void read(MessageBuffer var1) {
-      this.read(var1.getInt32(), var1);
+   public void read(MessageBuffer buffer) {
+      this.read(buffer.getInt32(), buffer);
    }
 
-   public void readClientFile(MessageBuffer var1) {
-      String var2 = var1.getString();
-      int var3 = var1.getInt32();
-      Result var4 = this.core.getResultCollection().getResult(var3);
-      if (var4 != null) {
+   public void readClientFile(MessageBuffer buffer) {
+      String directory = buffer.getString();
+      int resultId = buffer.getInt32();
+      Result result = this.core.getResultCollection().getResult(resultId);
+      if (result != null) {
          synchronized (this) {
-            THashMap var6 = this.getClientFilesMap();
-            WeakHashMap var7;
-            if (var6.containsKey(var2)) {
-               var7 = (WeakHashMap)var6.get(var2);
+            THashMap filesMap = this.getClientFilesMap();
+            WeakHashMap resultSet;
+            if (filesMap.containsKey(directory)) {
+               resultSet = (WeakHashMap)filesMap.get(directory);
             } else {
-               var7 = new WeakHashMap();
-               var6.put(var2, var7);
+               resultSet = new WeakHashMap();
+               filesMap.put(directory, resultSet);
             }
 
-            var7.put(var4, null);
+            resultSet.put(result, null);
          }
 
          this.setChanged();
@@ -442,13 +442,13 @@ public class Client extends AObjectO {
       }
    }
 
-   public void readUpdate(MessageBuffer var1) {
-      EnumHostState var2 = this.getStateEnum();
+   public void readUpdate(MessageBuffer buffer) {
+      EnumHostState previousState = this.getStateEnum();
       synchronized (this) {
-         this.stateEnum = this.state.read(var1);
+         this.stateEnum = this.state.read(buffer);
       }
 
-      this.onChangedState(var2);
+      this.onChangedState(previousState);
    }
 
    public void removeAsFriend() {

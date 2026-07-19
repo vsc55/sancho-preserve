@@ -8,8 +8,8 @@ import sancho.view.utility.SResources;
 public class Client35 extends Client33 {
    byte sui_verified;
 
-   public Client35(ICore var1) {
-      super(var1);
+   public Client35(ICore core) {
+      super(core);
    }
 
    public synchronized Image getNameImage() {
@@ -35,9 +35,9 @@ public class Client35 extends Client33 {
       return this.sui_verified;
    }
 
-   protected boolean readMore(MessageBuffer var1) {
-      boolean var2 = super.readMore(var1);
-      this.sui_verified = var1.getBoolOption();
-      return var2;
+   protected boolean readMore(MessageBuffer buffer) {
+      boolean changed = super.readMore(buffer);
+      this.sui_verified = buffer.getBoolOption();
+      return changed;
    }
 }

@@ -26,11 +26,11 @@ public class SharedFile extends AObject implements IObject_UID, IPreview {
    protected int requests;
    protected long size;
 
-   SharedFile(ICore var1) {
-      super(var1);
+   SharedFile(ICore core) {
+      super(core);
    }
 
-   protected void readSubFiles(MessageBuffer var1) {
+   protected void readSubFiles(MessageBuffer buffer) {
    }
 
    public String[] getSubFileNames() {
@@ -49,77 +49,77 @@ public class SharedFile extends AObject implements IObject_UID, IPreview {
       return "";
    }
 
-   public String getContentRange(int var1) {
-      long[] var2 = this.getSubFileSizes();
-      if (var2 != null && var1 < var2.length) {
-         long var3 = 0L;
+   public String getContentRange(int index) {
+      long[] sizes = this.getSubFileSizes();
+      if (sizes != null && index < sizes.length) {
+         long start = 0L;
 
-         for (int var5 = 0; var5 < var1; var5++) {
-            var3 += var2[var5];
+         for (int i = 0; i < index; i++) {
+            start += sizes[i];
          }
 
-         long var6 = var3 + var2[var1] - 1L;
-         return "bytes=" + var3 + "-" + var6;
+         long end = start + sizes[index] - 1L;
+         return "bytes=" + start + "-" + end;
       } else {
          return "";
       }
    }
 
    public String getPreviewURL() {
-      CoreFactory var1 = Sancho.getCoreFactory();
-      String var2 = "";
-      if (!var1.getPassword().equals("")) {
-         var2 = var1.getUsername() + ":" + var1.getPassword() + "@";
+      CoreFactory coreFactory = Sancho.getCoreFactory();
+      String credentials = "";
+      if (!coreFactory.getPassword().equals("")) {
+         credentials = coreFactory.getUsername() + ":" + coreFactory.getPassword() + "@";
       }
 
-      return "http://" + var2 + var1.getHostname() + ":" + var1.getHTTPPort() + "/preview_upload?q=" + this.getId();
+      return "http://" + credentials + coreFactory.getHostname() + ":" + coreFactory.getHTTPPort() + "/preview_upload?q=" + this.getId();
    }
 
    public synchronized Program getOSPreviewApp() {
       return null;
    }
 
-   public String preview(Program var1, int var2) {
+   public String preview(Program program, int index) {
       return "Not supported";
    }
 
-   public String preview(int var1) {
-      return this.preview((String)null, var1);
+   public String preview(int index) {
+      return this.preview((String)null, index);
    }
 
-   public String preview(String var1, int var2) {
-      String var3 = PreferenceLoader.loadString("previewExecutable");
-      String var4 = PreferenceLoader.loadString("previewWorkingDirectory");
-      String var5 = PreferenceLoader.loadString("previewExtensions");
-      if (!var5.equals("")) {
-         StringTokenizer var6 = new StringTokenizer(var5, ";");
-         String var7 = "";
-         String var8 = "";
+   public String preview(String executableOverride, int index) {
+      String executable = PreferenceLoader.loadString("previewExecutable");
+      String workingDirectory = PreferenceLoader.loadString("previewWorkingDirectory");
+      String extensions = PreferenceLoader.loadString("previewExtensions");
+      if (!extensions.equals("")) {
+         StringTokenizer tokenizer = new StringTokenizer(extensions, ";");
+         String extension = "";
+         String extensionExecutable = "";
 
-         while (var6.hasMoreTokens()) {
-            var7 = var6.nextToken();
-            if (var6.hasMoreTokens()) {
-               var8 = var6.nextToken();
-               if (this.getName().toLowerCase().endsWith(var7.toLowerCase())) {
-                  var3 = var8;
+         while (tokenizer.hasMoreTokens()) {
+            extension = tokenizer.nextToken();
+            if (tokenizer.hasMoreTokens()) {
+               extensionExecutable = tokenizer.nextToken();
+               if (this.getName().toLowerCase().endsWith(extension.toLowerCase())) {
+                  executable = extensionExecutable;
                }
             }
          }
       }
 
-      if (var1 != null) {
-         var3 = var1;
+      if (executableOverride != null) {
+         executable = executableOverride;
       }
 
-      String var9 = this.getPreviewURL();
-      String[] var11 = new String[]{var3, var9};
-      SwissArmy.execInThread(var11, var4.equals("") ? null : var4);
-      return var3;
+      String url = this.getPreviewURL();
+      String[] args = new String[]{executable, url};
+      SwissArmy.execInThread(args, workingDirectory.equals("") ? null : workingDirectory);
+      return executable;
    }
 
    public synchronized String getExtension() {
-      int var1 = this.getName().lastIndexOf(".");
-      return var1 != -1 ? this.getName().substring(var1 + 1).toLowerCase().intern() : "";
+      int dotIndex = this.getName().lastIndexOf(".");
+      return dotIndex != -1 ? this.getName().substring(dotIndex + 1).toLowerCase().intern() : "";
    }
 
    public synchronized ImageDescriptor getFileTypeImageDescriptor() {
@@ -184,86 +184,86 @@ public class SharedFile extends AObject implements IObject_UID, IPreview {
 
    public void parseName() {
       if (this.name.indexOf("/") != -1) {
-         Matcher var1 = pathRE.matcher(this.name);
-         var1.find();
-         this.name = var1.group();
+         Matcher matcher = pathRE.matcher(this.name);
+         matcher.find();
+         this.name = matcher.group();
       }
    }
 
-   public void read(int var1, MessageBuffer var2) {
+   public void read(int id, MessageBuffer buffer) {
       synchronized (this) {
-         this.id = var1;
-         this.networkEnum = this.readNetworkEnum(var2);
-         this.name = var2.getString();
-         this.size = this.readSize(var2);
-         this.bytesUploaded = var2.getUInt64();
-         this.requests = var2.getInt32();
-         this.readUIDs(var2);
-         this.readSubFiles(var2);
-         this.readMagic(var2);
+         this.id = id;
+         this.networkEnum = this.readNetworkEnum(buffer);
+         this.name = buffer.getString();
+         this.size = this.readSize(buffer);
+         this.bytesUploaded = buffer.getUInt64();
+         this.requests = buffer.getInt32();
+         this.readUIDs(buffer);
+         this.readSubFiles(buffer);
+         this.readMagic(buffer);
          this.parseName();
       }
    }
 
-   protected void readMagic(MessageBuffer var1) {
+   protected void readMagic(MessageBuffer buffer) {
    }
 
-   public void read(MessageBuffer var1) {
-      this.read(var1.getInt32(), var1);
+   public void read(MessageBuffer buffer) {
+      this.read(buffer.getInt32(), buffer);
    }
 
-   protected void readUIDs(MessageBuffer var1) {
-      this.md4 = var1.getMd4();
+   protected void readUIDs(MessageBuffer buffer) {
+      this.md4 = buffer.getMd4();
    }
 
-   protected long readSize(MessageBuffer var1) {
-      return (long)var1.getInt32() & 4294967295L;
+   protected long readSize(MessageBuffer buffer) {
+      return (long)buffer.getInt32() & 4294967295L;
    }
 
-   public boolean readUpdate(int var1, MessageBuffer var2) {
-      long var3 = this.getBytesUploaded();
-      int var5 = this.getRequests();
-      this.read(var1, var2);
-      return var3 != this.getBytesUploaded() || var5 != this.getRequests();
+   public boolean readUpdate(int id, MessageBuffer buffer) {
+      long oldBytesUploaded = this.getBytesUploaded();
+      int oldRequests = this.getRequests();
+      this.read(id, buffer);
+      return oldBytesUploaded != this.getBytesUploaded() || oldRequests != this.getRequests();
    }
 
-   protected EnumNetwork readNetworkEnum(MessageBuffer var1) {
-      return this.core.getNetworkCollection().getNetworkEnum(var1.getInt32());
+   protected EnumNetwork readNetworkEnum(MessageBuffer buffer) {
+      return this.core.getNetworkCollection().getNetworkEnum(buffer.getInt32());
    }
 
-   public boolean upload(int var1, MessageBuffer var2) {
-      long var3 = this.getBytesUploaded();
-      int var5 = this.getRequests();
+   public boolean upload(int id, MessageBuffer buffer) {
+      long oldBytesUploaded = this.getBytesUploaded();
+      int oldRequests = this.getRequests();
       synchronized (this) {
-         this.bytesUploaded = var2.getUInt64();
-         this.requests = var2.getInt32();
+         this.bytesUploaded = buffer.getUInt64();
+         this.requests = buffer.getInt32();
       }
 
-      return var3 != this.getBytesUploaded() || var5 != this.getRequests();
+      return oldBytesUploaded != this.getBytesUploaded() || oldRequests != this.getRequests();
    }
 
-   public void computeTorrent(String var1, String var2) {
-      Network var3 = this.core.getNetworkCollection().getByEnum(EnumNetwork.BT);
-      if (var3 != null) {
-         byte[] var4 = new byte[]{-1, -1};
-         Object[] var5 = new Object[]{
-            Integer.valueOf(var3.getId()),
-            var4,
-            Integer.valueOf(SwissArmy.UTF8Length(var2) + 2 + SwissArmy.UTF8Length(var1) + 2 + 6),
+   public void computeTorrent(String tracker, String comment) {
+      Network network = this.core.getNetworkCollection().getByEnum(EnumNetwork.BT);
+      if (network != null) {
+         byte[] flags = new byte[]{-1, -1};
+         Object[] args = new Object[]{
+            Integer.valueOf(network.getId()),
+            flags,
+            Integer.valueOf(SwissArmy.UTF8Length(comment) + 2 + SwissArmy.UTF8Length(tracker) + 2 + 6),
             Short.valueOf((short)1),
             Integer.valueOf(this.getId()),
-            var1,
-            var2
+            tracker,
+            comment
          };
-         this.core.send((short)63, var5);
+         this.core.send((short)63, args);
       }
    }
 
    static {
       try {
          pathRE = Pattern.compile("[^/]*$");
-      } catch (PatternSyntaxException var1) {
-         Sancho.pDebug("SharedFile: " + var1);
+      } catch (PatternSyntaxException patternSyntaxException) {
+         Sancho.pDebug("SharedFile: " + patternSyntaxException);
       }
    }
 }

@@ -12,8 +12,8 @@ public class SearchWaiting {
       return this.numWaiting;
    }
 
-   public void read(MessageBuffer var1) {
-      this.id = var1.getInt32();
-      this.numWaiting = var1.getInt32();
+   public void read(MessageBuffer buffer) {
+      this.id = buffer.getInt32();
+      this.numWaiting = buffer.getInt32();
    }
 }

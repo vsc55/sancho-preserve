@@ -8,16 +8,16 @@ public class FileComment {
    String name;
    byte rating;
 
-   FileComment(ICore var1) {
-      this.addr = UtilityFactory.getAddr(var1);
+   FileComment(ICore core) {
+      this.addr = UtilityFactory.getAddr(core);
    }
 
-   public void read(MessageBuffer var1) {
+   public void read(MessageBuffer buffer) {
       synchronized (this) {
-         this.addr.read(false, var1);
-         this.name = var1.getString();
-         this.rating = (byte)var1.getInt8();
-         this.comment = var1.getString();
+         this.addr.read(false, buffer);
+         this.name = buffer.getString();
+         this.rating = (byte)buffer.getInt8();
+         this.comment = buffer.getString();
       }
    }
 

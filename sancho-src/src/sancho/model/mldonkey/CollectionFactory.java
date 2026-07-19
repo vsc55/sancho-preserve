@@ -25,12 +25,12 @@ public class CollectionFactory {
    protected List objectList = new ArrayList();
 
    public void disposeAll() {
-      for (int var1 = 0; var1 < this.collectionList.size(); var1++) {
-         ((ICollection)this.collectionList.get(var1)).dispose();
+      for (int i = 0; i < this.collectionList.size(); i++) {
+         ((ICollection)this.collectionList.get(i)).dispose();
       }
 
-      for (int var2 = 0; var2 < this.objectList.size(); var2++) {
-         ((IObject)this.objectList.get(var2)).deleteObservers();
+      for (int i = 0; i < this.objectList.size(); i++) {
+         ((IObject)this.objectList.get(i)).deleteObservers();
       }
    }
 
@@ -248,13 +248,13 @@ public class CollectionFactory {
       System.gc();
    }
 
-   public static CollectionFactory getFactory(int var0, ICore var1) {
+   public static CollectionFactory getFactory(int protocolVersion, ICore core) {
       if (factory == null) {
          factory = new CollectionFactory();
       }
 
-      factory.protocolVersion = var0;
-      factory.core = var1;
+      factory.protocolVersion = protocolVersion;
+      factory.core = core;
       return factory;
    }
 }

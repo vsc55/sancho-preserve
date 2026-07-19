@@ -1,8 +1,8 @@
 package sancho.model.mldonkey.utility;
 
 public class NetworkStatTotal extends NetworkStat {
-   NetworkStatTotal(NetworkStatCollection var1) {
-      super(var1);
+   NetworkStatTotal(NetworkStatCollection collection) {
+      super(collection);
    }
 
    public String getNameLong() {
@@ -13,13 +13,13 @@ public class NetworkStatTotal extends NetworkStat {
       return "Ttl";
    }
 
-   public void read(int var1, int var2, int var3, long var4, long var6) {
+   public void read(int seen, int banned, int request, long download, long upload) {
       synchronized (this) {
-         this.seen = var1;
-         this.banned = var2;
-         this.filerequest = var3;
-         this.download = var4;
-         this.upload = var6;
+         this.seen = seen;
+         this.banned = banned;
+         this.filerequest = request;
+         this.download = download;
+         this.upload = upload;
       }
    }
 }

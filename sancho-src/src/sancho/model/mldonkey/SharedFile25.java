@@ -4,11 +4,11 @@ import sancho.core.ICore;
 import sancho.model.mldonkey.utility.MessageBuffer;
 
 public class SharedFile25 extends SharedFile {
-   SharedFile25(ICore var1) {
-      super(var1);
+   SharedFile25(ICore core) {
+      super(core);
    }
 
-   protected long readSize(MessageBuffer var1) {
-      return var1.getUInt64();
+   protected long readSize(MessageBuffer buffer) {
+      return buffer.getUInt64();
    }
 }

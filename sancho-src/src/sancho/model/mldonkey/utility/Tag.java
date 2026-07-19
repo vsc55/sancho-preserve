@@ -25,25 +25,25 @@ public class Tag {
       return this.value;
    }
 
-   public void read(MessageBuffer var1) {
+   public void read(MessageBuffer buffer) {
       synchronized (this) {
-         this.name = var1.getString();
-         this.enumType = EnumType.byteToEnum(var1.getByte());
+         this.name = buffer.getString();
+         this.enumType = EnumType.byteToEnum(buffer.getByte());
          if (this.enumType == EnumType.STRING) {
-            this.stringValue = var1.getString();
+            this.stringValue = buffer.getString();
          } else if (this.enumType == EnumType.U_INT16) {
-            this.value = var1.getUInt16();
+            this.value = buffer.getUInt16();
          } else if (this.enumType == EnumType.U_INT8) {
-            this.value = var1.getInt8();
+            this.value = buffer.getInt8();
          } else if (this.enumType == EnumType.IPADDRESS) {
-            Addr var3 = UtilityFactory.getAddr(Sancho.getCore());
-            var3.read(false, var1);
+            Addr addr = UtilityFactory.getAddr(Sancho.getCore());
+            addr.read(false, buffer);
          } else if (this.enumType == EnumType.PAIR) {
-            this.value = var1.getInt32();
-            int var6 = var1.getInt32();
-            this.stringValue = this.value + " " + var6;
+            this.value = buffer.getInt32();
+            int second = buffer.getInt32();
+            this.stringValue = this.value + " " + second;
          } else {
-            this.value = var1.getInt32();
+            this.value = buffer.getInt32();
          }
       }
    }

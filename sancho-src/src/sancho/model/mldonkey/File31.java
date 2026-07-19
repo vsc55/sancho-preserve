@@ -6,17 +6,17 @@ import sancho.model.mldonkey.utility.MessageBuffer;
 public class File31 extends File25 {
    String[] uids;
 
-   File31(ICore var1) {
-      super(var1);
+   File31(ICore core) {
+      super(core);
    }
 
    public synchronized String getHash() {
       if (this.uids.length > 0) {
-         String var1 = this.uids[0];
-         int var2 = var1.indexOf(":");
-         int var3 = var1.indexOf(":", var2 + 1);
-         if (var3 != -1) {
-            return var1.substring(var3 + 1);
+         String uid = this.uids[0];
+         int firstColon = uid.indexOf(":");
+         int secondColon = uid.indexOf(":", firstColon + 1);
+         if (secondColon != -1) {
+            return uid.substring(secondColon + 1);
          }
       }
 
@@ -25,9 +25,9 @@ public class File31 extends File25 {
 
    public String getMD4() {
       if (this.md4 == null) {
-         for (int var1 = 0; var1 < this.uids.length; var1++) {
-            if (this.uids[var1].startsWith("urn:ed2k:")) {
-               return this.uids[var1].substring(9).intern();
+         for (int i = 0; i < this.uids.length; i++) {
+            if (this.uids[i].startsWith("urn:ed2k:")) {
+               return this.uids[i].substring(9).intern();
             }
          }
       }
@@ -39,17 +39,17 @@ public class File31 extends File25 {
       if (this.uids == null) {
          return null;
       } else {
-         String[] var1 = new String[this.uids.length];
+         String[] uidsCopy = new String[this.uids.length];
 
-         for (int var2 = 0; var2 < var1.length; var2++) {
-            var1[var2] = this.uids[var2];
+         for (int i = 0; i < uidsCopy.length; i++) {
+            uidsCopy[i] = this.uids[i];
          }
 
-         return var1;
+         return uidsCopy;
       }
    }
 
-   protected void readUIDs(MessageBuffer var1) {
-      this.uids = var1.getStringList();
+   protected void readUIDs(MessageBuffer buffer) {
+      this.uids = buffer.getStringList();
    }
 }

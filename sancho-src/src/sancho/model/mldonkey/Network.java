@@ -24,19 +24,19 @@ public class Network extends AObject {
    protected String name;
    protected long uploaded;
 
-   Network(ICore var1) {
-      super(var1);
+   Network(ICore core) {
+      super(core);
    }
 
    public void getStats() {
    }
 
-   public boolean equals(EnumNetwork var1) {
-      return this.getEnumNetwork() == var1;
+   public boolean equals(EnumNetwork enumNetwork) {
+      return this.getEnumNetwork() == enumNetwork;
    }
 
-   public boolean equals(Object var1) {
-      return var1 instanceof Network && this.getId() == ((Network)var1).getId();
+   public boolean equals(Object object) {
+      return object instanceof Network && this.getId() == ((Network)object).getId();
    }
 
    public synchronized String getConfigFile() {
@@ -59,10 +59,10 @@ public class Network extends AObject {
       if (!this.isEnabled()) {
          return this.enumNetwork.getImage("disabled");
       } else if (this.core.getProtocol() >= 18 && !this.isVirtual() && (this.hasServers() || this.hasSupernodes())) {
-         int var1 = this.core.getOptionCollection().getMaxConnected(this);
-         int var2 = this.numConnectedServers();
-         return (var2 < 1 || this.enumNetwork != EnumNetwork.DC) && var2 < var1
-            ? this.enumNetwork.getImage(var2 == 0 ? "disconnected" : "badconnect")
+         int maxConnected = this.core.getOptionCollection().getMaxConnected(this);
+         int connectedServers = this.numConnectedServers();
+         return (connectedServers < 1 || this.enumNetwork != EnumNetwork.DC) && connectedServers < maxConnected
+            ? this.enumNetwork.getImage(connectedServers == 0 ? "disconnected" : "badconnect")
             : this.enumNetwork.getImage("connected");
       } else {
          return this.enumNetwork.getImage("connected");
@@ -74,22 +74,22 @@ public class Network extends AObject {
    }
 
    public String getToolTip() {
-      StringBuffer var1 = new StringBuffer(256);
+      StringBuffer buffer = new StringBuffer(256);
       if (!this.isEnabled() || !this.hasServers() && !this.hasSupernodes()) {
          if (this.isVirtual()) {
             return this.getName();
          } else {
-            var1.append(this.getName());
-            var1.append(" ");
-            var1.append(this.isEnabled() ? RS_ENABLED : RS_DISABLED);
-            return var1.toString();
+            buffer.append(this.getName());
+            buffer.append(" ");
+            buffer.append(this.isEnabled() ? RS_ENABLED : RS_DISABLED);
+            return buffer.toString();
          }
       } else {
-         var1.append(this.getName());
-         var1.append(" ");
-         var1.append(RS_CONNECTED_TO);
-         var1.append(this.numConnectedServers());
-         return var1.toString();
+         buffer.append(this.getName());
+         buffer.append(" ");
+         buffer.append(RS_CONNECTED_TO);
+         buffer.append(this.numConnectedServers());
+         return buffer.toString();
       }
    }
 
@@ -106,16 +106,16 @@ public class Network extends AObject {
    }
 
    public synchronized String toString() {
-      StringBuffer var1 = new StringBuffer(50);
-      var1.append(this.getName());
-      var1.append(": U:");
-      var1.append(this.getUploadedString());
-      var1.append(" D:");
-      var1.append(this.getDownloadedString());
-      var1.append(" (");
-      var1.append(SResources.getString(this.isEnabled() ? "stats.enabled" : "stats.disabled"));
-      var1.append(")");
-      return var1.toString();
+      StringBuffer buffer = new StringBuffer(50);
+      buffer.append(this.getName());
+      buffer.append(": U:");
+      buffer.append(this.getUploadedString());
+      buffer.append(" D:");
+      buffer.append(this.getDownloadedString());
+      buffer.append(" (");
+      buffer.append(SResources.getString(this.isEnabled() ? "stats.enabled" : "stats.disabled"));
+      buffer.append(")");
+      return buffer.toString();
    }
 
    public synchronized boolean hasChat() {
@@ -166,28 +166,28 @@ public class Network extends AObject {
       return this.core.getServerCollection().getConnected(this.getEnumNetwork());
    }
 
-   public void read(int var1, MessageBuffer var2) {
-      boolean var3 = this.isEnabled();
+   public void read(int id, MessageBuffer buffer) {
+      boolean wasEnabled = this.isEnabled();
       synchronized (this) {
-         this.id = var1;
-         this.name = var2.getString();
-         this.enabled = var2.getBool();
-         this.configFile = var2.getString();
-         this.uploaded = var2.getUInt64();
-         this.downloaded = var2.getUInt64();
+         this.id = id;
+         this.name = buffer.getString();
+         this.enabled = buffer.getBool();
+         this.configFile = buffer.getString();
+         this.uploaded = buffer.getUInt64();
+         this.downloaded = buffer.getUInt64();
          this.enumNetwork = EnumNetwork.stringToEnum(this.name);
       }
 
-      if (!this.isEnabled() && var3) {
+      if (!this.isEnabled() && wasEnabled) {
          this.core.getServerCollection().removeAll(this.getEnumNetwork());
       }
    }
 
-   public void read(MessageBuffer var1) {
-      this.read(var1.getInt32(), var1);
+   public void read(MessageBuffer buffer) {
+      this.read(buffer.getInt32(), buffer);
    }
 
-   protected void setConnectedServers(int var1) {
+   protected void setConnectedServers(int connectedServers) {
    }
 
    public NetworkStatCollection[] getNetworkStatCollection() {
@@ -195,10 +195,10 @@ public class Network extends AObject {
    }
 
    public void toggleEnabled() {
-      Object[] var1 = new Object[]{Integer.valueOf(this.getId()), Byte.valueOf((byte)(this.isEnabled() ? 0 : 1))};
-      this.core.send((short)40, var1);
+      Object[] args = new Object[]{Integer.valueOf(this.getId()), Byte.valueOf((byte)(this.isEnabled() ? 0 : 1))};
+      this.core.send((short)40, args);
    }
 
-   public void readStats(MessageBuffer var1) {
+   public void readStats(MessageBuffer buffer) {
    }
 }

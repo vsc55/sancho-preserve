@@ -10,29 +10,29 @@ public abstract class ACollection_Int2 extends ACollection_Int {
    private Map removedMap = new WeakHashMap();
    private Map updatedMap = new WeakHashMap();
 
-   ACollection_Int2(ICore var1) {
-      super(var1);
+   ACollection_Int2(ICore core) {
+      super(core);
    }
 
    public synchronized boolean added() {
       return this.addedMap.size() > 0;
    }
 
-   public synchronized void addToAdded(Object var1) {
-      if (var1 != null && this.countObservers() > 0) {
-         this.addedMap.put(var1, null);
+   public synchronized void addToAdded(Object object) {
+      if (object != null && this.countObservers() > 0) {
+         this.addedMap.put(object, null);
       }
    }
 
-   public synchronized void addToRemoved(Object var1) {
-      if (var1 != null && this.countObservers() > 0) {
-         this.removedMap.put(var1, null);
+   public synchronized void addToRemoved(Object object) {
+      if (object != null && this.countObservers() > 0) {
+         this.removedMap.put(object, null);
       }
    }
 
-   public synchronized void addToUpdated(Object var1) {
-      if (var1 != null && this.countObservers() > 0) {
-         this.updatedMap.put(var1, null);
+   public synchronized void addToUpdated(Object object) {
+      if (object != null && this.countObservers() > 0) {
+         this.updatedMap.put(object, null);
       }
    }
 
@@ -55,21 +55,21 @@ public abstract class ACollection_Int2 extends ACollection_Int {
    }
 
    public synchronized Object[] getAndClearAdded() {
-      Object[] var1 = SwissArmy.toArray(this.addedMap.keySet());
+      Object[] values = SwissArmy.toArray(this.addedMap.keySet());
       this.clearAdded();
-      return var1;
+      return values;
    }
 
    public synchronized Object[] getAndClearRemoved() {
-      Object[] var1 = SwissArmy.toArray(this.removedMap.keySet());
+      Object[] values = SwissArmy.toArray(this.removedMap.keySet());
       this.clearRemoved();
-      return var1;
+      return values;
    }
 
    public synchronized Object[] getAndClearUpdated() {
-      Object[] var1 = SwissArmy.toArray(this.updatedMap.keySet());
+      Object[] values = SwissArmy.toArray(this.updatedMap.keySet());
       this.clearUpdated();
-      return var1;
+      return values;
    }
 
    public synchronized boolean removed() {

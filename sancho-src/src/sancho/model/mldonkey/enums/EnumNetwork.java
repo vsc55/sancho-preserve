@@ -19,9 +19,9 @@ public class EnumNetwork extends AbstractEnum {
    public static final EnumNetwork FILETP = new EnumNetwork(1024, "filetp");
    protected String resName;
 
-   private EnumNetwork(int var1, String var2) {
-      super(var1, "e.network." + var2);
-      this.resName = "e.network." + var2;
+   private EnumNetwork(int value, String name) {
+      super(value, "e.network." + name);
+      this.resName = "e.network." + name;
    }
 
    public Image getImage() {
@@ -32,41 +32,41 @@ public class EnumNetwork extends AbstractEnum {
       return this.getImageDescriptor("connected-16");
    }
 
-   public ImageDescriptor getImageDescriptor(String var1) {
-      return this == OV ? SResources.getImageDescriptor("e.network.donkey." + var1) : SResources.getImageDescriptor(this.resName + "." + var1);
+   public ImageDescriptor getImageDescriptor(String imageName) {
+      return this == OV ? SResources.getImageDescriptor("e.network.donkey." + imageName) : SResources.getImageDescriptor(this.resName + "." + imageName);
    }
 
-   public Image getImage(String var1) {
-      return this == OV ? SResources.getImage("e.network.donkey." + var1) : SResources.getImage(this.resName + "." + var1);
+   public Image getImage(String imageName) {
+      return this == OV ? SResources.getImage("e.network.donkey." + imageName) : SResources.getImage(this.resName + "." + imageName);
    }
 
    public String getImageString() {
       return this == OV ? "e.network.donkey.connected-16" : this.resName + ".connected-16";
    }
 
-   public static EnumNetwork stringToEnum(String var0) {
-      if (var0.equalsIgnoreCase("Donkey")) {
+   public static EnumNetwork stringToEnum(String name) {
+      if (name.equalsIgnoreCase("Donkey")) {
          return DONKEY;
-      } else if (var0.equalsIgnoreCase("Fasttrack")) {
+      } else if (name.equalsIgnoreCase("Fasttrack")) {
          return FT;
-      } else if (var0.equalsIgnoreCase("Soulseek")) {
+      } else if (name.equalsIgnoreCase("Soulseek")) {
          return SOULSEEK;
-      } else if (var0.equalsIgnoreCase("BitTorrent")) {
+      } else if (name.equalsIgnoreCase("BitTorrent")) {
          return BT;
-      } else if (var0.equalsIgnoreCase("Overnet")) {
+      } else if (name.equalsIgnoreCase("Overnet")) {
          return OV;
-      } else if (var0.equalsIgnoreCase("Gnutella")) {
+      } else if (name.equalsIgnoreCase("Gnutella")) {
          return GNUT;
-      } else if (var0.equalsIgnoreCase("Gnutella2") || var0.equalsIgnoreCase("G2")) {
+      } else if (name.equalsIgnoreCase("Gnutella2") || name.equalsIgnoreCase("G2")) {
          return GNUT2;
-      } else if (var0.equalsIgnoreCase("Direct Connect")) {
+      } else if (name.equalsIgnoreCase("Direct Connect")) {
          return DC;
-      } else if (var0.equalsIgnoreCase("Open Napster") || var0.equalsIgnoreCase("OpenNapster")) {
+      } else if (name.equalsIgnoreCase("Open Napster") || name.equalsIgnoreCase("OpenNapster")) {
          return OPENNP;
-      } else if (var0.equalsIgnoreCase("MultiNet")) {
+      } else if (name.equalsIgnoreCase("MultiNet")) {
          return MULTINET;
       } else {
-         return var0.equalsIgnoreCase("FileTP") ? FILETP : UNKNOWN;
+         return name.equalsIgnoreCase("FileTP") ? FILETP : UNKNOWN;
       }
    }
 

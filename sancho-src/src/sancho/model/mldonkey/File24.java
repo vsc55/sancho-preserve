@@ -7,8 +7,8 @@ import sancho.utility.SwissArmy;
 public class File24 extends File21 {
    String comment;
 
-   File24(ICore var1) {
-      super(var1);
+   File24(ICore core) {
+      super(core);
    }
 
    public synchronized String getAgeString() {
@@ -19,19 +19,19 @@ public class File24 extends File21 {
       return this.comment;
    }
 
-   protected long readAge(MessageBuffer var1) {
+   protected long readAge(MessageBuffer buffer) {
       if (this.core.getFileCollection().eta2()) {
          this.ageTS = System.currentTimeMillis();
       }
 
-      return (long)var1.getInt32();
+      return (long)buffer.getInt32();
    }
 
-   protected int[] readChunkAges(MessageBuffer var1) {
-      return var1.getInt32List();
+   protected int[] readChunkAges(MessageBuffer buffer) {
+      return buffer.getInt32List();
    }
 
-   protected void readComment(MessageBuffer var1) {
-      this.comment = var1.getString();
+   protected void readComment(MessageBuffer buffer) {
+      this.comment = buffer.getString();
    }
 }

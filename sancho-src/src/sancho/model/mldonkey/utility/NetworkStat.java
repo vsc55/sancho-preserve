@@ -12,8 +12,8 @@ public class NetworkStat {
    long download;
    long upload;
 
-   NetworkStat(NetworkStatCollection var1) {
-      this.networkStatCollection = var1;
+   NetworkStat(NetworkStatCollection collection) {
+      this.networkStatCollection = collection;
    }
 
    public int getUptime() {
@@ -33,8 +33,8 @@ public class NetworkStat {
    }
 
    public int getSeenPercent() {
-      float var1 = (float)this.networkStatCollection.getSeen();
-      return var1 <= 0.0F ? 0 : (int)((float)this.getSeen() / var1 * 100.0F);
+      float total = (float)this.networkStatCollection.getSeen();
+      return total <= 0.0F ? 0 : (int)((float)this.getSeen() / total * 100.0F);
    }
 
    public String getSeenPercentString() {
@@ -46,8 +46,8 @@ public class NetworkStat {
    }
 
    public int getBannedPercent() {
-      float var1 = (float)this.networkStatCollection.getBanned();
-      return var1 <= 0.0F ? 0 : (int)((float)this.getBanned() / var1 * 100.0F);
+      float total = (float)this.networkStatCollection.getBanned();
+      return total <= 0.0F ? 0 : (int)((float)this.getBanned() / total * 100.0F);
    }
 
    public String getBannedPercentString() {
@@ -59,8 +59,8 @@ public class NetworkStat {
    }
 
    public int getRequestPercent() {
-      float var1 = (float)this.networkStatCollection.getRequest();
-      return var1 <= 0.0F ? 0 : (int)((float)this.getRequest() / var1 * 100.0F);
+      float total = (float)this.networkStatCollection.getRequest();
+      return total <= 0.0F ? 0 : (int)((float)this.getRequest() / total * 100.0F);
    }
 
    public String getRequestPercentString() {
@@ -72,8 +72,8 @@ public class NetworkStat {
    }
 
    public int getDownloadPercent() {
-      float var1 = (float)this.networkStatCollection.getDownload();
-      return var1 <= 0.0F ? 0 : (int)((float)this.getDownload() / var1 * 100.0F);
+      float total = (float)this.networkStatCollection.getDownload();
+      return total <= 0.0F ? 0 : (int)((float)this.getDownload() / total * 100.0F);
    }
 
    public String getDownloadPercentString() {
@@ -81,8 +81,8 @@ public class NetworkStat {
    }
 
    public float getDownloadRate() {
-      float var1 = (float)this.networkStatCollection.getUptime();
-      return var1 <= 0.0F ? 0.0F : (float)this.getDownload() / var1 / 1024.0F;
+      float uptime = (float)this.networkStatCollection.getUptime();
+      return uptime <= 0.0F ? 0.0F : (float)this.getDownload() / uptime / 1024.0F;
    }
 
    public String getDownloadRateString() {
@@ -94,8 +94,8 @@ public class NetworkStat {
    }
 
    public int getUploadPercent() {
-      float var1 = (float)this.networkStatCollection.getUpload();
-      return var1 <= 0.0F ? 0 : (int)((float)this.getUpload() / var1 * 100.0F);
+      float total = (float)this.networkStatCollection.getUpload();
+      return total <= 0.0F ? 0 : (int)((float)this.getUpload() / total * 100.0F);
    }
 
    public String getUploadPercentString() {
@@ -103,8 +103,8 @@ public class NetworkStat {
    }
 
    public float getUploadRate() {
-      float var1 = (float)this.networkStatCollection.getUptime();
-      return var1 <= 0.0F ? 0.0F : (float)this.getUpload() / var1 / 1024.0F;
+      float uptime = (float)this.networkStatCollection.getUptime();
+      return uptime <= 0.0F ? 0.0F : (float)this.getUpload() / uptime / 1024.0F;
    }
 
    public String getUploadRateString() {
@@ -112,8 +112,8 @@ public class NetworkStat {
    }
 
    public float getRatio() {
-      float var1 = (float)this.getUpload();
-      return var1 == 0.0F ? 0.0F : (float)this.getDownload() / var1;
+      float upload = (float)this.getUpload();
+      return upload == 0.0F ? 0.0F : (float)this.getDownload() / upload;
    }
 
    public String getRatioString() {
@@ -140,15 +140,15 @@ public class NetworkStat {
       return SwissArmy.calcStringSize(this.upload);
    }
 
-   public void read(MessageBuffer var1) {
+   public void read(MessageBuffer buffer) {
       synchronized (this) {
-         this.stringLong = var1.getString();
-         this.stringShort = var1.getString();
-         this.seen = var1.getInt32();
-         this.banned = var1.getInt32();
-         this.filerequest = var1.getInt32();
-         this.download = var1.getUInt64();
-         this.upload = var1.getUInt64();
+         this.stringLong = buffer.getString();
+         this.stringShort = buffer.getString();
+         this.seen = buffer.getInt32();
+         this.banned = buffer.getInt32();
+         this.filerequest = buffer.getInt32();
+         this.download = buffer.getUInt64();
+         this.upload = buffer.getUInt64();
       }
    }
 }

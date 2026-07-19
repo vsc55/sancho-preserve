@@ -12,13 +12,13 @@ public interface IPreview {
 
    ImageDescriptor getFileTypeImageDescriptor();
 
-   String preview(String var1, int var2);
+   String preview(String app, int index);
 
-   String preview(Program var1, int var2);
+   String preview(Program program, int index);
 
-   String preview(int var1);
+   String preview(int index);
 
-   String getContentRange(int var1);
+   String getContentRange(int index);
 
    String[] getSubFileNames();
 
