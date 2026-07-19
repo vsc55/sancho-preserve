@@ -41,6 +41,7 @@ import sancho.view.mainWindow.CToolBar;
 import sancho.view.mainWindow.MenuBar;
 import sancho.view.mainWindow.Minimizer;
 import sancho.view.mainWindow.MinimizerTray;
+import sancho.view.preferences.AssociationChecker;
 import sancho.view.preferences.CPreferenceManager;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.AbstractTab;
@@ -173,6 +174,9 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
       if (PreferenceLoader.loadBoolean("versionCheck")) {
          new VersionChecker(this.shell, this.statusLine, 4444, false);
       }
+
+      // Windows only: if some file/URL associations are missing, offer to create them.
+      AssociationChecker.checkAndPrompt(this.shell);
 
       try {
          while (!this.shell.isDisposed()) {

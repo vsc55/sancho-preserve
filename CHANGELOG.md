@@ -8,6 +8,22 @@ The upstream project's original changelog (2004–2006) is preserved at
 authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 (`git checkout 0.9.4-23`).
 
+## [0.9.6] — 2026-07-19
+
+### Added
+
+- **Windows associations now show their current status and are checked at startup.** The
+  Preferences → *Windows Registry* page shows, for each protocol (`ed2k`, `magnet`,
+  `sig2dat`, `sfdl`) and the `.torrent` extension, whether it is currently associated —
+  with Sancho or with another application — and at which level (user `HKCU` vs. machine
+  `HKLM`), checking the per-user hive first. At startup (Windows only, on by default) Sancho
+  checks for associations that are completely unregistered and, if any are missing, offers
+  to create them at user or machine level — or to stop asking (which turns off the check).
+  Associations already owned by another application are left untouched, not flagged. A new
+  **Preferences → General** checkbox *"Check Windows associations at startup"* disables the
+  check. The registry logic is centralized in a new `WinRegAssociations` helper (shared by
+  the page and the startup check). New i18n keys `l.assoc.*` and `p.r.general.checkAssociations`.
+
 ## [0.9.5] — 2026-07-19
 
 ### Changed

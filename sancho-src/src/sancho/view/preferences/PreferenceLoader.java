@@ -470,6 +470,7 @@ public class PreferenceLoader {
       store.setDefault("previewUseHttp", false);
       store.setDefault("versionCheck", false);
       store.setDefault("versionCheckPopup", true);
+      store.setDefault("checkAssociations", true);
       store.setDefault(
          "bwPresets",
          "max_hard_download_rate;max_hard_upload_rate;max_upload_slots;max_concurrent_downloads;max_opened_connections;max_connections_per_second;ED2K-max_indirect_connections;ED2K-max_udp_sends;"
