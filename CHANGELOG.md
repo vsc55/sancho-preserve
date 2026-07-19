@@ -8,6 +8,26 @@ The upstream project's original changelog (2004–2006) is preserved at
 authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 (`git checkout 0.9.4-23`).
 
+## [0.9.5] — 2026-07-19
+
+### Changed
+
+- **Version scheme: plain incrementing releases.** Dropped the decompiler-era
+  `0.9.4-<build>` suffix (a build counter frozen on the upstream `0.9.4`) in favor of
+  ordinary incrementing versions — `0.9.5`, `0.9.6`, … The version number is now identical
+  everywhere: the artifact file name, the in-app *About* dialog, and the installer's
+  internal version.
+
+### Fixed
+
+- **Installers refused to upgrade an existing install.** Every `0.9.4-<build>` package
+  carried the *same* numeric version (`0.9.4`; the `-<build>` part only lived in the file
+  name), so once any build was installed, installing a different one failed — Windows
+  Installer aborted with *"another version of this product is already installed"* (error
+  1638), and apt/dnf saw no newer version. jpackage's `--app-version` now comes from the
+  real, plain-incrementing project version, so the MSI `ProductVersion` (and the deb/rpm
+  version) rises every release and a new build installs cleanly over the previous one.
+
 ## [0.9.4-77] — 2026-07-19
 
 ### Fixed

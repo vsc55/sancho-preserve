@@ -28,27 +28,36 @@
 #>
 param(
     [string]$Type = "",
-    # jpackage bundle version (1-3 integers). macOS rejects a leading 0, so the
-    # release passes 1.0.0 there; the real version lives in the file name and the
-    # app's own VersionInfo. Windows/Linux keep the accurate 0.9.4.
-    [string]$AppVersion = "0.9.4"
+    # jpackage bundle version (1-3 integers). Leave empty to use the real project
+    # version from pom.xml (plain-incrementing 0.9.x), so the MSI/deb/rpm
+    # ProductVersion rises every release and upgrades install cleanly over the
+    # previous copy. macOS rejects a leading-zero bundle version, so the release
+    # passes 1.0.0 there explicitly.
+    [string]$AppVersion = ""
 )
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
-$appVersion = $AppVersion
-
-# jpackage's --app-version must be numeric (major.minor.build), so the MSI/exe internal
-# version is $AppVersion (e.g. 0.9.4). For the output *file* name we want the full
-# project version with its build number (e.g. 0.9.4-66), read from pom.xml.
+# The project version from pom.xml (e.g. 0.9.5), used for the output file name and,
+# by default, as the numeric package version below.
 $fullVersion = $AppVersion
 $pom = Join-Path $root "pom.xml"
 if (Test-Path $pom) {
     $m = Select-String -Path $pom -Pattern '<version>([^<]+)</version>' | Select-Object -First 1
     if ($m) { $fullVersion = $m.Matches[0].Groups[1].Value }
 }
+
+# The numeric version jpackage stamps into the package (MSI ProductVersion / deb/rpm
+# version / macOS CFBundleVersion). Windows Installer only performs a major upgrade
+# when this strictly increases, so it must be the real, plain-incrementing project
+# version (0.9.5, 0.9.6, ...) -- never a fixed number, or installing a newer build
+# over an older one fails with "another version of this product is already installed"
+# (error 1638). A caller may override it (macOS passes 1.0.0, which cannot have a
+# leading-zero major field).
+if (-not $AppVersion) { $AppVersion = $fullVersion }
+$appVersion = $AppVersion
 
 if (-not $Type) {
     if ($IsMacOS) { $Type = "dmg" } else { $Type = "app-image" }
@@ -92,7 +101,8 @@ $jpArgs = @(
 )
 
 # Windows installer (.msi / .exe): Start-menu + desktop shortcuts, a stable upgrade
-# UUID so new versions replace old ones, and the custom WiX (packaging/windows/wix)
+# UUID (which, together with the build-number-bumped $appVersion above, lets a new
+# release replace the installed one), and the custom WiX (packaging/windows/wix)
 # that offers the optional .torrent/ed2k/magnet/sig2dat association registration.
 # Per-machine install (default) -> associations land in HKLM. Requires WiX 3.14.
 if (($Type -eq "msi" -or $Type -eq "exe") -and ($IsWindows -or $env:OS -eq "Windows_NT")) {

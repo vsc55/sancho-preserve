@@ -75,6 +75,8 @@ Sancho used a `0.9.4-NN` snapshot scheme.
 | `0.9.4-74` | Audit fixes: DecimalFormat data race, Windows-registry crash, Download-Complete parse crash, chunk-image cache leak, ETA sort + robustness guards | [Release](../../releases/tag/0.9.4-74) |
 | `0.9.4-75` | **IRC client removed** (drops the abandoned `pircbot` dependency); decompiler cleanup begun — inner classes merged back + descriptive variable names across `sancho.core`/`utility`/`model` + JFace viewers; per-user Windows association via `reg.exe` | [Release](../../releases/tag/0.9.4-75) |
 | `0.9.4-76` | **Decompiler cleanup finished** — every split `$` inner-class file merged and all `varN` renamed tree-wide; update check moved to the **GitHub releases API** (+ interactive Help-menu check); Preferences dialog i18n/UX (localized `Core:` sections, translated/relabelled buttons, dependent checkboxes); configurable advanced-search formats | [Release](../../releases/tag/0.9.4-76) |
+| `0.9.4-77` | Silent-failure fixes: installed-MSI Windows association now writes its `.reg` to a writable temp dir (+ warning on failure), failed screenshot save reports an error dialog | [Release](../../releases/tag/0.9.4-77) |
+| `0.9.5` | **Plain incrementing version scheme** (drops the `0.9.4-<build>` suffix); fixes installers refusing to upgrade an existing install (the internal version was frozen at `0.9.4`, so the MSI ProductVersion never rose) | [Release](../../releases/tag/0.9.5) |
 
 **`main`** always holds the newest modernized build; [CHANGELOG.md](CHANGELOG.md)
 and the [Releases](../../releases) page are the authoritative, up-to-date list.
