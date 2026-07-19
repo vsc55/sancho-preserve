@@ -9,14 +9,14 @@ import sancho.view.viewer.actions.MaximizeAction;
 public abstract class SashViewListener extends ViewListener {
    protected SashForm sashForm;
 
-   public SashViewListener(SashViewFrame var1) {
-      super(var1);
-      this.sashForm = var1.getParentSashForm();
+   public SashViewListener(SashViewFrame viewFrame) {
+      super(viewFrame);
+      this.sashForm = viewFrame.getParentSashForm();
    }
 
-   public void createSashActions(IMenuManager var1, String var2) {
-      var1.add(new Separator());
-      var1.add(new FlipSashAction(this.sashForm));
-      var1.add(new MaximizeAction(this.sashForm, this.control, var2));
+   public void createSashActions(IMenuManager menuManager, String prefString) {
+      menuManager.add(new Separator());
+      menuManager.add(new FlipSashAction(this.sashForm));
+      menuManager.add(new MaximizeAction(this.sashForm, this.control, prefString));
    }
 }

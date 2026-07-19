@@ -15,61 +15,61 @@ public abstract class ASearchTab2 extends ASearchTab {
    protected Combo minCombo;
    protected Combo resultCombo;
 
-   public ASearchTab2(ResultViewFrame var1, SearchTab var2) {
-      super(var1, var2);
+   public ASearchTab2(ResultViewFrame resultViewFrame, SearchTab searchTab) {
+      super(resultViewFrame, searchTab);
    }
 
-   public void addMaxSizeToQuery(SearchQuery var1, Combo var2) {
-      if (!var2.getText().equals("")) {
-         var1.setMaxSize(this.parseSizeCombo(var2));
+   public void addMaxSizeToQuery(SearchQuery query, Combo combo) {
+      if (!combo.getText().equals("")) {
+         query.setMaxSize(this.parseSizeCombo(combo));
       }
    }
 
-   public void addMinSizeToQuery(SearchQuery var1, Combo var2) {
-      if (!var2.getText().equals("")) {
-         var1.setMinSize(this.parseSizeCombo(var2));
+   public void addMinSizeToQuery(SearchQuery query, Combo combo) {
+      if (!combo.getText().equals("")) {
+         query.setMinSize(this.parseSizeCombo(combo));
       }
    }
 
-   public void addMaxResultsToQuery(SearchQuery var1, Combo var2) {
-      if (!var2.getText().equals("")) {
-         int var3 = 0;
+   public void addMaxResultsToQuery(SearchQuery query, Combo combo) {
+      if (!combo.getText().equals("")) {
+         int maxResults = 0;
 
          try {
-            var3 = Integer.parseInt(this.resultCombo.getText());
-         } catch (NumberFormatException var5) {
-            var3 = 100;
+            maxResults = Integer.parseInt(this.resultCombo.getText());
+         } catch (NumberFormatException notANumber) {
+            maxResults = 100;
          }
 
-         var1.setMaxSearchResults(var3);
+         query.setMaxSearchResults(maxResults);
       }
    }
 
-   protected Combo createMinMaxCombo(Composite var1, int var2, String var3) {
-      String[] var4 = new String[]{"", "100 KB", "200 KB", "500 KB", "1 MB", "5 MB", "50 MB", "100 MB", "250 MB", "500 MB", "1 GB", "2 GB", "3 GB"};
-      return this.createCombo(var1, var2, var3, var4);
+   protected Combo createMinMaxCombo(Composite composite, int style, String labelKey) {
+      String[] items = new String[]{"", "100 KB", "200 KB", "500 KB", "1 MB", "5 MB", "50 MB", "100 MB", "250 MB", "500 MB", "1 GB", "2 GB", "3 GB"};
+      return this.createCombo(composite, style, labelKey, items);
    }
 
    public int parseMinAvail() {
-      int var1;
+      int minAvail;
       try {
-         var1 = Integer.parseInt(this.minAvailCombo.getText());
-      } catch (NumberFormatException var3) {
-         var1 = 0;
+         minAvail = Integer.parseInt(this.minAvailCombo.getText());
+      } catch (NumberFormatException notANumber) {
+         minAvail = 0;
       }
 
-      return var1;
+      return minAvail;
    }
 
-   public long parseSizeCombo(Combo var1) {
-      String var2 = "";
-      String var3 = "MB";
-      StringTokenizer var4 = new StringTokenizer(var1.getText());
-      var2 = var4.nextToken();
-      if (var4.hasMoreTokens()) {
-         var3 = var4.nextToken();
+   public long parseSizeCombo(Combo combo) {
+      String size = "";
+      String unit = "MB";
+      StringTokenizer tokenizer = new StringTokenizer(combo.getText());
+      size = tokenizer.nextToken();
+      if (tokenizer.hasMoreTokens()) {
+         unit = tokenizer.nextToken();
       }
 
-      return SwissArmy.stringSizeToLong(var2, var3);
+      return SwissArmy.stringSizeToLong(size, unit);
    }
 }

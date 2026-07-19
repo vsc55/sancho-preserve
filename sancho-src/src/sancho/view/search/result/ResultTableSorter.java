@@ -6,12 +6,12 @@ import sancho.model.mldonkey.Result;
 import sancho.view.viewer.GSorter;
 
 public class ResultTableSorter extends GSorter {
-   public ResultTableSorter(ResultTableView var1) {
-      super(var1);
+   public ResultTableSorter(ResultTableView view) {
+      super(view);
    }
 
-   public boolean sortOrder(int var1) {
-      switch (this.cViewer.getColumnIDs()[var1]) {
+   public boolean sortOrder(int columnIndex) {
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
          case 1:
          case 5:
@@ -21,32 +21,32 @@ public class ResultTableSorter extends GSorter {
       }
    }
 
-   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
-      Result var5 = (Result)var2;
-      Result var6 = (Result)var3;
-      switch (var4) {
+   protected int _compare(Viewer viewer, Object first, Object second, int columnId) {
+      Result firstResult = (Result)first;
+      Result secondResult = (Result)second;
+      switch (columnId) {
          case 0:
-            return this.compareStrings(var5.getNetworkName(), var6.getNetworkName());
+            return this.compareStrings(firstResult.getNetworkName(), secondResult.getNetworkName());
          case 1:
-            return this.compareStrings(var5.getName(), var6.getName());
+            return this.compareStrings(firstResult.getName(), secondResult.getName());
          case 2:
-            return this.compareLongs(var5.getSize(), var6.getSize());
+            return this.compareLongs(firstResult.getSize(), secondResult.getSize());
          case 3:
-            return this.compareStrings(var5.getFormat(), var6.getFormat());
+            return this.compareStrings(firstResult.getFormat(), secondResult.getFormat());
          case 4:
-            return this.compareStrings(var5.getType(), var6.getType());
+            return this.compareStrings(firstResult.getType(), secondResult.getType());
          case 5:
-            return this.compareStrings(var5.getCodecTag(), var6.getCodecTag());
+            return this.compareStrings(firstResult.getCodecTag(), secondResult.getCodecTag());
          case 6:
-            return this.compareInts(var5.getBitrateTag(), var6.getBitrateTag());
+            return this.compareInts(firstResult.getBitrateTag(), secondResult.getBitrateTag());
          case 7:
-            return this.compareStrings(var5.getLengthTag(), var6.getLengthTag());
+            return this.compareStrings(firstResult.getLengthTag(), secondResult.getLengthTag());
          case 8:
-            return this.compareInts(var5.getAvail(), var6.getAvail());
+            return this.compareInts(firstResult.getAvail(), secondResult.getAvail());
          case 9:
-            return this.compareInts(var5.getCompleteSources(), var6.getCompleteSources());
+            return this.compareInts(firstResult.getCompleteSources(), secondResult.getCompleteSources());
          default:
-            return this.compareDefault((TableViewer)var1, this.columnIndex, var2, var3);
+            return this.compareDefault((TableViewer)viewer, this.columnIndex, first, second);
       }
    }
 }

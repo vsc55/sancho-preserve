@@ -26,19 +26,19 @@ public abstract class GSorter extends ViewerSorter implements DisposeListener {
    protected static final boolean UP = true;
    protected static final boolean DOWN = false;
 
-   public GSorter(GView var1) {
-      this.gView = var1;
+   public GSorter(GView gView) {
+      this.gView = gView;
    }
 
-   public int compare(Viewer var1, Object var2, Object var3) {
+   public int compare(Viewer viewer, Object object1, Object object2) {
       this.workingDirection = this.direction;
-      int var4 = this._compare(var1, var2, var3, this.cViewer.getColumnIDs()[this.columnIndex]);
-      if (var4 == 0) {
+      int result = this._compare(viewer, object1, object2, this.cViewer.getColumnIDs()[this.columnIndex]);
+      if (result == 0) {
          this.workingDirection = this.prevDirection;
-         var4 = this._compare(var1, var2, var3, this.cViewer.getColumnIDs()[this.prevColumnIndex]);
+         result = this._compare(viewer, object1, object2, this.cViewer.getColumnIDs()[this.prevColumnIndex]);
       }
 
-      return var4;
+      return result;
    }
 
    // The comparators read live model data (rate, %, downloaded, scores, …) that the
@@ -48,131 +48,131 @@ public abstract class GSorter extends ViewerSorter implements DisposeListener {
    // stable merge sort tolerates it. Doing it here keeps that tolerance local to our
    // tables instead of needing the global -Djava.util.Arrays.useLegacyMergeSort flag.
    @Override
-   public void sort(Viewer var1, Object[] var2) {
-      if (var2 != null && var2.length > 1) {
-         this.mergeSort(var1, (Object[])var2.clone(), var2, 0, var2.length);
+   public void sort(Viewer viewer, Object[] elements) {
+      if (elements != null && elements.length > 1) {
+         this.mergeSort(viewer, (Object[])elements.clone(), elements, 0, elements.length);
       }
    }
 
-   private void mergeSort(Viewer var1, Object[] var2, Object[] var3, int var4, int var5) {
-      int var6 = var5 - var4;
-      if (var6 < 7) {
-         for (int var11 = var4; var11 < var5; var11++) {
-            for (int var12 = var11; var12 > var4 && this.compare(var1, var3[var12 - 1], var3[var12]) > 0; var12--) {
-               Object var13 = var3[var12];
-               var3[var12] = var3[var12 - 1];
-               var3[var12 - 1] = var13;
+   private void mergeSort(Viewer viewer, Object[] src, Object[] dest, int low, int high) {
+      int length = high - low;
+      if (length < 7) {
+         for (int i = low; i < high; i++) {
+            for (int j = i; j > low && this.compare(viewer, dest[j - 1], dest[j]) > 0; j--) {
+               Object temp = dest[j];
+               dest[j] = dest[j - 1];
+               dest[j - 1] = temp;
             }
          }
       } else {
-         int var7 = var4 + var5 >>> 1;
-         this.mergeSort(var1, var3, var2, var4, var7);
-         this.mergeSort(var1, var3, var2, var7, var5);
-         if (this.compare(var1, var2[var7 - 1], var2[var7]) <= 0) {
-            System.arraycopy(var2, var4, var3, var4, var6);
+         int mid = low + high >>> 1;
+         this.mergeSort(viewer, dest, src, low, mid);
+         this.mergeSort(viewer, dest, src, mid, high);
+         if (this.compare(viewer, src[mid - 1], src[mid]) <= 0) {
+            System.arraycopy(src, low, dest, low, length);
          } else {
-            int var8 = var4;
-            int var9 = var4;
-            for (int var10 = var7; var8 < var5; var8++) {
-               if (var10 >= var5 || var9 < var7 && this.compare(var1, var2[var9], var2[var10]) <= 0) {
-                  var3[var8] = var2[var9++];
+            int i = low;
+            int p = low;
+            for (int q = mid; i < high; i++) {
+               if (q >= high || p < mid && this.compare(viewer, src[p], src[q]) <= 0) {
+                  dest[i] = src[p++];
                } else {
-                  var3[var8] = var2[var10++];
+                  dest[i] = src[q++];
                }
             }
          }
       }
    }
 
-   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
+   protected int _compare(Viewer viewer, Object object1, Object object2, int columnId) {
       return 0;
    }
 
-   protected int compareAddrs(Addr var1, Addr var2) {
-      return this.workingDirection ? var1.compareTo(var2) : var2.compareTo(var1);
+   protected int compareAddrs(Addr addr1, Addr addr2) {
+      return this.workingDirection ? addr1.compareTo(addr2) : addr2.compareTo(addr1);
    }
 
-   protected int compareBooleans(boolean var1, boolean var2) {
-      return this.workingDirection ? (var1 ? (var2 ? 0 : 1) : (var2 ? -1 : 0)) : (var2 ? (var1 ? 0 : 1) : (var1 ? -1 : 0));
+   protected int compareBooleans(boolean first, boolean second) {
+      return this.workingDirection ? (first ? (second ? 0 : 1) : (second ? -1 : 0)) : (second ? (first ? 0 : 1) : (first ? -1 : 0));
    }
 
-   protected int compareClientStates(Client var1, Client var2) {
-      boolean var5 = var1.getStateEnum() == EnumHostState.CONNECTED_DOWNLOADING;
-      boolean var6 = var2.getStateEnum() == EnumHostState.CONNECTED_DOWNLOADING;
+   protected int compareClientStates(Client client1, Client client2) {
+      boolean downloading1 = client1.getStateEnum() == EnumHostState.CONNECTED_DOWNLOADING;
+      boolean downloading2 = client2.getStateEnum() == EnumHostState.CONNECTED_DOWNLOADING;
       // Only when exactly one is downloading does it sort first. When both are
       // downloading, returning -1 (as before) for both a,b and b,a broke
       // antisymmetry (TimSort "violates its general contract"); fall through to
       // the rank/activity tie-break instead.
-      if (var5 != var6) {
-         return var5 ? -1 : 1;
+      if (downloading1 != downloading2) {
+         return downloading1 ? -1 : 1;
       } else {
-         int var3 = var1.getState().getRank();
-         int var4 = var2.getState().getRank();
-         return var3 <= 0 && var4 <= 0 ? this.compareStrings(var1.getDetailedClientActivity(), var2.getDetailedClientActivity()) : this.compareInts(var3, var4);
+         int rank1 = client1.getState().getRank();
+         int rank2 = client2.getState().getRank();
+         return rank1 <= 0 && rank2 <= 0 ? this.compareStrings(client1.getDetailedClientActivity(), client2.getDetailedClientActivity()) : this.compareInts(rank1, rank2);
       }
    }
 
-   protected int compareDefault(TableViewer var1, int var2, Object var3, Object var4) {
-      GTableLabelProvider var5 = (GTableLabelProvider)var1.getLabelProvider();
-      String var6 = var5.getColumnText(var3, var2);
-      String var7 = var5.getColumnText(var4, var2);
-      return this.compareStrings(var6, var7);
+   protected int compareDefault(TableViewer tableViewer, int columnIndex, Object object1, Object object2) {
+      GTableLabelProvider labelProvider = (GTableLabelProvider)tableViewer.getLabelProvider();
+      String text1 = labelProvider.getColumnText(object1, columnIndex);
+      String text2 = labelProvider.getColumnText(object2, columnIndex);
+      return this.compareStrings(text1, text2);
    }
 
-   protected int comparePercents(float var1, float var2) {
-      if (var1 == var2) {
+   protected int comparePercents(float percent1, float percent2) {
+      if (percent1 == percent2) {
          return 0;
       } else {
-         var1 *= 100000.0F;
-         var2 *= 100000.0F;
-         float var3 = this.workingDirection ? var1 - var2 : var2 - var1;
-         int var4 = (int)var3;
-         if (var3 >= 2.1474836E9F) {
-            var4 = Integer.MAX_VALUE;
+         percent1 *= 100000.0F;
+         percent2 *= 100000.0F;
+         float difference = this.workingDirection ? percent1 - percent2 : percent2 - percent1;
+         int result = (int)difference;
+         if (difference >= 2.1474836E9F) {
+            result = Integer.MAX_VALUE;
          }
 
-         if (var3 <= -2.1474836E9F) {
-            var4 = Integer.MIN_VALUE;
+         if (difference <= -2.1474836E9F) {
+            result = Integer.MIN_VALUE;
          }
 
-         return var4;
+         return result;
       }
    }
 
-   protected int compareInts(int var1, int var2) {
-      // Integer.compare avoids the overflow of var1 - var2 when the operands
+   protected int compareInts(int first, int second) {
+      // Integer.compare avoids the overflow of first - second when the operands
       // straddle a range > 2^31 (e.g. a negative score vs a large positive one),
       // which would violate the comparator contract.
-      return this.workingDirection ? Integer.compare(var1, var2) : Integer.compare(var2, var1);
+      return this.workingDirection ? Integer.compare(first, second) : Integer.compare(second, first);
    }
 
-   protected int compareLongs(long var1, long var3) {
-      if (var1 == var3) {
+   protected int compareLongs(long first, long second) {
+      if (first == second) {
          return 0;
       } else {
-         long var5 = this.workingDirection ? var1 - var3 : var3 - var1;
-         int var7 = (int)var5;
-         if (var5 >= 2147483647L) {
-            var7 = Integer.MAX_VALUE;
+         long difference = this.workingDirection ? first - second : second - first;
+         int result = (int)difference;
+         if (difference >= 2147483647L) {
+            result = Integer.MAX_VALUE;
          }
 
-         if (var5 <= -2147483648L) {
-            var7 = Integer.MIN_VALUE;
+         if (difference <= -2147483648L) {
+            result = Integer.MIN_VALUE;
          }
 
-         return var7;
+         return result;
       }
    }
 
-   protected int compareStrings(String var1, String var2) {
-      if (var1.equals(var2)) {
+   protected int compareStrings(String text1, String text2) {
+      if (text1.equals(text2)) {
          return 0;
-      } else if (var1.equals("")) {
+      } else if (text1.equals("")) {
          return 1;
-      } else if (var2.equals("")) {
+      } else if (text2.equals("")) {
          return -1;
       } else {
-         return this.workingDirection ? var1.compareToIgnoreCase(var2) : var2.compareToIgnoreCase(var1);
+         return this.workingDirection ? text1.compareToIgnoreCase(text2) : text2.compareToIgnoreCase(text1);
       }
    }
 
@@ -187,54 +187,54 @@ public abstract class GSorter extends ViewerSorter implements DisposeListener {
    public void initialize() {
       this.cViewer = (ICustomViewer)this.gView.getViewer();
       this.gView.getComposite().addDisposeListener(this);
-      String var1 = PreferenceLoader.loadString(this.gView.getPreferenceString() + "LastSortColumn");
-      String var2 = PreferenceLoader.loadString(this.gView.getPreferenceString() + "PrevSortColumn");
-      if (!var1.equals("") && this.gView.getColumnIDs().indexOf(var1) != -1) {
-         this.setColumnIndex(this.gView.getColumnIDs().indexOf(var1));
+      String lastColumn = PreferenceLoader.loadString(this.gView.getPreferenceString() + "LastSortColumn");
+      String prevColumn = PreferenceLoader.loadString(this.gView.getPreferenceString() + "PrevSortColumn");
+      if (!lastColumn.equals("") && this.gView.getColumnIDs().indexOf(lastColumn) != -1) {
+         this.setColumnIndex(this.gView.getColumnIDs().indexOf(lastColumn));
          this.setDirection(PreferenceLoader.loadBoolean(this.gView.getPreferenceString() + "LastSortOrder"));
       }
 
-      if (!var2.equals("") && this.gView.getColumnIDs().indexOf(var2) != -1) {
-         this.prevColumnIndex = this.gView.getColumnIDs().indexOf(var2);
+      if (!prevColumn.equals("") && this.gView.getColumnIDs().indexOf(prevColumn) != -1) {
+         this.prevColumnIndex = this.gView.getColumnIDs().indexOf(prevColumn);
          this.prevDirection = PreferenceLoader.loadBoolean(this.gView.getPreferenceString() + "PrevSortOrder");
       }
    }
 
-   public boolean isSorterProperty(Object var1, String var2) {
+   public boolean isSorterProperty(Object object, String property) {
       return true;
    }
 
-   public void setColumnIndex(int var1) {
-      if (var1 != this.lastColumnIndex) {
+   public void setColumnIndex(int columnIndex) {
+      if (columnIndex != this.lastColumnIndex) {
          this.prevDirection = this.direction;
          this.prevColumnIndex = this.columnIndex;
       } else {
          this.prevDirection = !this.prevDirection;
       }
 
-      this.columnIndex = var1;
+      this.columnIndex = columnIndex;
       this.direction = this.columnIndex == this.lastColumnIndex ? !this.direction : this.sortOrder(this.columnIndex);
       this.lastColumnIndex = this.columnIndex;
    }
 
-   public void setDirection(boolean var1) {
-      this.direction = var1;
+   public void setDirection(boolean direction) {
+      this.direction = direction;
    }
 
-   public boolean sortOrder(int var1) {
+   public boolean sortOrder(int columnIndex) {
       return true;
    }
 
    public void updateDisplay() {
    }
 
-   public void widgetDisposed(DisposeEvent var1) {
-      String var2 = this.gView.getPreferenceString();
-      this.preferenceStore.setValue(var2 + "LastSortColumn", String.valueOf(this.gView.getColumnIDs().charAt(this.columnIndex)));
-      this.preferenceStore.setDefault(var2 + "LastSortOrder", true);
-      this.preferenceStore.setValue(var2 + "LastSortOrder", this.direction);
-      this.preferenceStore.setValue(var2 + "PrevSortColumn", String.valueOf(this.gView.getColumnIDs().charAt(this.prevColumnIndex)));
-      this.preferenceStore.setDefault(var2 + "PrevSortOrder", true);
-      this.preferenceStore.setValue(var2 + "PrevSortOrder", this.prevDirection);
+   public void widgetDisposed(DisposeEvent event) {
+      String preferenceString = this.gView.getPreferenceString();
+      this.preferenceStore.setValue(preferenceString + "LastSortColumn", String.valueOf(this.gView.getColumnIDs().charAt(this.columnIndex)));
+      this.preferenceStore.setDefault(preferenceString + "LastSortOrder", true);
+      this.preferenceStore.setValue(preferenceString + "LastSortOrder", this.direction);
+      this.preferenceStore.setValue(preferenceString + "PrevSortColumn", String.valueOf(this.gView.getColumnIDs().charAt(this.prevColumnIndex)));
+      this.preferenceStore.setDefault(preferenceString + "PrevSortOrder", true);
+      this.preferenceStore.setValue(preferenceString + "PrevSortOrder", this.prevDirection);
    }
 }

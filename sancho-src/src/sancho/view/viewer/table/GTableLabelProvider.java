@@ -17,23 +17,23 @@ public abstract class GTableLabelProvider implements ITableLabelProvider, ITable
    protected boolean alternateColors;
    protected Color alternateColor;
 
-   public GTableLabelProvider(GView var1) {
-      this.gView = var1;
+   public GTableLabelProvider(GView gView) {
+      this.gView = gView;
       this.updateDisplay();
    }
 
-   public Color getForeground(Object var1, int var2) {
+   public Color getForeground(Object element, int columnIndex) {
       return null;
    }
 
-   public Color getBackground(Object var1, int var2) {
+   public Color getBackground(Object element, int columnIndex) {
       if (this.alternateColors) {
-         IGContentProvider var3 = (IGContentProvider)this.gView.getViewer().getContentProvider();
-         if (var3 instanceof GTableContentProvider) {
-            if (((GTableContentProvider)var3).getSFIndex(var1) % 2 != 0) {
+         IGContentProvider contentProvider = (IGContentProvider)this.gView.getViewer().getContentProvider();
+         if (contentProvider instanceof GTableContentProvider) {
+            if (((GTableContentProvider)contentProvider).getSFIndex(element) % 2 != 0) {
                return this.alternateColor;
             }
-         } else if (var3 instanceof GTreeContentProvider && ((GTreeContentProvider)var3).getSFIndex(var1) % 2 != 0) {
+         } else if (contentProvider instanceof GTreeContentProvider && ((GTreeContentProvider)contentProvider).getSFIndex(element) % 2 != 0) {
             return this.alternateColor;
          }
       }
@@ -41,27 +41,27 @@ public abstract class GTableLabelProvider implements ITableLabelProvider, ITable
       return null;
    }
 
-   public void addListener(ILabelProviderListener var1) {
+   public void addListener(ILabelProviderListener listener) {
    }
 
    public void dispose() {
    }
 
-   public Image getColumnImage(Object var1, int var2) {
+   public Image getColumnImage(Object element, int columnIndex) {
       return null;
    }
 
-   public abstract String getColumnText(Object var1, int var2);
+   public abstract String getColumnText(Object element, int columnIndex);
 
    public void initialize() {
       this.cViewer = (ICustomViewer)this.gView.getViewer();
    }
 
-   public boolean isLabelProperty(Object var1, String var2) {
+   public boolean isLabelProperty(Object element, String property) {
       return true;
    }
 
-   public void removeListener(ILabelProviderListener var1) {
+   public void removeListener(ILabelProviderListener listener) {
    }
 
    public void updateDisplay() {

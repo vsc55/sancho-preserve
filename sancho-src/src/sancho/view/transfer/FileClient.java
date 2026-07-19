@@ -9,9 +9,9 @@ public class FileClient {
    private File file;
    private Client client;
 
-   public FileClient(File var1, Client var2) {
-      this.file = var1;
-      this.client = var2;
+   public FileClient(File file, Client client) {
+      this.file = file;
+      this.client = client;
    }
 
    public File getFile() {
@@ -22,13 +22,13 @@ public class FileClient {
       return this.client;
    }
 
-   public boolean equals(Object var1) {
-      if (!(var1 instanceof FileClient)) {
+   public boolean equals(Object other) {
+      if (!(other instanceof FileClient)) {
          return false;
       } else {
-         Client var2 = ((FileClient)var1).getClient();
-         File var3 = ((FileClient)var1).getFile();
-         return var2.equals(this.getClient()) && var3.equals(this.getFile());
+         Client client = ((FileClient)other).getClient();
+         File file = ((FileClient)other).getFile();
+         return client.equals(this.getClient()) && file.equals(this.getFile());
       }
    }
 }

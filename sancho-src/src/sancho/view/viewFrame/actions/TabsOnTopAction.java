@@ -9,10 +9,10 @@ public class TabsOnTopAction extends Action {
    String tabPrefString;
    TabbedViewFrame viewFrame;
 
-   public TabsOnTopAction(String var1, TabbedViewFrame var2) {
+   public TabsOnTopAction(String tabPrefString, TabbedViewFrame viewFrame) {
       super(SResources.getString("mi.tabsOnTop"), 2);
-      this.tabPrefString = var1;
-      this.viewFrame = var2;
+      this.tabPrefString = tabPrefString;
+      this.viewFrame = viewFrame;
    }
 
    public boolean isChecked() {

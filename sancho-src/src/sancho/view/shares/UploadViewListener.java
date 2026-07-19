@@ -13,23 +13,23 @@ import sancho.view.viewer.actions.RefreshUploadsAction;
 import sancho.view.viewer.actions.RemoveAllFiltersAction;
 
 public class UploadViewListener extends ViewListener {
-   public UploadViewListener(ViewFrame var1) {
-      super(var1);
+   public UploadViewListener(ViewFrame viewFrame) {
+      super(viewFrame);
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
-      var1.add(new RefreshUploadsAction());
-      var1.add(new Separator());
-      var1.add(new ColumnSelectorAction(this.gView));
-      var1.add(new Separator());
-      this.createDynamicColumnSubMenu(var1);
-      this.createSortByColumnSubMenu(var1);
-      MyMenuManager var2 = new MyMenuManager(SResources.getString("mi.show"));
-      var2.setImageString("target");
-      var2.add(new RemoveAllFiltersAction(this.gView));
-      var2.add(new Separator());
-      this.createEnabledNetworkFilterSubMenu(var2);
-      var1.add(var2);
-      var1.add(new ToggleTabsAction((TabbedViewFrame)this.viewFrame));
+   public void menuAboutToShow(IMenuManager menuManager) {
+      menuManager.add(new RefreshUploadsAction());
+      menuManager.add(new Separator());
+      menuManager.add(new ColumnSelectorAction(this.gView));
+      menuManager.add(new Separator());
+      this.createDynamicColumnSubMenu(menuManager);
+      this.createSortByColumnSubMenu(menuManager);
+      MyMenuManager showMenu = new MyMenuManager(SResources.getString("mi.show"));
+      showMenu.setImageString("target");
+      showMenu.add(new RemoveAllFiltersAction(this.gView));
+      showMenu.add(new Separator());
+      this.createEnabledNetworkFilterSubMenu(showMenu);
+      menuManager.add(showMenu);
+      menuManager.add(new ToggleTabsAction((TabbedViewFrame)this.viewFrame));
    }
 }

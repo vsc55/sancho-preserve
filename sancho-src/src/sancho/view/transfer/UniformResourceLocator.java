@@ -17,32 +17,32 @@ public class UniformResourceLocator extends ByteArrayTransfer {
       return _instance;
    }
 
-   public Object nativeToJava(TransferData var1) {
-      if (!this.isSupportedType(var1)) {
+   public Object nativeToJava(TransferData transferData) {
+      if (!this.isSupportedType(transferData)) {
          return null;
       } else {
-         byte[] var2 = (byte[])super.nativeToJava(var1);
-         if (var2 == null) {
+         byte[] bytes = (byte[])super.nativeToJava(transferData);
+         if (bytes == null) {
             return null;
-         } else if (var1.type == TYPEID2) {
+         } else if (transferData.type == TYPEID2) {
             // Gecko "text/x-moz-url-data": the URL as UTF-16LE. Decoding with the JVM
             // default charset (UTF-8 since JDK 18) turned every char into mojibake; and
             // the old scan-to-first-NUL truncated it to one character (UTF-16 has a NUL
             // high byte on ASCII). Decode as UTF-16LE and cut at the first NUL.
-            String var5 = new String(var2, StandardCharsets.UTF_16LE);
-            int var6 = var5.indexOf(0);
-            return var6 == -1 ? var5 : var5.substring(0, var6);
+            String text = new String(bytes, StandardCharsets.UTF_16LE);
+            int nulIndex = text.indexOf(0);
+            return nulIndex == -1 ? text : text.substring(0, nulIndex);
          } else {
             // Windows shell "UniformResourceLocator": a NUL-terminated single-byte
             // (ANSI/windows-1252) string. Decode it explicitly rather than with the JVM
             // default charset, which is UTF-8 on JDK 18+ and mangles bytes >= 0x80.
-            int var3 = 0;
+            int length = 0;
 
-            for (int var4 = 0; var4 < var2.length && var2[var4] != 0; var4++) {
-               var3++;
+            for (int i = 0; i < bytes.length && bytes[i] != 0; i++) {
+               length++;
             }
 
-            return new String(var2, 0, var3, Charset.forName("windows-1252"));
+            return new String(bytes, 0, length, Charset.forName("windows-1252"));
          }
       }
    }

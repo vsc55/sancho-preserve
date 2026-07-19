@@ -104,12 +104,14 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
   `Server`/`Network`/`SharedFile`/`Option`/`Room`/`User` + protocol subclasses, the `enums`
   sub-package, and the `utility` wire-format sub-package) renamed to descriptive names.
   `sancho.model` now has zero `varN`; full 747-file compile clean. See CHANGELOG.
-- [~] **Rename `varN` locals in `sancho.view`.** The `$`-split-file merge is DONE (see the
-  re-merge item above) — every `sancho.view` parent is now a single file. What remains is
-  the descriptive-rename pass: the un-restructured method bodies (and the moved inner-class
-  bodies) still carry decompiler `varN` locals (~18k occurrences across ~600 files). Purely
-  descriptive renaming, no structural change; the same low-risk pass already completed for
-  `sancho.core`/`sancho.utility`/`sancho.model`. Do it per sub-package, compile-checking each.
+- [x] ~~**Rename `varN` locals in `sancho.view`.**~~ — done: all 293 files renamed to
+  descriptive names. **The entire source tree now has zero decompiler `varN`** — every
+  `sancho.*` package plus `org.eclipse.jface.viewers`. Verified by a clean full-tree
+  compile (413 files), a NUL/binary-corruption scan, and a per-file literal audit (every
+  string/char literal byte-identical to the previous version). See CHANGELOG. (Done via a
+  parallel agent fleet; a first run hit the API session limit mid-way and corrupted two
+  files — `CSpinner`'s ` ` escape and `BandwidthDialog` with NUL bytes — which were
+  restored from the last good commit and re-renamed cleanly by a second, controlled run.)
 - [ ] **Validate the Windows association exe-path on an installed MSI build.** The
   registry association (Preferences → Windows Registry) now creates the keys correctly and
   takes the executable path from `jpackage.app-path` when installed. Running the dev jar

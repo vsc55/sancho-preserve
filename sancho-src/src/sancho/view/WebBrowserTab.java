@@ -66,8 +66,8 @@ public class WebBrowserTab extends AbstractTab {
    protected boolean loadedBookmarks;
    public int maxFLen = 10;
 
-   public WebBrowserTab(MainWindow var1, String var2) {
-      super(var1, var2);
+   public WebBrowserTab(MainWindow mainWindow, String id) {
+      super(mainWindow, id);
 
       try {
          this.regex = Pattern.compile(
@@ -77,7 +77,7 @@ public class WebBrowserTab extends AbstractTab {
          this.bookmark_href = Pattern.compile("HREF=\"(.+?)\"");
          this.bookmark_title = Pattern.compile("<A.+?>(.+?)</A>");
          this.bookmark_folder = Pattern.compile("<H3.+?>(.+?)</H3>");
-      } catch (PatternSyntaxException var4) {
+      } catch (PatternSyntaxException patternSyntaxException) {
       }
 
       this.updateDisplay();
@@ -124,9 +124,9 @@ public class WebBrowserTab extends AbstractTab {
       this.browserBack(this.getSelectedBrowser());
    }
 
-   public void browserBack(Browser var1) {
-      if (var1 != null && !var1.isDisposed()) {
-         var1.back();
+   public void browserBack(Browser browser) {
+      if (browser != null && !browser.isDisposed()) {
+         browser.back();
       }
    }
 
@@ -134,9 +134,9 @@ public class WebBrowserTab extends AbstractTab {
       this.browserForward(this.getSelectedBrowser());
    }
 
-   public void browserForward(Browser var1) {
-      if (var1 != null && !var1.isDisposed()) {
-         var1.forward();
+   public void browserForward(Browser browser) {
+      if (browser != null && !browser.isDisposed()) {
+         browser.forward();
       }
    }
 
@@ -144,9 +144,9 @@ public class WebBrowserTab extends AbstractTab {
       this.browserRefresh(this.getSelectedBrowser());
    }
 
-   public void browserRefresh(Browser var1) {
-      if (var1 != null && !var1.isDisposed()) {
-         var1.refresh();
+   public void browserRefresh(Browser browser) {
+      if (browser != null && !browser.isDisposed()) {
+         browser.refresh();
       }
    }
 
@@ -154,13 +154,13 @@ public class WebBrowserTab extends AbstractTab {
       this.browserStop(this.getSelectedBrowser());
    }
 
-   public void browserStop(Browser var1) {
-      if (var1 != null && !var1.isDisposed()) {
-         var1.stop();
+   public void browserStop(Browser browser) {
+      if (browser != null && !browser.isDisposed()) {
+         browser.stop();
       }
    }
 
-   public Browser createBrowser(Composite var1) {
+   public Browser createBrowser(Composite parent) {
       Browser browser;
       try {
          // SWT removed the old Mozilla/XULRunner backend (SWT.MOZILLA). On Windows
@@ -169,13 +169,13 @@ public class WebBrowserTab extends AbstractTab {
          // is unavailable it throws, and we fall back to the platform default.
          if ("win32".equals(SWT.getPlatform())) {
             try {
-               browser = new Browser(var1, SWT.EDGE);
+               browser = new Browser(parent, SWT.EDGE);
             } catch (SWTError edgeUnavailable) {
                Sancho.pDebug("SWT.EDGE unavailable, falling back to default browser: " + edgeUnavailable.toString());
-               browser = new Browser(var1, SWT.NONE);
+               browser = new Browser(parent, SWT.NONE);
             }
          } else {
-            browser = new Browser(var1, SWT.NONE);
+            browser = new Browser(parent, SWT.NONE);
          }
       } catch (SWTError browserError) {
          Sancho.pDebug(browserError.toString());
@@ -258,24 +258,24 @@ public class WebBrowserTab extends AbstractTab {
    }
 
    public Browser createBrowserTab() {
-      Composite var1 = new Composite(this.cTabFolder, 0);
-      CTabItem var2 = new CTabItem(this.cTabFolder, 0);
-      var2.setControl(var1);
-      var2.setText("blank");
-      var1.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
-      this.inputCombo = new NoDuplicatesCombo(var1, 0);
+      Composite composite = new Composite(this.cTabFolder, 0);
+      CTabItem item = new CTabItem(this.cTabFolder, 0);
+      item.setControl(composite);
+      item.setText("blank");
+      composite.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
+      this.inputCombo = new NoDuplicatesCombo(composite, 0);
       this.inputCombo.setLayoutData(new GridData(768));
       // Bind this combo to its tab so every read/write targets the right one; the
       // shared this.inputCombo field only ever points at the last-created tab, so with
       // multiple tabs the URL used to land in the wrong (last) tab's address bar.
-      var2.setData("inputCombo", this.inputCombo);
+      item.setData("inputCombo", this.inputCombo);
 
       try {
          if (SWT.getPlatform().equals("win32") && PreferenceLoader.loadBoolean("dragAndDrop")) {
             this.activateDropTarget(this.inputCombo);
          }
-      } catch (Exception var5) {
-         var5.printStackTrace();
+      } catch (Exception exception) {
+         exception.printStackTrace();
       }
 
       this.inputCombo.addKeyListener(new KeyAdapter() {
@@ -288,13 +288,13 @@ public class WebBrowserTab extends AbstractTab {
             }
          }
       });
-      Browser var4 = this.createBrowser(var1);
-      if (var4 != null) {
-         var4.setData("cTabItem", var2);
-         var2.setData("browser", var4);
+      Browser browser = this.createBrowser(composite);
+      if (browser != null) {
+         browser.setData("cTabItem", item);
+         item.setData("browser", browser);
       }
 
-      return var4;
+      return browser;
    }
 
    public void updateDisplay() {
@@ -302,8 +302,8 @@ public class WebBrowserTab extends AbstractTab {
       this.maxFLen = Math.max(PreferenceLoader.loadInt("maxFavoriteLength"), 10);
    }
 
-   protected void createContents(Composite var1) {
-      this.viewFrame = new WebBrowserViewFrame(var1, "tab.webbrowser", "tab.webbrowser.buttonSmall", this);
+   protected void createContents(Composite parent) {
+      this.viewFrame = new WebBrowserViewFrame(parent, "tab.webbrowser", "tab.webbrowser.buttonSmall", this);
       this.addViewFrame(this.viewFrame);
       this.cTabFolder = WidgetFactory.createCTabFolder(
          this.viewFrame.getChildComposite(), 64 | (PreferenceLoader.loadBoolean("webBrowserCTabFolderTabsOnTop") ? 128 : 1024)
@@ -352,151 +352,151 @@ public class WebBrowserTab extends AbstractTab {
       }
    }
 
-   public void createFavoritesMenu(IMenuManager var1) {
+   public void createFavoritesMenu(IMenuManager menuManager) {
       if (this.loaded) {
-         var1.add(new NewBrowserTabAction());
-         var1.add(new Separator());
-         String var2 = PreferenceLoader.loadStringEnv("bookmarksFile");
-         File var3 = new File(var2);
-         if (var2 != null && !var2.equals("") && var3.exists()) {
+         menuManager.add(new NewBrowserTabAction());
+         menuManager.add(new Separator());
+         String path = PreferenceLoader.loadStringEnv("bookmarksFile");
+         File file = new File(path);
+         if (path != null && !path.equals("") && file.exists()) {
             this.loadedBookmarks = true;
 
             try {
-               BufferedReader var4 = new BufferedReader(new FileReader(var3));
-               this.traverseBookmarks(var4, var1);
-            } catch (Exception var6) {
-               System.out.println(var6);
+               BufferedReader reader = new BufferedReader(new FileReader(file));
+               this.traverseBookmarks(reader, menuManager);
+            } catch (Exception exception) {
+               System.out.println(exception);
             }
          }
 
-         var2 = PreferenceLoader.loadStringEnv("adrFile");
-         var3 = new File(var2);
-         if (var2 != null && !var2.equals("") && var3.exists()) {
+         path = PreferenceLoader.loadStringEnv("adrFile");
+         file = new File(path);
+         if (path != null && !path.equals("") && file.exists()) {
             this.loadedBookmarks = true;
 
             try {
-               BufferedReader var9 = new BufferedReader(new FileReader(var3));
-               this.traverseADR(var9, var1);
-            } catch (Exception var5) {
-               System.out.println(var5);
+               BufferedReader reader = new BufferedReader(new FileReader(file));
+               this.traverseADR(reader, menuManager);
+            } catch (Exception exception) {
+               System.out.println(exception);
             }
          }
       }
    }
 
-   protected void addIfFull(IMenuManager var1, String var2, String var3) {
-      if (var2 != null && var3 != null) {
-         var1.add(new ADRBookmark(var2, var3));
+   protected void addIfFull(IMenuManager menuManager, String name, String url) {
+      if (name != null && url != null) {
+         menuManager.add(new ADRBookmark(name, url));
       }
    }
 
-   public void traverseADR(BufferedReader var1, IMenuManager var2) {
-      ArrayList var3 = new ArrayList();
-      byte var5 = 0;
-      Object var6 = var2;
-      String var7 = null;
-      String var8 = null;
+   public void traverseADR(BufferedReader reader, IMenuManager menuManager) {
+      ArrayList menuStack = new ArrayList();
+      byte state = 0;
+      Object current = menuManager;
+      String name = null;
+      String url = null;
 
       try {
-         String var4;
-         while ((var4 = var1.readLine()) != null) {
-            var4 = var4.trim();
-            if (var4.startsWith("#FOLDER")) {
-               var5 = 1;
-            } else if (var4.startsWith("-")) {
-               int var9 = var3.size() - 1;
-               if (var9 >= 0) {
-                  IMenuManager var10 = (IMenuManager)var3.get(var9);
-                  var3.remove(var9);
-                  var10.add((IContributionItem)var6);
-                  var6 = var10;
+         String line;
+         while ((line = reader.readLine()) != null) {
+            line = line.trim();
+            if (line.startsWith("#FOLDER")) {
+               state = 1;
+            } else if (line.startsWith("-")) {
+               int index = menuStack.size() - 1;
+               if (index >= 0) {
+                  IMenuManager parent = (IMenuManager)menuStack.get(index);
+                  menuStack.remove(index);
+                  parent.add((IContributionItem)current);
+                  current = parent;
                }
 
-               var5 = 0;
-            } else if (var4.startsWith("#URL")) {
-               var7 = null;
-               var8 = null;
-               var5 = 2;
-            } else if (var4.startsWith("NAME=")) {
-               if (var5 == 1) {
-                  var3.add(var6);
-                  var6 = new MenuManager(this.formatTitle(var4.substring(5)));
-               } else if (var5 == 2) {
-                  var7 = var4.substring(5);
-                  this.addIfFull((IMenuManager)var6, var7, var8);
+               state = 0;
+            } else if (line.startsWith("#URL")) {
+               name = null;
+               url = null;
+               state = 2;
+            } else if (line.startsWith("NAME=")) {
+               if (state == 1) {
+                  menuStack.add(current);
+                  current = new MenuManager(this.formatTitle(line.substring(5)));
+               } else if (state == 2) {
+                  name = line.substring(5);
+                  this.addIfFull((IMenuManager)current, name, url);
                }
-            } else if (var4.startsWith("URL=")) {
-               var8 = var4.substring(4);
-               this.addIfFull((IMenuManager)var6, var7, var8);
+            } else if (line.startsWith("URL=")) {
+               url = line.substring(4);
+               this.addIfFull((IMenuManager)current, name, url);
             }
          }
 
-         var1.close();
-      } catch (IOException var11) {
-         System.out.println(var11);
+         reader.close();
+      } catch (IOException ioException) {
+         System.out.println(ioException);
       }
    }
 
-   public void traverseBookmarks(BufferedReader var1, IMenuManager var2) {
-      ArrayList var3 = new ArrayList();
-      boolean var5 = false;
-      int var6 = 0;
-      Object var7 = var2;
+   public void traverseBookmarks(BufferedReader reader, IMenuManager menuManager) {
+      ArrayList menuStack = new ArrayList();
+      boolean started = false;
+      int depth = 0;
+      Object current = menuManager;
 
       try {
-         String var4;
-         while ((var4 = var1.readLine()) != null) {
-            var4 = var4.trim();
-            if (var4.startsWith("<DL>")) {
-               if (!var5) {
-                  var5 = true;
+         String line;
+         while ((line = reader.readLine()) != null) {
+            line = line.trim();
+            if (line.startsWith("<DL>")) {
+               if (!started) {
+                  started = true;
                } else {
-                  var6++;
+                  depth++;
                }
-            } else if (!var4.startsWith("</DL>")) {
-               if (var4.startsWith("<DT>")) {
-                  if (var4.indexOf("HREF=") != -1) {
-                     ((IMenuManager)var7).add(new NSBookmark(var4));
+            } else if (!line.startsWith("</DL>")) {
+               if (line.startsWith("<DT>")) {
+                  if (line.indexOf("HREF=") != -1) {
+                     ((IMenuManager)current).add(new NSBookmark(line));
                   } else {
-                     var3.add(var7);
-                     Matcher var14 = this.bookmark_folder.matcher(var4);
-                     String var15 = "Folder";
-                     if (var14.find()) {
-                        int var10 = var14.start(1);
-                        int var11 = var14.end(1);
-                        if (!var14.find()) {
-                           var15 = var4.substring(var10, var11);
+                     menuStack.add(current);
+                     Matcher matcher = this.bookmark_folder.matcher(line);
+                     String title = "Folder";
+                     if (matcher.find()) {
+                        int start = matcher.start(1);
+                        int end = matcher.end(1);
+                        if (!matcher.find()) {
+                           title = line.substring(start, end);
                         }
                      }
 
-                     var7 = new MenuManager(this.formatTitle(var15));
+                     current = new MenuManager(this.formatTitle(title));
                   }
                }
             } else {
-               for (int var8 = var3.size(); var8 >= var6 && var8 > 0; var8--) {
-                  IMenuManager var9 = (IMenuManager)var3.get(var8 - 1);
-                  var3.remove(var8 - 1);
-                  var9.add((IContributionItem)var7);
-                  var7 = var9;
+               for (int i = menuStack.size(); i >= depth && i > 0; i--) {
+                  IMenuManager parent = (IMenuManager)menuStack.get(i - 1);
+                  menuStack.remove(i - 1);
+                  parent.add((IContributionItem)current);
+                  current = parent;
                }
 
-               var6--;
+               depth--;
             }
          }
 
-         var1.close();
-      } catch (IOException var12) {
-         System.out.println(var12);
+         reader.close();
+      } catch (IOException ioException) {
+         System.out.println(ioException);
       }
    }
 
    public String getInputText() {
-      NoDuplicatesCombo var1 = this.getSelectedInputCombo();
-      return var1 == null ? "" : var1.getText();
+      NoDuplicatesCombo combo = this.getSelectedInputCombo();
+      return combo == null ? "" : combo.getText();
    }
 
-   public NoDuplicatesCombo getInputCombo(CTabItem var1) {
-      return var1 == null ? null : (NoDuplicatesCombo)var1.getData("inputCombo");
+   public NoDuplicatesCombo getInputCombo(CTabItem item) {
+      return item == null ? null : (NoDuplicatesCombo)item.getData("inputCombo");
    }
 
    public NoDuplicatesCombo getSelectedInputCombo() {
@@ -511,63 +511,63 @@ public class WebBrowserTab extends AbstractTab {
       if (this.cTabFolder == null) {
          return null;
       } else {
-         CTabItem var1 = this.cTabFolder.getSelection();
-         return var1 == null ? null : (Browser)var1.getData("browser");
+         CTabItem item = this.cTabFolder.getSelection();
+         return item == null ? null : (Browser)item.getData("browser");
       }
    }
 
-   public void navigate(Browser var1, String var2) {
-      if (var1 != null && !var1.isDisposed()) {
-         if (var2.indexOf("//") == -1) {
-            var2 = "http://" + var2;
+   public void navigate(Browser browser, String url) {
+      if (browser != null && !browser.isDisposed()) {
+         if (url.indexOf("//") == -1) {
+            url = "http://" + url;
          }
 
-         var1.setUrl(var2);
+         browser.setUrl(url);
       }
    }
 
-   public void navigate(String var1) {
-      this.navigate(this.getSelectedBrowser(), var1);
+   public void navigate(String url) {
+      this.navigate(this.getSelectedBrowser(), url);
    }
 
-   protected void onChanged(LocationEvent var1) {
-      Browser var2 = (Browser)var1.widget;
-      CTabItem var3 = (CTabItem)var2.getData("cTabItem");
-      if (var3 == this.cTabFolder.getSelection()) {
+   protected void onChanged(LocationEvent event) {
+      Browser browser = (Browser)event.widget;
+      CTabItem item = (CTabItem)browser.getData("cTabItem");
+      if (item == this.cTabFolder.getSelection()) {
          if (this.getMainWindow().getLinkRipper() != null) {
-            LinkRipper var4 = this.getMainWindow().getLinkRipper();
-            var4.setInputURL(var1.location);
+            LinkRipper linkRipper = this.getMainWindow().getLinkRipper();
+            linkRipper.setInputURL(event.location);
          }
 
-         NoDuplicatesCombo var5 = this.getInputCombo(var3);
-         if (var5 != null) {
-            var5.setText(var1.location);
+         NoDuplicatesCombo combo = this.getInputCombo(item);
+         if (combo != null) {
+            combo.setText(event.location);
          }
       }
    }
 
-   protected void onChangingTop(LocationEvent var1) {
-      Browser var2 = (Browser)var1.widget;
-      CTabItem var3 = (CTabItem)var2.getData("cTabItem");
-      NoDuplicatesCombo var4 = this.getInputCombo(var3);
-      if (var4 != null) {
-         var4.setText(var1.location);
+   protected void onChangingTop(LocationEvent event) {
+      Browser browser = (Browser)event.widget;
+      CTabItem item = (CTabItem)browser.getData("cTabItem");
+      NoDuplicatesCombo combo = this.getInputCombo(item);
+      if (combo != null) {
+         combo.setText(event.location);
       }
    }
 
-   protected String formatTitle(String var1) {
-      int var2 = var1.length();
-      if (var2 > this.maxFLen) {
-         String var3 = var1.substring(0, this.maxFLen - 7);
-         String var4 = var1.substring(var2 - 4, var2);
-         var1 = var3 + "..." + var4;
+   protected String formatTitle(String title) {
+      int length = title.length();
+      if (length > this.maxFLen) {
+         String head = title.substring(0, this.maxFLen - 7);
+         String tail = title.substring(length - 4, length);
+         title = head + "..." + tail;
       }
 
-      if (var1.indexOf("&") != -1) {
-         var1 = SwissArmy.replaceAll(var1, "&", "&&");
+      if (title.indexOf("&") != -1) {
+         title = SwissArmy.replaceAll(title, "&", "&&");
       }
 
-      return var1;
+      return title;
    }
 
    // The tab's view frame: a browser toolbar (configurable link buttons + stop/refresh/

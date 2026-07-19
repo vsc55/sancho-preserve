@@ -38,6 +38,17 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
   are left intact. No behaviour change; verified by a clean full-tree compile (861→413
   source files). Existing `varN` locals inside un-restructured method bodies are left for
   a follow-up descriptive-rename pass (see ToDo).
+- **Renamed the decompiler's `varN` locals to descriptive names across all of `sancho.view`**
+  — 293 files, completing the descriptive-rename pass over the last package that still used
+  them. Only local variables, parameters, catch-clause and loop variables were renamed
+  (from their type and usage: `Composite`→`composite`, `SelectionEvent`→`event`,
+  `MessageBuffer`→`buffer`, loops→`i`/`j`/`k`, `catch (IOException …)`→`ioException`, …);
+  no fields, method/class names, the `class$` idiom, literals, escape sequences, imports,
+  control flow, or comments were touched. **The entire source tree now has zero decompiler
+  `varN` names** (every `sancho.*` package plus `org.eclipse.jface.viewers`). No behaviour
+  change, verified three ways: a clean full-tree compile (413 files), a NUL/binary-corruption
+  scan (none), and a per-file audit confirming every string/char literal is byte-identical
+  to the previous version (no escape like ` `/` ` was altered).
 
 ## [0.9.4-75] — 2026-07-19
 

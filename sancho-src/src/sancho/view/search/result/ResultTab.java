@@ -33,25 +33,25 @@ public class ResultTab implements MyObserver, Runnable, DisposeListener {
    private AbstractTab searchTab;
    private ResultViewFrame viewFrame;
 
-   public ResultTab(ResultViewFrame var1, CTabFolder var2, AbstractTab var3, int var4, String var5) {
-      this.searchString = var5;
-      this.cTabFolder = var2;
-      this.searchId = var4;
-      this.searchTab = var3;
-      this.viewFrame = var1;
+   public ResultTab(ResultViewFrame viewFrame, CTabFolder cTabFolder, AbstractTab searchTab, int searchId, String searchString) {
+      this.searchString = searchString;
+      this.cTabFolder = cTabFolder;
+      this.searchId = searchId;
+      this.searchTab = searchTab;
+      this.viewFrame = viewFrame;
       this.createContent();
       if (Sancho.hasCollectionFactory()) {
-         var1.getCore().getResultCollection().addObserver(this);
+         viewFrame.getCore().getResultCollection().addObserver(this);
       }
 
-      var1.onCTabFolderSelection();
+      viewFrame.onCTabFolderSelection();
    }
 
    private void createContent() {
       this.cTabItem = new CTabItem(this.cTabFolder, 8388608);
       this.viewFrame.updateCLabelText(SResources.getString("t.search.results"));
       this.cTabItem.addDisposeListener(new DisposeListener() {
-         public void widgetDisposed(DisposeEvent var1) {
+         public void widgetDisposed(DisposeEvent event) {
             ResultTab.this.viewFrame.onCTabFolderSelection();
             if (ResultTab.this.cTabFolder.getItemCount() == 0) {
                ResultTab.this.viewFrame.updateCLabelText(SResources.getString("t.search.results"));
@@ -87,9 +87,9 @@ public class ResultTab implements MyObserver, Runnable, DisposeListener {
    public void pause() {
       this.paused = true;
       if (Sancho.hasCollectionFactory()) {
-         ObjectMap var1 = (ObjectMap)this.viewFrame.getCore().getResultCollection().get(this.searchId);
-         if (var1 != null) {
-            var1.deleteObservers();
+         ObjectMap objectMap = (ObjectMap)this.viewFrame.getCore().getResultCollection().get(this.searchId);
+         if (objectMap != null) {
+            objectMap.deleteObservers();
          }
       }
    }
@@ -115,15 +115,15 @@ public class ResultTab implements MyObserver, Runnable, DisposeListener {
       }
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
+   public void update(MyObservable observable, Object arg, int id) {
       if (this.cTabItem != null && !this.cTabItem.isDisposed() && !this.isPaused()) {
-         if (var2 instanceof SearchWaiting) {
-            SearchWaiting var4 = (SearchWaiting)var2;
-            if (var4.getId() == this.searchId && this.searchingLabel != null && !this.searchingLabel.isDisposed()) {
+         if (arg instanceof SearchWaiting) {
+            SearchWaiting searchWaiting = (SearchWaiting)arg;
+            if (searchWaiting.getId() == this.searchId && this.searchingLabel != null && !this.searchingLabel.isDisposed()) {
                this.searchingLabel.getDisplay().asyncExec(new Runnable() {
                public void run() {
                   if (ResultTab.this.searchingLabel != null && !ResultTab.this.searchingLabel.isDisposed()) {
-                     ResultTab.this.searchingLabel.setText(SResources.getString("s.r.searchesWaiting") + var4.getNumWaiting());
+                     ResultTab.this.searchingLabel.setText(SResources.getString("s.r.searchesWaiting") + searchWaiting.getNumWaiting());
                      ResultTab.this.searchingLabel.getParent().layout();
                   }
                }
@@ -131,7 +131,7 @@ public class ResultTab implements MyObserver, Runnable, DisposeListener {
             }
          }
 
-         if (!this.hasTable && this.gView == null && ((ResultCollection)var1).containsKey(this.searchId)) {
+         if (!this.hasTable && this.gView == null && ((ResultCollection)observable).containsKey(this.searchId)) {
             if (Sancho.hasCollectionFactory() && this.viewFrame.getCore().getResultCollection() != null) {
                this.viewFrame.getCore().getResultCollection().deleteObserver(this);
             }
@@ -142,7 +142,7 @@ public class ResultTab implements MyObserver, Runnable, DisposeListener {
       }
    }
 
-   public void widgetDisposed(DisposeEvent var1) {
+   public void widgetDisposed(DisposeEvent event) {
       if (Sancho.hasCollectionFactory()) {
          this.viewFrame.getCore().getResultCollection().deleteObserver(this);
          this.viewFrame.getCore().getResultCollection().closeSearch(this.searchId);

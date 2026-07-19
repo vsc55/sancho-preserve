@@ -32,24 +32,24 @@ public class ClientDetailDialog extends AbstractDetailDialog {
    private CLabel clHasFiles;
    private CLabel clsui;
 
-   public ClientDetailDialog(Shell var1, File var2, Client var3) {
-      super(var1);
-      this.file = var2;
-      this.client = var3;
+   public ClientDetailDialog(Shell shell, File file, Client client) {
+      super(shell);
+      this.file = file;
+      this.client = client;
    }
 
-   protected void configureShell(Shell var1) {
-      super.configureShell(var1);
-      var1.setText(SResources.getString("l.client") + " " + this.client.getId() + " " + SResources.getString("l.details").toLowerCase());
+   protected void configureShell(Shell shell) {
+      super.configureShell(shell);
+      shell.setText(SResources.getString("l.client") + " " + this.client.getId() + " " + SResources.getString("l.details").toLowerCase());
    }
 
-   protected Control createDialogArea(Composite var1) {
-      Composite var2 = (Composite)super.createDialogArea(var1);
-      var2.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 0, 5, false));
-      this.createGeneralGroup(var2);
+   protected Control createDialogArea(Composite parent) {
+      Composite composite = (Composite)super.createDialogArea(parent);
+      composite.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 0, 5, false));
+      this.createGeneralGroup(composite);
       if (this.file != null) {
-         this.createChunkGroup(var2, "dd.c.localChunks", null);
-         this.createChunkGroup(var2, "dd.c.clientChunks", this.client);
+         this.createChunkGroup(composite, "dd.c.localChunks", null);
+         this.createChunkGroup(composite, "dd.c.clientChunks", this.client);
       }
 
       this.updateLabels();
@@ -58,61 +58,61 @@ public class ClientDetailDialog extends AbstractDetailDialog {
       }
 
       this.client.addObserver(this);
-      return var2;
+      return composite;
    }
 
-   public void createGeneralGroup(Composite var1) {
-      Group var2 = new Group(var1, 64);
-      var2.setText(SResources.getString("dd.c.clientInformation"));
-      var2.setLayout(WidgetFactory.createGridLayout(4, 5, 2, 0, 0, false));
-      var2.setLayoutData(new GridData(768));
-      this.clName = this.createLine(var2, "dd.c.name", true);
-      this.clNetwork = this.createLine(var2, "dd.c.network", false);
-      this.clRating = this.createLine(var2, "dd.c.rating", false);
-      this.clActivity = this.createLine(var2, "dd.c.activity", false);
-      this.clKind = this.createLine(var2, "dd.c.kind", false);
-      this.clSoftware = this.createLine(var2, "dd.c.software", false);
-      this.clHash = this.createLine(var2, "dd.c.hash", false);
-      this.clSockAddr = this.createLine(var2, "dd.c.address", false);
-      this.clPort = this.createLine(var2, "dd.c.port", false);
-      this.clUploaded = this.createLine(var2, "dd.c.uploaded", false);
-      this.clDownloaded = this.createLine(var2, "dd.c.downloaded", false);
-      this.clHasFiles = this.createLine(var2, "dd.c.hasFiles", false);
-      this.clsui = this.createLine(var2, "dd.c.identification", false);
+   public void createGeneralGroup(Composite composite) {
+      Group group = new Group(composite, 64);
+      group.setText(SResources.getString("dd.c.clientInformation"));
+      group.setLayout(WidgetFactory.createGridLayout(4, 5, 2, 0, 0, false));
+      group.setLayoutData(new GridData(768));
+      this.clName = this.createLine(group, "dd.c.name", true);
+      this.clNetwork = this.createLine(group, "dd.c.network", false);
+      this.clRating = this.createLine(group, "dd.c.rating", false);
+      this.clActivity = this.createLine(group, "dd.c.activity", false);
+      this.clKind = this.createLine(group, "dd.c.kind", false);
+      this.clSoftware = this.createLine(group, "dd.c.software", false);
+      this.clHash = this.createLine(group, "dd.c.hash", false);
+      this.clSockAddr = this.createLine(group, "dd.c.address", false);
+      this.clPort = this.createLine(group, "dd.c.port", false);
+      this.clUploaded = this.createLine(group, "dd.c.uploaded", false);
+      this.clDownloaded = this.createLine(group, "dd.c.downloaded", false);
+      this.clHasFiles = this.createLine(group, "dd.c.hasFiles", false);
+      this.clsui = this.createLine(group, "dd.c.identification", false);
    }
 
-   protected void createChunkGroup(Composite var1, String var2, Client var3) {
-      super.createChunkGroup(var1, SResources.getString(var2), var3, this.file, null);
+   protected void createChunkGroup(Composite composite, String text, Client client) {
+      super.createChunkGroup(composite, SResources.getString(text), client, this.file, null);
    }
 
-   protected Control createButtonBar(Composite var1) {
-      Composite var2 = new Composite(var1, 0);
-      var2.setLayoutData(new GridData(768));
-      var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 0, false));
-      Button var3 = new Button(var2, 0);
-      var3.setLayoutData(new GridData(640));
-      var3.setText(SResources.getString("dd.c.addFriend"));
+   protected Control createButtonBar(Composite parent) {
+      Composite composite = new Composite(parent, 0);
+      composite.setLayoutData(new GridData(768));
+      composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 0, false));
+      Button addFriendButton = new Button(composite, 0);
+      addFriendButton.setLayoutData(new GridData(640));
+      addFriendButton.setText(SResources.getString("dd.c.addFriend"));
       if (this.client.getEnumClientType() == EnumClientType.FRIEND) {
-         var3.setEnabled(false);
+         addFriendButton.setEnabled(false);
       }
 
-      var3.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      addFriendButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             ClientDetailDialog.this.client.addAsFriend();
-            var3.setText(SResources.getString("b.ok"));
-            var3.setEnabled(false);
+            addFriendButton.setText(SResources.getString("b.ok"));
+            addFriendButton.setEnabled(false);
          }
       });
-      Button var4 = new Button(var2, 0);
-      var4.setFocus();
-      var4.setLayoutData(new GridData(128));
-      var4.setText(SResources.getString("b.close"));
-      var4.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      Button closeButton = new Button(composite, 0);
+      closeButton.setFocus();
+      closeButton.setLayoutData(new GridData(128));
+      closeButton.setText(SResources.getString("b.close"));
+      closeButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             ClientDetailDialog.this.close();
          }
       });
-      return var1;
+      return parent;
    }
 
    public void updateLabels() {
@@ -128,19 +128,19 @@ public class ClientDetailDialog extends AbstractDetailDialog {
       this.updateLabel(this.clUploaded, this.client.getUploadedString());
       this.updateLabel(this.clDownloaded, this.client.getDownloadedString());
       this.updateLabel(this.clHasFiles, String.valueOf(this.client.hasFiles()));
-      String var1;
+      String key;
       switch (this.client.getSUI()) {
          case 0:
-            var1 = "dd.c.identification.invalid";
+            key = "dd.c.identification.invalid";
             break;
          case 1:
-            var1 = "dd.c.identification.successful";
+            key = "dd.c.identification.successful";
             break;
          default:
-            var1 = "dd.c.identification.none";
+            key = "dd.c.identification.none";
       }
 
-      this.updateLabel(this.clsui, SResources.getString(var1));
+      this.updateLabel(this.clsui, SResources.getString(key));
    }
 
    public boolean close() {

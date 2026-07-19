@@ -13,15 +13,15 @@ public abstract class AbstractFilterAction extends Action {
    // $VF: synthetic field
    static Class class$sancho$view$viewer$filters$StateViewerFilter;
 
-   public AbstractFilterAction(String var1, int var2, GView var3, AbstractEnum var4) {
-      super(var1, var2);
-      this.gView = var3;
-      this.enumObject = var4;
+   public AbstractFilterAction(String text, int style, GView gView, AbstractEnum enumObject) {
+      super(text, style);
+      this.gView = gView;
+      this.enumObject = enumObject;
    }
 
    public boolean isChecked() {
-      AbstractViewerFilter var1 = this.gView.getFilter(this.filterClass);
-      return var1 == null ? false : var1.isFiltered(this.enumObject);
+      AbstractViewerFilter filter = this.gView.getFilter(this.filterClass);
+      return filter == null ? false : filter.isFiltered(this.enumObject);
    }
 
    protected boolean doRemove() {
@@ -29,57 +29,57 @@ public abstract class AbstractFilterAction extends Action {
    }
 
    public void run() {
-      AbstractViewerFilter var1 = this.gView.getFilter(this.filterClass);
+      AbstractViewerFilter filter = this.gView.getFilter(this.filterClass);
       if (this.doRemove()) {
-         if (var1 == null) {
+         if (filter == null) {
             return;
          }
 
-         if (var1.isFiltered(this.enumObject)) {
-            this.removeFilter(var1, this.enumObject);
+         if (filter.isFiltered(this.enumObject)) {
+            this.removeFilter(filter, this.enumObject);
          }
-      } else if (var1 == null) {
+      } else if (filter == null) {
          this.addFilter(this.createNewFilter(), this.enumObject);
       } else {
-         this.addFilter(var1, this.enumObject);
+         this.addFilter(filter, this.enumObject);
       }
    }
 
    public abstract AbstractViewerFilter createNewFilter();
 
-   protected void removeFilter(AbstractViewerFilter var1, AbstractEnum var2) {
-      var1.remove(var2);
-      if (var1.count() == 0) {
-         this.gView.removeFilter(var1);
+   protected void removeFilter(AbstractViewerFilter filter, AbstractEnum enumObject) {
+      filter.remove(enumObject);
+      if (filter.count() == 0) {
+         this.gView.removeFilter(filter);
       } else {
          this.gView.refresh();
       }
    }
 
-   protected void addFilter(AbstractViewerFilter var1, AbstractEnum var2) {
-      var1.add(var2);
-      if (var1.count() == 1) {
-         this.gView.addFilter(var1);
+   protected void addFilter(AbstractViewerFilter filter, AbstractEnum enumObject) {
+      filter.add(enumObject);
+      if (filter.count() == 1) {
+         this.gView.addFilter(filter);
       } else {
          this.gView.refresh();
       }
    }
 
-   public static boolean isStateFilteredExcept(GView var0, EnumHostState var1) {
-      AbstractViewerFilter var2 = var0.getFilter(
+   public static boolean isStateFilteredExcept(GView gView, EnumHostState state) {
+      AbstractViewerFilter filter = gView.getFilter(
          class$sancho$view$viewer$filters$StateViewerFilter == null
             ? (class$sancho$view$viewer$filters$StateViewerFilter = class$("sancho.view.viewer.filters.StateViewerFilter"))
             : class$sancho$view$viewer$filters$StateViewerFilter
       );
-      return var2 == null ? false : !var2.isFiltered(var1);
+      return filter == null ? false : !filter.isFiltered(state);
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException exception) {
+         throw new NoClassDefFoundError(exception.getMessage());
       }
    }
 }

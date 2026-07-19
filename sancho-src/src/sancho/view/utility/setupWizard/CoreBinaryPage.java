@@ -23,39 +23,39 @@ public class CoreBinaryPage extends WizardPage {
       this.setMessage(SResources.getString("hm.info"));
    }
 
-   public void createControl(Composite var1) {
-      Composite var2 = new Composite(var1, 0);
-      var2.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
-      var2.setLayoutData(new GridData(768));
-      Label var3 = new Label(var2, 0);
-      var3.setText(SResources.getString("p.coreExecutableInfo"));
-      GridData var4 = new GridData(768);
-      var3.setLayoutData(var4);
-      Composite var5 = new Composite(var2, 0);
-      var5.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 5, 5, false));
-      var5.setLayoutData(new GridData(768));
-      this.text = new Text(var5, 2052);
+   public void createControl(Composite parent) {
+      Composite composite = new Composite(parent, 0);
+      composite.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
+      composite.setLayoutData(new GridData(768));
+      Label label = new Label(composite, 0);
+      label.setText(SResources.getString("p.coreExecutableInfo"));
+      GridData gridData = new GridData(768);
+      label.setLayoutData(gridData);
+      Composite inputComposite = new Composite(composite, 0);
+      inputComposite.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 5, 5, false));
+      inputComposite.setLayoutData(new GridData(768));
+      this.text = new Text(inputComposite, 2052);
       this.text.setLayoutData(new GridData(768));
-      Button var6 = new Button(var5, 0);
-      var6.setText(SResources.getString("b.browse"));
-      var6.setLayoutData(new GridData());
-      var6.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            FileDialog var2 = new FileDialog(CoreBinaryPage.this.getShell(), 0);
-            var2.setFilterExtensions(new String[]{"*"});
-            String var3;
-            if ((var3 = var2.open()) != null) {
-               CoreBinaryPage.this.text.setText(var3);
+      Button browseButton = new Button(inputComposite, 0);
+      browseButton.setText(SResources.getString("b.browse"));
+      browseButton.setLayoutData(new GridData());
+      browseButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
+            FileDialog fileDialog = new FileDialog(CoreBinaryPage.this.getShell(), 0);
+            fileDialog.setFilterExtensions(new String[]{"*"});
+            String path;
+            if ((path = fileDialog.open()) != null) {
+               CoreBinaryPage.this.text.setText(path);
             }
          }
       });
-      this.setControl(var2);
+      this.setControl(composite);
    }
 
    public void saveData() {
       if (this.text != null && !this.text.isDisposed() && !this.text.getText().equals("")) {
-         PreferenceStore var1 = PreferenceLoader.getPreferenceStore();
-         var1.setValue("coreExecutable", this.text.getText());
+         PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+         preferenceStore.setValue("coreExecutable", this.text.getText());
          PreferenceLoader.saveStore();
       }
    }

@@ -12,10 +12,10 @@ import sancho.view.viewFrame.SashViewFrame;
 public class NetworkStatsViewFrame extends SashViewFrame {
    Network network;
 
-   public NetworkStatsViewFrame(SashForm var1, String var2, String var3, AbstractTab var4, Network var5, NetworkStatCollection var6) {
-      super(var1, var2, var3, var4);
-      this.network = var5;
-      this.gView = new NetworkStatsTableView(this, var5, var6);
+   public NetworkStatsViewFrame(SashForm sashForm, String name, String text, AbstractTab tab, Network network, NetworkStatCollection collection) {
+      super(sashForm, name, text, tab);
+      this.network = network;
+      this.gView = new NetworkStatsTableView(this, network, collection);
       this.createViewListener(new NetworkStatsViewListener(this));
       this.createViewToolBar();
    }
@@ -40,7 +40,7 @@ public class NetworkStatsViewFrame extends SashViewFrame {
    public void createViewToolBar() {
       super.createViewToolBar();
       this.addToolItem("mi.refresh", "rotate", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             if (Sancho.hasCollectionFactory()) {
                NetworkStatsViewFrame.this.network.getStats();
             }

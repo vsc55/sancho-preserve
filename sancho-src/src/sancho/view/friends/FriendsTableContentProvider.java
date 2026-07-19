@@ -8,24 +8,24 @@ import sancho.view.viewer.table.GTableContentProviderOM;
 public class FriendsTableContentProvider extends GTableContentProviderOM {
    private static final String RS_FRIENDS = SResources.getString("l.friends");
 
-   public FriendsTableContentProvider(FriendsTableView var1) {
-      super(var1);
+   public FriendsTableContentProvider(FriendsTableView view) {
+      super(view);
    }
 
-   public void inputChanged(Viewer var1, Object var2, Object var3) {
-      super.inputChanged(var1, var2, var3);
-      if (var2 != null) {
-         ((MyObservable)var2).deleteObserver(this);
+   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      super.inputChanged(viewer, oldInput, newInput);
+      if (oldInput != null) {
+         ((MyObservable)oldInput).deleteObserver(this);
       }
 
-      if (var3 != null) {
-         ((MyObservable)var3).addObserver(this);
+      if (newInput != null) {
+         ((MyObservable)newInput).addObserver(this);
          this.updateHeaderLabel();
       }
    }
 
-   public void updateHeaderLabel(int var1) {
-      this.gView.getViewFrame().updateCLabelText(RS_FRIENDS + ": " + var1);
+   public void updateHeaderLabel(int count) {
+      this.gView.getViewFrame().updateCLabelText(RS_FRIENDS + ": " + count);
    }
 
    public void updateHeaderLabel() {

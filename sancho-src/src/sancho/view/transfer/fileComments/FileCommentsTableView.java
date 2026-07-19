@@ -13,9 +13,9 @@ public class FileCommentsTableView extends GTableView {
    public static final int COMMENT = 3;
    File file;
 
-   public FileCommentsTableView(ViewFrame var1, File var2) {
-      super(var1);
-      this.file = var2;
+   public FileCommentsTableView(ViewFrame viewFrame, File file) {
+      super(viewFrame);
+      this.file = file;
       this.preferenceString = "fd.fileComments";
       this.columnLabels = new String[]{"fd.fileComments.name", "fd.fileComments.addr", "fd.fileComments.rating", "fd.fileComments.comment"};
       this.columnAlignment = new int[]{16384, 131072, 131072, 16384};
@@ -24,11 +24,11 @@ public class FileCommentsTableView extends GTableView {
       this.tableContentProvider = new FileCommentsTableContentProvider(this);
       this.tableLabelProvider = new FileCommentsTableLabelProvider(this);
       this.tableMenuListener = new FileCommentsTableMenuListener(this);
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
    }
 
-   protected void createContents(Composite var1) {
-      super.createContents(var1);
+   protected void createContents(Composite composite) {
+      super.createContents(composite);
       this.sViewer.addSelectionChangedListener((FileCommentsTableMenuListener)this.tableMenuListener);
       this.addMenuListener();
       this.updateHeader();
@@ -44,14 +44,14 @@ public class FileCommentsTableView extends GTableView {
    }
 
    public void updateHeader() {
-      StringBuffer var1 = new StringBuffer(64);
-      var1.append(SResources.getString("l.fileComments"));
-      var1.append(": ");
-      var1.append(this.getTable().getItemCount());
-      var1.append(" / ");
-      var1.append(SResources.getString("l.avgRating"));
-      var1.append(": ");
-      var1.append(this.file.getAvgRating());
-      this.getViewFrame().updateCLabelText(var1.toString());
+      StringBuffer buffer = new StringBuffer(64);
+      buffer.append(SResources.getString("l.fileComments"));
+      buffer.append(": ");
+      buffer.append(this.getTable().getItemCount());
+      buffer.append(" / ");
+      buffer.append(SResources.getString("l.avgRating"));
+      buffer.append(": ");
+      buffer.append(this.file.getAvgRating());
+      this.getViewFrame().updateCLabelText(buffer.toString());
    }
 }

@@ -23,22 +23,22 @@ public class TransferAction extends Action {
    int[] subFiles;
    Shell shell;
 
-   public TransferAction(Shell var1, IPreview[] var2, int[] var3) {
+   public TransferAction(Shell shell, IPreview[] previews, int[] subFiles) {
       super(SResources.getString("td.menuText"));
       this.setImageDescriptor(SResources.getImageDescriptor("down_arrow_green"));
-      this.shell = var1;
-      this.iPreviewArray = var2;
-      this.subFiles = var3;
+      this.shell = shell;
+      this.iPreviewArray = previews;
+      this.subFiles = subFiles;
    }
 
    public void run() {
-      PreviewDownloadDialog var1 = new PreviewDownloadDialog(this.shell);
-      if (var1.open() == 0) {
-         String var2 = var1.getDirectory();
+      PreviewDownloadDialog dialog = new PreviewDownloadDialog(this.shell);
+      if (dialog.open() == 0) {
+         String directory = dialog.getDirectory();
 
-         for (int var3 = 0; var3 < this.iPreviewArray.length; var3++) {
-            TransferDialog var4 = new TransferDialog(this.shell, this.iPreviewArray[var3], this.subFiles, var2);
-            var4.open();
+         for (int i = 0; i < this.iPreviewArray.length; i++) {
+            TransferDialog transferDialog = new TransferDialog(this.shell, this.iPreviewArray[i], this.subFiles, directory);
+            transferDialog.open();
          }
       }
    }
@@ -48,41 +48,41 @@ public class TransferAction extends Action {
       String directory;
       Text text;
 
-      public PreviewDownloadDialog(Shell var2) {
-         super(var2);
+      public PreviewDownloadDialog(Shell shell) {
+         super(shell);
       }
 
-      protected void configureShell(Shell var1) {
-         super.configureShell(var1);
-         var1.setImage(VersionInfo.getProgramIcon());
-         var1.setText(SResources.getString("td.title"));
+      protected void configureShell(Shell shell) {
+         super.configureShell(shell);
+         shell.setImage(VersionInfo.getProgramIcon());
+         shell.setText(SResources.getString("td.title"));
       }
 
-      protected void buttonPressed(int var1) {
+      protected void buttonPressed(int buttonId) {
          this.directory = this.text.getText();
-         super.buttonPressed(var1);
+         super.buttonPressed(buttonId);
       }
 
-      protected Control createDialogArea(Composite var1) {
-         Composite var2 = (Composite)super.createDialogArea(var1);
-         var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
-         this.text = new Text(var2, 2052);
+      protected Control createDialogArea(Composite parent) {
+         Composite composite = (Composite)super.createDialogArea(parent);
+         composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
+         this.text = new Text(composite, 2052);
          this.text.setLayoutData(new GridData(768));
          this.text.setText(PreferenceLoader.loadString("previewDownloadDirectory"));
-         Button var3 = new Button(var2, 0);
-         var3.setText(SResources.getString("b.browse"));
-         var3.setLayoutData(new GridData());
-         var3.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent var1) {
-               Shell var2 = PreviewDownloadDialog.this.getShell();
-               DirectoryDialog var3 = new DirectoryDialog(var2, 0);
-               String var4;
-               if ((var4 = var3.open()) != null) {
-                  PreviewDownloadDialog.this.text.setText(var4);
+         Button button = new Button(composite, 0);
+         button.setText(SResources.getString("b.browse"));
+         button.setLayoutData(new GridData());
+         button.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent event) {
+               Shell shell = PreviewDownloadDialog.this.getShell();
+               DirectoryDialog directoryDialog = new DirectoryDialog(shell, 0);
+               String directory;
+               if ((directory = directoryDialog.open()) != null) {
+                  PreviewDownloadDialog.this.text.setText(directory);
                }
             }
          });
-         return var2;
+         return composite;
       }
 
       public String getDirectory() {

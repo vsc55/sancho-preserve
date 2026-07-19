@@ -9,23 +9,23 @@ import sancho.view.viewer.table.GTableContentProviderOM;
 public class RoomUsersTableContentProvider extends GTableContentProviderOM {
    public static final String S_ROOM_USERS = SResources.getString("t.r.roomUsers");
 
-   public RoomUsersTableContentProvider(RoomUsersTableView var1) {
-      super(var1);
+   public RoomUsersTableContentProvider(RoomUsersTableView view) {
+      super(view);
    }
 
-   public void inputChanged(Viewer var1, Object var2, Object var3) {
-      super.inputChanged(var1, var2, var3);
-      if (var2 != null) {
-         ((MyObservable)var2).deleteObserver(this);
+   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      super.inputChanged(viewer, oldInput, newInput);
+      if (oldInput != null) {
+         ((MyObservable)oldInput).deleteObserver(this);
       }
 
-      if (var3 != null) {
-         ((ObjectMap)var3).addObserver(this);
-         this.updateHeaderLabel(((ObjectMap)var3).size());
+      if (newInput != null) {
+         ((ObjectMap)newInput).addObserver(this);
+         this.updateHeaderLabel(((ObjectMap)newInput).size());
       }
    }
 
-   public void updateHeaderLabel(int var1) {
-      this.gView.getViewFrame().updateCLabelText(S_ROOM_USERS + ": " + " " + var1);
+   public void updateHeaderLabel(int count) {
+      this.gView.getViewFrame().updateCLabelText(S_ROOM_USERS + ": " + " " + count);
    }
 }

@@ -6,13 +6,13 @@ import sancho.view.utility.SResources;
 import sancho.view.viewFrame.SashViewListener;
 
 public class SearchViewListener extends SashViewListener {
-   public SearchViewListener(SearchViewFrame var1) {
-      super(var1);
+   public SearchViewListener(SearchViewFrame searchViewFrame) {
+      super(searchViewFrame);
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
-      var1.add(new ClearAllCombosAction());
-      this.createSashActions(var1, "t.search.results");
+   public void menuAboutToShow(IMenuManager menuManager) {
+      menuManager.add(new ClearAllCombosAction());
+      this.createSashActions(menuManager, "t.search.results");
    }
 
    // Menu action that clears all saved search combo entries.

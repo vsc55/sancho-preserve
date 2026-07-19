@@ -10,38 +10,38 @@ public class ClientTableMenuListener extends GTableMenuListenerClient {
    // $VF: synthetic field
    static Class class$sancho$model$mldonkey$Client;
 
-   public ClientTableMenuListener(ClientTableView var1) {
-      super(var1);
+   public ClientTableMenuListener(ClientTableView view) {
+      super(view);
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
+   public void selectionChanged(SelectionChangedEvent event) {
       this.collectSelections(
-         var1,
+         event,
          class$sancho$model$mldonkey$Client == null
             ? (class$sancho$model$mldonkey$Client = class$("sancho.model.mldonkey.Client"))
             : class$sancho$model$mldonkey$Client
       );
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager menuManager) {
       if (this.selectedObjects.size() > 0) {
-         CustomTableViewer var2 = (CustomTableViewer)this.gView.getViewer();
-         Object var3 = var2.getInput();
-         if (!(var3 instanceof File)) {
-            var3 = null;
+         CustomTableViewer viewer = (CustomTableViewer)this.gView.getViewer();
+         Object input = viewer.getInput();
+         if (!(input instanceof File)) {
+            input = null;
          }
 
-         this.addClientActions(this.gView.getShell(), (File)var3, var1, this.createClientArray());
-         this.addSelectAllMenu(var1);
+         this.addClientActions(this.gView.getShell(), (File)input, menuManager, this.createClientArray());
+         this.addSelectAllMenu(menuManager);
       }
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException exception) {
+         throw new NoClassDefFoundError(exception.getMessage());
       }
    }
 }

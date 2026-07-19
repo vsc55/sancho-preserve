@@ -20,84 +20,84 @@ public abstract class GTableContentProvider implements IGContentProvider, IStruc
    protected CustomTableViewer tableViewer;
    protected ArrayList sfList = new ArrayList();
 
-   public synchronized Object getSFElement(int var1) {
-      return this.sfList.get(var1);
+   public synchronized Object getSFElement(int index) {
+      return this.sfList.get(index);
    }
 
-   public void setNeedsRefresh(boolean var1) {
-      this.needsRefresh = var1;
+   public void setNeedsRefresh(boolean needsRefresh) {
+      this.needsRefresh = needsRefresh;
    }
 
-   public synchronized int getSFIndex(Object var1) {
-      return this.sfList.indexOf(var1);
+   public synchronized int getSFIndex(Object element) {
+      return this.sfList.indexOf(element);
    }
 
-   public synchronized int[] getIndicesOf(List var1) {
-      int[] var2 = new int[var1.size()];
-      int var3 = 0;
+   public synchronized int[] getIndicesOf(List list) {
+      int[] indices = new int[list.size()];
+      int count = 0;
 
-      for (Object var5 : var1) {
-         int var6 = this.sfList.indexOf(var5);
-         if (var6 != -1) {
-            var2[var3++] = var6;
+      for (Object element : list) {
+         int index = this.sfList.indexOf(element);
+         if (index != -1) {
+            indices[count++] = index;
          }
       }
 
-      if (var3 < var2.length) {
-         System.arraycopy(var2, 0, var2 = new int[var3], 0, var3);
+      if (count < indices.length) {
+         System.arraycopy(indices, 0, indices = new int[count], 0, count);
       }
 
-      return var2;
+      return indices;
    }
 
-   public synchronized void updateElement(int var1) {
+   public synchronized void updateElement(int index) {
       // ILazyContentProvider hook: SWT calls this when it needs to render a virtual
       // row (scrolled into view, or after Table.clear()). It was EMPTY, so those
       // rows never got their element and showed stale/blank data (the top rows that
       // "stuck" and ignored sorting). Render the current sfList element for the row.
-      if (var1 >= 0 && var1 < this.sfList.size() && this.tableViewer != null) {
-         this.updateElement(this.tableViewer.getTable().getItem(var1), var1);
+      if (index >= 0 && index < this.sfList.size() && this.tableViewer != null) {
+         this.updateElement(this.tableViewer.getTable().getItem(index), index);
       }
    }
 
-   public synchronized void updateElement(TableItem var1, int var2) {
-      ((CustomTableViewer)this.gView.getViewer()).replace(this.sfList.get(var2), var1);
+   public synchronized void updateElement(TableItem item, int index) {
+      ((CustomTableViewer)this.gView.getViewer()).replace(this.sfList.get(index), item);
    }
 
-   public synchronized void updateSorted(boolean var1) {
-      ArrayList var2 = this.sfList;
-      Object[] var3 = this.tableViewer.getSortedChildren(this.tableViewer.getInput());
-      int var4 = var3.length;
-      this.sfList = new ArrayList(var4);
+   public synchronized void updateSorted(boolean force) {
+      ArrayList oldList = this.sfList;
+      Object[] sortedChildren = this.tableViewer.getSortedChildren(this.tableViewer.getInput());
+      int count = sortedChildren.length;
+      this.sfList = new ArrayList(count);
 
-      for (int var5 = 0; var5 < var4; var5++) {
-         this.sfList.add(var3[var5]);
+      for (int i = 0; i < count; i++) {
+         this.sfList.add(sortedChildren[i]);
       }
 
-      TIntArrayList var6 = new TIntArrayList();
-      ArrayList var7 = new ArrayList();
-      int var8 = 0;
+      TIntArrayList removedIndices = new TIntArrayList();
+      ArrayList removedElements = new ArrayList();
+      int index = 0;
 
-      for (Object var10 : var2) {
-         if (var8 >= var4 || var3[var8] != var10 || var1) {
-            var7.add(var10);
-            var6.add(var8);
+      for (Object element : oldList) {
+         if (index >= count || sortedChildren[index] != element || force) {
+            removedElements.add(element);
+            removedIndices.add(index);
          }
 
-         var8++;
+         index++;
       }
 
-      this.tableViewer.myClear(var4, var6.toNativeArray(), var7.toArray());
+      this.tableViewer.myClear(count, removedIndices.toNativeArray(), removedElements.toArray());
    }
 
-   public GTableContentProvider(GView var1) {
-      this.gView = var1;
+   public GTableContentProvider(GView gView) {
+      this.gView = gView;
    }
 
    public void dispose() {
    }
 
-   public Object[] getElements(Object var1) {
+   public Object[] getElements(Object input) {
       return EMPTY_ARRAY;
    }
 
@@ -105,27 +105,27 @@ public abstract class GTableContentProvider implements IGContentProvider, IStruc
       this.tableViewer = ((GTableView)this.gView).getTableViewer();
    }
 
-   public void inputChanged(Viewer var1, Object var2, Object var3) {
-      if (var1 instanceof CustomTableViewer) {
-         this.tableViewer = (CustomTableViewer)var1;
+   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      if (viewer instanceof CustomTableViewer) {
+         this.tableViewer = (CustomTableViewer)viewer;
       }
    }
 
-   public void setActive(boolean var1) {
-      if (var1 && this.needsRefresh) {
+   public void setActive(boolean active) {
+      if (active && this.needsRefresh) {
          this.gView.clearAll();
          this.needsRefresh = false;
       }
    }
 
-   public void setVisible(boolean var1) {
-      if (var1 && this.needsRefresh) {
+   public void setVisible(boolean visible) {
+      if (visible && this.needsRefresh) {
          this.gView.clearAll();
          this.needsRefresh = false;
       }
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
+   public void update(MyObservable observable, Object arg, int type) {
    }
 
    public void updateDisplay() {

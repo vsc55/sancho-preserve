@@ -13,25 +13,25 @@ public class FriendsTableLabelProvider extends GTableLabelProvider {
    Color connectedColor;
    Color disconnectedColor;
 
-   public FriendsTableLabelProvider(FriendsTableView var1) {
-      super(var1);
+   public FriendsTableLabelProvider(FriendsTableView view) {
+      super(view);
    }
 
-   public Image getColumnImage(Object var1, int var2) {
-      Client var3 = (Client)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public Image getColumnImage(Object element, int columnIndex) {
+      Client client = (Client)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            if (var3.isConnected()) {
-               return SResources.getImage(var3.hasFiles() ? "FriendsButtonSmallPlus" : "tab.friends.buttonSmall");
+            if (client.isConnected()) {
+               return SResources.getImage(client.hasFiles() ? "FriendsButtonSmallPlus" : "tab.friends.buttonSmall");
             }
 
-            return SResources.getImage(var3.hasFiles() ? "FriendsButtonSmallBWPlus" : "FriendsButtonSmallBW");
+            return SResources.getImage(client.hasFiles() ? "FriendsButtonSmallBWPlus" : "FriendsButtonSmallBW");
          case 1:
-            return var3.getStateEnum().getImage();
+            return client.getStateEnum().getImage();
          case 2:
-            return var3.getEnumNetwork().getImage();
+            return client.getEnumNetwork().getImage();
          case 3:
-            return var3.getSoftwareImage();
+            return client.getSoftwareImage();
          case 4:
          case 5:
          case 6:
@@ -39,53 +39,53 @@ public class FriendsTableLabelProvider extends GTableLabelProvider {
          default:
             return null;
          case 7:
-            return var3.getAddr().getImage();
+            return client.getAddr().getImage();
          case 9:
-            return var3.getClientModeEnum().getImage();
+            return client.getClientModeEnum().getImage();
          case 10:
-            return var3.hasFilesImage();
+            return client.hasFilesImage();
       }
    }
 
-   public String getColumnText(Object var1, int var2) {
-      Client var3 = (Client)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      Client client = (Client)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getName();
+            return client.getName();
          case 1:
-            return var3.getDetailedClientActivity();
+            return client.getDetailedClientActivity();
          case 2:
-            return var3.getEnumNetwork().getName();
+            return client.getEnumNetwork().getName();
          case 3:
-            return var3.getSoftware();
+            return client.getSoftware();
          case 4:
-            return var3.getUploadedString();
+            return client.getUploadedString();
          case 5:
-            return var3.getDownloadedString();
+            return client.getDownloadedString();
          case 6:
-            return var3.getConnectedTimeString();
+            return client.getConnectedTimeString();
          case 7:
-            return var3.getAddr().toString();
+            return client.getAddr().toString();
          case 8:
-            return String.valueOf(var3.getPort()).intern();
+            return String.valueOf(client.getPort()).intern();
          case 9:
-            return var3.getModeString();
+            return client.getModeString();
          case 10:
-            return var3.hasFilesString();
+            return client.hasFilesString();
          default:
             return "?";
       }
    }
 
-   public Color getForeground(Object var1, int var2) {
+   public Color getForeground(Object element, int columnIndex) {
       if (!this.colors) {
          return null;
       } else {
-         Client var3 = (Client)var1;
-         if (var3.hasFiles()) {
+         Client client = (Client)element;
+         if (client.hasFiles()) {
             return this.hasFilesColor;
          } else {
-            return var3.isConnected() ? this.connectedColor : this.disconnectedColor;
+            return client.isConnected() ? this.connectedColor : this.disconnectedColor;
          }
       }
    }

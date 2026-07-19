@@ -37,53 +37,53 @@ public abstract class ASearchTab implements MyObserver {
    protected ResultViewFrame viewFrame;
    protected Combo searchTypeCombo;
 
-   public ASearchTab(ResultViewFrame var1, SearchTab var2) {
-      this.viewFrame = var1;
-      this.searchTab = var2;
+   public ASearchTab(ResultViewFrame resultViewFrame, SearchTab searchTab) {
+      this.viewFrame = resultViewFrame;
+      this.searchTab = searchTab;
       this.onConnect();
    }
 
-   public void autoSearch(String var1) {
-      this.searchCombo.setText(var1);
+   public void autoSearch(String searchText) {
+      this.searchCombo.setText(searchText);
       this.performSearch();
    }
 
-   public synchronized void addNetwork(SearchQuery var1) {
-      int var2 = this.networkCombo.getSelectionIndex();
-      if (var2 >= 0 && var2 < this.networkList.size()) {
-         EnumNetwork var3 = (EnumNetwork)this.networkList.get(var2);
+   public synchronized void addNetwork(SearchQuery query) {
+      int index = this.networkCombo.getSelectionIndex();
+      if (index >= 0 && index < this.networkList.size()) {
+         EnumNetwork enumNetwork = (EnumNetwork)this.networkList.get(index);
          if (Sancho.hasCollectionFactory()) {
-            Network var4 = Sancho.getCore().getNetworkCollection().getByEnum(var3);
-            if (var4 != null) {
-               var1.setNetwork(var4.getId());
+            Network network = Sancho.getCore().getNetworkCollection().getByEnum(enumNetwork);
+            if (network != null) {
+               query.setNetwork(network.getId());
             }
          }
       }
    }
 
-   protected Combo createCombo(Composite var1, int var2, String var3, String[] var4) {
-      Label var5 = new Label(var1, 0);
-      var5.setLayoutData(new GridData(256));
-      var5.setText(SResources.getString(var3));
-      Combo var6 = new Combo(var1, var2 | 4 | 2048);
-      var6.setLayoutData(new GridData(768));
-      var6.setItems(var4);
-      var6.select(0);
-      return var6;
+   protected Combo createCombo(Composite composite, int style, String labelKey, String[] items) {
+      Label label = new Label(composite, 0);
+      label.setLayoutData(new GridData(256));
+      label.setText(SResources.getString(labelKey));
+      Combo combo = new Combo(composite, style | 4 | 2048);
+      combo.setLayoutData(new GridData(768));
+      combo.setItems(items);
+      combo.select(0);
+      return combo;
    }
 
-   protected Combo createFileType(Composite var1) {
-      String[] var2 = new String[]{
+   protected Combo createFileType(Composite composite) {
+      String[] items = new String[]{
          "s.m.all", "s.m.audio", "s.m.video", "s.m.image", "s.m.document", "s.m.program", "s.m.archive", "s.m.cdimage", "s.m.emulecollection"
       };
-      return this.createResCombo(var1, 8, "s.fileType", var2);
+      return this.createResCombo(composite, 8, "s.fileType", items);
    }
 
-   protected Combo createIntegerCombo(Composite var1, int var2, String var3, String[] var4) {
-      Combo var5 = this.createCombo(var1, var2, var3, var4);
-      var5.addKeyListener(new KeyAdapter() {
-         public void keyPressed(KeyEvent var1) {
-            switch (var1.keyCode) {
+   protected Combo createIntegerCombo(Composite composite, int style, String labelKey, String[] items) {
+      Combo combo = this.createCombo(composite, style, labelKey, items);
+      combo.addKeyListener(new KeyAdapter() {
+         public void keyPressed(KeyEvent event) {
+            switch (event.keyCode) {
                case 8:
                case 127:
                case 16777219:
@@ -91,100 +91,100 @@ public abstract class ASearchTab implements MyObserver {
                   return;
                default:
                   try {
-                     Integer.parseInt(String.valueOf(var1.character));
-                  } catch (NumberFormatException var3) {
-                     var1.doit = false;
+                     Integer.parseInt(String.valueOf(event.character));
+                  } catch (NumberFormatException notANumber) {
+                     event.doit = false;
                   }
             }
          }
       });
-      return var5;
+      return combo;
    }
 
-   protected Composite createMainComposite(CTabFolder var1) {
-      Composite var2 = new Composite(var1, 0);
-      var2.setLayout(WidgetFactory.createGridLayout(2, 7, 5, 5, 5, false));
-      return var2;
+   protected Composite createMainComposite(CTabFolder folder) {
+      Composite composite = new Composite(folder, 0);
+      composite.setLayout(WidgetFactory.createGridLayout(2, 7, 5, 5, 5, false));
+      return composite;
    }
 
-   protected void createNetworkCombo(Composite var1) {
-      Label var2 = new Label(var1, 0);
-      var2.setLayoutData(new GridData(256));
-      var2.setText(SResources.getString("s.network"));
-      this.networkCombo = new Combo(var1, 2060);
+   protected void createNetworkCombo(Composite composite) {
+      Label label = new Label(composite, 0);
+      label.setLayoutData(new GridData(256));
+      label.setText(SResources.getString("s.network"));
+      this.networkCombo = new Combo(composite, 2060);
       this.networkCombo.setLayoutData(new GridData(768));
       this.syncNetworkCombo(true);
    }
 
-   protected Combo createResCombo(Composite var1, int var2, String var3, String[] var4) {
-      String[] var5 = new String[var4.length];
+   protected Combo createResCombo(Composite composite, int style, String labelKey, String[] items) {
+      String[] localizedItems = new String[items.length];
 
-      for (int var6 = 0; var6 < var4.length; var6++) {
-         var5[var6] = SResources.getString(var4[var6]);
+      for (int i = 0; i < items.length; i++) {
+         localizedItems[i] = SResources.getString(items[i]);
       }
 
-      return this.createCombo(var1, var2, var3, var5);
+      return this.createCombo(composite, style, labelKey, localizedItems);
    }
 
-   protected Combo createSearchCombo(Composite var1, String var2) {
-      Label var3 = new Label(var1, 0);
-      var3.setLayoutData(new GridData(256));
-      var3.setText(SResources.getString(var2));
-      NoDuplicatesCombo var4 = new NoDuplicatesCombo(var1, 2052);
-      var4.setLayoutData(new GridData(768));
-      var4.addKeyListener(new KeyAdapter() {
-         public void keyPressed(KeyEvent var1) {
-            if (var1.character == '\r' || var1.character == 16777296) {
+   protected Combo createSearchCombo(Composite composite, String labelKey) {
+      Label label = new Label(composite, 0);
+      label.setLayoutData(new GridData(256));
+      label.setText(SResources.getString(labelKey));
+      NoDuplicatesCombo combo = new NoDuplicatesCombo(composite, 2052);
+      combo.setLayoutData(new GridData(768));
+      combo.addKeyListener(new KeyAdapter() {
+         public void keyPressed(KeyEvent event) {
+            if (event.character == '\r' || event.character == 16777296) {
                ASearchTab.this.performSearch();
-               NoDuplicatesCombo var2 = (NoDuplicatesCombo)var1.widget;
-               var2.add(var2.getText(), 0);
-               var2.setText("");
+               NoDuplicatesCombo combo = (NoDuplicatesCombo)event.widget;
+               combo.add(combo.getText(), 0);
+               combo.setText("");
             }
          }
       });
-      this.searchComboList.add(var4);
-      return var4;
+      this.searchComboList.add(combo);
+      return combo;
    }
 
    protected void clearAllSearchCombos() {
-      for (int var1 = 0; var1 < this.searchComboList.size(); var1++) {
-         Combo var2 = (Combo)this.searchComboList.get(var1);
-         var2.removeAll();
+      for (int i = 0; i < this.searchComboList.size(); i++) {
+         Combo combo = (Combo)this.searchComboList.get(i);
+         combo.removeAll();
       }
    }
 
-   protected Combo createSavedSearchCombo(Composite var1, String var2, final String var3) {
-      Combo var4 = this.createSearchCombo(var1, var2);
+   protected Combo createSavedSearchCombo(Composite composite, String labelKey, final String prefKey) {
+      Combo combo = this.createSearchCombo(composite, labelKey);
       if (PreferenceLoader.loadBoolean("searchSaveEntries")) {
-         var4.setItems(PreferenceLoader.loadStringArray(var3 + ".sArray"));
+         combo.setItems(PreferenceLoader.loadStringArray(prefKey + ".sArray"));
       }
 
-      var4.addDisposeListener(new DisposeListener() {
-         public void widgetDisposed(DisposeEvent var1) {
-            Combo var2 = (Combo)var1.widget;
+      combo.addDisposeListener(new DisposeListener() {
+         public void widgetDisposed(DisposeEvent event) {
+            Combo combo = (Combo)event.widget;
             if (PreferenceLoader.loadBoolean("searchSaveEntries")) {
-               PreferenceLoader.setValue(var3 + ".sArray", var2.getItems(), 25);
+               PreferenceLoader.setValue(prefKey + ".sArray", combo.getItems(), 25);
             } else {
-               PreferenceLoader.getPreferenceStore().setValue(var3 + ".sArray", "");
+               PreferenceLoader.getPreferenceStore().setValue(prefKey + ".sArray", "");
             }
          }
       });
-      return var4;
+      return combo;
    }
 
-   protected Combo createSearchTypeCombo(Composite var1) {
-      String[] var2 = new String[]{"s.st.remote", "s.st.local", "s.st.subscribe"};
-      return this.createResCombo(var1, 8, "s.searchType", var2);
+   protected Combo createSearchTypeCombo(Composite composite) {
+      String[] items = new String[]{"s.st.remote", "s.st.local", "s.st.subscribe"};
+      return this.createResCombo(composite, 8, "s.searchType", items);
    }
 
-   public void createSeparator(Composite var1) {
-      Label var2 = new Label(var1, 258);
-      GridData var3 = new GridData(768);
-      var3.horizontalSpan = 2;
-      var2.setLayoutData(var3);
+   public void createSeparator(Composite composite) {
+      Label label = new Label(composite, 258);
+      GridData gridData = new GridData(768);
+      gridData.horizontalSpan = 2;
+      label.setLayoutData(gridData);
    }
 
-   public abstract Control createTab(CTabFolder var1);
+   public abstract Control createTab(CTabFolder folder);
 
    public abstract String getText();
 
@@ -197,44 +197,44 @@ public abstract class ASearchTab implements MyObserver {
       }
    }
 
-   public void parseFileType(Combo var1, SearchQuery var2) {
-      String[] var10000 = new String[]{
+   public void parseFileType(Combo combo, SearchQuery query) {
+      String[] fileTypes = new String[]{
          "s.m.all", "s.m.audio", "s.m.video", "s.m.image", "s.m.document", "s.m.program", "s.m.archive", "s.m.cdimage", "s.m.emulecollection"
       };
-      switch (var1.getSelectionIndex()) {
+      switch (combo.getSelectionIndex()) {
          case 1:
-            var2.setMedia("Audio");
+            query.setMedia("Audio");
             break;
          case 2:
-            var2.setMedia("Video");
+            query.setMedia("Video");
             break;
          case 3:
-            var2.setMedia("Image");
+            query.setMedia("Image");
             break;
          case 4:
-            var2.setMedia("Doc");
+            query.setMedia("Doc");
             break;
          case 5:
-            var2.setMedia("Pro");
+            query.setMedia("Pro");
             break;
          case 6:
-            var2.setMedia("Arc");
+            query.setMedia("Arc");
             break;
          case 7:
-            var2.setMedia("Iso");
+            query.setMedia("Iso");
             break;
          case 8:
-            var2.setMedia("EmuleCollection");
+            query.setMedia("EmuleCollection");
       }
    }
 
-   public void parseSearchType(Combo var1, SearchQuery var2) {
-      switch (var1.getSelectionIndex()) {
+   public void parseSearchType(Combo combo, SearchQuery query) {
+      switch (combo.getSelectionIndex()) {
          case 1:
-            var2.setLocalSearch();
+            query.setLocalSearch();
             break;
          case 2:
-            var2.setSubscribeSearch();
+            query.setSubscribeSearch();
       }
    }
 
@@ -244,40 +244,40 @@ public abstract class ASearchTab implements MyObserver {
       return this.searchCombo.setFocus();
    }
 
-   public synchronized void syncNetworkCombo(boolean var1) {
-      boolean var2 = false;
-      if (!var1) {
+   public synchronized void syncNetworkCombo(boolean force) {
+      boolean changed = false;
+      if (!force) {
          this.tempList.clear();
          if (!Sancho.hasCollectionFactory()) {
             return;
          }
 
-         Network[] var3 = this.viewFrame.getCore().getNetworkCollection().getNetworks();
+         Network[] networks = this.viewFrame.getCore().getNetworkCollection().getNetworks();
 
-         for (int var4 = 0; var4 < var3.length; var4++) {
-            Network var5 = var3[var4];
-            if (var5.isEnabled() && var5.isSearchable()) {
-               this.tempList.add(var5.getEnumNetwork());
+         for (int i = 0; i < networks.length; i++) {
+            Network network = networks[i];
+            if (network.isEnabled() && network.isSearchable()) {
+               this.tempList.add(network.getEnumNetwork());
             }
          }
 
          if (this.tempList.size() != this.networkList.size()) {
-            var2 = true;
+            changed = true;
          } else {
-            for (int var10 = 0; var10 < this.tempList.size(); var10++) {
-               if (!this.networkList.contains(this.tempList.get(var10))) {
-                  var2 = true;
+            for (int j = 0; j < this.tempList.size(); j++) {
+               if (!this.networkList.contains(this.tempList.get(j))) {
+                  changed = true;
                   break;
                }
             }
 
             if (!this.networkCombo.isEnabled() && this.tempList.size() == 1) {
-               var2 = true;
+               changed = true;
             }
          }
       }
 
-      if (var2 || var1) {
+      if (changed || force) {
          this.networkCombo.removeAll();
          this.networkList.clear();
          if (this.tempList.size() == 0) {
@@ -285,22 +285,22 @@ public abstract class ASearchTab implements MyObserver {
                return;
             }
 
-            Network[] var6 = this.viewFrame.getCore().getNetworkCollection().getNetworks();
+            Network[] networks = this.viewFrame.getCore().getNetworkCollection().getNetworks();
 
-            for (int var8 = 0; var8 < var6.length; var8++) {
-               Network var11 = var6[var8];
-               if (var11.isEnabled() && var11.isSearchable()) {
-                  this.tempList.add(var11.getEnumNetwork());
+            for (int i = 0; i < networks.length; i++) {
+               Network network = networks[i];
+               if (network.isEnabled() && network.isSearchable()) {
+                  this.tempList.add(network.getEnumNetwork());
                }
             }
          }
 
-         for (int var7 = 0; var7 < this.tempList.size(); var7++) {
-            EnumNetwork var9 = (EnumNetwork)this.tempList.get(var7);
-            this.networkList.add(var9);
-            Network var12 = Sancho.getCore().getNetworkCollection().getByEnum(var9);
-            if (var12 != null) {
-               this.networkCombo.add(var12.getName());
+         for (int i = 0; i < this.tempList.size(); i++) {
+            EnumNetwork enumNetwork = (EnumNetwork)this.tempList.get(i);
+            this.networkList.add(enumNetwork);
+            Network network = Sancho.getCore().getNetworkCollection().getByEnum(enumNetwork);
+            if (network != null) {
+               this.networkCombo.add(network.getName());
             }
          }
 
@@ -324,7 +324,7 @@ public abstract class ASearchTab implements MyObserver {
       }
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
+   public void update(MyObservable observable, Object data, int updateType) {
       if (this.networkCombo != null && !this.networkCombo.isDisposed()) {
          this.networkCombo.getDisplay().asyncExec(new Runnable() {
             public void run() {
@@ -362,10 +362,10 @@ public abstract class ASearchTab implements MyObserver {
          this.networkCombo.dispose();
       }
 
-      for (int var1 = 0; var1 < this.searchComboList.size(); var1++) {
-         Combo var2 = (Combo)this.searchComboList.get(var1);
-         if (var2 != null && !var2.isDisposed()) {
-            var2.dispose();
+      for (int i = 0; i < this.searchComboList.size(); i++) {
+         Combo combo = (Combo)this.searchComboList.get(i);
+         if (combo != null && !combo.isDisposed()) {
+            combo.dispose();
          }
       }
    }

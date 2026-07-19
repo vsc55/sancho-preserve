@@ -8,10 +8,10 @@ public class SelectAllAction extends Action {
    GTableMenuListener ml;
    boolean select;
 
-   public SelectAllAction(GTableMenuListener var1, boolean var2) {
-      this.ml = var1;
-      this.select = var2;
-      if (var2) {
+   public SelectAllAction(GTableMenuListener menuListener, boolean select) {
+      this.ml = menuListener;
+      this.select = select;
+      if (select) {
          this.setText(SResources.getString("mi.selectAll") + "\tCtrl+A");
       } else {
          this.setText(SResources.getString("mi.deselectAll") + "\tCtrl+Shift+A");

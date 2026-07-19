@@ -22,87 +22,87 @@ public class ServerTableMenuListener extends GTableMenuListener implements IDoub
    // $VF: synthetic field
    static Class class$sancho$model$mldonkey$Server;
 
-   public void doubleClick(DoubleClickEvent var1) {
-      IStructuredSelection var2 = (IStructuredSelection)var1.getSelection();
-      Object var3 = var2.getFirstElement();
-      if (var3 instanceof Server) {
-         Server var4 = (Server)var3;
-         if (var4.isConnected()) {
-            var4.disconnect();
+   public void doubleClick(DoubleClickEvent event) {
+      IStructuredSelection selection = (IStructuredSelection)event.getSelection();
+      Object element = selection.getFirstElement();
+      if (element instanceof Server) {
+         Server server = (Server)element;
+         if (server.isConnected()) {
+            server.disconnect();
          } else {
-            var4.connect();
+            server.connect();
          }
       }
    }
 
-   public ServerTableMenuListener(ServerTableView var1) {
-      super(var1);
+   public ServerTableMenuListener(ServerTableView tableView) {
+      super(tableView);
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager manager) {
       if (this.selectedObjects.size() > 0 && ((Server)this.selectedObjects.get(0)).isConnected()) {
-         var1.add(new DisconnectAction());
+         manager.add(new DisconnectAction());
       }
 
       if (this.selectedObjects.size() > 0 && ((Server)this.selectedObjects.get(0)).getStateEnum() == EnumHostState.NOT_CONNECTED) {
-         boolean var2 = true;
-         Server var3 = (Server)this.selectedObjects.get(0);
-         if (!var3.isPreferred()) {
-            EnumNetwork var4 = var3.getEnumNetwork();
-            if (var4 == EnumNetwork.DONKEY) {
-               String var5 = var4.getDefaultOptionPrefix();
-               String var6 = "connect_only_preferred_server";
+         boolean canConnect = true;
+         Server server = (Server)this.selectedObjects.get(0);
+         if (!server.isPreferred()) {
+            EnumNetwork network = server.getEnumNetwork();
+            if (network == EnumNetwork.DONKEY) {
+               String prefix = network.getDefaultOptionPrefix();
+               String optionName = "connect_only_preferred_server";
 
                try {
-                  Option var7 = (Option)this.gView.getCore().getCollectionFactory().getOptionCollection().get(var5 + var6);
-                  if (var7.getValue().equalsIgnoreCase("true")) {
-                     var2 = false;
+                  Option option = (Option)this.gView.getCore().getCollectionFactory().getOptionCollection().get(prefix + optionName);
+                  if (option.getValue().equalsIgnoreCase("true")) {
+                     canConnect = false;
                   }
-               } catch (Exception var8) {
+               } catch (Exception exception) {
                }
             }
          }
 
-         if (var2) {
-            var1.add(new ConnectAction());
+         if (canConnect) {
+            manager.add(new ConnectAction());
          }
       }
 
       if (this.selectedObjects.size() > 0) {
-         var1.add(new ConnectMoreAction());
-         var1.add(new GetServerUsersAction());
-         var1.add(new CopyServerLink());
-         var1.add(new RemoveServerAction());
-         var1.add(new BlackListAction());
+         manager.add(new ConnectMoreAction());
+         manager.add(new GetServerUsersAction());
+         manager.add(new CopyServerLink());
+         manager.add(new RemoveServerAction());
+         manager.add(new BlackListAction());
          if (this.gView.getCore() != null && this.gView.getCore().getProtocol() >= 32) {
-            var1.add(new RenameAction());
+            manager.add(new RenameAction());
          }
 
          if (this.gView.getCore() != null && this.gView.getCore().getProtocol() >= 28) {
-            var1.add(new PreferredServerAction());
+            manager.add(new PreferredServerAction());
          }
 
-         this.addSelectAllMenu(var1);
+         this.addSelectAllMenu(manager);
       }
    }
 
    private void removeSelectedServers() {
-      for (int var1 = 0; var1 < this.selectedObjects.size(); var1++) {
-         ((Server)this.selectedObjects.get(var1)).remove();
+      for (int i = 0; i < this.selectedObjects.size(); i++) {
+         ((Server)this.selectedObjects.get(i)).remove();
       }
    }
 
    private void renameSelectedServers() {
-      for (int var1 = 0; var1 < this.selectedObjects.size(); var1++) {
-         Server var2 = (Server)this.selectedObjects.get(var1);
-         InputDialog var3 = new InputDialog(this.gView.getShell(), SResources.getString("m.d.rename"), SResources.getString("m.d.rename"), var2.getName(), null);
-         if (var3.open() != 0) {
+      for (int i = 0; i < this.selectedObjects.size(); i++) {
+         Server server = (Server)this.selectedObjects.get(i);
+         InputDialog dialog = new InputDialog(this.gView.getShell(), SResources.getString("m.d.rename"), SResources.getString("m.d.rename"), server.getName(), null);
+         if (dialog.open() != 0) {
             break;
          }
 
-         String var4 = var3.getValue();
-         if (!var4.equals("")) {
-            var2.rename(var4);
+         String name = dialog.getValue();
+         if (!name.equals("")) {
+            server.rename(name);
          }
       }
    }
@@ -115,9 +115,9 @@ public class ServerTableMenuListener extends GTableMenuListener implements IDoub
       this.renameSelectedServers();
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
+   public void selectionChanged(SelectionChangedEvent event) {
       this.collectSelections(
-         var1,
+         event,
          class$sancho$model$mldonkey$Server == null
             ? (class$sancho$model$mldonkey$Server = class$("sancho.model.mldonkey.Server"))
             : class$sancho$model$mldonkey$Server
@@ -127,16 +127,16 @@ public class ServerTableMenuListener extends GTableMenuListener implements IDoub
       }
    }
 
-   public void setServerUsersTableView(ServerUsersTableView var1) {
-      this.serverUsersTableView = var1;
+   public void setServerUsersTableView(ServerUsersTableView serverUsersTableView) {
+      this.serverUsersTableView = serverUsersTableView;
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException exception) {
+         throw new NoClassDefFoundError(exception.getMessage());
       }
    }
 
@@ -148,8 +148,8 @@ public class ServerTableMenuListener extends GTableMenuListener implements IDoub
       }
 
       public void run() {
-         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
-            ((Server)selectedObjects.get(var1)).blacklist();
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            ((Server)selectedObjects.get(i)).blacklist();
          }
       }
    }
@@ -163,8 +163,8 @@ public class ServerTableMenuListener extends GTableMenuListener implements IDoub
 
       public void run() {
          if (Sancho.hasCollectionFactory()) {
-            for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
-               ((Server)selectedObjects.get(var1)).connect();
+            for (int i = 0; i < selectedObjects.size(); i++) {
+               ((Server)selectedObjects.get(i)).connect();
             }
          }
       }
@@ -192,19 +192,19 @@ public class ServerTableMenuListener extends GTableMenuListener implements IDoub
       }
 
       public void run() {
-         String var1 = "";
-         String var2 = System.getProperty("line.separator");
+         String text = "";
+         String separator = System.getProperty("line.separator");
 
-         for (int var3 = 0; var3 < selectedObjects.size(); var3++) {
-            Server var4 = (Server)selectedObjects.get(var3);
-            if (var1.length() > 0) {
-               var1 = var1 + var2;
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            Server server = (Server)selectedObjects.get(i);
+            if (text.length() > 0) {
+               text = text + separator;
             }
 
-            var1 = var1 + var4.getLink();
+            text = text + server.getLink();
          }
 
-         MainWindow.copyToClipboard(var1);
+         MainWindow.copyToClipboard(text);
       }
    }
 
@@ -216,8 +216,8 @@ public class ServerTableMenuListener extends GTableMenuListener implements IDoub
       }
 
       public void run() {
-         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
-            ((Server)selectedObjects.get(var1)).disconnect();
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            ((Server)selectedObjects.get(i)).disconnect();
          }
       }
    }
@@ -230,8 +230,8 @@ public class ServerTableMenuListener extends GTableMenuListener implements IDoub
       }
 
       public void run() {
-         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
-            ((Server)selectedObjects.get(var1)).getServerUsers();
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            ((Server)selectedObjects.get(i)).getServerUsers();
          }
       }
    }
@@ -244,8 +244,8 @@ public class ServerTableMenuListener extends GTableMenuListener implements IDoub
       }
 
       public void run() {
-         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
-            ((Server)selectedObjects.get(var1)).togglePreferred();
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            ((Server)selectedObjects.get(i)).togglePreferred();
          }
       }
    }

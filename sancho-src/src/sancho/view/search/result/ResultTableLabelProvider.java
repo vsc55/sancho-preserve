@@ -12,62 +12,62 @@ public class ResultTableLabelProvider extends GTableLabelProvider {
    private Color containsFakeColor;
    private Color defaultColor;
 
-   public ResultTableLabelProvider(ResultTableView var1) {
-      super(var1);
+   public ResultTableLabelProvider(ResultTableView view) {
+      super(view);
    }
 
-   public Image getColumnImage(Object var1, int var2) {
-      Result var3 = (Result)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public Image getColumnImage(Object element, int columnIndex) {
+      Result result = (Result)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            if (var3.isDownloading()) {
+            if (result.isDownloading()) {
                return SResources.getImage("down_arrow_green");
             }
 
-            return var3.getNetworkImage();
+            return result.getNetworkImage();
          case 1:
-            return var3.getFileTypeImage();
+            return result.getFileTypeImage();
          case 8:
-            return var3.getRating().getImage();
+            return result.getRating().getImage();
          default:
             return null;
       }
    }
 
-   public String getColumnText(Object var1, int var2) {
-      Result var3 = (Result)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      Result result = (Result)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getNetworkName();
+            return result.getNetworkName();
          case 1:
-            return var3.getName();
+            return result.getName();
          case 2:
-            return var3.getSizeString();
+            return result.getSizeString();
          case 3:
-            return var3.getFormat();
+            return result.getFormat();
          case 4:
-            return var3.getType();
+            return result.getType();
          case 5:
-            return var3.getCodecTag();
+            return result.getCodecTag();
          case 6:
-            return var3.getBitrateTagString();
+            return result.getBitrateTagString();
          case 7:
-            return var3.getLengthTag();
+            return result.getLengthTag();
          case 8:
-            return var3.getRatingString();
+            return result.getRatingString();
          case 9:
-            return var3.getCompleteSourcesString();
+            return result.getCompleteSourcesString();
          default:
             return "";
       }
    }
 
-   public Color getForeground(Object var1, int var2) {
-      Result var3 = (Result)var1;
-      if (var3.downloaded()) {
+   public Color getForeground(Object element, int columnIndex) {
+      Result result = (Result)element;
+      if (result.downloaded()) {
          return this.alreadyDownloadedColor;
       } else {
-         return var3.containsFake() ? this.containsFakeColor : this.defaultColor;
+         return result.containsFake() ? this.containsFakeColor : this.defaultColor;
       }
    }
 

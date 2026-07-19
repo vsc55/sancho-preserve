@@ -14,8 +14,8 @@ import sancho.view.utility.AbstractTab;
 import sancho.view.viewFrame.TabbedSashViewFrame;
 
 public class DownloadViewFrame extends TabbedSashViewFrame {
-   public DownloadViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
-      super(var1, var2, var3, var4, "downloads");
+   public DownloadViewFrame(SashForm sashForm, String prefString, String labelText, AbstractTab tab) {
+      super(sashForm, prefString, labelText, tab, "downloads");
       this.gView = new DownloadTreeView(this);
       this.createViewListener(new DownloadViewListener(this));
       this.createViewToolBar();
@@ -26,36 +26,36 @@ public class DownloadViewFrame extends TabbedSashViewFrame {
       super.createViewToolBar();
       if (!PreferenceLoader.loadString("explorerExecutable").equals("")) {
          this.addToolItem("ti.d.fileExplorer", "file-explorer", new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent var1) {
-               String var2 = PreferenceLoader.loadString("explorerExecutable");
-               String var3 = PreferenceLoader.loadString("explorerOpenFolder");
-               if (!var2.equals("")) {
-                  String[] var4 = new String[]{var2, var3};
-                  SwissArmy.execInThread(var4, null);
+            public void widgetSelected(SelectionEvent event) {
+               String executable = PreferenceLoader.loadString("explorerExecutable");
+               String openFolder = PreferenceLoader.loadString("explorerOpenFolder");
+               if (!executable.equals("")) {
+                  String[] args = new String[]{executable, openFolder};
+                  SwissArmy.execInThread(args, null);
                }
             }
          });
       }
 
       this.addToolItem("ti.d.commitAll", "commit", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             if (Sancho.hasCollectionFactory()) {
                DownloadViewFrame.this.getCore().getFileCollection().commitAll();
             }
          }
       });
       this.addToolItem("ti.d.toggleClients", "split-table", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             ((DownloadTreeView)DownloadViewFrame.this.gView).toggleClientsTable();
          }
       });
       this.addToolItem("ti.d.collapseAll", "collapseall", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             ((CustomTreeViewer)DownloadViewFrame.this.gView.getViewer()).collapseAll();
          }
       });
       this.addToolItem("ti.d.expandAll", "expandall", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             ((CustomTreeViewer)DownloadViewFrame.this.gView.getViewer()).expandAll();
          }
       });
@@ -75,7 +75,7 @@ public class DownloadViewFrame extends TabbedSashViewFrame {
       return this.getParentSashForm(true);
    }
 
-   public SashForm getParentSashForm(boolean var1) {
-      return var1 ? (SashForm)super.getParentSashForm().getParent() : super.getParentSashForm();
+   public SashForm getParentSashForm(boolean outer) {
+      return outer ? (SashForm)super.getParentSashForm().getParent() : super.getParentSashForm();
    }
 }

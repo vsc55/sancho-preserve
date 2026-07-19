@@ -6,52 +6,52 @@ import sancho.model.mldonkey.utility.NetworkStatTotal;
 import sancho.view.viewer.GSorter;
 
 public class NetworkStatsTableSorter extends GSorter {
-   public NetworkStatsTableSorter(NetworkStatsTableView var1) {
-      super(var1);
+   public NetworkStatsTableSorter(NetworkStatsTableView tableView) {
+      super(tableView);
       this.setDirection(true);
    }
 
-   public boolean sortOrder(int var1) {
+   public boolean sortOrder(int column) {
       return true;
    }
 
-   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
-      NetworkStat var5 = (NetworkStat)var2;
-      NetworkStat var6 = (NetworkStat)var3;
-      if (var2 instanceof NetworkStatTotal) {
+   protected int _compare(Viewer viewer, Object o1, Object o2, int column) {
+      NetworkStat stat1 = (NetworkStat)o1;
+      NetworkStat stat2 = (NetworkStat)o2;
+      if (o1 instanceof NetworkStatTotal) {
          return Integer.MAX_VALUE;
-      } else if (var3 instanceof NetworkStatTotal) {
+      } else if (o2 instanceof NetworkStatTotal) {
          return Integer.MIN_VALUE;
       } else {
-         switch (var4) {
+         switch (column) {
             case 0:
-               return this.compareStrings(var5.getNameLong(), var6.getNameLong());
+               return this.compareStrings(stat1.getNameLong(), stat2.getNameLong());
             case 1:
-               return this.compareInts(var5.getSeen(), var6.getSeen());
+               return this.compareInts(stat1.getSeen(), stat2.getSeen());
             case 2:
-               return this.compareInts(var5.getSeenPercent(), var6.getSeenPercent());
+               return this.compareInts(stat1.getSeenPercent(), stat2.getSeenPercent());
             case 3:
-               return this.compareInts(var5.getBanned(), var6.getBanned());
+               return this.compareInts(stat1.getBanned(), stat2.getBanned());
             case 4:
-               return this.compareInts(var5.getBannedPercent(), var6.getBannedPercent());
+               return this.compareInts(stat1.getBannedPercent(), stat2.getBannedPercent());
             case 5:
-               return this.compareInts(var5.getRequest(), var6.getRequest());
+               return this.compareInts(stat1.getRequest(), stat2.getRequest());
             case 6:
-               return this.compareInts(var5.getRequestPercent(), var6.getRequestPercent());
+               return this.compareInts(stat1.getRequestPercent(), stat2.getRequestPercent());
             case 7:
-               return this.compareLongs(var5.getUpload(), var6.getUpload());
+               return this.compareLongs(stat1.getUpload(), stat2.getUpload());
             case 8:
-               return this.compareLongs((long)var5.getUploadPercent(), (long)var6.getUploadPercent());
+               return this.compareLongs((long)stat1.getUploadPercent(), (long)stat2.getUploadPercent());
             case 9:
-               return this.comparePercents(var5.getUploadRate(), var6.getUploadRate());
+               return this.comparePercents(stat1.getUploadRate(), stat2.getUploadRate());
             case 10:
-               return this.compareLongs(var5.getDownload(), var6.getDownload());
+               return this.compareLongs(stat1.getDownload(), stat2.getDownload());
             case 11:
-               return this.compareLongs((long)var5.getDownloadPercent(), (long)var6.getDownloadPercent());
+               return this.compareLongs((long)stat1.getDownloadPercent(), (long)stat2.getDownloadPercent());
             case 12:
-               return this.comparePercents(var5.getDownloadRate(), var6.getDownloadRate());
+               return this.comparePercents(stat1.getDownloadRate(), stat2.getDownloadRate());
             case 13:
-               return this.comparePercents(var5.getRatio(), var6.getRatio());
+               return this.comparePercents(stat1.getRatio(), stat2.getRatio());
             default:
                return 0;
          }

@@ -42,16 +42,16 @@ public class FriendsTab extends AbstractTab implements MyObserver {
    private MessagesViewFrame messagesViewFrame;
    private FriendsViewFrame friendsViewFrame;
 
-   public FriendsTab(MainWindow var1, String var2) {
-      super(var1, var2);
+   public FriendsTab(MainWindow mainWindow, String title) {
+      super(mainWindow, title);
    }
 
-   protected void createContents(Composite var1) {
-      String var2 = "messagesSash";
-      SashForm var3 = WidgetFactory.createSashForm(var1, var2);
-      this.createLeftSash(var3);
-      this.createRightSash(var3);
-      WidgetFactory.loadSashForm(var3, var2);
+   protected void createContents(Composite composite) {
+      String sashName = "messagesSash";
+      SashForm sashForm = WidgetFactory.createSashForm(composite, sashName);
+      this.createLeftSash(sashForm);
+      this.createRightSash(sashForm);
+      WidgetFactory.loadSashForm(sashForm, sashName);
       this.onConnect();
    }
 
@@ -68,10 +68,10 @@ public class FriendsTab extends AbstractTab implements MyObserver {
       }
 
       if (this.cTabFolder != null && !this.cTabFolder.isDisposed()) {
-         CTabItem[] var1 = this.cTabFolder.getItems();
+         CTabItem[] tabItems = this.cTabFolder.getItems();
 
-         for (int var2 = 0; var2 < var1.length; var2++) {
-            var1[var2].dispose();
+         for (int i = 0; i < tabItems.length; i++) {
+            tabItems[i].dispose();
          }
 
          this.cTabFolder.dispose();
@@ -81,81 +81,81 @@ public class FriendsTab extends AbstractTab implements MyObserver {
       super.dispose();
    }
 
-   private void createLeftSash(SashForm var1) {
-      this.friendsViewFrame = new FriendsViewFrame(var1, "l.friends", "tab.friends.buttonSmall", this);
+   private void createLeftSash(SashForm sashForm) {
+      this.friendsViewFrame = new FriendsViewFrame(sashForm, "l.friends", "tab.friends.buttonSmall", this);
       this.addViewFrame(this.friendsViewFrame);
       this.friendsViewFrame.getGView().getComposite().addMouseListener(new MouseAdapter() {
-         public void mouseDoubleClick(MouseEvent var1) {
-            if (var1.widget instanceof Table) {
-               Table var2 = (Table)var1.widget;
-               TableItem[] var3 = var2.getSelection();
+         public void mouseDoubleClick(MouseEvent event) {
+            if (event.widget instanceof Table) {
+               Table table = (Table)event.widget;
+               TableItem[] tableItems = table.getSelection();
 
-               for (int var4 = 0; var4 < var3.length; var4++) {
-                  FriendsTab.this.openTab((Client)var3[var4].getData());
+               for (int i = 0; i < tableItems.length; i++) {
+                  FriendsTab.this.openTab((Client)tableItems[i].getData());
                }
             }
          }
       });
    }
 
-   private void createFilesView(SashForm var1) {
-      String var2 = "directoriesFilesSash";
-      SashForm var3 = WidgetFactory.createSashForm(var1, var2);
-      ClientDirectoriesViewFrame var4 = new ClientDirectoriesViewFrame(var3, "l.clientDirectories", "tab.friends.buttonSmall", this);
-      ((FriendsTableView)this.friendsViewFrame.getGView()).setDirectoryView((ClientDirectoriesTableView)var4.getGView());
-      ClientFilesViewFrame var5 = new ClientFilesViewFrame(var3, "l.clientFiles", "tab.friends.buttonSmall", this);
-      ((ClientDirectoriesTableView)var4.getGView()).setFilesView((ClientFilesTableView)var5.getGView());
-      WidgetFactory.loadSashForm(var3, var2);
-      this.addViewFrame(var4);
-      this.addViewFrame(var5);
+   private void createFilesView(SashForm sashForm) {
+      String sashName = "directoriesFilesSash";
+      SashForm childSashForm = WidgetFactory.createSashForm(sashForm, sashName);
+      ClientDirectoriesViewFrame directoriesViewFrame = new ClientDirectoriesViewFrame(childSashForm, "l.clientDirectories", "tab.friends.buttonSmall", this);
+      ((FriendsTableView)this.friendsViewFrame.getGView()).setDirectoryView((ClientDirectoriesTableView)directoriesViewFrame.getGView());
+      ClientFilesViewFrame filesViewFrame = new ClientFilesViewFrame(childSashForm, "l.clientFiles", "tab.friends.buttonSmall", this);
+      ((ClientDirectoriesTableView)directoriesViewFrame.getGView()).setFilesView((ClientFilesTableView)filesViewFrame.getGView());
+      WidgetFactory.loadSashForm(childSashForm, sashName);
+      this.addViewFrame(directoriesViewFrame);
+      this.addViewFrame(filesViewFrame);
    }
 
-   private void createRightSash(SashForm var1) {
-      String var2 = "filesMessagesSash";
-      SashForm var3 = WidgetFactory.createSashForm(var1, var2);
-      this.createFilesView(var3);
-      this.createMessagesView(var3);
-      WidgetFactory.loadSashForm(var3, var2);
+   private void createRightSash(SashForm sashForm) {
+      String sashName = "filesMessagesSash";
+      SashForm childSashForm = WidgetFactory.createSashForm(sashForm, sashName);
+      this.createFilesView(childSashForm);
+      this.createMessagesView(childSashForm);
+      WidgetFactory.loadSashForm(childSashForm, sashName);
    }
 
-   private void createMessagesView(SashForm var1) {
-      this.messagesViewFrame = new MessagesViewFrame(var1, "l.messageTabs", "tab.friends.buttonSmall", this);
+   private void createMessagesView(SashForm sashForm) {
+      this.messagesViewFrame = new MessagesViewFrame(sashForm, "l.messageTabs", "tab.friends.buttonSmall", this);
       this.addViewFrame(this.messagesViewFrame);
-      int var2 = PreferenceLoader.loadBoolean("messagesCTabFolderTabsOnTop") ? 128 : 1024;
-      this.cTabFolder = WidgetFactory.createCTabFolder(this.messagesViewFrame.getChildComposite(), 8388608 | var2);
+      int style = PreferenceLoader.loadBoolean("messagesCTabFolderTabsOnTop") ? 128 : 1024;
+      this.cTabFolder = WidgetFactory.createCTabFolder(this.messagesViewFrame.getChildComposite(), 8388608 | style);
       WidgetFactory.addCTabFolderMenu(this.cTabFolder, "messagesCTabFolder");
       this.cTabFolder.setBorderVisible(false);
       this.cTabFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
-         public void close(CTabFolderEvent var1) {
-            CTabItem var2 = (CTabItem)var1.item;
-            MessageConsole var3 = (MessageConsole)var2.getData("messageConsole");
-            Integer var4 = (Integer)var2.getData("id");
-            FriendsTab.this.openTabs.remove(var4);
-            var3.dispose();
-            var2.dispose();
+         public void close(CTabFolderEvent event) {
+            CTabItem tabItem = (CTabItem)event.item;
+            MessageConsole messageConsole = (MessageConsole)tabItem.getData("messageConsole");
+            Integer id = (Integer)tabItem.getData("id");
+            FriendsTab.this.openTabs.remove(id);
+            messageConsole.dispose();
+            tabItem.dispose();
             FriendsTab.this.setTabsLabel();
          }
       });
       this.cTabFolder.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            CTabItem var2 = (CTabItem)var1.item;
-            MessageConsole var3 = (MessageConsole)var2.getData("messageConsole");
+         public void widgetSelected(SelectionEvent event) {
+            CTabItem tabItem = (CTabItem)event.item;
+            MessageConsole messageConsole = (MessageConsole)tabItem.getData("messageConsole");
             FriendsTab.this.setTabsLabel();
-            var3.setFocus();
+            messageConsole.setFocus();
          }
       });
    }
 
    public void closeAllTabs() {
-      for (Object var2o : this.openTabs.keySet()) { Integer var2 = (Integer)var2o;
-         CTabItem var3 = (CTabItem)this.openTabs.get(var2);
-         if (var3 != null) {
-            MessageConsole var4 = (MessageConsole)var3.getData("messageConsole");
-            if (var4 != null) {
-               var4.dispose();
+      for (Object keyObject : this.openTabs.keySet()) { Integer id = (Integer)keyObject;
+         CTabItem tabItem = (CTabItem)this.openTabs.get(id);
+         if (tabItem != null) {
+            MessageConsole messageConsole = (MessageConsole)tabItem.getData("messageConsole");
+            if (messageConsole != null) {
+               messageConsole.dispose();
             }
 
-            var3.dispose();
+            tabItem.dispose();
          }
       }
 
@@ -163,114 +163,114 @@ public class FriendsTab extends AbstractTab implements MyObserver {
       this.setTabsLabel();
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
-      if (var2 instanceof ClientMessage && !this.cTabFolder.isDisposed()) {
+   public void update(MyObservable observable, Object data, int arg) {
+      if (data instanceof ClientMessage && !this.cTabFolder.isDisposed()) {
          // Resolve the sender on THIS (core) thread: the client may not be in the
          // collection yet, and the lookup retries with a 1s sleep up to 3 times.
          // Doing it here keeps that sleep off the UI thread — messageFromClient used
          // to sleep inside the asyncExec runnable, freezing the GUI for up to 3s on
          // a message from a not-yet-collected client. Then marshal only the UI work.
-         Client var4 = null;
+         Client client = null;
 
-         for (int var5 = 0; var5 < 3 && var4 == null && Sancho.hasCollectionFactory(); var5++) {
-            var4 = (Client)this.getCore().getClientCollection().get(((ClientMessage)var2).getId());
-            if (var4 == null) {
+         for (int i = 0; i < 3 && client == null && Sancho.hasCollectionFactory(); i++) {
+            client = (Client)this.getCore().getClientCollection().get(((ClientMessage)data).getId());
+            if (client == null) {
                SwissArmy.threadSleep(1000);
             }
          }
 
-         // var4 is reassigned in the loop above, so capture it in a final for the runnable.
-         final Client sender = var4;
+         // client is reassigned in the loop above, so capture it in a final for the runnable.
+         final Client sender = client;
          this.cTabFolder.getDisplay().asyncExec(new Runnable() {
             public void run() {
-               FriendsTab.this.messageFromClient((ClientMessage)var2, sender);
+               FriendsTab.this.messageFromClient((ClientMessage)data, sender);
             }
          });
       }
    }
 
    public void setTabsLabel() {
-      String var1 = "";
+      String selectionText = "";
       if (this.cTabFolder.getSelection() != null) {
-         var1 = " -> " + this.cTabFolder.getSelection().getText();
+         selectionText = " -> " + this.cTabFolder.getSelection().getText();
       }
 
-      this.messagesViewFrame.updateCLabelText(SResources.getString("l.messageTabs") + ": " + this.openTabs.size() + var1);
+      this.messagesViewFrame.updateCLabelText(SResources.getString("l.messageTabs") + ": " + this.openTabs.size() + selectionText);
    }
 
-   public void sendTabMessage(int var1, String var2) {
-      CTabItem var3 = (CTabItem)this.openTabs.get(Integer.valueOf(var1));
-      MessageConsole var4 = (MessageConsole)var3.getData("messageConsole");
-      var4.append(var2 + var4.getLineDelimiter());
+   public void sendTabMessage(int id, String message) {
+      CTabItem tabItem = (CTabItem)this.openTabs.get(Integer.valueOf(id));
+      MessageConsole messageConsole = (MessageConsole)tabItem.getData("messageConsole");
+      messageConsole.append(message + messageConsole.getLineDelimiter());
    }
 
-   public void messageFromClient(ClientMessage var1, Client var10) {
-      // var10 is the sender client, already resolved on the core thread by update()
+   public void messageFromClient(ClientMessage clientMessage, Client sender) {
+      // sender is the sender client, already resolved on the core thread by update()
       // (may be null if it never appeared) — so no blocking sleep runs here on the UI.
       if (this.cTabFolder != null && !this.cTabFolder.isDisposed() && Sancho.hasCollectionFactory()) {
-         StatusLine var2 = this.getMainWindow().getStatusline();
-         var2.setText(SResources.getString("l.newMessage"));
-         var2.setImage(SResources.getImage("new-message"));
-         if (this.openTabs.containsKey(Integer.valueOf(var1.getId()))) {
-            String var3;
-            if (var10 == null) {
-               var3 = this.getTimeStamp() + var1.getId() + ": <unknown>> " + var1.getText();
+         StatusLine statusLine = this.getMainWindow().getStatusline();
+         statusLine.setText(SResources.getString("l.newMessage"));
+         statusLine.setImage(SResources.getImage("new-message"));
+         if (this.openTabs.containsKey(Integer.valueOf(clientMessage.getId()))) {
+            String messageText;
+            if (sender == null) {
+               messageText = this.getTimeStamp() + clientMessage.getId() + ": <unknown>> " + clientMessage.getText();
             } else {
-               var3 = this.getTimeStamp() + var1.getId() + ": " + var10.getName() + "> " + var1.getText();
+               messageText = this.getTimeStamp() + clientMessage.getId() + ": " + sender.getName() + "> " + clientMessage.getText();
             }
 
-            this.sendTabMessage(var1.getId(), var3);
+            this.sendTabMessage(clientMessage.getId(), messageText);
          } else {
-            String var5;
-            if (var10 == null) {
-               var5 = var1.getId() + ": <unknown>";
+            String header;
+            if (sender == null) {
+               header = clientMessage.getId() + ": <unknown>";
             } else {
-               var5 = var10.getId() + ": " + var10.getName();
+               header = sender.getId() + ": " + sender.getName();
             }
 
-            String var6 = this.getTimeStamp() + var5 + "> " + var1.getText();
-            CTabItem var7 = this.addCTabItem(var1.getId(), "  " + var5);
+            String messageLine = this.getTimeStamp() + header + "> " + clientMessage.getText();
+            CTabItem tabItem = this.addCTabItem(clientMessage.getId(), "  " + header);
             if (this.cTabFolder.getItemCount() == 1) {
-               this.setItemFocus(var7);
+               this.setItemFocus(tabItem);
             }
 
-            this.sendTabMessage(var1.getId(), var6);
+            this.sendTabMessage(clientMessage.getId(), messageLine);
             this.setTabsLabel();
          }
       }
    }
 
-   public CTabItem addCTabItem(int var1, String var2) {
-      CTabItem var3 = new CTabItem(this.cTabFolder, 0);
-      var3.setText(var2);
-      MessageConsole var4 = new MessageConsole(this.cTabFolder, 64, var1);
-      var3.setControl(var4.getComposite());
-      var3.setData("id", Integer.valueOf(var1));
-      var3.setData("messageConsole", var4);
-      this.openTabs.put(Integer.valueOf(var1), var3);
-      return var3;
+   public CTabItem addCTabItem(int id, String text) {
+      CTabItem tabItem = new CTabItem(this.cTabFolder, 0);
+      tabItem.setText(text);
+      MessageConsole messageConsole = new MessageConsole(this.cTabFolder, 64, id);
+      tabItem.setControl(messageConsole.getComposite());
+      tabItem.setData("id", Integer.valueOf(id));
+      tabItem.setData("messageConsole", messageConsole);
+      this.openTabs.put(Integer.valueOf(id), tabItem);
+      return tabItem;
    }
 
-   public void openTab(Client var1) {
-      if (!this.openTabs.containsKey(Integer.valueOf(var1.getId()))) {
-         String var2 = "  " + var1.getId() + ": " + var1.getName();
-         this.setItemFocus(this.addCTabItem(var1.getId(), var2));
+   public void openTab(Client client) {
+      if (!this.openTabs.containsKey(Integer.valueOf(client.getId()))) {
+         String text = "  " + client.getId() + ": " + client.getName();
+         this.setItemFocus(this.addCTabItem(client.getId(), text));
       } else {
-         this.cTabFolder.setSelection((CTabItem)this.openTabs.get(Integer.valueOf(var1.getId())));
+         this.cTabFolder.setSelection((CTabItem)this.openTabs.get(Integer.valueOf(client.getId())));
       }
 
       this.setTabsLabel();
    }
 
    public String getTimeStamp() {
-      SimpleDateFormat var1 = new SimpleDateFormat("[HH:mm:ss] ");
-      return var1.format(new Date());
+      SimpleDateFormat dateFormat = new SimpleDateFormat("[HH:mm:ss] ");
+      return dateFormat.format(new Date());
    }
 
-   public void setItemFocus(CTabItem var1) {
-      this.cTabFolder.setSelection(var1);
-      MessageConsole var2 = (MessageConsole)var1.getData("messageConsole");
-      var2.setFocus();
+   public void setItemFocus(CTabItem tabItem) {
+      this.cTabFolder.setSelection(tabItem);
+      MessageConsole messageConsole = (MessageConsole)tabItem.getData("messageConsole");
+      messageConsole.setFocus();
    }
 
    public void setActive() {
@@ -286,8 +286,8 @@ public class FriendsTab extends AbstractTab implements MyObserver {
 
    // View frame hosting the message tabs; contributes the "close all tabs" tool item.
    private class MessagesViewFrame extends SashViewFrame {
-      public MessagesViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
-         super(var1, var2, var3, var4);
+      public MessagesViewFrame(SashForm sashForm, String labelKey, String buttonKey, AbstractTab tab) {
+         super(sashForm, labelKey, buttonKey, tab);
          this.createViewListener(new MessagesViewListener(this));
          this.createViewToolBar();
       }
@@ -295,7 +295,7 @@ public class FriendsTab extends AbstractTab implements MyObserver {
       public void createViewToolBar() {
          super.createViewToolBar();
          this.addToolItem("ti.f.closeAllTabs", "x", new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent var1) {
+            public void widgetSelected(SelectionEvent event) {
                FriendsTab.this.closeAllTabs();
             }
          });
@@ -304,12 +304,12 @@ public class FriendsTab extends AbstractTab implements MyObserver {
 
    // Context-menu listener contributing the client-files sash actions.
    private static class MessagesViewListener extends SashViewListener {
-      public MessagesViewListener(SashViewFrame var1) {
-         super(var1);
+      public MessagesViewListener(SashViewFrame sashViewFrame) {
+         super(sashViewFrame);
       }
 
-      public void menuAboutToShow(IMenuManager var1) {
-         this.createSashActions(var1, "l.clientFiles");
+      public void menuAboutToShow(IMenuManager menuManager) {
+         this.createSashActions(menuManager, "l.clientFiles");
       }
    }
 }

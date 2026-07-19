@@ -15,43 +15,43 @@ import sancho.view.viewer.actions.ExclusionStateFilterAction;
 import sancho.view.viewer.actions.RemoveAllFiltersAction;
 
 public class DownloadViewListener extends TabbedSashViewListener {
-   public DownloadViewListener(TabbedSashViewFrame var1) {
-      super(var1);
+   public DownloadViewListener(TabbedSashViewFrame viewFrame) {
+      super(viewFrame);
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
-      var1.add(new ColumnSelectorAction(this.gView));
-      var1.add(new Separator());
-      this.createDynamicColumnSubMenu(var1);
-      this.createSortByColumnSubMenu(var1);
-      MyMenuManager var2 = new MyMenuManager(SResources.getString("mi.show"));
-      var2.setImageString("target");
-      var2.add(new RemoveAllFiltersAction(this.gView));
-      var2.add(new Separator());
-      this.createEnabledNetworkFilterSubMenu(var2);
-      var2.add(new Separator());
-      var2.add(new ExclusionStateFilterAction(EnumFileState.PAUSED.getName(), this.gView, EnumFileState.PAUSED));
-      var2.add(new ExclusionStateFilterAction(EnumFileState.QUEUED.getName(), this.gView, EnumFileState.QUEUED));
-      var2.add(new Separator());
-      this.createExtensionFilterMenuItems(var2);
-      var1.add(var2);
-      var1.add(new ToggleTabsAction((TabbedSashViewFrame)this.viewFrame));
-      var1.add(new DisplayChunkGraphsAction((DownloadTreeView)this.gView));
-      var2.add(new Separator());
-      this.createSashActions(var1, "l.uploaders");
+   public void menuAboutToShow(IMenuManager menuManager) {
+      menuManager.add(new ColumnSelectorAction(this.gView));
+      menuManager.add(new Separator());
+      this.createDynamicColumnSubMenu(menuManager);
+      this.createSortByColumnSubMenu(menuManager);
+      MyMenuManager showMenu = new MyMenuManager(SResources.getString("mi.show"));
+      showMenu.setImageString("target");
+      showMenu.add(new RemoveAllFiltersAction(this.gView));
+      showMenu.add(new Separator());
+      this.createEnabledNetworkFilterSubMenu(showMenu);
+      showMenu.add(new Separator());
+      showMenu.add(new ExclusionStateFilterAction(EnumFileState.PAUSED.getName(), this.gView, EnumFileState.PAUSED));
+      showMenu.add(new ExclusionStateFilterAction(EnumFileState.QUEUED.getName(), this.gView, EnumFileState.QUEUED));
+      showMenu.add(new Separator());
+      this.createExtensionFilterMenuItems(showMenu);
+      menuManager.add(showMenu);
+      menuManager.add(new ToggleTabsAction((TabbedSashViewFrame)this.viewFrame));
+      menuManager.add(new DisplayChunkGraphsAction((DownloadTreeView)this.gView));
+      showMenu.add(new Separator());
+      this.createSashActions(menuManager, "l.uploaders");
    }
 
    // Checkbox menu action that toggles the "display chunk graphs" preference and refreshes the tree.
    private static class DisplayChunkGraphsAction extends Action {
       protected DownloadTreeView gView;
 
-      public DisplayChunkGraphsAction(DownloadTreeView var1) {
+      public DisplayChunkGraphsAction(DownloadTreeView view) {
          super(SResources.getString("p.r.downloads.displayChunkGraphs"));
          if (this.isChecked()) {
             this.setImageDescriptor(SResources.getImageDescriptor("checkmark"));
          }
 
-         this.gView = var1;
+         this.gView = view;
       }
 
       public boolean isChecked() {
@@ -59,8 +59,8 @@ public class DownloadViewListener extends TabbedSashViewListener {
       }
 
       public void run() {
-         boolean var1 = this.isChecked();
-         PreferenceLoader.getPreferenceStore().setValue("displayChunkGraphs", !var1);
+         boolean checked = this.isChecked();
+         PreferenceLoader.getPreferenceStore().setValue("displayChunkGraphs", !checked);
          PreferenceLoader.saveStore();
          this.gView.setChunkGraphs();
       }

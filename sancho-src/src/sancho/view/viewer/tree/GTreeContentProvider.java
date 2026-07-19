@@ -19,190 +19,190 @@ public abstract class GTreeContentProvider implements IGContentProvider, ITreeCo
    protected CustomTreeViewer treeViewer;
    protected ArrayList sfList = new ArrayList();
 
-   public void setNeedsRefresh(boolean var1) {
-      this.needsRefresh = var1;
+   public void setNeedsRefresh(boolean needsRefresh) {
+      this.needsRefresh = needsRefresh;
    }
 
-   public synchronized Object getSFElement(int var1) {
-      return this.sfList.get(var1);
+   public synchronized Object getSFElement(int index) {
+      return this.sfList.get(index);
    }
 
-   public synchronized int getSFIndex(Object var1) {
-      return this.sfList.indexOf(var1);
+   public synchronized int getSFIndex(Object element) {
+      return this.sfList.indexOf(element);
    }
 
    public ArrayList getOldExpanded() {
-      ArrayList var1 = new ArrayList();
-      int[] var2 = this.treeViewer.getExpandedInts();
+      ArrayList expanded = new ArrayList();
+      int[] expandedInts = this.treeViewer.getExpandedInts();
 
-      for (int var3 = 0; var3 < var2.length; var3++) {
-         var1.add(this.getSFElement(var2[var3]));
+      for (int i = 0; i < expandedInts.length; i++) {
+         expanded.add(this.getSFElement(expandedInts[i]));
       }
 
-      return var1;
+      return expanded;
    }
 
-   public void setOldExpanded(ArrayList var1) {
-      TIntArrayList var2 = new TIntArrayList();
+   public void setOldExpanded(ArrayList expanded) {
+      TIntArrayList indexes = new TIntArrayList();
 
-      for (Object var4 : var1) {
-         int var5 = this.getSFIndex(var4);
-         if (var5 >= 0) {
-            var2.add(var5);
+      for (Object element : expanded) {
+         int index = this.getSFIndex(element);
+         if (index >= 0) {
+            indexes.add(index);
          }
       }
 
-      this.treeViewer.setExpandedInts(var2.toNativeArray());
+      this.treeViewer.setExpandedInts(indexes.toNativeArray());
    }
 
    public synchronized int[] getAllNumChildren() {
-      Object[] var1 = this.sfList.toArray();
-      int[] var2 = new int[var1.length];
+      Object[] elements = this.sfList.toArray();
+      int[] numChildren = new int[elements.length];
 
-      for (int var3 = 0; var3 < var1.length; var3++) {
-         var2[var3] = this.getNumChildren(var1[var3]);
+      for (int i = 0; i < elements.length; i++) {
+         numChildren[i] = this.getNumChildren(elements[i]);
       }
 
-      return var2;
+      return numChildren;
    }
 
-   public synchronized void updateSorted(boolean var1) {
-      ArrayList var2 = this.getOldExpanded();
-      ArrayList var3 = this.sfList;
-      Object[] var4 = this.treeViewer.getSortedChildren(this.treeViewer.getInput());
-      int var5 = var4.length;
-      this.sfList = new ArrayList(var5);
+   public synchronized void updateSorted(boolean force) {
+      ArrayList expanded = this.getOldExpanded();
+      ArrayList oldList = this.sfList;
+      Object[] sortedChildren = this.treeViewer.getSortedChildren(this.treeViewer.getInput());
+      int count = sortedChildren.length;
+      this.sfList = new ArrayList(count);
 
-      for (int var6 = 0; var6 < var5; var6++) {
-         this.sfList.add(var4[var6]);
+      for (int i = 0; i < count; i++) {
+         this.sfList.add(sortedChildren[i]);
       }
 
-      this.setOldExpanded(var2);
-      TIntArrayList var7 = new TIntArrayList();
-      ArrayList var8 = new ArrayList();
-      int var9 = 0;
+      this.setOldExpanded(expanded);
+      TIntArrayList removedIndexes = new TIntArrayList();
+      ArrayList removedElements = new ArrayList();
+      int index = 0;
 
-      for (Object var11 : var3) {
-         if (var9 >= var5 || var4[var9] != var11 || var1) {
-            var8.add(var11);
-            var7.add(var9);
+      for (Object element : oldList) {
+         if (index >= count || sortedChildren[index] != element || force) {
+            removedElements.add(element);
+            removedIndexes.add(index);
          }
 
-         var9++;
+         index++;
       }
 
-      this.treeViewer.myClear(var5, true, var7.toNativeArray(), var8.toArray());
+      this.treeViewer.myClear(count, true, removedIndexes.toNativeArray(), removedElements.toArray());
    }
 
-   public GTreeContentProvider(GView var1) {
-      this.gView = var1;
+   public GTreeContentProvider(GView gView) {
+      this.gView = gView;
    }
 
    public void dispose() {
    }
 
-   public Object[] getChildren(Object var1) {
+   public Object[] getChildren(Object element) {
       return EMPTY_ARRAY;
    }
 
-   public Object getParent(Object var1) {
+   public Object getParent(Object element) {
       return null;
    }
 
-   public void updateChildCount(Object var1, int var2) {
+   public void updateChildCount(Object element, int count) {
    }
 
-   public void updateChild(Object var1) {
-      int var2 = this.getSFIndex(var1);
-      if (var2 >= 0) {
-         if (this.treeViewer.isExpanded(var2)) {
-            this.treeViewer.myClear(-1, false, new int[]{var2}, new Object[]{var1});
+   public void updateChild(Object element) {
+      int index = this.getSFIndex(element);
+      if (index >= 0) {
+         if (this.treeViewer.isExpanded(index)) {
+            this.treeViewer.myClear(-1, false, new int[]{index}, new Object[]{element});
          } else {
-            Object[] var3 = this.treeViewer.getSortedChildren(var1);
-            this.treeViewer.setChildCount(var1, var3.length);
+            Object[] sortedChildren = this.treeViewer.getSortedChildren(element);
+            this.treeViewer.setChildCount(element, sortedChildren.length);
          }
       }
    }
 
    public synchronized int[] getIndexesWithChildren() {
-      TIntArrayList var1 = new TIntArrayList();
-      int var2 = 0;
+      TIntArrayList indexes = new TIntArrayList();
+      int index = 0;
 
-      for (Object var4 : this.sfList) {
-         if (this.hasChildren(var4)) {
-            var1.add(var2);
+      for (Object element : this.sfList) {
+         if (this.hasChildren(element)) {
+            indexes.add(index);
          }
 
-         var2++;
+         index++;
       }
 
-      return var1.toNativeArray();
+      return indexes.toNativeArray();
    }
 
-   public void updateElement(Object var1, int var2) {
+   public void updateElement(Object element, int index) {
    }
 
-   public void updateElement(TreeItem var1, Object var2, int var3) {
-      if (var2 == this.treeViewer.getInput()) {
-         Object var4 = this.getSFElement(var3);
-         this.treeViewer.replace(var4, var1);
-         boolean var5 = this.treeViewer.isExpanded(var3);
-         if (this.hasChildren(var4)) {
-            Object[] var6 = this.treeViewer.getSortedChildren(var4);
-            this.treeViewer.setChildCount(var1, var6.length);
+   public void updateElement(TreeItem item, Object element, int index) {
+      if (element == this.treeViewer.getInput()) {
+         Object sfElement = this.getSFElement(index);
+         this.treeViewer.replace(sfElement, item);
+         boolean expanded = this.treeViewer.isExpanded(index);
+         if (this.hasChildren(sfElement)) {
+            Object[] sortedChildren = this.treeViewer.getSortedChildren(sfElement);
+            this.treeViewer.setChildCount(item, sortedChildren.length);
          } else {
-            this.treeViewer.setChildCount(var1, 0);
+            this.treeViewer.setChildCount(item, 0);
          }
 
-         this.treeViewer.replace(var4, var1);
-         if (var1.getExpanded() != var5) {
-            var1.setExpanded(var5);
+         this.treeViewer.replace(sfElement, item);
+         if (item.getExpanded() != expanded) {
+            item.setExpanded(expanded);
          }
-      } else if (this.hasChildren(var2)) {
-         Object[] var7 = this.treeViewer.getSortedChildren(var2);
-         if (var3 < var7.length) {
-            int var8 = this.getSFIndex(var2);
-            if (var8 >= 0) {
-               Object var9 = var7[var3];
-               this.treeViewer.replaceChild(var2, var9, var1);
+      } else if (this.hasChildren(element)) {
+         Object[] sortedChildren = this.treeViewer.getSortedChildren(element);
+         if (index < sortedChildren.length) {
+            int sfIndex = this.getSFIndex(element);
+            if (sfIndex >= 0) {
+               Object child = sortedChildren[index];
+               this.treeViewer.replaceChild(element, child, item);
             }
          }
       }
    }
 
-   public boolean hasChildren(Object var1) {
+   public boolean hasChildren(Object element) {
       return false;
    }
 
-   public abstract int getNumChildren(Object var1);
+   public abstract int getNumChildren(Object element);
 
    public void initialize() {
       this.treeViewer = ((GTreeView)this.gView).getTreeViewer();
    }
 
-   public void inputChanged(Viewer var1, Object var2, Object var3) {
-      if (var1 instanceof CustomTreeViewer) {
-         this.treeViewer = (CustomTreeViewer)var1;
+   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      if (viewer instanceof CustomTreeViewer) {
+         this.treeViewer = (CustomTreeViewer)viewer;
       }
    }
 
-   public void setActive(boolean var1) {
-      if (var1 && this.needsRefresh) {
+   public void setActive(boolean active) {
+      if (active && this.needsRefresh) {
          this.gView.clearAll();
          this.needsRefresh = false;
       }
    }
 
-   public void setVisible(boolean var1) {
-      if (var1 && this.needsRefresh) {
+   public void setVisible(boolean visible) {
+      if (visible && this.needsRefresh) {
          this.gView.clearAll();
          this.needsRefresh = false;
       }
    }
 
-   public abstract void onUpdate(MyObservable var1, Object var2, int var3);
+   public abstract void onUpdate(MyObservable observable, Object data, int id);
 
-   public void update(MyObservable var1, Object var2, int var3) {
+   public void update(MyObservable observable, Object data, int id) {
       if (this.gView != null && !this.gView.isDisposed()) {
          if (this.gView.isVisible() && this.gView.isActive()) {
             // asyncExec (not syncExec) so this observer callback doesn't block the
@@ -210,7 +210,7 @@ public abstract class GTreeContentProvider implements IGContentProvider, ITreeCo
             // providers and avoids a potential deadlock.
             this.gView.getComposite().getDisplay().asyncExec(new Runnable() {
                public void run() {
-                  GTreeContentProvider.this.onUpdate(var1, var2, var3);
+                  GTreeContentProvider.this.onUpdate(observable, data, id);
                }
             });
          } else {

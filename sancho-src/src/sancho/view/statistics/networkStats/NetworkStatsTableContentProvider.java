@@ -4,12 +4,12 @@ import sancho.model.mldonkey.utility.NetworkStatCollection;
 import sancho.view.viewer.table.GTableContentProvider;
 
 public class NetworkStatsTableContentProvider extends GTableContentProvider {
-   public NetworkStatsTableContentProvider(NetworkStatsTableView var1) {
-      super(var1);
+   public NetworkStatsTableContentProvider(NetworkStatsTableView tableView) {
+      super(tableView);
    }
 
-   public Object[] getElements(Object var1) {
-      NetworkStatCollection var2 = (NetworkStatCollection)var1;
-      return var2.getNetworkStatArray();
+   public Object[] getElements(Object input) {
+      NetworkStatCollection collection = (NetworkStatCollection)input;
+      return collection.getNetworkStatArray();
    }
 }

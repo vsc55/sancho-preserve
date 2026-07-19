@@ -18,67 +18,67 @@ public class CControlEditor {
    Control editor;
    private Listener scrollbarListener;
 
-   public CControlEditor(Composite var1) {
-      this.parent = var1;
+   public CControlEditor(Composite composite) {
+      this.parent = composite;
       this.scrollbarListener = new Listener() {
-         public void handleEvent(Event var1) {
+         public void handleEvent(Event event) {
          }
       };
-      ScrollBar var2 = var1.getHorizontalBar();
-      if (var2 != null) {
-         var2.addListener(13, this.scrollbarListener);
+      ScrollBar horizontalBar = composite.getHorizontalBar();
+      if (horizontalBar != null) {
+         horizontalBar.addListener(13, this.scrollbarListener);
       }
 
-      ScrollBar var3 = var1.getVerticalBar();
-      if (var3 != null) {
-         var3.addListener(13, this.scrollbarListener);
+      ScrollBar verticalBar = composite.getVerticalBar();
+      if (verticalBar != null) {
+         verticalBar.addListener(13, this.scrollbarListener);
       }
    }
 
    Rectangle computeBounds() {
-      Rectangle var1 = this.parent.getClientArea();
-      Rectangle var2 = new Rectangle(var1.x, var1.y, this.minimumWidth, this.minimumHeight);
+      Rectangle clientArea = this.parent.getClientArea();
+      Rectangle bounds = new Rectangle(clientArea.x, clientArea.y, this.minimumWidth, this.minimumHeight);
       if (this.grabHorizontal) {
-         var2.width = Math.max(var1.width, this.minimumWidth);
+         bounds.width = Math.max(clientArea.width, this.minimumWidth);
       }
 
       if (this.grabVertical) {
-         var2.height = Math.max(var1.height, this.minimumHeight);
+         bounds.height = Math.max(clientArea.height, this.minimumHeight);
       }
 
       switch (this.horizontalAlignment) {
          case 16384:
             break;
          case 131072:
-            var2.x = var2.x + (var1.width - var2.width);
+            bounds.x = bounds.x + (clientArea.width - bounds.width);
             break;
          default:
-            var2.x = var2.x + (var1.width - var2.width) / 2;
+            bounds.x = bounds.x + (clientArea.width - bounds.width) / 2;
       }
 
       switch (this.verticalAlignment) {
          case 128:
             break;
          case 1024:
-            var2.y = var2.y + (var1.height - var2.height);
+            bounds.y = bounds.y + (clientArea.height - bounds.height);
             break;
          default:
-            var2.y = var2.y + (var1.height - var2.height) / 2;
+            bounds.y = bounds.y + (clientArea.height - bounds.height) / 2;
       }
 
-      return var2;
+      return bounds;
    }
 
    public void dispose() {
       if (!this.parent.isDisposed()) {
-         ScrollBar var1 = this.parent.getHorizontalBar();
-         if (var1 != null) {
-            var1.removeListener(13, this.scrollbarListener);
+         ScrollBar horizontalBar = this.parent.getHorizontalBar();
+         if (horizontalBar != null) {
+            horizontalBar.removeListener(13, this.scrollbarListener);
          }
 
-         ScrollBar var2 = this.parent.getVerticalBar();
-         if (var2 != null) {
-            var2.removeListener(13, this.scrollbarListener);
+         ScrollBar verticalBar = this.parent.getVerticalBar();
+         if (verticalBar != null) {
+            verticalBar.removeListener(13, this.scrollbarListener);
          }
       }
 
@@ -101,20 +101,20 @@ public class CControlEditor {
       }
    }
 
-   void scroll(Event var1) {
+   void scroll(Event event) {
       if (this.editor != null && !this.editor.isDisposed()) {
          this.resize();
       }
    }
 
-   public void setEditor(Control var1) {
-      if (var1 == null) {
+   public void setEditor(Control control) {
+      if (control == null) {
          this.editor = null;
       } else {
-         this.editor = var1;
+         this.editor = control;
          this.resize();
-         if (!var1.isDisposed()) {
-            var1.setVisible(true);
+         if (!control.isDisposed()) {
+            control.setVisible(true);
          }
       }
    }

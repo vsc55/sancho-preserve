@@ -13,37 +13,37 @@ public class FileCommentsTableMenuListener extends GTableMenuListenerClient impl
    // $VF: synthetic field
    static Class class$sancho$model$mldonkey$utility$FileComment;
 
-   public FileCommentsTableMenuListener(FileCommentsTableView var1) {
-      super(var1);
+   public FileCommentsTableMenuListener(FileCommentsTableView view) {
+      super(view);
    }
 
    protected void onDeleteKey() {
    }
 
-   protected void sendToStatusline(String var1) {
+   protected void sendToStatusline(String text) {
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
+   public void selectionChanged(SelectionChangedEvent event) {
       this.collectSelections(
-         var1,
+         event,
          class$sancho$model$mldonkey$utility$FileComment == null
             ? (class$sancho$model$mldonkey$utility$FileComment = class$("sancho.model.mldonkey.utility.FileComment"))
             : class$sancho$model$mldonkey$utility$FileComment
       );
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager menuManager) {
       if (this.selectedObjects.size() > 0) {
-         var1.add(new CopyFileCommentsToClipboardAction());
+         menuManager.add(new CopyFileCommentsToClipboardAction());
       }
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String name) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(name);
+      } catch (ClassNotFoundException notFound) {
+         throw new NoClassDefFoundError(notFound.getMessage());
       }
    }
 
@@ -55,19 +55,19 @@ public class FileCommentsTableMenuListener extends GTableMenuListenerClient impl
       }
 
       public void run() {
-         StringBuffer var1 = new StringBuffer(50);
-         String var2 = System.getProperty("line.separator");
+         StringBuffer buffer = new StringBuffer(50);
+         String lineSeparator = System.getProperty("line.separator");
 
-         for (int var3 = 0; var3 < FileCommentsTableMenuListener.this.selectedObjects.size(); var3++) {
-            FileComment var4 = (FileComment)FileCommentsTableMenuListener.this.selectedObjects.get(var3);
-            if (var3 > 0) {
-               var1.append(var2);
+         for (int i = 0; i < FileCommentsTableMenuListener.this.selectedObjects.size(); i++) {
+            FileComment comment = (FileComment)FileCommentsTableMenuListener.this.selectedObjects.get(i);
+            if (i > 0) {
+               buffer.append(lineSeparator);
             }
 
-            var1.append(var4.toString());
+            buffer.append(comment.toString());
          }
 
-         MainWindow.copyToClipboard(var1.toString());
+         MainWindow.copyToClipboard(buffer.toString());
       }
    }
 }

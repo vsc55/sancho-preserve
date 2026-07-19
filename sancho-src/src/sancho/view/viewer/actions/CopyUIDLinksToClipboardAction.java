@@ -17,210 +17,210 @@ public class CopyUIDLinksToClipboardAction extends Action {
    public static int HTML = 1;
    public static int BBCODE = 2;
 
-   public CopyUIDLinksToClipboardAction(int var1, int var2, List var3) {
-      this.linkStyle = var2;
-      String var4;
-      String var5;
-      switch (var1) {
+   public CopyUIDLinksToClipboardAction(int uidType, int style, List objects) {
+      this.linkStyle = style;
+      String textKey;
+      String imageKey;
+      switch (uidType) {
          case 1:
-            var4 = "mi.sig2datCopy";
-            var5 = "e.network.fasttrack.connected";
-            this.linkArray = this.buildSig2DatLinks(var3);
+            textKey = "mi.sig2datCopy";
+            imageKey = "e.network.fasttrack.connected";
+            this.linkArray = this.buildSig2DatLinks(objects);
             break;
          case 2:
-            var4 = "mi.magnetCopy";
-            var5 = "magnet";
-            this.linkArray = this.buildMagnetLinks(var3);
+            textKey = "mi.magnetCopy";
+            imageKey = "magnet";
+            this.linkArray = this.buildMagnetLinks(objects);
             break;
          default:
-            var4 = "mi.ed2kCopy";
-            var5 = "edonkey";
-            this.linkArray = this.buildED2KLinks(var3);
+            textKey = "mi.ed2kCopy";
+            imageKey = "edonkey";
+            this.linkArray = this.buildED2KLinks(objects);
       }
 
-      String var6 = "";
+      String styleSuffix = "";
       if (this.linkStyle == HTML) {
-         var6 = " (html)";
+         styleSuffix = " (html)";
       }
 
       if (this.linkStyle == BBCODE) {
-         var6 = " (bbcode)";
+         styleSuffix = " (bbcode)";
       }
 
-      this.setText(SResources.getString(var4) + var6);
-      this.setImageDescriptor(SResources.getImageDescriptor(var5));
+      this.setText(SResources.getString(textKey) + styleSuffix);
+      this.setImageDescriptor(SResources.getImageDescriptor(imageKey));
    }
 
-   private String[] buildED2KLinks(List var1) {
-      int var2 = var1.size();
-      String[] var3 = new String[var2];
+   private String[] buildED2KLinks(List objects) {
+      int count = objects.size();
+      String[] links = new String[count];
 
-      for (int var4 = 0; var4 < var2; var4++) {
-         IObject_UID var5 = (IObject_UID)var1.get(var4);
-         var3[var4] = this.formatLink(var5, var5.getED2K());
+      for (int i = 0; i < count; i++) {
+         IObject_UID object = (IObject_UID)objects.get(i);
+         links[i] = this.formatLink(object, object.getED2K());
       }
 
-      return var3;
+      return links;
    }
 
-   private String[] buildMagnetLinks(List var1) {
-      int var2 = var1.size();
-      ArrayList var3 = new ArrayList();
+   private String[] buildMagnetLinks(List objects) {
+      int count = objects.size();
+      ArrayList links = new ArrayList();
 
-      for (int var4 = 0; var4 < var2; var4++) {
-         IObject_UID var5 = (IObject_UID)var1.get(var4);
-         String[] var6 = var5.getUIDs();
-         if (var6 != null) {
-            String var7 = "";
+      for (int i = 0; i < count; i++) {
+         IObject_UID object = (IObject_UID)objects.get(i);
+         String[] uids = object.getUIDs();
+         if (uids != null) {
+            String query = "";
 
-            for (int var8 = 0; var8 < var6.length; var8++) {
-               if (var6[var8].startsWith("urn:sha1:")) {
-                  var7 = var7 + "&xt=" + var6[var8];
-               } else if (var6[var8].startsWith("urn:ttr:")) {
-                  String var9 = var6[var8].substring(8);
-                  var7 = var7 + "&xt=urn:tree:tiger:" + var9;
+            for (int j = 0; j < uids.length; j++) {
+               if (uids[j].startsWith("urn:sha1:")) {
+                  query = query + "&xt=" + uids[j];
+               } else if (uids[j].startsWith("urn:ttr:")) {
+                  String ttrHash = uids[j].substring(8);
+                  query = query + "&xt=urn:tree:tiger:" + ttrHash;
                }
             }
 
-            if (!var7.equals("")) {
-               String var11 = "magnet:?dn=" + var5.getName() + var7;
-               var3.add(this.formatLink(var5, var11));
+            if (!query.equals("")) {
+               String link = "magnet:?dn=" + object.getName() + query;
+               links.add(this.formatLink(object, link));
             }
          }
       }
 
-      String[] var10 = new String[var3.size()];
-      var3.toArray(var10);
-      return var10;
+      String[] result = new String[links.size()];
+      links.toArray(result);
+      return result;
    }
 
-   private String[] buildSig2DatLinks(List var1) {
-      int var2 = var1.size();
-      ArrayList var3 = new ArrayList();
+   private String[] buildSig2DatLinks(List objects) {
+      int count = objects.size();
+      ArrayList links = new ArrayList();
 
-      for (int var4 = 0; var4 < var2; var4++) {
-         IObject_UID var5 = (IObject_UID)var1.get(var4);
-         String[] var6 = var5.getUIDs();
-         if (var6 != null) {
-            for (int var7 = 0; var7 < var6.length; var7++) {
-               if (var6[var7].startsWith("urn:sig2dat:")) {
-                  String var8 = var6[var7].substring(12);
-                  String var9 = Base6427_to_string(Base32_of_string(var8));
-                  long var10 = var5.getSize();
-                  String var12 = "0KB";
-                  if (var10 > 1024L) {
-                     var12 = (int)(var10 / 1024L) + "KB";
+      for (int i = 0; i < count; i++) {
+         IObject_UID object = (IObject_UID)objects.get(i);
+         String[] uids = object.getUIDs();
+         if (uids != null) {
+            for (int j = 0; j < uids.length; j++) {
+               if (uids[j].startsWith("urn:sig2dat:")) {
+                  String hash = uids[j].substring(12);
+                  String uuHash = Base6427_to_string(Base32_of_string(hash));
+                  long size = object.getSize();
+                  String sizeInKB = "0KB";
+                  if (size > 1024L) {
+                     sizeInKB = (int)(size / 1024L) + "KB";
                   }
 
-                  String var13 = var10 + " Bytes";
-                  String var14 = var5.getName();
-                  String var15 = "sig2dat:///|File:" + var14 + "|Length:" + var13 + "," + var12 + "|UUHash:" + var9 + "|";
-                  var3.add(this.formatLink(var5, var15));
+                  String sizeInBytes = size + " Bytes";
+                  String name = object.getName();
+                  String link = "sig2dat:///|File:" + name + "|Length:" + sizeInBytes + "," + sizeInKB + "|UUHash:" + uuHash + "|";
+                  links.add(this.formatLink(object, link));
                }
             }
          }
       }
 
-      String[] var16 = new String[var3.size()];
-      var3.toArray(var16);
-      return var16;
+      String[] result = new String[links.size()];
+      links.toArray(result);
+      return result;
    }
 
-   private String formatLink(IObject_UID var1, String var2) {
+   private String formatLink(IObject_UID object, String link) {
       if (this.linkStyle == HTML) {
-         return "<a href=\"" + var2 + "\">" + var1.getName() + "</a>";
+         return "<a href=\"" + link + "\">" + object.getName() + "</a>";
       } else {
-         return this.linkStyle == BBCODE ? "[URL=\"" + var2 + "\"]" + var1.getName() + "[/URL]" : var2;
+         return this.linkStyle == BBCODE ? "[URL=\"" + link + "\"]" + object.getName() + "[/URL]" : link;
       }
    }
 
    public void run() {
       if (this.linkArray != null && this.linkArray.length != 0) {
-         String var1 = "";
-         String var2 = System.getProperty("line.separator");
+         String text = "";
+         String lineSeparator = System.getProperty("line.separator");
 
-         for (int var3 = 0; var3 < this.linkArray.length; var3++) {
-            String var4 = this.linkArray[var3];
-            if (!var4.equals("")) {
-               if (var1.length() > 0) {
-                  var1 = var1 + var2;
+         for (int i = 0; i < this.linkArray.length; i++) {
+            String link = this.linkArray[i];
+            if (!link.equals("")) {
+               if (text.length() > 0) {
+                  text = text + lineSeparator;
                }
 
-               var1 = var1 + var4;
+               text = text + link;
             }
          }
 
-         MainWindow.copyToClipboard(var1);
+         MainWindow.copyToClipboard(text);
       }
    }
 
-   public static String Base6427_to_string(String var0) {
-      String var1 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-      byte var2 = 30;
-      StringBuffer var3 = new StringBuffer(var2);
+   public static String Base6427_to_string(String input) {
+      String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+      byte length = 30;
+      StringBuffer buffer = new StringBuffer(length);
 
-      for (int var4 = 0; var4 < var2; var4++) {
-         var3.append('\u0000');
+      for (int i = 0; i < length; i++) {
+         buffer.append('\u0000');
       }
 
-      var3.setCharAt(0, '=');
-      int var5 = 1;
+      buffer.setCharAt(0, '=');
+      int index = 1;
 
-      for (int var6 = 0; var6 <= 6; var6++) {
-         int var7 = var6 < 6
-            ? var0.charAt(3 * var6) << 16 | var0.charAt(3 * var6 + 1) << '\b' | var0.charAt(3 * var6 + 2)
-            : var0.charAt(3 * var6) << 16 | var0.charAt(3 * var6 + 1) << '\b';
+      for (int i = 0; i <= 6; i++) {
+         int bits = i < 6
+            ? input.charAt(3 * i) << 16 | input.charAt(3 * i + 1) << '\b' | input.charAt(3 * i + 2)
+            : input.charAt(3 * i) << 16 | input.charAt(3 * i + 1) << '\b';
 
-         for (int var8 = 0; var8 <= 3; var8++) {
-            char var9 = var1.charAt(var7 >> (3 - var8) * 6 & 63);
-            var3.setCharAt(var5, var9);
-            var5++;
+         for (int j = 0; j <= 3; j++) {
+            char c = alphabet.charAt(bits >> (3 - j) * 6 & 63);
+            buffer.setCharAt(index, c);
+            index++;
          }
       }
 
-      var3.setCharAt(var5 - 1, '=');
-      return var3.substring(0, var5);
+      buffer.setCharAt(index - 1, '=');
+      return buffer.substring(0, index);
    }
 
-   public static String Base32_of_string(String var0) {
-      String var1 = var0;
-      byte var2 = 20;
-      StringBuffer var3 = new StringBuffer(var2);
+   public static String Base32_of_string(String input) {
+      String text = input;
+      byte length = 20;
+      StringBuffer buffer = new StringBuffer(length);
 
-      for (int var4 = 0; var4 < var2; var4++) {
-         var3.append('\u0000');
+      for (int i = 0; i < length; i++) {
+         buffer.append('\u0000');
       }
 
-      for (int var5 = 0; var5 < var1.length(); var5++) {
-         int var6 = var5 * 5;
-         int var7 = var6 / 8;
-         int var8 = var6 % 8;
-         int var9 = int5_of_char(var1.charAt(var5));
-         if (var8 < 3) {
-            int var10 = var9 << 3 - var8;
-            char var11 = (char)(var3.charAt(var7) | var10);
-            var3.setCharAt(var7, var11);
+      for (int i = 0; i < text.length(); i++) {
+         int bitPosition = i * 5;
+         int byteIndex = bitPosition / 8;
+         int bitOffset = bitPosition % 8;
+         int value = int5_of_char(text.charAt(i));
+         if (bitOffset < 3) {
+            int bits = value << 3 - bitOffset;
+            char updatedChar = (char)(buffer.charAt(byteIndex) | bits);
+            buffer.setCharAt(byteIndex, updatedChar);
          } else {
-            int var12 = var9 >> var8 - 3 & 0xFF;
-            char var14 = (char)(var3.charAt(var7) | var12);
-            var3.setCharAt(var7, var14);
+            int bits = value >> bitOffset - 3 & 0xFF;
+            char updatedChar = (char)(buffer.charAt(byteIndex) | bits);
+            buffer.setCharAt(byteIndex, updatedChar);
          }
 
-         if (var7 + 1 < var2) {
-            int var13 = var9 << 11 - var8 & 0xFF;
-            char var15 = (char)(var3.charAt(var7 + 1) | var13);
-            var3.setCharAt(var7 + 1, var15);
+         if (byteIndex + 1 < length) {
+            int bits = value << 11 - bitOffset & 0xFF;
+            char updatedChar = (char)(buffer.charAt(byteIndex + 1) | bits);
+            buffer.setCharAt(byteIndex + 1, updatedChar);
          }
       }
 
-      return var3.toString();
+      return buffer.toString();
    }
 
-   private static int int5_of_char(char var0) {
-      if ('A' <= var0 && var0 <= 'Z') {
-         return var0 - 65;
+   private static int int5_of_char(char c) {
+      if ('A' <= c && c <= 'Z') {
+         return c - 65;
       } else {
-         return 97 <= var0 && var0 <= 122 ? var0 - 97 : var0 + 26 - 50;
+         return 97 <= c && c <= 122 ? c - 97 : c + 26 - 50;
       }
    }
 }

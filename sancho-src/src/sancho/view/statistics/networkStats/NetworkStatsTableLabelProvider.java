@@ -12,52 +12,52 @@ import sancho.view.viewer.table.GTableLabelProvider;
 public class NetworkStatsTableLabelProvider extends GTableLabelProvider implements ITableFontProvider {
    Font boldFont;
 
-   public NetworkStatsTableLabelProvider(NetworkStatsTableView var1) {
-      super(var1);
+   public NetworkStatsTableLabelProvider(NetworkStatsTableView tableView) {
+      super(tableView);
    }
 
-   public Image getColumnImage(Object var1, int var2) {
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public Image getColumnImage(Object element, int columnIndex) {
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          default:
             return null;
       }
    }
 
-   public Font getFont(Object var1, int var2) {
-      return var1 instanceof NetworkStatTotal ? this.boldFont : null;
+   public Font getFont(Object element, int columnIndex) {
+      return element instanceof NetworkStatTotal ? this.boldFont : null;
    }
 
-   public String getColumnText(Object var1, int var2) {
-      NetworkStat var3 = (NetworkStat)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      NetworkStat stat = (NetworkStat)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getNameLong();
+            return stat.getNameLong();
          case 1:
-            return var3.getSeenString();
+            return stat.getSeenString();
          case 2:
-            return var3.getSeenPercentString();
+            return stat.getSeenPercentString();
          case 3:
-            return var3.getBannedString();
+            return stat.getBannedString();
          case 4:
-            return var3.getBannedPercentString();
+            return stat.getBannedPercentString();
          case 5:
-            return var3.getRequestString();
+            return stat.getRequestString();
          case 6:
-            return var3.getRequestPercentString();
+            return stat.getRequestPercentString();
          case 7:
-            return var3.getUploadString();
+            return stat.getUploadString();
          case 8:
-            return var3.getUploadPercentString();
+            return stat.getUploadPercentString();
          case 9:
-            return var3.getUploadRateString();
+            return stat.getUploadRateString();
          case 10:
-            return var3.getDownloadString();
+            return stat.getDownloadString();
          case 11:
-            return var3.getDownloadPercentString();
+            return stat.getDownloadPercentString();
          case 12:
-            return var3.getDownloadRateString();
+            return stat.getDownloadRateString();
          case 13:
-            return var3.getRatioString();
+            return stat.getRatioString();
          default:
             return "";
       }
@@ -70,14 +70,14 @@ public class NetworkStatsTableLabelProvider extends GTableLabelProvider implemen
       }
 
       this.boldFont = null;
-      Font var1 = PreferenceLoader.loadFont("tableFontData");
-      FontData[] var2 = var1.getFontData();
+      Font font = PreferenceLoader.loadFont("tableFontData");
+      FontData[] fontData = font.getFontData();
 
-      for (int var3 = 0; var3 < var2.length; var3++) {
-         var2[var3].setStyle(1);
+      for (int i = 0; i < fontData.length; i++) {
+         fontData[i].setStyle(1);
       }
 
-      this.boldFont = new Font(null, var2);
+      this.boldFont = new Font(null, fontData);
    }
 
    public void dispose() {

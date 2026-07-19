@@ -13,46 +13,46 @@ public class SubfilesTableMenuListener extends GTableMenuListenerClient implemen
    // $VF: synthetic field
    static Class class$sancho$view$transfer$fileDialog$SubfileItem;
 
-   public SubfilesTableMenuListener(SubfilesTableView var1) {
-      super(var1);
+   public SubfilesTableMenuListener(SubfilesTableView view) {
+      super(view);
    }
 
    protected void onDeleteKey() {
    }
 
-   protected void sendToStatusline(String var1) {
+   protected void sendToStatusline(String text) {
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
+   public void selectionChanged(SelectionChangedEvent event) {
       this.collectSelections(
-         var1,
+         event,
          class$sancho$view$transfer$fileDialog$SubfileItem == null
             ? (class$sancho$view$transfer$fileDialog$SubfileItem = class$("sancho.view.transfer.fileDialog.SubfileItem"))
             : class$sancho$view$transfer$fileDialog$SubfileItem
       );
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager menuManager) {
       if (this.selectedObjects.size() > 0) {
-         var1.add(new CopySubfileItemToClipboardAction());
-         int[] var2 = new int[this.selectedObjects.size()];
+         menuManager.add(new CopySubfileItemToClipboardAction());
+         int[] nums = new int[this.selectedObjects.size()];
 
-         for (int var3 = 0; var3 < this.selectedObjects.size(); var3++) {
-            SubfileItem var4 = (SubfileItem)this.selectedObjects.get(var3);
-            var2[var3] = var4.getNum();
+         for (int i = 0; i < this.selectedObjects.size(); i++) {
+            SubfileItem subfile = (SubfileItem)this.selectedObjects.get(i);
+            nums[i] = subfile.getNum();
          }
 
-         IPreview[] var5 = new IPreview[]{((SubfilesTableView)this.gView).getIPreview()};
-         this.addPreview(var1, var5, var2);
+         IPreview[] previews = new IPreview[]{((SubfilesTableView)this.gView).getIPreview()};
+         this.addPreview(menuManager, previews, nums);
       }
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException exception) {
+         throw new NoClassDefFoundError(exception.getMessage());
       }
    }
 
@@ -64,19 +64,19 @@ public class SubfilesTableMenuListener extends GTableMenuListenerClient implemen
       }
 
       public void run() {
-         StringBuffer var1 = new StringBuffer(50);
-         String var2 = System.getProperty("line.separator");
+         StringBuffer buffer = new StringBuffer(50);
+         String separator = System.getProperty("line.separator");
 
-         for (int var3 = 0; var3 < SubfilesTableMenuListener.this.selectedObjects.size(); var3++) {
-            SubfileItem var4 = (SubfileItem)SubfilesTableMenuListener.this.selectedObjects.get(var3);
-            if (var3 > 0) {
-               var1.append(var2);
+         for (int i = 0; i < SubfilesTableMenuListener.this.selectedObjects.size(); i++) {
+            SubfileItem subfile = (SubfileItem)SubfilesTableMenuListener.this.selectedObjects.get(i);
+            if (i > 0) {
+               buffer.append(separator);
             }
 
-            var1.append(var4.toString());
+            buffer.append(subfile.toString());
          }
 
-         MainWindow.copyToClipboard(var1.toString());
+         MainWindow.copyToClipboard(buffer.toString());
       }
    }
 }

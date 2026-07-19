@@ -30,85 +30,85 @@ public abstract class AbstractDetailDialog extends Dialog implements MyObserver 
    protected static final int leftColumn = 100;
    protected static final int rightColumn = 300;
 
-   protected AbstractDetailDialog(Shell var1) {
-      super(var1);
+   protected AbstractDetailDialog(Shell shell) {
+      super(shell);
    }
 
-   protected void configureShell(Shell var1) {
-      super.configureShell(var1);
-      var1.setImage(VersionInfo.getProgramIcon());
+   protected void configureShell(Shell shell) {
+      super.configureShell(shell);
+      shell.setImage(VersionInfo.getProgramIcon());
    }
 
-   protected CLabel createLine(Composite var1, String var2, boolean var3) {
-      Label var4 = new Label(var1, 0);
-      var4.setText(SResources.getString(var2));
-      GridData var5 = new GridData();
-      var5.widthHint = 100;
-      var4.setLayoutData(var5);
-      final CLabel var6 = new CLabel(var1, 0);
-      Menu var7 = new Menu(var6);
-      var7.addMenuListener(new MenuListener() {
-         public void menuHidden(MenuEvent var1) {
-            var6.setBackground(var6.getDisplay().getSystemColor(22));
+   protected CLabel createLine(Composite composite, String text, boolean fullWidth) {
+      Label label = new Label(composite, 0);
+      label.setText(SResources.getString(text));
+      GridData gridData = new GridData();
+      gridData.widthHint = 100;
+      label.setLayoutData(gridData);
+      final CLabel valueLabel = new CLabel(composite, 0);
+      Menu menu = new Menu(valueLabel);
+      menu.addMenuListener(new MenuListener() {
+         public void menuHidden(MenuEvent event) {
+            valueLabel.setBackground(valueLabel.getDisplay().getSystemColor(22));
          }
 
-         public void menuShown(MenuEvent var1) {
-            var6.setBackground(var6.getDisplay().getSystemColor(26));
+         public void menuShown(MenuEvent event) {
+            valueLabel.setBackground(valueLabel.getDisplay().getSystemColor(26));
          }
       });
-      MenuItem var8 = new MenuItem(var7, 8);
-      var8.setText(SResources.getString("mi.copy"));
-      var8.setImage(SResources.getImage("copy"));
-      var8.addListener(13, new Listener() {
-         public void handleEvent(Event var1) {
-            MainWindow.copyToClipboard(var6.getText());
+      MenuItem menuItem = new MenuItem(menu, 8);
+      menuItem.setText(SResources.getString("mi.copy"));
+      menuItem.setImage(SResources.getImage("copy"));
+      menuItem.addListener(13, new Listener() {
+         public void handleEvent(Event event) {
+            MainWindow.copyToClipboard(valueLabel.getText());
          }
       });
-      var6.setMenu(var7);
-      var5 = new GridData();
-      if (var3) {
-         var5.widthHint = 300;
-         var5.horizontalSpan = 3;
+      valueLabel.setMenu(menu);
+      gridData = new GridData();
+      if (fullWidth) {
+         gridData.widthHint = 300;
+         gridData.horizontalSpan = 3;
       } else {
-         var5.widthHint = 100;
+         gridData.widthHint = 100;
       }
 
-      var6.setLayoutData(var5);
-      return var6;
+      valueLabel.setLayoutData(gridData);
+      return valueLabel;
    }
 
-   protected ChunkCanvas createChunkGroup(Composite var1, String var2, Client var3, File var4, Network var5) {
-      Group var6 = new Group(var1, 64);
-      String var7 = "";
-      if (var5 == null) {
-         var7 = var3 == null ? " (" + var4.getAvail().length() + ")" : "";
-      } else if (var4.hasAvails()) {
-         var7 = " (" + var4.getAvails(var5).length() + ")";
+   protected ChunkCanvas createChunkGroup(Composite composite, String title, Client client, File file, Network network) {
+      Group group = new Group(composite, 64);
+      String suffix = "";
+      if (network == null) {
+         suffix = client == null ? " (" + file.getAvail().length() + ")" : "";
+      } else if (file.hasAvails()) {
+         suffix = " (" + file.getAvails(network).length() + ")";
       }
 
-      var6.setText(var2 + var7);
-      var6.setLayout(WidgetFactory.createGridLayout(1, 5, 2, 0, 0, false));
-      var6.setLayoutData(new GridData(768));
-      ChunkCanvas var8 = new ChunkCanvas(var6, 262144, var3, var4, var5, false);
-      GridData var9 = new GridData(768);
-      var9.heightHint = 18;
-      var8.setLayoutData(var9);
-      this.chunkCanvases.add(var8);
-      return var8;
+      group.setText(title + suffix);
+      group.setLayout(WidgetFactory.createGridLayout(1, 5, 2, 0, 0, false));
+      group.setLayoutData(new GridData(768));
+      ChunkCanvas chunkCanvas = new ChunkCanvas(group, 262144, client, file, network, false);
+      GridData gridData = new GridData(768);
+      gridData.heightHint = 18;
+      chunkCanvas.setLayoutData(gridData);
+      this.chunkCanvases.add(chunkCanvas);
+      return chunkCanvas;
    }
 
-   protected void updateLabel(CLabel var1, String var2) {
-      if (!var1.isDisposed()) {
-         var1.setText(var2);
-         var1.setToolTipText(var2.length() > 10 ? var2 : "");
+   protected void updateLabel(CLabel label, String text) {
+      if (!label.isDisposed()) {
+         label.setText(text);
+         label.setToolTipText(text.length() > 10 ? text : "");
       }
    }
 
    public boolean close() {
-      Iterator var1 = this.chunkCanvases.iterator();
+      Iterator iterator = this.chunkCanvases.iterator();
 
-      while (var1.hasNext()) {
-         ((ChunkCanvas)var1.next()).dispose();
+      while (iterator.hasNext()) {
+         ((ChunkCanvas)iterator.next()).dispose();
       }
 
       return super.close();
@@ -116,16 +116,16 @@ public abstract class AbstractDetailDialog extends Dialog implements MyObserver 
 
    public abstract void updateLabels();
 
-   public void updateViews(int var1) {
+   public void updateViews(int id) {
    }
 
-   public void update(MyObservable var1, Object var2, final int var3) {
+   public void update(MyObservable observable, Object arg, final int id) {
       if (this.getShell() != null && !this.getShell().isDisposed()) {
          this.getShell().getDisplay().asyncExec(new Runnable() {
             public void run() {
                if (AbstractDetailDialog.this.getShell() != null && !AbstractDetailDialog.this.getShell().isDisposed()) {
                   AbstractDetailDialog.this.updateLabels();
-                  AbstractDetailDialog.this.updateViews(var3);
+                  AbstractDetailDialog.this.updateViews(id);
                }
             }
          });

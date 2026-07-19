@@ -9,21 +9,21 @@ import sancho.model.mldonkey.Server;
 import sancho.view.viewer.GView;
 
 public class StateViewerFilter extends AbstractViewerFilter {
-   public StateViewerFilter(GView var1) {
-      super(var1);
+   public StateViewerFilter(GView gView) {
+      super(gView);
    }
 
-   public boolean select(Viewer var1, Object var2, Object var3) {
-      if (var3 instanceof Server) {
-         return this.isFiltered(((Server)var3).getStateEnum());
-      } else if (var3 instanceof File) {
-         return this.isFiltered(((File)var3).getFileStateEnum());
-      } else if (var3 instanceof Client) {
-         return this.isFiltered(((Client)var3).getStateEnum());
-      } else if (var3 instanceof Result) {
-         return this.isFiltered(((Result)var3).getRating());
+   public boolean select(Viewer viewer, Object parentElement, Object element) {
+      if (element instanceof Server) {
+         return this.isFiltered(((Server)element).getStateEnum());
+      } else if (element instanceof File) {
+         return this.isFiltered(((File)element).getFileStateEnum());
+      } else if (element instanceof Client) {
+         return this.isFiltered(((Client)element).getStateEnum());
+      } else if (element instanceof Result) {
+         return this.isFiltered(((Result)element).getRating());
       } else {
-         return var3 instanceof Room ? this.isFiltered(((Room)var3).getRoomState()) : true;
+         return element instanceof Room ? this.isFiltered(((Room)element).getRoomState()) : true;
       }
    }
 }

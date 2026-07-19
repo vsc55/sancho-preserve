@@ -4,27 +4,27 @@ import org.eclipse.jface.viewers.Viewer;
 import sancho.view.viewer.GSorter;
 
 public class DownloadCompleteTableSorter extends GSorter {
-   public DownloadCompleteTableSorter(DownloadCompleteTableView var1) {
-      super(var1);
+   public DownloadCompleteTableSorter(DownloadCompleteTableView view) {
+      super(view);
       this.setDirection(true);
    }
 
-   public boolean sortOrder(int var1) {
+   public boolean sortOrder(int columnId) {
       return true;
    }
 
-   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
-      DownloadCompleteItem var5 = (DownloadCompleteItem)var2;
-      DownloadCompleteItem var6 = (DownloadCompleteItem)var3;
-      switch (var4) {
+   protected int _compare(Viewer viewer, Object element1, Object element2, int columnId) {
+      DownloadCompleteItem item1 = (DownloadCompleteItem)element1;
+      DownloadCompleteItem item2 = (DownloadCompleteItem)element2;
+      switch (columnId) {
          case 0:
-            return this.compareStrings(var5.getName(), var6.getName());
+            return this.compareStrings(item1.getName(), item2.getName());
          case 1:
-            return this.compareLongs(var5.getSize(), var6.getSize());
+            return this.compareLongs(item1.getSize(), item2.getSize());
          case 2:
-            return this.compareStrings(var5.getHash(), var6.getHash());
+            return this.compareStrings(item1.getHash(), item2.getHash());
          case 3:
-            return this.compareLongs(var5.getDateLong(), var6.getDateLong());
+            return this.compareLongs(item1.getDateLong(), item2.getDateLong());
          default:
             return 0;
       }

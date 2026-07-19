@@ -37,14 +37,14 @@ public class MyViewForm extends Composite {
    private Rectangle oldArea;
    private static final int OFFSCREEN = -200;
 
-   public MyViewForm(Composite var1, int var2) {
-      super(var1, checkStyle(var2));
-      this.setBorderVisible((var2 & 2048) != 0);
-      Listener var3 = new Listener() {
-         public void handleEvent(Event var1) {
-            switch (var1.type) {
+   public MyViewForm(Composite parent, int style) {
+      super(parent, checkStyle(style));
+      this.setBorderVisible((style & 2048) != 0);
+      Listener listener = new Listener() {
+         public void handleEvent(Event event) {
+            switch (event.type) {
                case 9:
-                  MyViewForm.this.onPaint(var1.gc);
+                  MyViewForm.this.onPaint(event.gc);
                case 10:
                default:
                   break;
@@ -56,135 +56,135 @@ public class MyViewForm extends Composite {
             }
          }
       };
-      int[] var4 = new int[]{12, 9, 11};
+      int[] eventTypes = new int[]{12, 9, 11};
 
-      for (int var5 = 0; var5 < var4.length; var5++) {
-         this.addListener(var4[var5], var3);
+      for (int i = 0; i < eventTypes.length; i++) {
+         this.addListener(eventTypes[i], listener);
       }
    }
 
-   public static Color changeColor(RGB var0, int var1) {
-      int var2 = modifyIntColor(var0.red, var1);
-      int var3 = modifyIntColor(var0.green, var1);
-      int var4 = modifyIntColor(var0.blue, var1);
-      return new Color(null, var2, var3, var4);
+   public static Color changeColor(RGB rgb, int delta) {
+      int red = modifyIntColor(rgb.red, delta);
+      int green = modifyIntColor(rgb.green, delta);
+      int blue = modifyIntColor(rgb.blue, delta);
+      return new Color(null, red, green, blue);
    }
 
-   public static Color changeColor(RGB var0, int var1, int var2) {
-      int var3 = modifyIntColor(var0.red, var1, var2);
-      int var4 = modifyIntColor(var0.green, var1, var2);
-      int var5 = modifyIntColor(var0.blue, var1, var2);
-      return new Color(null, var3, var4, var5);
+   public static Color changeColor(RGB rgb, int delta, int fallback) {
+      int red = modifyIntColor(rgb.red, delta, fallback);
+      int green = modifyIntColor(rgb.green, delta, fallback);
+      int blue = modifyIntColor(rgb.blue, delta, fallback);
+      return new Color(null, red, green, blue);
    }
 
-   public static int modifyIntColor(int var0, int var1) {
-      return modifyIntColor(var0, var1, var0);
+   public static int modifyIntColor(int value, int delta) {
+      return modifyIntColor(value, delta, value);
    }
 
-   public static int modifyIntColor(int var0, int var1, int var2) {
-      return var0 + var1 >= 0 && var0 + var1 <= 255 ? var0 + var1 : var2;
+   public static int modifyIntColor(int value, int delta, int fallback) {
+      return value + delta >= 0 && value + delta <= 255 ? value + delta : fallback;
    }
 
-   static int checkStyle(int var0) {
-      int var1 = 109051904;
-      return var0 & var1 | 1048576;
+   static int checkStyle(int style) {
+      int mask = 109051904;
+      return style & mask | 1048576;
    }
 
-   public Point computeSize(int var1, int var2, boolean var3) {
+   public Point computeSize(int wHint, int hHint, boolean changed) {
       this.checkWidget();
-      Point var4 = new Point(0, 0);
+      Point leftSize = new Point(0, 0);
       if (this.topLeft != null) {
-         var4 = this.topLeft.computeSize(-1, -1);
+         leftSize = this.topLeft.computeSize(-1, -1);
       }
 
-      Point var5 = new Point(0, 0);
+      Point centerSize = new Point(0, 0);
       if (this.topCenter != null) {
-         var5 = this.topCenter.computeSize(-1, -1);
+         centerSize = this.topCenter.computeSize(-1, -1);
       }
 
-      Point var6 = new Point(0, 0);
+      Point rightSize = new Point(0, 0);
       if (this.topRight != null) {
-         var6 = this.topRight.computeSize(-1, -1);
+         rightSize = this.topRight.computeSize(-1, -1);
       }
 
-      Point var7 = new Point(0, 0);
-      if (this.separateTopCenter || var1 != -1 && var4.x + var5.x + var6.x > var1) {
-         var7.x = var4.x + var6.x;
-         if (var4.x > 0 && var6.x > 0) {
-            var7.x = var7.x + this.horizontalSpacing;
+      Point size = new Point(0, 0);
+      if (this.separateTopCenter || wHint != -1 && leftSize.x + centerSize.x + rightSize.x > wHint) {
+         size.x = leftSize.x + rightSize.x;
+         if (leftSize.x > 0 && rightSize.x > 0) {
+            size.x = size.x + this.horizontalSpacing;
          }
 
-         var7.x = Math.max(var5.x, var7.x);
-         var7.y = Math.max(var4.y, var6.y);
+         size.x = Math.max(centerSize.x, size.x);
+         size.y = Math.max(leftSize.y, rightSize.y);
          if (this.topCenter != null) {
-            var7.y = var7.y + var5.y;
+            size.y = size.y + centerSize.y;
             if (this.topLeft != null || this.topRight != null) {
-               var7.y = var7.y + this.verticalSpacing;
+               size.y = size.y + this.verticalSpacing;
             }
          }
       } else {
-         var7.x = var4.x + var5.x + var6.x;
-         int var8 = -1;
-         if (var4.x > 0) {
-            var8++;
+         size.x = leftSize.x + centerSize.x + rightSize.x;
+         int count = -1;
+         if (leftSize.x > 0) {
+            count++;
          }
 
-         if (var5.x > 0) {
-            var8++;
+         if (centerSize.x > 0) {
+            count++;
          }
 
-         if (var6.x > 0) {
-            var8++;
+         if (rightSize.x > 0) {
+            count++;
          }
 
-         if (var8 > 0) {
-            var7.x = var7.x + var8 * this.horizontalSpacing;
+         if (count > 0) {
+            size.x = size.x + count * this.horizontalSpacing;
          }
 
-         var7.y = Math.max(var4.y, Math.max(var5.y, var6.y));
+         size.y = Math.max(leftSize.y, Math.max(centerSize.y, rightSize.y));
       }
 
       if (this.content != null) {
          new Point(0, 0);
-         Point var9 = this.content.computeSize(-1, -1);
-         var7.x = Math.max(var7.x, var9.x);
-         var7.y = var7.y + var9.y;
-         if (var7.y > var9.y) {
-            var7.y = var7.y + this.verticalSpacing;
+         Point contentSize = this.content.computeSize(-1, -1);
+         size.x = Math.max(size.x, contentSize.x);
+         size.y = size.y + contentSize.y;
+         if (size.y > contentSize.y) {
+            size.y = size.y + this.verticalSpacing;
          }
       }
 
-      var7.x = var7.x + 2 * this.marginWidth;
-      var7.y = var7.y + 2 * this.marginHeight;
-      if (var1 != -1) {
-         var7.x = var1;
+      size.x = size.x + 2 * this.marginWidth;
+      size.y = size.y + 2 * this.marginHeight;
+      if (wHint != -1) {
+         size.x = wHint;
       }
 
-      if (var2 != -1) {
-         var7.y = var2;
+      if (hHint != -1) {
+         size.y = hHint;
       }
 
-      Rectangle var10 = this.computeTrim(0, 0, var7.x, var7.y);
-      return new Point(var10.width, var10.height);
+      Rectangle trim = this.computeTrim(0, 0, size.x, size.y);
+      return new Point(trim.width, trim.height);
    }
 
-   public Rectangle computeTrim(int var1, int var2, int var3, int var4) {
+   public Rectangle computeTrim(int x, int y, int width, int height) {
       this.checkWidget();
-      int var5 = var1 - this.borderLeft;
-      int var6 = var2 - this.borderTop;
-      int var7 = var3 + this.borderLeft + this.borderRight;
-      int var8 = var4 + this.borderTop + this.borderBottom;
-      return new Rectangle(var5, var6, var7, var8);
+      int trimX = x - this.borderLeft;
+      int trimY = y - this.borderTop;
+      int trimWidth = width + this.borderLeft + this.borderRight;
+      int trimHeight = height + this.borderTop + this.borderBottom;
+      return new Rectangle(trimX, trimY, trimWidth, trimHeight);
    }
 
    public Rectangle getClientArea() {
       this.checkWidget();
-      Rectangle var1 = super.getClientArea();
-      var1.x = var1.x + this.borderLeft;
-      var1.y = var1.y + this.borderTop;
-      var1.width = var1.width - (this.borderLeft + this.borderRight);
-      var1.height = var1.height - (this.borderTop + this.borderBottom);
-      return var1;
+      Rectangle rect = super.getClientArea();
+      rect.x = rect.x + this.borderLeft;
+      rect.y = rect.y + this.borderTop;
+      rect.width = rect.width - (this.borderLeft + this.borderRight);
+      rect.height = rect.height - (this.borderTop + this.borderBottom);
+      return rect;
    }
 
    public Control getContent() {
@@ -203,99 +203,99 @@ public class MyViewForm extends Composite {
       return this.topRight;
    }
 
-   public void layout(boolean var1) {
+   public void layout(boolean changed) {
       this.checkWidget();
-      Rectangle var2 = this.getClientArea();
-      Point var3 = new Point(0, 0);
+      Rectangle clientArea = this.getClientArea();
+      Point leftSize = new Point(0, 0);
       if (this.topLeft != null && !this.topLeft.isDisposed()) {
-         var3 = this.topLeft.computeSize(-1, -1);
+         leftSize = this.topLeft.computeSize(-1, -1);
       }
 
-      Point var4 = new Point(0, 0);
+      Point centerSize = new Point(0, 0);
       if (this.topCenter != null && !this.topCenter.isDisposed()) {
-         var4 = this.topCenter.computeSize(-1, -1);
+         centerSize = this.topCenter.computeSize(-1, -1);
       }
 
-      Point var5 = new Point(0, 0);
+      Point rightSize = new Point(0, 0);
       if (this.topRight != null && !this.topRight.isDisposed()) {
-         var5 = this.topRight.computeSize(-1, -1);
+         rightSize = this.topRight.computeSize(-1, -1);
       }
 
-      int var6 = var3.x + var4.x + var5.x + 2 * this.marginWidth;
-      int var7 = -1;
-      if (var3.x > 0) {
-         var7++;
+      int totalWidth = leftSize.x + centerSize.x + rightSize.x + 2 * this.marginWidth;
+      int count = -1;
+      if (leftSize.x > 0) {
+         count++;
       }
 
-      if (var4.x > 0) {
-         var7++;
+      if (centerSize.x > 0) {
+         count++;
       }
 
-      if (var5.x > 0) {
-         var7++;
+      if (rightSize.x > 0) {
+         count++;
       }
 
-      if (var7 > 0) {
-         var6 += var7 * this.horizontalSpacing;
+      if (count > 0) {
+         totalWidth += count * this.horizontalSpacing;
       }
 
-      int var8 = var2.x + var2.width - this.marginWidth;
-      int var9 = var2.y + this.marginHeight;
-      boolean var10 = false;
-      if (!this.separateTopCenter && var6 <= var2.width) {
-         int var19 = Math.max(var5.y, Math.max(var4.y, var3.y));
+      int x = clientArea.x + clientArea.width - this.marginWidth;
+      int y = clientArea.y + this.marginHeight;
+      boolean placed = false;
+      if (!this.separateTopCenter && totalWidth <= clientArea.width) {
+         int rowHeight = Math.max(rightSize.y, Math.max(centerSize.y, leftSize.y));
          if (this.topRight != null && !this.topRight.isDisposed()) {
-            var10 = true;
-            var8 -= var5.x;
-            this.topRight.setBounds(var8, var9, var5.x, var19);
-            var8 -= this.horizontalSpacing;
+            placed = true;
+            x -= rightSize.x;
+            this.topRight.setBounds(x, y, rightSize.x, rowHeight);
+            x -= this.horizontalSpacing;
          }
 
          if (this.topCenter != null && !this.topCenter.isDisposed()) {
-            var10 = true;
-            var8 -= var4.x;
-            this.topCenter.setBounds(var8, var9, var4.x, var19);
-            var8 -= this.horizontalSpacing;
+            placed = true;
+            x -= centerSize.x;
+            this.topCenter.setBounds(x, y, centerSize.x, rowHeight);
+            x -= this.horizontalSpacing;
          }
 
          if (this.topLeft != null && !this.topLeft.isDisposed()) {
-            var10 = true;
-            var3 = this.topLeft.computeSize(var8 - var2.x - this.marginWidth, var19);
-            this.topLeft.setBounds(var2.x + this.marginWidth, var9, var3.x, var19);
+            placed = true;
+            leftSize = this.topLeft.computeSize(x - clientArea.x - this.marginWidth, rowHeight);
+            this.topLeft.setBounds(clientArea.x + this.marginWidth, y, leftSize.x, rowHeight);
          }
 
-         if (var10) {
-            var9 += var19 + this.verticalSpacing;
+         if (placed) {
+            y += rowHeight + this.verticalSpacing;
          }
       } else {
-         int var11 = Math.max(var5.y, var3.y);
+         int rowHeight = Math.max(rightSize.y, leftSize.y);
          if (this.topRight != null && !this.topRight.isDisposed()) {
-            var10 = true;
-            var8 -= var5.x;
-            this.topRight.setBounds(var8, var9, var5.x, var11);
-            var8 -= this.horizontalSpacing;
+            placed = true;
+            x -= rightSize.x;
+            this.topRight.setBounds(x, y, rightSize.x, rowHeight);
+            x -= this.horizontalSpacing;
          }
 
          if (this.topLeft != null && !this.topLeft.isDisposed()) {
-            var10 = true;
-            var3 = this.topLeft.computeSize(var8 - var2.x - this.marginWidth, -1);
-            this.topLeft.setBounds(var2.x + this.marginWidth, var9, var3.x, var11);
+            placed = true;
+            leftSize = this.topLeft.computeSize(x - clientArea.x - this.marginWidth, -1);
+            this.topLeft.setBounds(clientArea.x + this.marginWidth, y, leftSize.x, rowHeight);
          }
 
-         if (var10) {
-            var9 += var11 + this.verticalSpacing;
+         if (placed) {
+            y += rowHeight + this.verticalSpacing;
          }
 
          if (this.topCenter != null && !this.topCenter.isDisposed()) {
-            var10 = true;
-            var4 = this.topCenter.computeSize(var2.width - 2 * this.marginWidth, -1);
-            this.topCenter.setBounds(var2.x + var2.width - this.marginWidth - var4.x, var9, var4.x, var4.y);
-            var9 += var4.y + this.verticalSpacing;
+            placed = true;
+            centerSize = this.topCenter.computeSize(clientArea.width - 2 * this.marginWidth, -1);
+            this.topCenter.setBounds(clientArea.x + clientArea.width - this.marginWidth - centerSize.x, y, centerSize.x, centerSize.y);
+            y += centerSize.y + this.verticalSpacing;
          }
       }
 
       if (this.content != null && !this.content.isDisposed()) {
-         this.content.setBounds(var2.x + this.marginWidth, var9, var2.width - 2 * this.marginWidth, var2.y + var2.height - var9 - this.marginHeight);
+         this.content.setBounds(clientArea.x + this.marginWidth, y, clientArea.width - 2 * this.marginWidth, clientArea.y + clientArea.height - y - this.marginHeight);
       }
    }
 
@@ -322,65 +322,65 @@ public class MyViewForm extends Composite {
       this.oldArea = null;
    }
 
-   void onPaint(GC var1) {
-      Color var2 = var1.getForeground();
-      Point var3 = this.getSize();
+   void onPaint(GC gc) {
+      Color foreground = gc.getForeground();
+      Point size = this.getSize();
       if (this.showBorder) {
          if ((this.getStyle() & 8388608) != 0) {
-            var1.setForeground(this.borderColor1);
-            var1.drawRectangle(0, 0, var3.x - 1, var3.y - 1);
+            gc.setForeground(this.borderColor1);
+            gc.drawRectangle(0, 0, size.x - 1, size.y - 1);
          } else {
-            var1.setForeground(this.borderColor1);
-            var1.drawRectangle(0, 0, var3.x - 3, var3.y - 3);
-            var1.setForeground(this.borderColor1);
-            var1.setBackground(this.getDisplay().getSystemColor(1));
-            var1.fillRectangle(0, 0, var3.x - 3, var3.y - 3);
-            var1.setBackground(this.getDisplay().getSystemColor(18));
-            var1.fillRectangle(1, 1, var3.x - 3, var3.y - 3);
-            var1.setForeground(this.borderColor2);
-            var1.drawLine(1, var3.y - 2, var3.x - 1, var3.y - 2);
-            var1.drawLine(var3.x - 2, 1, var3.x - 2, var3.y - 1);
-            var1.setForeground(this.borderColor3);
-            var1.drawLine(2, var3.y - 1, var3.x - 2, var3.y - 1);
-            var1.drawLine(var3.x - 1, 2, var3.x - 1, var3.y - 2);
+            gc.setForeground(this.borderColor1);
+            gc.drawRectangle(0, 0, size.x - 3, size.y - 3);
+            gc.setForeground(this.borderColor1);
+            gc.setBackground(this.getDisplay().getSystemColor(1));
+            gc.fillRectangle(0, 0, size.x - 3, size.y - 3);
+            gc.setBackground(this.getDisplay().getSystemColor(18));
+            gc.fillRectangle(1, 1, size.x - 3, size.y - 3);
+            gc.setForeground(this.borderColor2);
+            gc.drawLine(1, size.y - 2, size.x - 1, size.y - 2);
+            gc.drawLine(size.x - 2, 1, size.x - 2, size.y - 1);
+            gc.setForeground(this.borderColor3);
+            gc.drawLine(2, size.y - 1, size.x - 2, size.y - 1);
+            gc.drawLine(size.x - 1, 2, size.x - 1, size.y - 2);
          }
       }
 
-      var1.setForeground(var2);
+      gc.setForeground(foreground);
    }
 
    void onResize() {
       this.layout();
-      Rectangle var1 = super.getClientArea();
+      Rectangle clientArea = super.getClientArea();
       if (this.oldArea != null && this.oldArea.width != 0 && this.oldArea.height != 0) {
-         int var2 = 0;
-         if (this.oldArea.width < var1.width) {
-            var2 = var1.width - this.oldArea.width + this.borderRight;
-         } else if (this.oldArea.width > var1.width) {
-            var2 = this.borderRight;
+         int widthDelta = 0;
+         if (this.oldArea.width < clientArea.width) {
+            widthDelta = clientArea.width - this.oldArea.width + this.borderRight;
+         } else if (this.oldArea.width > clientArea.width) {
+            widthDelta = this.borderRight;
          }
 
-         this.redraw(var1.x + var1.width - var2, var1.y, var2, var1.height, false);
-         int var3 = 0;
-         if (this.oldArea.height < var1.height) {
-            var3 = var1.height - this.oldArea.height + this.borderBottom;
+         this.redraw(clientArea.x + clientArea.width - widthDelta, clientArea.y, widthDelta, clientArea.height, false);
+         int heightDelta = 0;
+         if (this.oldArea.height < clientArea.height) {
+            heightDelta = clientArea.height - this.oldArea.height + this.borderBottom;
          }
 
-         if (this.oldArea.height > var1.height) {
-            var3 = this.borderBottom;
+         if (this.oldArea.height > clientArea.height) {
+            heightDelta = this.borderBottom;
          }
 
-         this.redraw(var1.x, var1.y + var1.height - var3, var1.width, var3, false);
+         this.redraw(clientArea.x, clientArea.y + clientArea.height - heightDelta, clientArea.width, heightDelta, false);
       } else {
          this.redraw();
       }
 
-      this.oldArea = var1;
+      this.oldArea = clientArea;
    }
 
-   public void setContent(Control var1) {
+   public void setContent(Control control) {
       this.checkWidget();
-      if (var1 != null && var1.getParent() != this) {
+      if (control != null && control.getParent() != this) {
          SWT.error(5);
       }
 
@@ -388,34 +388,34 @@ public class MyViewForm extends Composite {
          this.content.setBounds(-200, -200, 0, 0);
       }
 
-      this.content = var1;
+      this.content = control;
       this.layout();
    }
 
-   public void setFont(Font var1) {
-      super.setFont(var1);
+   public void setFont(Font font) {
+      super.setFont(font);
       if (this.topLeft != null && !this.topLeft.isDisposed()) {
-         this.topLeft.setFont(var1);
+         this.topLeft.setFont(font);
       }
 
       if (this.topCenter != null && !this.topCenter.isDisposed()) {
-         this.topCenter.setFont(var1);
+         this.topCenter.setFont(font);
       }
 
       if (this.topRight != null && !this.topRight.isDisposed()) {
-         this.topRight.setFont(var1);
+         this.topRight.setFont(font);
       }
 
       this.layout();
    }
 
-   public void setLayout(Layout var1) {
+   public void setLayout(Layout layout) {
       this.checkWidget();
    }
 
-   public void setTopCenter(Control var1) {
+   public void setTopCenter(Control control) {
       this.checkWidget();
-      if (var1 != null && var1.getParent() != this) {
+      if (control != null && control.getParent() != this) {
          SWT.error(5);
       }
 
@@ -423,13 +423,13 @@ public class MyViewForm extends Composite {
          this.topCenter.setBounds(-200, -200, 0, 0);
       }
 
-      this.topCenter = var1;
+      this.topCenter = control;
       this.layout();
    }
 
-   public void setTopLeft(Control var1) {
+   public void setTopLeft(Control control) {
       this.checkWidget();
-      if (var1 != null && var1.getParent() != this) {
+      if (control != null && control.getParent() != this) {
          SWT.error(5);
       }
 
@@ -437,13 +437,13 @@ public class MyViewForm extends Composite {
          this.topLeft.setBounds(-200, -200, 0, 0);
       }
 
-      this.topLeft = var1;
+      this.topLeft = control;
       this.layout();
    }
 
-   public void setTopRight(Control var1) {
+   public void setTopRight(Control control) {
       this.checkWidget();
-      if (var1 != null && var1.getParent() != this) {
+      if (control != null && control.getParent() != this) {
          SWT.error(5);
       }
 
@@ -451,14 +451,14 @@ public class MyViewForm extends Composite {
          this.topRight.setBounds(-200, -200, 0, 0);
       }
 
-      this.topRight = var1;
+      this.topRight = control;
       this.layout();
    }
 
-   public void setBorderVisible(boolean var1) {
+   public void setBorderVisible(boolean visible) {
       this.checkWidget();
-      if (this.showBorder != var1) {
-         this.showBorder = var1;
+      if (this.showBorder != visible) {
+         this.showBorder = visible;
          if (this.showBorder) {
             if ((this.getStyle() & 8388608) != 0) {
                this.borderLeft = this.borderTop = this.borderRight = this.borderBottom = 1;
@@ -475,9 +475,9 @@ public class MyViewForm extends Composite {
       }
    }
 
-   public void setTopCenterSeparate(boolean var1) {
+   public void setTopCenterSeparate(boolean separate) {
       this.checkWidget();
-      this.separateTopCenter = var1;
+      this.separateTopCenter = separate;
       this.layout();
    }
 }

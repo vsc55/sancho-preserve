@@ -6,8 +6,8 @@ import sancho.view.utility.AbstractTab;
 import sancho.view.viewFrame.TabbedSashViewFrame;
 
 public class FriendsViewFrame extends TabbedSashViewFrame {
-   public FriendsViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
-      super(var1, var2, var3, var4, "friends");
+   public FriendsViewFrame(SashForm sashForm, String name, String text, AbstractTab tab) {
+      super(sashForm, name, text, tab, "friends");
       this.gView = new FriendsTableView(this);
       this.createViewListener(new FriendsViewListener(this));
       this.createViewToolBar();

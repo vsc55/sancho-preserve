@@ -31,158 +31,158 @@ import sancho.view.transfer.UniformResourceLocator;
 import sancho.view.viewer.actions.CTabFolderTabsAction;
 
 public class WidgetFactory {
-   public static CTabFolder createCTabFolder(Composite var0) {
-      return createCTabFolder(var0, 0);
+   public static CTabFolder createCTabFolder(Composite composite) {
+      return createCTabFolder(composite, 0);
    }
 
-   public static CTabFolder createCTabFolder(Composite var0, int var1) {
-      CTabFolder var2 = new CTabFolder(var0, var1 | 8388608);
-      Display var3 = var2.getDisplay();
-      Color var4 = var3.getSystemColor(31);
+   public static CTabFolder createCTabFolder(Composite composite, int style) {
+      CTabFolder cTabFolder = new CTabFolder(composite, style | 8388608);
+      Display display = cTabFolder.getDisplay();
+      Color selectionColor = display.getSystemColor(31);
       if (PreferenceLoader.loadBoolean("useGradient")) {
-         var2.setSelectionBackground(var4);
-         var2.setSelectionForeground(var3.getSystemColor(30));
+         cTabFolder.setSelectionBackground(selectionColor);
+         cTabFolder.setSelectionForeground(display.getSystemColor(30));
       }
 
-      return var2;
+      return cTabFolder;
    }
 
-   public static Color changeColor(RGB var0, int var1) {
-      int var2 = modifyIntColor(var0.red, var1);
-      int var3 = modifyIntColor(var0.green, var1);
-      int var4 = modifyIntColor(var0.blue, var1);
-      return new Color(null, var2, var3, var4);
+   public static Color changeColor(RGB rgb, int amount) {
+      int red = modifyIntColor(rgb.red, amount);
+      int green = modifyIntColor(rgb.green, amount);
+      int blue = modifyIntColor(rgb.blue, amount);
+      return new Color(null, red, green, blue);
    }
 
-   public static Color changeColor(RGB var0, int var1, int var2) {
-      int var3 = modifyIntColor(var0.red, var1, var2);
-      int var4 = modifyIntColor(var0.green, var1, var2);
-      int var5 = modifyIntColor(var0.blue, var1, var2);
-      return new Color(null, var3, var4, var5);
+   public static Color changeColor(RGB rgb, int amount, int fallback) {
+      int red = modifyIntColor(rgb.red, amount, fallback);
+      int green = modifyIntColor(rgb.green, amount, fallback);
+      int blue = modifyIntColor(rgb.blue, amount, fallback);
+      return new Color(null, red, green, blue);
    }
 
-   public static int modifyIntColor(int var0, int var1) {
-      return modifyIntColor(var0, var1, var0);
+   public static int modifyIntColor(int value, int amount) {
+      return modifyIntColor(value, amount, value);
    }
 
-   public static int modifyIntColor(int var0, int var1, int var2) {
-      return var0 + var1 >= 0 && var0 + var1 <= 255 ? var0 + var1 : var2;
+   public static int modifyIntColor(int value, int amount, int fallback) {
+      return value + amount >= 0 && value + amount <= 255 ? value + amount : fallback;
    }
 
-   public static MyViewForm createViewForm(Composite var0, boolean var1) {
-      return new MyViewForm(var0, 2048 | (!PreferenceLoader.loadBoolean("flatInterface") && !var1 ? 0 : 8388608));
+   public static MyViewForm createViewForm(Composite composite, boolean forceBorder) {
+      return new MyViewForm(composite, 2048 | (!PreferenceLoader.loadBoolean("flatInterface") && !forceBorder ? 0 : 8388608));
    }
 
-   public static GridLayout createGridLayout(int var0, int var1, int var2, int var3, int var4, boolean var5) {
-      GridLayout var6 = new GridLayout();
-      var6.numColumns = var0;
-      var6.marginWidth = var1;
-      var6.marginHeight = var2;
-      var6.horizontalSpacing = var3;
-      var6.verticalSpacing = var4;
-      var6.makeColumnsEqualWidth = var5;
-      return var6;
+   public static GridLayout createGridLayout(int numColumns, int marginWidth, int marginHeight, int horizontalSpacing, int verticalSpacing, boolean makeColumnsEqualWidth) {
+      GridLayout gridLayout = new GridLayout();
+      gridLayout.numColumns = numColumns;
+      gridLayout.marginWidth = marginWidth;
+      gridLayout.marginHeight = marginHeight;
+      gridLayout.horizontalSpacing = horizontalSpacing;
+      gridLayout.verticalSpacing = verticalSpacing;
+      gridLayout.makeColumnsEqualWidth = makeColumnsEqualWidth;
+      return gridLayout;
    }
 
-   public static GridData createGridData(int var0, int var1, int var2) {
-      GridData var3 = var0 == 0 ? new GridData() : new GridData(var0);
-      var3.widthHint = var1;
-      var3.heightHint = var2;
-      return var3;
+   public static GridData createGridData(int style, int widthHint, int heightHint) {
+      GridData gridData = style == 0 ? new GridData() : new GridData(style);
+      gridData.widthHint = widthHint;
+      gridData.heightHint = heightHint;
+      return gridData;
    }
 
-   public static RowLayout createRowLayout(boolean var0, boolean var1, boolean var2, int var3, int var4, int var5, int var6, int var7, int var8) {
-      RowLayout var9 = new RowLayout();
-      var9.wrap = var0;
-      var9.pack = var1;
-      var9.justify = var2;
-      var9.type = var3;
-      var9.marginLeft = var4;
-      var9.marginTop = var5;
-      var9.marginRight = var6;
-      var9.marginBottom = var7;
-      var9.spacing = var8;
-      return var9;
+   public static RowLayout createRowLayout(boolean wrap, boolean pack, boolean justify, int type, int marginLeft, int marginTop, int marginRight, int marginBottom, int spacing) {
+      RowLayout rowLayout = new RowLayout();
+      rowLayout.wrap = wrap;
+      rowLayout.pack = pack;
+      rowLayout.justify = justify;
+      rowLayout.type = type;
+      rowLayout.marginLeft = marginLeft;
+      rowLayout.marginTop = marginTop;
+      rowLayout.marginRight = marginRight;
+      rowLayout.marginBottom = marginBottom;
+      rowLayout.spacing = spacing;
+      return rowLayout;
    }
 
-   public static CLabel createCLabel(Composite var0, String var1, String var2) {
-      CLabel var3 = new CLabel(var0, 16384);
-      var3.setFont(PreferenceLoader.loadFont("headerFontData"));
-      var3.setText(SResources.getString(var1));
-      var3.setLayoutData(new GridData(768));
-      var3.setImage(SResources.getImage(var2));
+   public static CLabel createCLabel(Composite composite, String textKey, String imageKey) {
+      CLabel label = new CLabel(composite, 16384);
+      label.setFont(PreferenceLoader.loadFont("headerFontData"));
+      label.setText(SResources.getString(textKey));
+      label.setLayoutData(new GridData(768));
+      label.setImage(SResources.getImage(imageKey));
       if (PreferenceLoader.loadBoolean("useGradient")) {
-         var3.setForeground(var0.getDisplay().getSystemColor(30));
-         Color var4 = PreferenceLoader.loadColor("viewGradientColor");
-         var3.setBackground(new Color[]{var4, var0.getBackground()}, new int[]{100});
+         label.setForeground(composite.getDisplay().getSystemColor(30));
+         Color gradientColor = PreferenceLoader.loadColor("viewGradientColor");
+         label.setBackground(new Color[]{gradientColor, composite.getBackground()}, new int[]{100});
       }
 
-      return var3;
+      return label;
    }
 
-   public static SashForm createSashForm(Composite var0, String var1) {
-      String orientationPrefString = var1 + "Orientation";
-      int var3 = PreferenceLoader.loadInt(orientationPrefString);
-      if (var3 != 256 && var3 != 512) {
-         PreferenceStore var4 = PreferenceLoader.getPreferenceStore();
-         var3 = var4.getDefaultInt(orientationPrefString);
+   public static SashForm createSashForm(Composite composite, String prefString) {
+      String orientationPrefString = prefString + "Orientation";
+      int orientation = PreferenceLoader.loadInt(orientationPrefString);
+      if (orientation != 256 && orientation != 512) {
+         PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+         orientation = preferenceStore.getDefaultInt(orientationPrefString);
       }
 
-      SashForm var5 = new SashForm(var0, var3);
-      var5.setData("prefString", var1);
-      var5.addDisposeListener(new DisposeListener() {
-         public void widgetDisposed(DisposeEvent var1) {
-            PreferenceStore var2 = PreferenceLoader.getPreferenceStore();
-            var2.setValue(orientationPrefString, var5.getOrientation());
+      SashForm sashForm = new SashForm(composite, orientation);
+      sashForm.setData("prefString", prefString);
+      sashForm.addDisposeListener(new DisposeListener() {
+         public void widgetDisposed(DisposeEvent event) {
+            PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+            preferenceStore.setValue(orientationPrefString, sashForm.getOrientation());
          }
       });
-      return var5;
+      return sashForm;
    }
 
-   public static void loadSashForm(SashForm var0, String var1) {
-      String sashChildPrefString = var1 + "Child";
-      int var3 = PreferenceLoader.loadIntOrN1(var1 + "Maximized");
-      if (sashPrefsExist(var0, var1)) {
-         int[] var4 = new int[var0.getChildren().length];
+   public static void loadSashForm(SashForm sashForm, String prefString) {
+      String sashChildPrefString = prefString + "Child";
+      int maximized = PreferenceLoader.loadIntOrN1(prefString + "Maximized");
+      if (sashPrefsExist(sashForm, prefString)) {
+         int[] weights = new int[sashForm.getChildren().length];
 
-         for (int var5 = 0; var5 < var0.getChildren().length; var5++) {
-            Rectangle var6 = PreferenceLoader.loadRectangle(sashChildPrefString + var5);
-            var4[var5] = var0.getOrientation() == 256 ? var6.width : var6.height;
+         for (int i = 0; i < sashForm.getChildren().length; i++) {
+            Rectangle rect = PreferenceLoader.loadRectangle(sashChildPrefString + i);
+            weights[i] = sashForm.getOrientation() == 256 ? rect.width : rect.height;
          }
 
-         for (int var10 = 0; var10 < var4.length; var10++) {
-            if (var4[var10] > 0) {
-               var0.setWeights(var4);
+         for (int j = 0; j < weights.length; j++) {
+            if (weights[j] > 0) {
+               sashForm.setWeights(weights);
                break;
             }
          }
       }
 
-      if (var3 > -1 && var3 <= var0.getChildren().length) {
-         var0.setMaximizedControl(var0.getChildren()[var3]);
+      if (maximized > -1 && maximized <= sashForm.getChildren().length) {
+         sashForm.setMaximizedControl(sashForm.getChildren()[maximized]);
       }
 
-      PreferenceStore var8 = PreferenceLoader.getPreferenceStore();
+      PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
 
-      for (int var9 = 0; var9 < var0.getChildren().length; var9++) {
-         Control var11 = var0.getChildren()[var9];
-         final int childNumber = var9;
-         var11.addDisposeListener(new DisposeListener() {
-            public void widgetDisposed(DisposeEvent var1) {
-               Control var2 = (Control)var1.widget;
-               if (var2.getBounds().width > 10 && var2.getBounds().height > 10) {
-                  PreferenceConverter.setValue(var8, sashChildPrefString + childNumber, var2.getBounds());
+      for (int i = 0; i < sashForm.getChildren().length; i++) {
+         Control control = sashForm.getChildren()[i];
+         final int childNumber = i;
+         control.addDisposeListener(new DisposeListener() {
+            public void widgetDisposed(DisposeEvent event) {
+               Control control = (Control)event.widget;
+               if (control.getBounds().width > 10 && control.getBounds().height > 10) {
+                  PreferenceConverter.setValue(preferenceStore, sashChildPrefString + childNumber, control.getBounds());
                }
             }
          });
       }
    }
 
-   public static boolean sashPrefsExist(SashForm var0, String var1) {
-      PreferenceStore var2 = PreferenceLoader.getPreferenceStore();
+   public static boolean sashPrefsExist(SashForm sashForm, String prefString) {
+      PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
 
-      for (int var3 = 0; var3 < var0.getChildren().length; var3++) {
-         if (!var2.contains(var1 + "Child" + var3)) {
+      for (int i = 0; i < sashForm.getChildren().length; i++) {
+         if (!preferenceStore.contains(prefString + "Child" + i)) {
             return false;
          }
       }
@@ -190,30 +190,30 @@ public class WidgetFactory {
       return true;
    }
 
-   public static boolean setMaximizedSashFormControl(SashForm var0, int var1) {
-      return var1 > var0.getChildren().length ? false : toggleMaximizedSashFormControl(var0, var0.getChildren()[var1]);
+   public static boolean setMaximizedSashFormControl(SashForm sashForm, int index) {
+      return index > sashForm.getChildren().length ? false : toggleMaximizedSashFormControl(sashForm, sashForm.getChildren()[index]);
    }
 
-   public static boolean toggleMaximizedSashFormControl(SashForm var0, Control var1) {
-      PreferenceStore var2 = PreferenceLoader.getPreferenceStore();
-      String var3 = null;
-      if (var0.getData("prefString") != null) {
-         var3 = (String)var0.getData("prefString") + "Maximized";
+   public static boolean toggleMaximizedSashFormControl(SashForm sashForm, Control control) {
+      PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+      String prefString = null;
+      if (sashForm.getData("prefString") != null) {
+         prefString = (String)sashForm.getData("prefString") + "Maximized";
       }
 
-      if (var0.getMaximizedControl() != null) {
-         var0.setMaximizedControl(null);
-         if (var3 != null) {
-            var2.setValue(var3, -1);
+      if (sashForm.getMaximizedControl() != null) {
+         sashForm.setMaximizedControl(null);
+         if (prefString != null) {
+            preferenceStore.setValue(prefString, -1);
          }
 
          return false;
       } else {
-         var0.setMaximizedControl(var1);
-         if (var3 != null) {
-            for (int var4 = 0; var4 < var0.getChildren().length; var4++) {
-               if (var1 == var0.getChildren()[var4]) {
-                  var2.setValue(var3, var4);
+         sashForm.setMaximizedControl(control);
+         if (prefString != null) {
+            for (int i = 0; i < sashForm.getChildren().length; i++) {
+               if (control == sashForm.getChildren()[i]) {
+                  preferenceStore.setValue(prefString, i);
                   break;
                }
             }
@@ -223,46 +223,46 @@ public class WidgetFactory {
       }
    }
 
-   public static void createLinkDropTarget(Control var0) {
-      DropTarget var1 = new DropTarget(var0, 21);
+   public static void createLinkDropTarget(Control control) {
+      DropTarget dropTarget = new DropTarget(control, 21);
       UniformResourceLocator uRL = UniformResourceLocator.getInstance();
-      TextTransfer var3 = TextTransfer.getInstance();
-      var1.setTransfer(new Transfer[]{uRL, var3});
-      var1.addDropListener(new DropTargetAdapter() {
-         public void dragEnter(DropTargetEvent var1) {
+      TextTransfer textTransfer = TextTransfer.getInstance();
+      dropTarget.setTransfer(new Transfer[]{uRL, textTransfer});
+      dropTarget.addDropListener(new DropTargetAdapter() {
+         public void dragEnter(DropTargetEvent event) {
             // Request DROP_LINK only if the source offers it, else COPY, else NONE — forcing
             // detail=4 made SWT reject a COPY-only drag so the drop was never delivered.
-            boolean var2 = false;
+            boolean supported = false;
 
-            for (int var3 = 0; var3 < var1.dataTypes.length; var3++) {
-               if (uRL.isSupportedType(var1.dataTypes[var3])) {
-                  var2 = true;
+            for (int i = 0; i < event.dataTypes.length; i++) {
+               if (uRL.isSupportedType(event.dataTypes[i])) {
+                  supported = true;
                   break;
                }
             }
 
-            if (var2 && (var1.operations & 4) != 0) {
-               var1.detail = 4;
-            } else if ((var1.operations & 1) != 0) {
-               var1.detail = 1;
+            if (supported && (event.operations & 4) != 0) {
+               event.detail = 4;
+            } else if ((event.operations & 1) != 0) {
+               event.detail = 1;
             } else {
-               var1.detail = 0;
+               event.detail = 0;
             }
          }
 
-         public void drop(DropTargetEvent var1) {
-            if (var1.data != null) {
-               SwissArmy.sendLink(Sancho.getCore(), (String)var1.data);
+         public void drop(DropTargetEvent event) {
+            if (event.data != null) {
+               SwissArmy.sendLink(Sancho.getCore(), (String)event.data);
             }
          }
       });
    }
 
-   public static void addCTabFolderMenu(CTabFolder var0, String var1) {
-      MenuManager var2 = new MenuManager();
-      var2.setRemoveAllWhenShown(true);
-      var2.addMenuListener(new CTabFolderMenuListener(var0, var1));
-      var0.setMenu(var2.createContextMenu(var0));
+   public static void addCTabFolderMenu(CTabFolder cTabFolder, String prefString) {
+      MenuManager menuManager = new MenuManager();
+      menuManager.setRemoveAllWhenShown(true);
+      menuManager.addMenuListener(new CTabFolderMenuListener(cTabFolder, prefString));
+      cTabFolder.setMenu(menuManager.createContextMenu(cTabFolder));
    }
 
    // Menu listener that populates a CTabFolder's context menu with the tabs-position action.
@@ -270,13 +270,13 @@ public class WidgetFactory {
       CTabFolder cTabFolder;
       String prefString;
 
-      public CTabFolderMenuListener(CTabFolder var1, String var2) {
-         this.cTabFolder = var1;
-         this.prefString = var2;
+      public CTabFolderMenuListener(CTabFolder cTabFolder, String prefString) {
+         this.cTabFolder = cTabFolder;
+         this.prefString = prefString;
       }
 
-      public void menuAboutToShow(IMenuManager var1) {
-         var1.add(new CTabFolderTabsAction(this.cTabFolder, this.prefString));
+      public void menuAboutToShow(IMenuManager menuManager) {
+         menuManager.add(new CTabFolderTabsAction(this.cTabFolder, this.prefString));
       }
    }
 }

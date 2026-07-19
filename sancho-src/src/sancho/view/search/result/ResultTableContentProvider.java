@@ -14,27 +14,27 @@ public class ResultTableContentProvider extends GTableContentProvider {
    private String searchWaitingString = "";
    private ObjectMap objectMap;
 
-   public ResultTableContentProvider(ResultTableView var1) {
-      super(var1);
+   public ResultTableContentProvider(ResultTableView view) {
+      super(view);
    }
 
-   public Object[] getElements(Object var1) {
-      ObjectMap var2 = (ObjectMap)var1;
-      synchronized (var2) {
-         var2.clearAllLists();
+   public Object[] getElements(Object inputElement) {
+      ObjectMap objectMap = (ObjectMap)inputElement;
+      synchronized (objectMap) {
+         objectMap.clearAllLists();
          this.updateHeaderLabel();
-         return var2.getKeyArray();
+         return objectMap.getKeyArray();
       }
    }
 
-   public void inputChanged(Viewer var1, Object var2, Object var3) {
-      super.inputChanged(var1, var2, var3);
-      if (var2 != null) {
-         ((MyObservable)var2).deleteObserver(this);
+   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      super.inputChanged(viewer, oldInput, newInput);
+      if (oldInput != null) {
+         ((MyObservable)oldInput).deleteObserver(this);
       }
 
-      this.objectMap = (ObjectMap)var3;
-      if (var3 != null) {
+      this.objectMap = (ObjectMap)newInput;
+      if (newInput != null) {
          this.objectMap.addObserver(this);
          this.updateHeaderLabel(this.objectMap);
       }
@@ -44,19 +44,19 @@ public class ResultTableContentProvider extends GTableContentProvider {
       super.dispose();
    }
 
-   public void update(final MyObservable var1, final Object var2, final int var3) {
+   public void update(final MyObservable observable, final Object data, final int updateType) {
       if (this.gView != null && !this.gView.isDisposed()) {
          if (this.gView.isVisible() && this.gView.isActive()) {
-            Display var4 = this.tableViewer.getTable().getDisplay();
-            var4.asyncExec(new Runnable() {
+            Display display = this.tableViewer.getTable().getDisplay();
+            display.asyncExec(new Runnable() {
                public void run() {
-                  if (var2 == null) {
-                     ObjectMap objectWeakMap = (ObjectMap)var1;
+                  if (data == null) {
+                     ObjectMap objectWeakMap = (ObjectMap)observable;
                      if (gView == null || gView.isDisposed()) {
                         return;
                      }
 
-                     switch (var3) {
+                     switch (updateType) {
                         case 0:
                            if (objectWeakMap.added()) {
                               tableViewer.add(objectWeakMap.getAndClearAdded());
@@ -75,8 +75,8 @@ public class ResultTableContentProvider extends GTableContentProvider {
                               updateHeaderLabel();
                            }
                      }
-                  } else if (var2 instanceof SearchWaiting) {
-                     SearchWaiting searchWaiting = (SearchWaiting)var2;
+                  } else if (data instanceof SearchWaiting) {
+                     SearchWaiting searchWaiting = (SearchWaiting)data;
                      searchWaitingString = " (" + SResources.getString("s.r.waiting") + searchWaiting.getNumWaiting() + ")";
                      updateHeaderLabel();
                   }
@@ -94,12 +94,12 @@ public class ResultTableContentProvider extends GTableContentProvider {
       }
    }
 
-   private void updateHeaderLabel(ObjectMap var1) {
-      if (this.gView != null && !this.gView.isDisposed() && var1 != null) {
-         int var2 = var1.size();
-         CTabFolderViewFrame var3 = (CTabFolderViewFrame)this.gView.getViewFrame();
-         if (var3.getGView() == this.gView) {
-            this.gView.getViewFrame().updateCLabelText(RS_RESULTS + ": " + var2 + this.searchWaitingString);
+   private void updateHeaderLabel(ObjectMap objectMap) {
+      if (this.gView != null && !this.gView.isDisposed() && objectMap != null) {
+         int count = objectMap.size();
+         CTabFolderViewFrame viewFrame = (CTabFolderViewFrame)this.gView.getViewFrame();
+         if (viewFrame.getGView() == this.gView) {
+            this.gView.getViewFrame().updateCLabelText(RS_RESULTS + ": " + count + this.searchWaitingString);
          }
       }
    }

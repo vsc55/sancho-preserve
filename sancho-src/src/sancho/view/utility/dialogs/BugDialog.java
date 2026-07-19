@@ -21,64 +21,64 @@ import sancho.view.utility.WidgetFactory;
 public class BugDialog extends Dialog {
    String string;
 
-   public BugDialog(Shell var1, String var2) {
-      super(var1);
-      this.string = var2;
+   public BugDialog(Shell shell, String message) {
+      super(shell);
+      this.string = message;
       this.setShellStyle(this.getShellStyle() | 16);
    }
 
-   protected void configureShell(Shell var1) {
-      super.configureShell(var1);
-      var1.setText("Boog Ditekted!");
+   protected void configureShell(Shell shell) {
+      super.configureShell(shell);
+      shell.setText("Boog Ditekted!");
    }
 
-   protected int boolean2Int(boolean var1) {
-      return var1 ? 1 : 0;
+   protected int boolean2Int(boolean value) {
+      return value ? 1 : 0;
    }
 
-   protected Control createDialogArea(Composite var1) {
-      Composite var2 = (Composite)super.createDialogArea(var1);
-      String var3 = "";
+   protected Control createDialogArea(Composite parent) {
+      Composite composite = (Composite)super.createDialogArea(parent);
+      String info = "";
       if (Sancho.getCore() != null) {
-         ICore var4 = Sancho.getCore();
-         var3 = var4.getProtocol()
+         ICore core = Sancho.getCore();
+         info = core.getProtocol()
             + "|"
-            + var4.getFileCollection().size()
+            + core.getFileCollection().size()
             + "|"
-            + var4.getClientCollection().size()
+            + core.getClientCollection().size()
             + "|"
-            + var4.getUserCollection().size()
+            + core.getUserCollection().size()
             + "|"
-            + var4.getRoomCollection().size()
+            + core.getRoomCollection().size()
             + "|"
-            + var4.getResultCollection().size()
+            + core.getResultCollection().size()
             + "|"
-            + var4.getResultCollection().getNumResults();
+            + core.getResultCollection().getNumResults();
       } else {
-         var3 = "No Core";
+         info = "No Core";
       }
 
-      var3 = var3
+      info = info
          + "\nCF:"
          + Sancho.getCoreFactory().getNumRetries()
          + ":"
          + Sancho.getCoreFactory().getUptime()
          + ":"
          + Sancho.getCoreFactory().getConnectedString();
-      String var10 = Runtime.getRuntime().freeMemory() + "/" + Runtime.getRuntime().totalMemory();
-      String var5 = "CG:"
+      String memoryInfo = Runtime.getRuntime().freeMemory() + "/" + Runtime.getRuntime().totalMemory();
+      String prefsInfo = "CG:"
          + this.boolean2Int(PreferenceLoader.loadBoolean("displayChunkGraphs"))
          + "|CE:"
          + this.boolean2Int(!PreferenceLoader.loadString("coreExecutable").equals(""))
          + "|KC:"
          + this.boolean2Int(PreferenceLoader.loadBoolean("killCoreOnExit"))
          + "|";
-      Text var6 = new Text(var2, 2826);
-      var6.setFont(PreferenceLoader.loadFont("consoleFontData"));
-      GridData var7 = new GridData(1808);
-      var7.heightHint = 300;
-      var6.setLayoutData(var7);
-      var6.setText(
+      Text text = new Text(composite, 2826);
+      text.setFont(PreferenceLoader.loadFont("consoleFontData"));
+      GridData gridData = new GridData(1808);
+      gridData.heightHint = 300;
+      text.setLayoutData(gridData);
+      text.setText(
          "Please submit a bug report detailing *exactly* what you\nwere doing when this happened!!! Thank you.\n(Describe exactly how to _reproduce_ the bug if you can.)\n\n---<snip>--- PLEASE INCLUDE ALL OF THE FOLLOWING ---\n\n1. Are you using the latest version? (core and gui)\n\n2. Can you duplicate the error using the java binary\n   version? (this will report better stackTraces and\n   help locate the bug)\n\n3. Does the bug depend upon a certain configuration\n   setting?  Does renaming your ConfigFile and starting\n   with a new one fix the problem? Can you include the\n   ConfigFile that causes the problem with the bug report?\n\nConfigFile: "
             + PreferenceLoader.getPrefFile()
             + "\n"
@@ -102,37 +102,37 @@ public class BugDialog extends Dialog {
             + VersionInfo.getVersion()
             + VersionInfo.getBrand()
             + "\n"
-            + var10
+            + memoryInfo
             + "\n"
-            + var3
+            + info
             + "\n"
-            + var5
+            + prefsInfo
             + "\n"
             + this.string
       );
-      return var2;
+      return composite;
    }
 
-   protected Control createButtonBar(Composite var1) {
-      Composite var2 = new Composite(var1, 0);
-      var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
-      var2.setLayoutData(new GridData(768));
-      Button var3 = new Button(var2, 0);
-      var3.setLayoutData(new GridData(768));
-      var3.setText(SResources.getString("b.reportBug"));
-      var3.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+   protected Control createButtonBar(Composite parent) {
+      Composite composite = new Composite(parent, 0);
+      composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
+      composite.setLayoutData(new GridData(768));
+      Button reportButton = new Button(composite, 0);
+      reportButton.setLayoutData(new GridData(768));
+      reportButton.setText(SResources.getString("b.reportBug"));
+      reportButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             WebLauncher.openLink("mailto:" + VersionInfo.getEmail());
          }
       });
-      Button var4 = new Button(var2, 0);
-      var4.setLayoutData(new GridData(128));
-      var4.setText(SResources.getString("b.close"));
-      var4.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      Button closeButton = new Button(composite, 0);
+      closeButton.setLayoutData(new GridData(128));
+      closeButton.setText(SResources.getString("b.close"));
+      closeButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             BugDialog.this.close();
          }
       });
-      return var2;
+      return composite;
    }
 }

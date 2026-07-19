@@ -24,25 +24,25 @@ public class RefineFilter extends ViewerFilter {
    private boolean returnValue;
    private boolean searchAlternates;
 
-   public RefineFilter(GView var1) {
-      this.gView = var1;
+   public RefineFilter(GView gView) {
+      this.gView = gView;
       this.update();
    }
 
    public void update() {
       if (this.refine = !this.gView.getRefineString().equals("") && !this.gView.getRefineString().equals("-")) {
          try {
-            String var1 = this.gView.getRefineString();
-            if (var1.length() > 1000) {
-               var1 = var1.substring(0, 1000);
+            String refineString = this.gView.getRefineString();
+            if (refineString.length() > 1000) {
+               refineString = refineString.substring(0, 1000);
             }
 
-            if (var1.startsWith("-")) {
-               var1 = var1.substring(1);
+            if (refineString.startsWith("-")) {
+               refineString = refineString.substring(1);
             }
 
-            this.regex = Pattern.compile(var1, Pattern.CASE_INSENSITIVE);
-         } catch (PatternSyntaxException var2) {
+            this.regex = Pattern.compile(refineString, Pattern.CASE_INSENSITIVE);
+         } catch (PatternSyntaxException exception) {
             this.refine = false;
          }
       }
@@ -55,76 +55,76 @@ public class RefineFilter extends ViewerFilter {
       this.searchAlternates = PreferenceLoader.loadBoolean("refineFilterAlternates");
    }
 
-   public boolean select(Viewer var1, Object var2, Object var3) {
+   public boolean select(Viewer viewer, Object parentElement, Object element) {
       if (!this.refine) {
          return true;
       } else {
-         String var4;
-         if (var3 instanceof Server) {
-            Server var5 = (Server)var3;
-            StringBuffer var6 = new StringBuffer(64);
-            var6.append(var5.getName());
-            var6.append(SEPARATOR);
-            var6.append(var5.getDescription());
-            var6.append(SEPARATOR);
-            var6.append(var5.getAddr());
-            var4 = var6.toString();
-         } else if (var3 instanceof Result) {
-            Result var7 = (Result)var3;
-            StringBuffer var11 = new StringBuffer();
-            var11.append(var7.getName());
+         String text;
+         if (element instanceof Server) {
+            Server server = (Server)element;
+            StringBuffer buffer = new StringBuffer(64);
+            buffer.append(server.getName());
+            buffer.append(SEPARATOR);
+            buffer.append(server.getDescription());
+            buffer.append(SEPARATOR);
+            buffer.append(server.getAddr());
+            text = buffer.toString();
+         } else if (element instanceof Result) {
+            Result result = (Result)element;
+            StringBuffer buffer = new StringBuffer();
+            buffer.append(result.getName());
             if (this.searchAlternates) {
-               this.appendAlternates(var11, var7.getNames());
+               this.appendAlternates(buffer, result.getNames());
             }
 
-            var4 = var11.toString();
-         } else if (var3 instanceof SharedFile) {
-            var4 = ((SharedFile)var3).getName();
-         } else if (var3 instanceof Client) {
-            Client var8 = (Client)var3;
-            StringBuffer var12 = new StringBuffer();
-            var12.append(var8.getName());
-            var12.append(SEPARATOR);
-            var12.append(var8.getUploadFilename());
-            var4 = var12.toString();
-         } else if (var3 instanceof File) {
-            File var9 = (File)var3;
-            StringBuffer var13 = new StringBuffer();
-            var13.append(var9.getName());
-            var13.append(SEPARATOR);
-            var13.append(var9.getUser());
-            var13.append(SEPARATOR);
-            var13.append(var9.getGroup());
+            text = buffer.toString();
+         } else if (element instanceof SharedFile) {
+            text = ((SharedFile)element).getName();
+         } else if (element instanceof Client) {
+            Client client = (Client)element;
+            StringBuffer buffer = new StringBuffer();
+            buffer.append(client.getName());
+            buffer.append(SEPARATOR);
+            buffer.append(client.getUploadFilename());
+            text = buffer.toString();
+         } else if (element instanceof File) {
+            File file = (File)element;
+            StringBuffer buffer = new StringBuffer();
+            buffer.append(file.getName());
+            buffer.append(SEPARATOR);
+            buffer.append(file.getUser());
+            buffer.append(SEPARATOR);
+            buffer.append(file.getGroup());
             if (this.searchAlternates) {
-               this.appendAlternates(var13, var9.getNames());
+               this.appendAlternates(buffer, file.getNames());
             }
 
-            var4 = var13.toString();
-         } else if (var3 instanceof DownloadCompleteItem) {
-            var4 = ((DownloadCompleteItem)var3).getName();
-         } else if (var3 instanceof SubfileItem) {
-            var4 = ((SubfileItem)var3).getName();
+            text = buffer.toString();
+         } else if (element instanceof DownloadCompleteItem) {
+            text = ((DownloadCompleteItem)element).getName();
+         } else if (element instanceof SubfileItem) {
+            text = ((SubfileItem)element).getName();
          } else {
-            if (!(var3 instanceof FileComment)) {
+            if (!(element instanceof FileComment)) {
                return true;
             }
 
-            FileComment var10 = (FileComment)var3;
-            StringBuffer var14 = new StringBuffer();
-            var14.append(var10.getName());
-            var14.append("");
-            var14.append(var10.getComment());
-            var4 = var14.toString();
+            FileComment fileComment = (FileComment)element;
+            StringBuffer buffer = new StringBuffer();
+            buffer.append(fileComment.getName());
+            buffer.append("");
+            buffer.append(fileComment.getComment());
+            text = buffer.toString();
          }
 
-         return this.regex.matcher(var4).find() ? this.returnValue : !this.returnValue;
+         return this.regex.matcher(text).find() ? this.returnValue : !this.returnValue;
       }
    }
 
-   public void appendAlternates(StringBuffer var1, String[] var2) {
-      for (int var3 = 0; var3 < var2.length; var3++) {
-         var1.append(SEPARATOR);
-         var1.append(var2[var3]);
+   public void appendAlternates(StringBuffer buffer, String[] names) {
+      for (int i = 0; i < names.length; i++) {
+         buffer.append(SEPARATOR);
+         buffer.append(names[i]);
       }
    }
 

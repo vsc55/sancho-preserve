@@ -12,34 +12,34 @@ public class RoomsTableMenuListener extends GTableMenuListener {
    // $VF: synthetic field
    static Class class$sancho$model$mldonkey$Room;
 
-   public RoomsTableMenuListener(RoomsTableView var1) {
-      super(var1);
+   public RoomsTableMenuListener(RoomsTableView view) {
+      super(view);
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
+   public void selectionChanged(SelectionChangedEvent event) {
       this.collectSelections(
-         var1,
+         event,
          class$sancho$model$mldonkey$Room == null
             ? (class$sancho$model$mldonkey$Room = class$("sancho.model.mldonkey.Room"))
             : class$sancho$model$mldonkey$Room
       );
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager menuManager) {
       if (this.selectedObjects.size() > 0) {
-         var1.add(new SetRoomStateAction(EnumRoomState.OPEN));
-         var1.add(new SetRoomStateAction(EnumRoomState.CLOSED));
-         var1.add(new SetRoomStateAction(EnumRoomState.PAUSED));
-         this.addSelectAllMenu(var1);
+         menuManager.add(new SetRoomStateAction(EnumRoomState.OPEN));
+         menuManager.add(new SetRoomStateAction(EnumRoomState.CLOSED));
+         menuManager.add(new SetRoomStateAction(EnumRoomState.PAUSED));
+         this.addSelectAllMenu(menuManager);
       }
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException exception) {
+         throw new NoClassDefFoundError(exception.getMessage());
       }
    }
 
@@ -47,16 +47,16 @@ public class RoomsTableMenuListener extends GTableMenuListener {
    private class SetRoomStateAction extends Action {
       private EnumRoomState enumRoomState;
 
-      public SetRoomStateAction(EnumRoomState var2) {
-         super("Set: " + var2.getName());
-         this.enumRoomState = var2;
+      public SetRoomStateAction(EnumRoomState enumRoomState) {
+         super("Set: " + enumRoomState.getName());
+         this.enumRoomState = enumRoomState;
          this.setImageDescriptor(SResources.getImageDescriptor("rooms.buttonActiveSmall"));
       }
 
       public void run() {
-         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
-            Room var2 = (Room)selectedObjects.get(var1);
-            var2.setRoomState(this.enumRoomState);
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            Room room = (Room)selectedObjects.get(i);
+            room.setRoomState(this.enumRoomState);
          }
       }
    }

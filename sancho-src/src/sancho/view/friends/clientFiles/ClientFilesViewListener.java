@@ -7,15 +7,15 @@ import sancho.view.viewFrame.SashViewListener;
 import sancho.view.viewer.actions.ColumnSelectorAction;
 
 public class ClientFilesViewListener extends SashViewListener {
-   public ClientFilesViewListener(SashViewFrame var1) {
-      super(var1);
+   public ClientFilesViewListener(SashViewFrame viewFrame) {
+      super(viewFrame);
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
-      var1.add(new ColumnSelectorAction(this.gView));
-      var1.add(new Separator());
-      this.createDynamicColumnSubMenu(var1);
-      this.createSortByColumnSubMenu(var1);
-      this.createSashActions(var1, "l.clientDirectories");
+   public void menuAboutToShow(IMenuManager menuManager) {
+      menuManager.add(new ColumnSelectorAction(this.gView));
+      menuManager.add(new Separator());
+      this.createDynamicColumnSubMenu(menuManager);
+      this.createSortByColumnSubMenu(menuManager);
+      this.createSashActions(menuManager, "l.clientDirectories");
    }
 }

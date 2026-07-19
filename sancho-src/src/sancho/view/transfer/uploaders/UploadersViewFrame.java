@@ -10,8 +10,8 @@ import sancho.view.utility.SResources;
 import sancho.view.viewFrame.SashViewFrame;
 
 public class UploadersViewFrame extends SashViewFrame {
-   public UploadersViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
-      super(var1, var2, var3, var4);
+   public UploadersViewFrame(SashForm sashForm, String labelString, String imageString, AbstractTab tab) {
+      super(sashForm, labelString, imageString, tab);
       this.gView = new UploadersTableView(this);
       this.createViewListener(new UploadersViewListener(this));
       this.createViewToolBar();
@@ -22,16 +22,16 @@ public class UploadersViewFrame extends SashViewFrame {
       ToolItem toolItem = new ToolItem(this.toolBar, 0);
       toolItem.setImage(SResources.getImage("plus"));
       toolItem.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            boolean var2 = !PreferenceLoader.loadBoolean("pollUploaders");
-            PreferenceLoader.getPreferenceStore().setValue("pollUploaders", var2);
+         public void widgetSelected(SelectionEvent event) {
+            boolean enabled = !PreferenceLoader.loadBoolean("pollUploaders");
+            PreferenceLoader.getPreferenceStore().setValue("pollUploaders", enabled);
             PreferenceLoader.saveStore();
             if (UploadersViewFrame.this.getCore() != null) {
                UploadersViewFrame.this.getCore().updatePreferences();
             }
 
-            UploadersViewFrame.this.toggleActive(toolItem, var2);
-            if (var2) {
+            UploadersViewFrame.this.toggleActive(toolItem, enabled);
+            if (enabled) {
                UploadersViewFrame.this.gView.setInput();
             } else {
                UploadersViewFrame.this.gView.getViewer().setInput(null);
@@ -43,8 +43,8 @@ public class UploadersViewFrame extends SashViewFrame {
       this.addRefine();
    }
 
-   public void toggleActive(ToolItem var1, boolean var2) {
-      var1.setImage(SResources.getImage(var2 ? "minus" : "plus"));
-      var1.setToolTipText(SResources.getString(var2 ? "l.disableTable" : "l.enableTable"));
+   public void toggleActive(ToolItem toolItem, boolean enabled) {
+      toolItem.setImage(SResources.getImage(enabled ? "minus" : "plus"));
+      toolItem.setToolTipText(SResources.getString(enabled ? "l.disableTable" : "l.enableTable"));
    }
 }

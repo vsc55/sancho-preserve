@@ -8,37 +8,37 @@ import sancho.view.viewer.table.GTableContentProvider;
 public class ClientDirectoriesTableContentProvider extends GTableContentProvider {
    ClientFilesTableView clientFilesTableView;
 
-   public ClientDirectoriesTableContentProvider(ClientDirectoriesTableView var1) {
-      super(var1);
+   public ClientDirectoriesTableContentProvider(ClientDirectoriesTableView view) {
+      super(view);
    }
 
-   public Object[] getElements(Object var1) {
-      if (var1 instanceof Client) {
-         Client var2 = (Client)var1;
-         if (var2.hasFiles()) {
-            return var2.getFileDirectories();
+   public Object[] getElements(Object inputElement) {
+      if (inputElement instanceof Client) {
+         Client client = (Client)inputElement;
+         if (client.hasFiles()) {
+            return client.getFileDirectories();
          }
       }
 
       return GTableContentProvider.EMPTY_ARRAY;
    }
 
-   public void setFilesView(ClientFilesTableView var1) {
-      this.clientFilesTableView = var1;
+   public void setFilesView(ClientFilesTableView view) {
+      this.clientFilesTableView = view;
    }
 
-   public void inputChanged(Viewer var1, Object var2, Object var3) {
+   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
       if (this.clientFilesTableView != null) {
          this.clientFilesTableView.setInput(null);
       }
 
-      if (var3 != null) {
-         Client var4 = (Client)var3;
-         if (var4.hasFiles()) {
-            this.clientFilesTableView.setInput(var4.getFirstResultMap());
+      if (newInput != null) {
+         Client client = (Client)newInput;
+         if (client.hasFiles()) {
+            this.clientFilesTableView.setInput(client.getFirstResultMap());
          }
       }
 
-      super.inputChanged(var1, var2, var3);
+      super.inputChanged(viewer, oldInput, newInput);
    }
 }

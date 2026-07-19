@@ -43,23 +43,23 @@ public class PreferenceLoader {
    }
 
    public static void cleanUp() {
-      for (int var0 = 0; var0 < fontArray.size(); var0++) {
-         Font var1 = (Font)fontArray.get(var0);
-         if (var1 != null && !var1.isDisposed()) {
-            var1.dispose();
+      for (int i = 0; i < fontArray.size(); i++) {
+         Font font = (Font)fontArray.get(i);
+         if (font != null && !font.isDisposed()) {
+            font.dispose();
          }
       }
 
-      for (int var3 = 0; var3 < colorArray.size(); var3++) {
-         Color var2 = (Color)colorArray.get(var3);
-         if (var2 != null && !var2.isDisposed()) {
-            var2.dispose();
+      for (int i = 0; i < colorArray.size(); i++) {
+         Color color = (Color)colorArray.get(i);
+         if (color != null && !color.isDisposed()) {
+            color.dispose();
          }
       }
    }
 
-   public static boolean contains(String var0) {
-      return preferenceStore.contains(var0);
+   public static boolean contains(String name) {
+      return preferenceStore.contains(name);
    }
 
    public static PreferenceStore getPreferenceStore() {
@@ -81,10 +81,10 @@ public class PreferenceLoader {
             preferenceStore = new PreferenceStore(prefFileName);
          } else {
             prefFileName = VersionInfo.getHomeDirectory() + prefFileName;
-            File var0 = new File(prefFileName);
-            if (!var0.exists()) {
-               File var1 = new File(var0.getParent());
-               var1.mkdirs();
+            File file = new File(prefFileName);
+            if (!file.exists()) {
+               File parentDir = new File(file.getParent());
+               parentDir.mkdirs();
             }
 
             preferenceStore = new PreferenceStore(prefFileName);
@@ -93,7 +93,7 @@ public class PreferenceLoader {
 
       try {
          preferenceStore.load();
-      } catch (IOException var2) {
+      } catch (IOException ioException) {
          preferenceStore.save();
       }
    }
@@ -102,134 +102,134 @@ public class PreferenceLoader {
       preferenceStore = (PreferenceStore)setDefaults(preferenceStore);
    }
 
-   public static boolean loadBoolean(String var0) {
-      return preferenceStore.contains(var0) ? preferenceStore.getBoolean(var0) : false;
+   public static boolean loadBoolean(String name) {
+      return preferenceStore.contains(name) ? preferenceStore.getBoolean(name) : false;
    }
 
-   public static RGB loadRGB(String var0) {
-      return preferenceStore.contains(var0) ? PreferenceConverter.getColor(preferenceStore, var0) : new RGB(0, 0, 0);
+   public static RGB loadRGB(String name) {
+      return preferenceStore.contains(name) ? PreferenceConverter.getColor(preferenceStore, name) : new RGB(0, 0, 0);
    }
 
-   public static Color loadColor(String var0) {
-      if (!preferenceStore.contains(var0)) {
+   public static Color loadColor(String name) {
+      if (!preferenceStore.contains(name)) {
          return null;
       } else {
-         Color var1 = new Color(null, PreferenceConverter.getColor(preferenceStore, var0));
-         if (colorMap.containsKey(var0) && !((Color)colorMap.get(var0)).isDisposed()) {
-            if (var1.getRGB().equals(((Color)colorMap.get(var0)).getRGB())) {
-               var1.dispose();
+         Color color = new Color(null, PreferenceConverter.getColor(preferenceStore, name));
+         if (colorMap.containsKey(name) && !((Color)colorMap.get(name)).isDisposed()) {
+            if (color.getRGB().equals(((Color)colorMap.get(name)).getRGB())) {
+               color.dispose();
             } else {
-               colorArray.add(var1);
-               colorMap.put(var0, var1);
+               colorArray.add(color);
+               colorMap.put(name, color);
             }
          } else {
-            colorArray.add(var1);
-            colorMap.put(var0, var1);
+            colorArray.add(color);
+            colorMap.put(name, color);
          }
 
-         return (Color)colorMap.get(var0);
+         return (Color)colorMap.get(name);
       }
    }
 
-   public static Font loadFont(String var0) {
-      if (!preferenceStore.contains(var0)) {
+   public static Font loadFont(String name) {
+      if (!preferenceStore.contains(name)) {
          return null;
       } else {
-         Font var1 = new Font(null, PreferenceConverter.getFontDataArray(preferenceStore, var0));
-         if (fontMap.containsKey(var0) && !((Font)fontMap.get(var0)).isDisposed()) {
-            if (var1.getFontData()[0].equals(((Font)fontMap.get(var0)).getFontData()[0])) {
-               var1.dispose();
+         Font font = new Font(null, PreferenceConverter.getFontDataArray(preferenceStore, name));
+         if (fontMap.containsKey(name) && !((Font)fontMap.get(name)).isDisposed()) {
+            if (font.getFontData()[0].equals(((Font)fontMap.get(name)).getFontData()[0])) {
+               font.dispose();
             } else {
-               fontArray.add(var1);
-               fontMap.put(var0, var1);
+               fontArray.add(font);
+               fontMap.put(name, font);
             }
          } else {
-            fontArray.add(var1);
-            fontMap.put(var0, var1);
+            fontArray.add(font);
+            fontMap.put(name, font);
          }
 
-         return (Font)fontMap.get(var0);
+         return (Font)fontMap.get(name);
       }
    }
 
-   public static int loadInt(String var0) {
-      return preferenceStore.contains(var0) ? preferenceStore.getInt(var0) : 0;
+   public static int loadInt(String name) {
+      return preferenceStore.contains(name) ? preferenceStore.getInt(name) : 0;
    }
 
-   public static int loadIntOrN1(String var0) {
-      return preferenceStore.contains(var0) ? preferenceStore.getInt(var0) : -1;
+   public static int loadIntOrN1(String name) {
+      return preferenceStore.contains(name) ? preferenceStore.getInt(name) : -1;
    }
 
-   public static int loadOrientation(String var0) {
-      if (preferenceStore.contains(var0)) {
-         int var1 = preferenceStore.getInt(var0);
-         if (var1 == 512 || var1 == 256) {
-            return var1;
+   public static int loadOrientation(String name) {
+      if (preferenceStore.contains(name)) {
+         int orientation = preferenceStore.getInt(name);
+         if (orientation == 512 || orientation == 256) {
+            return orientation;
          }
       }
 
       return 256;
    }
 
-   public static Rectangle loadRectangle(String var0) {
-      return preferenceStore.contains(var0) ? PreferenceConverter.getRectangle(preferenceStore, var0) : null;
+   public static Rectangle loadRectangle(String name) {
+      return preferenceStore.contains(name) ? PreferenceConverter.getRectangle(preferenceStore, name) : null;
    }
 
-   public static String loadStringEnv(String var0) {
-      return SwissArmy.replaceEnvVars(loadString(var0));
+   public static String loadStringEnv(String name) {
+      return SwissArmy.replaceEnvVars(loadString(name));
    }
 
-   public static String loadString(String var0) {
-      return preferenceStore.contains(var0) ? preferenceStore.getString(var0).intern() : "";
+   public static String loadString(String name) {
+      return preferenceStore.contains(name) ? preferenceStore.getString(name).intern() : "";
    }
 
-   public static String[] loadStringArray(String var0) {
-      StringTokenizer var1 = new StringTokenizer(loadString(var0), ENTRY_SEPARATOR);
-      int var2 = var1.countTokens();
-      String[] var3 = new String[var2];
+   public static String[] loadStringArray(String name) {
+      StringTokenizer tokenizer = new StringTokenizer(loadString(name), ENTRY_SEPARATOR);
+      int count = tokenizer.countTokens();
+      String[] values = new String[count];
 
-      for (int var4 = 0; var4 < var2; var4++) {
-         var3[var4] = var1.nextToken();
+      for (int i = 0; i < count; i++) {
+         values[i] = tokenizer.nextToken();
       }
 
-      return var3;
+      return values;
    }
 
-   public static void setValue(String var0, String[] var1) {
-      StringBuffer var2 = new StringBuffer();
+   public static void setValue(String name, String[] values) {
+      StringBuffer buffer = new StringBuffer();
 
-      for (int var3 = 0; var1 != null && var3 < var1.length; var3++) {
-         var2.append(SwissArmy.replaceAll(var1[var3], ENTRY_SEPARATOR, ""));
-         var2.append(ENTRY_SEPARATOR);
+      for (int i = 0; values != null && i < values.length; i++) {
+         buffer.append(SwissArmy.replaceAll(values[i], ENTRY_SEPARATOR, ""));
+         buffer.append(ENTRY_SEPARATOR);
       }
 
-      preferenceStore.setValue(var0, var2.toString().intern());
+      preferenceStore.setValue(name, buffer.toString().intern());
    }
 
-   public static void setValue(String var0, String[] var1, int var2) {
-      if (var1.length > var2) {
-         String[] var3 = new String[var2];
+   public static void setValue(String name, String[] values, int count) {
+      if (values.length > count) {
+         String[] truncated = new String[count];
 
-         for (int var4 = 0; var4 < var2; var4++) {
-            var3[var4] = var1[var4];
+         for (int i = 0; i < count; i++) {
+            truncated[i] = values[i];
          }
 
-         var1 = var3;
+         values = truncated;
       }
 
-      setValue(var0, var1);
+      setValue(name, values);
    }
 
    public static void saveStore() {
       try {
          preferenceStore.save();
-      } catch (IOException var1) {
-         var1.printStackTrace();
+      } catch (IOException ioException) {
+         ioException.printStackTrace();
       }
    }
 
-   static void setDColor(IPreferenceStore var0, Display var1, String var2, int var3) {
-      PreferenceConverter.setDefault(var0, var2, var1.getSystemColor(var3).getRGB());
+   static void setDColor(IPreferenceStore store, Display display, String name, int colorId) {
+      PreferenceConverter.setDefault(store, name, display.getSystemColor(colorId).getRGB());
    }
 
    public static String[] getChunkStrings() {
@@ -249,337 +249,337 @@ public class PreferenceLoader {
       };
    }
 
-   public static void setRGB(String var0, RGB var1) {
+   public static void setRGB(String name, RGB rgb) {
       if (preferenceStore != null) {
-         PreferenceConverter.setValue(preferenceStore, var0, var1);
+         PreferenceConverter.setValue(preferenceStore, name, rgb);
       }
    }
 
-   static IPreferenceStore setDefaults(IPreferenceStore var0) {
-      Display var1 = Display.getDefault();
-      FontData[] var2 = JFaceResources.getDefaultFont().getFontData();
-      var0.setDefault("initialized", false);
-      var0.setDefault("windowMaximized", false);
-      var0.setDefault("windowAlpha", 255);
-      var0.setDefault("windowStartMinimized", false);
-      var0.setDefault("windowStartTray", false);
-      var0.setDefault("coolbarLocked", true);
-      var0.setDefault("toolbarSmallButtons", true);
-      var0.setDefault("flatInterface", false);
-      var0.setDefault("splashScreen", true);
-      var0.setDefault("killCoreOnExit", false);
-      var0.setDefault("killSpawnedCoreOnExit", true);
-      var0.setDefault("killSpawnedCoreDelay", 60);
-      var0.setDefault("hostManagerOnStart", false);
-      var0.setDefault("downloadCompleteDialog", false);
-      var0.setDefault("downloadCompleteLog", true);
-      var0.setDefault("explorerExecutable", SWT.getPlatform().equals("win32") ? "explorer" : "");
-      var0.setDefault("explorerOpenFolder", "");
-      var0.setDefault("linkRipperShowAll", false);
-      var0.setDefault("dlFileDoubleClick", 0);
-      var0.setDefault("dlPercentDecimals", 0);
-      var0.setDefault("dlRateDecimals", 1);
-      var0.setDefault("dndBox", false);
-      var0.setDefault("consoleMaxLines", 300);
-      var0.setDefault("consoleUnderlineURLs", false);
-      var0.setDefault("maxMenuItems", 10);
-      var0.setDefault("connectionTimeout", 20);
-      var0.setDefault("mldonkey.InterestedInSources", true);
-      var0.setDefault("tableAlternateBGColors", false);
-      setDColor(var0, var1, "tableAlternateBGColor", 29);
-      setDColor(var0, var1, "tablesBackgroundColor", 25);
-      var0.setDefault("tableHilightSorted", false);
-      var0.setDefault("tableSortIndicator", true);   // was !"carbon" (removed SWT platform); always true now
-      setDColor(var0, var1, "tableSortedColumnBGColor", 29);
-      PreferenceConverter.setDefault(var0, "downloadHistoryWindowBounds", new Rectangle(0, 0, 500, 400));
-      PreferenceConverter.setDefault(var0, "downloadCompleteWindowBounds", new Rectangle(0, 0, 320, 300));
-      PreferenceConverter.setDefault(var0, "windowBounds", new Rectangle(40, 40, 580, 420));
-      PreferenceConverter.setDefault(var0, "graphHistoryWindowBounds", new Rectangle(40, 40, 580, 420));
-      PreferenceConverter.setDefault(var0, "dndBoxWindowBounds", new Rectangle(-1, 0, 0, 0));
-      setDColor(var0, var1, "dndBackgroundColor", 22);
-      setDColor(var0, var1, "dndForegroundColor", 2);
-      PreferenceConverter.setDefault(var0, "dndFontData", var2);
-      var0.setDefault("dndWidth", 15);
-      setDColor(var0, var1, "consoleBackground", 2);
-      setDColor(var0, var1, "consoleForeground", 15);
-      setDColor(var0, var1, "consoleHighlight", 1);
-      setDColor(var0, var1, "consoleInputBackground", 2);
-      setDColor(var0, var1, "consoleInputForeground", 15);
-      PreferenceConverter.setDefault(var0, "consoleFontData", JFaceResources.getTextFont().getFontData());
-      setDColor(var0, var1, "clientsDisconnectedColor", 2);
-      setDColor(var0, var1, "clientsHasFilesColor", 6);
-      setDColor(var0, var1, "clientsConnectedColor", 8);
-      setDColor(var0, var1, "downloadsBackgroundColor", 25);
-      setDColor(var0, var1, "downloadsAvailableFileColor", 2);
-      PreferenceConverter.setDefault(var0, "downloadsUnAvailableFileColor", new RGB(128, 128, 128));
-      setDColor(var0, var1, "downloadsDownloadedFileColor", 9);
-      setDColor(var0, var1, "downloadsQueuedFileColor", 15);
-      setDColor(var0, var1, "downloadsPausedFileColor", 4);
-      setDColor(var0, var1, "downloadsContainsFakeColor", 3);
-      var0.setDefault("dlIndicateFakes", true);
-      PreferenceConverter.setDefault(var0, "downloadsRateAbove20FileColor", new RGB(0, 160, 0));
-      PreferenceConverter.setDefault(var0, "downloadsRateAbove10FileColor", new RGB(0, 140, 0));
-      PreferenceConverter.setDefault(var0, "downloadsRateAbove0FileColor", new RGB(0, 110, 0));
-      PreferenceConverter.setDefault(var0, "downloadsRateAbove20FontData", var2);
-      PreferenceConverter.setDefault(var0, "downloadsRateAbove10FontData", var2);
-      PreferenceConverter.setDefault(var0, "downloadsRateAbove0FontData", var2);
-      PreferenceConverter.setDefault(var0, "downloadsPausedFontData", var2);
-      PreferenceConverter.setDefault(var0, "downloadsQueuedFontData", var2);
-      PreferenceConverter.setDefault(var0, "downloadsDownloadedFontData", var2);
-      PreferenceConverter.setDefault(var0, "chunkClientCColor2", new RGB(107, 81, 9));
-      PreferenceConverter.setDefault(var0, "chunkClientAColor0", new RGB(226, 225, 221));
-      PreferenceConverter.setDefault(var0, "chunkClientAColor1", new RGB(0, 150, 255));
-      setDColor(var0, var1, "chunkClientAColor2", 7);
-      PreferenceConverter.setDefault(var0, "chunkFileCColor1", new RGB(128, 128, 128));
-      PreferenceConverter.setDefault(var0, "chunkFileCColor2", new RGB(107, 81, 9));
-      setDColor(var0, var1, "chunkFileCColor3", 7);
-      setDColor(var0, var1, "chunkFileAColor0", 3);
-      PreferenceConverter.setDefault(var0, "chunkFileIRGB", new RGB(0, 255, 255));
-      PreferenceConverter.setDefault(var0, "chunkProgress1", new RGB(15, 136, 0));
-      PreferenceConverter.setDefault(var0, "chunkProgress2", new RGB(41, 187, 26));
-      setDColor(var0, var1, "chunkText", 1);
-      var0.setDefault("maxChunkGraphLength", 200);
-      var0.setDefault("displayChunkGraphPercent", false);
-      var0.setDefault("graphUploadsType", 0);
-      var0.setDefault("graphDownloadsType", 0);
-      setDColor(var0, var1, "graphUploadsColor1", 3);
-      PreferenceConverter.setDefault(var0, "graphUploadsColor2", new RGB(125, 0, 0));
-      setDColor(var0, var1, "graphDownloadsColor1", 5);
-      PreferenceConverter.setDefault(var0, "graphDownloadsColor2", new RGB(0, 125, 0));
-      setDColor(var0, var1, "graphBackgroundColor", 2);
-      PreferenceConverter.setDefault(var0, "graphGridColor", new RGB(0, 128, 64));
-      setDColor(var0, var1, "graphTextColor", 1);
-      setDColor(var0, var1, "graphLabelBackgroundColor", 1);
-      setDColor(var0, var1, "graphLabelLineColor", 7);
-      setDColor(var0, var1, "graphLabelTextColor", 2);
-      setDColor(var0, var1, "networkEnabledColor", 6);
-      setDColor(var0, var1, "serverDisconnectedColor", 2);
-      setDColor(var0, var1, "serverConnectingColor", 8);
-      setDColor(var0, var1, "serverConnectedColor", 6);
-      setDColor(var0, var1, "addrBlockedColor", 4);
-      setDColor(var0, var1, "resultDefaultColor", 2);
-      setDColor(var0, var1, "resultAlreadyDownloadedColor", 6);
-      setDColor(var0, var1, "resultFakeColor", 4);
-      var0.setDefault("defaultWebBrowser", "");
-      var0.setDefault("consoleToolItems", 5);
-      var0.setDefault("consoleToolItem1", "cs");
-      var0.setDefault("consoleToolItem2", "version");
-      var0.setDefault("consoleToolItem3", "??");
-      var0.setDefault("consoleToolItem4", "log");
-      var0.setDefault("consoleToolItem5", "sysinfo");
-      var0.setDefault("webBrowserTabsOnTop", false);
-      var0.setDefault("webBrowserToolItems", 4);
-      var0.setDefault("webBrowserToolItem1", "http://btjunkie.org/");
-      var0.setDefault("webBrowserToolItem2", "http://mininova.org/");
-      var0.setDefault("webBrowserToolItem3", "http://eztv.it/");
-      var0.setDefault("webBrowserToolItem4", "http://isohunt.com/");
-      var0.setDefault("maxFavoriteLength", 50);
-      var0.setDefault("hm_0_hostname", "127.0.0.1");
-      var0.setDefault("hm_0_username", "admin");
-      var0.setDefault("hm_0_password", "");
-      var0.setDefault("hm_0_port", 4001);
-      var0.setDefault("hm_0_protocol", 0);
-      var0.setDefault("hm_0_ssh_host", "192.168.0.1");
-      var0.setDefault("hm_0_ssh_rhost", "127.0.0.1");
-      var0.setDefault("hm_0_ssh_port", 22);
-      var0.setDefault("hm_0_ssh_rport", 4001);
-      var0.setDefault("hm_0_ssh_lport", 4001);
-      var0.setDefault("hm_0_ssh_fwd_p", false);
-      var0.setDefault("hm_0_ssh_prport", 4080);
-      var0.setDefault("hm_0_ssh_plport", 4080);
-      var0.setDefault("refineFilterNegation", false);
-      var0.setDefault("refineFilterAlternates", false);
-      var0.setDefault("searchSaveEntries", true);
-      var0.setDefault("searchForceDownload", false);
-      var0.setDefault("searchTooltips", true);
-      var0.setDefault("searchTooltipsOffset", true);
-      var0.setDefault("searchFilterPornography", false);
-      var0.setDefault("searchFilterProfanity", false);
-      var0.setDefault("maintainSortOrder", false);
-      var0.setDefault("updateDelay", 2);
-      var0.setDefault("graphUpdateDelay", 1);
-      var0.setDefault("statsDelay", 600);
-      var0.setDefault("useGradient", true);
-      RGB var3 = var1.getSystemColor(31).getRGB();
-      Color var4 = WidgetFactory.changeColor(var3, 10);
-      PreferenceConverter.setDefault(var0, "viewGradientColor", var4.getRGB());
-      var4.dispose();
-      var0.setDefault("displayNodes", true);
-      var0.setDefault("displayChunkGraphs", false);
-      var0.setDefault("displayGridLines", true);
-      var0.setDefault("followSelection", false);
-      var0.setDefault("tableCellEditors", false);
-      var0.setDefault("displayTableColors", true);
-      var0.setDefault("coreExecutable", "");
-      var0.setDefault("useCombo", false);
-      var0.setDefault("minimizeOnClose", false);
-      var0.setDefault("systrayOnMinimize", false);
-      var0.setDefault("systrayEnabled", true);
-      var0.setDefault("systraySingleClick", true);
-      var0.setDefault("dragAndDrop", true);
-      var0.setDefault("humanReadable", true);
-      var0.setDefault("maxMegabytes", false);
-      var0.setDefault("humanReadableDecimals", -1);
-      var0.setDefault("verboseNumbers", true);
-      var0.setDefault("pollUpStats", true);
-      var0.setDefault("pollUploaders", true);
-      var0.setDefault("pollPending", false);
-      var0.setDefault("pollDelay", 5);
-      var0.setDefault("requestFileInfoDelay", 300);
-      var0.setDefault("resultsCTabFolderTabsOnTop", true);
-      var0.setDefault("roomsCTabFolderTabsOnTop", true);
-      var0.setDefault("messagesCTabFolderTabsOnTop", true);
-      var0.setDefault("webBrowserCTabFolderTabsOnTop", false);
-      var0.setDefault("downloadsShowTabs", false);
-      var0.setDefault("downloadsTabs", 1);
-      var0.setDefault("downloadsTab_0_Name", SResources.getString("l.all"));
-      var0.setDefault("downloadsTab_0_Filters", "");
-      var0.setDefault("clientsShowTabs", false);
-      var0.setDefault("clientsTabs", 1);
-      var0.setDefault("clientsTab_0_Name", SResources.getString("l.all"));
-      var0.setDefault("clientsTab_0_Filters", "");
-      var0.setDefault("friendsShowTabs", false);
-      var0.setDefault("friendsTabs", 1);
-      var0.setDefault("friendsTab_0_Name", SResources.getString("l.all"));
-      var0.setDefault("friendsTab_0_Filters", "");
-      var0.setDefault("roomsShowTabs", false);
-      var0.setDefault("roomsTabs", 1);
-      var0.setDefault("roomsTab_0_Name", SResources.getString("l.all"));
-      var0.setDefault("roomsTab_0_Filters", "");
-      var0.setDefault("uploadsShowTabs", false);
-      var0.setDefault("uploadsTabs", 1);
-      var0.setDefault("uploadsTab_0_Name", SResources.getString("l.all"));
-      var0.setDefault("uploadsTab_0_Filters", "");
-      var0.setDefault("serverShowTabs", true);
-      var0.setDefault("serverTabs", 2);
-      var0.setDefault("serverTab_0_Name", SResources.getString("e.state.connected"));
-      var0.setDefault("serverTab_0_Filters", "1,22,");
-      var0.setDefault("serverTab_1_Name", SResources.getString("l.all"));
-      var0.setDefault("serverTab_1_Filters", "");
-      var0.setDefault("autoReconnect", false);
-      var0.setDefault("autoReconnectDelay", 30);
-      var0.setDefault("useLastFile", false);
-      var0.setDefault("allowMultipleInstances", false);
-      var0.setDefault("downloadsFilterQueued", false);
-      var0.setDefault("downloadsFilterPaused", false);
-      var0.setDefault("autoCloseRooms", true);
-      var0.setDefault("autoOpenRooms", false);
-      var0.setDefault("previewExecutable", "");
-      var0.setDefault("previewWorkingDirectory", "");
-      var0.setDefault("previewUseHttp", false);
-      var0.setDefault("versionCheck", false);
-      var0.setDefault("versionCheckPopup", true);
-      var0.setDefault(
+   static IPreferenceStore setDefaults(IPreferenceStore store) {
+      Display display = Display.getDefault();
+      FontData[] fontData = JFaceResources.getDefaultFont().getFontData();
+      store.setDefault("initialized", false);
+      store.setDefault("windowMaximized", false);
+      store.setDefault("windowAlpha", 255);
+      store.setDefault("windowStartMinimized", false);
+      store.setDefault("windowStartTray", false);
+      store.setDefault("coolbarLocked", true);
+      store.setDefault("toolbarSmallButtons", true);
+      store.setDefault("flatInterface", false);
+      store.setDefault("splashScreen", true);
+      store.setDefault("killCoreOnExit", false);
+      store.setDefault("killSpawnedCoreOnExit", true);
+      store.setDefault("killSpawnedCoreDelay", 60);
+      store.setDefault("hostManagerOnStart", false);
+      store.setDefault("downloadCompleteDialog", false);
+      store.setDefault("downloadCompleteLog", true);
+      store.setDefault("explorerExecutable", SWT.getPlatform().equals("win32") ? "explorer" : "");
+      store.setDefault("explorerOpenFolder", "");
+      store.setDefault("linkRipperShowAll", false);
+      store.setDefault("dlFileDoubleClick", 0);
+      store.setDefault("dlPercentDecimals", 0);
+      store.setDefault("dlRateDecimals", 1);
+      store.setDefault("dndBox", false);
+      store.setDefault("consoleMaxLines", 300);
+      store.setDefault("consoleUnderlineURLs", false);
+      store.setDefault("maxMenuItems", 10);
+      store.setDefault("connectionTimeout", 20);
+      store.setDefault("mldonkey.InterestedInSources", true);
+      store.setDefault("tableAlternateBGColors", false);
+      setDColor(store, display, "tableAlternateBGColor", 29);
+      setDColor(store, display, "tablesBackgroundColor", 25);
+      store.setDefault("tableHilightSorted", false);
+      store.setDefault("tableSortIndicator", true);   // was !"carbon" (removed SWT platform); always true now
+      setDColor(store, display, "tableSortedColumnBGColor", 29);
+      PreferenceConverter.setDefault(store, "downloadHistoryWindowBounds", new Rectangle(0, 0, 500, 400));
+      PreferenceConverter.setDefault(store, "downloadCompleteWindowBounds", new Rectangle(0, 0, 320, 300));
+      PreferenceConverter.setDefault(store, "windowBounds", new Rectangle(40, 40, 580, 420));
+      PreferenceConverter.setDefault(store, "graphHistoryWindowBounds", new Rectangle(40, 40, 580, 420));
+      PreferenceConverter.setDefault(store, "dndBoxWindowBounds", new Rectangle(-1, 0, 0, 0));
+      setDColor(store, display, "dndBackgroundColor", 22);
+      setDColor(store, display, "dndForegroundColor", 2);
+      PreferenceConverter.setDefault(store, "dndFontData", fontData);
+      store.setDefault("dndWidth", 15);
+      setDColor(store, display, "consoleBackground", 2);
+      setDColor(store, display, "consoleForeground", 15);
+      setDColor(store, display, "consoleHighlight", 1);
+      setDColor(store, display, "consoleInputBackground", 2);
+      setDColor(store, display, "consoleInputForeground", 15);
+      PreferenceConverter.setDefault(store, "consoleFontData", JFaceResources.getTextFont().getFontData());
+      setDColor(store, display, "clientsDisconnectedColor", 2);
+      setDColor(store, display, "clientsHasFilesColor", 6);
+      setDColor(store, display, "clientsConnectedColor", 8);
+      setDColor(store, display, "downloadsBackgroundColor", 25);
+      setDColor(store, display, "downloadsAvailableFileColor", 2);
+      PreferenceConverter.setDefault(store, "downloadsUnAvailableFileColor", new RGB(128, 128, 128));
+      setDColor(store, display, "downloadsDownloadedFileColor", 9);
+      setDColor(store, display, "downloadsQueuedFileColor", 15);
+      setDColor(store, display, "downloadsPausedFileColor", 4);
+      setDColor(store, display, "downloadsContainsFakeColor", 3);
+      store.setDefault("dlIndicateFakes", true);
+      PreferenceConverter.setDefault(store, "downloadsRateAbove20FileColor", new RGB(0, 160, 0));
+      PreferenceConverter.setDefault(store, "downloadsRateAbove10FileColor", new RGB(0, 140, 0));
+      PreferenceConverter.setDefault(store, "downloadsRateAbove0FileColor", new RGB(0, 110, 0));
+      PreferenceConverter.setDefault(store, "downloadsRateAbove20FontData", fontData);
+      PreferenceConverter.setDefault(store, "downloadsRateAbove10FontData", fontData);
+      PreferenceConverter.setDefault(store, "downloadsRateAbove0FontData", fontData);
+      PreferenceConverter.setDefault(store, "downloadsPausedFontData", fontData);
+      PreferenceConverter.setDefault(store, "downloadsQueuedFontData", fontData);
+      PreferenceConverter.setDefault(store, "downloadsDownloadedFontData", fontData);
+      PreferenceConverter.setDefault(store, "chunkClientCColor2", new RGB(107, 81, 9));
+      PreferenceConverter.setDefault(store, "chunkClientAColor0", new RGB(226, 225, 221));
+      PreferenceConverter.setDefault(store, "chunkClientAColor1", new RGB(0, 150, 255));
+      setDColor(store, display, "chunkClientAColor2", 7);
+      PreferenceConverter.setDefault(store, "chunkFileCColor1", new RGB(128, 128, 128));
+      PreferenceConverter.setDefault(store, "chunkFileCColor2", new RGB(107, 81, 9));
+      setDColor(store, display, "chunkFileCColor3", 7);
+      setDColor(store, display, "chunkFileAColor0", 3);
+      PreferenceConverter.setDefault(store, "chunkFileIRGB", new RGB(0, 255, 255));
+      PreferenceConverter.setDefault(store, "chunkProgress1", new RGB(15, 136, 0));
+      PreferenceConverter.setDefault(store, "chunkProgress2", new RGB(41, 187, 26));
+      setDColor(store, display, "chunkText", 1);
+      store.setDefault("maxChunkGraphLength", 200);
+      store.setDefault("displayChunkGraphPercent", false);
+      store.setDefault("graphUploadsType", 0);
+      store.setDefault("graphDownloadsType", 0);
+      setDColor(store, display, "graphUploadsColor1", 3);
+      PreferenceConverter.setDefault(store, "graphUploadsColor2", new RGB(125, 0, 0));
+      setDColor(store, display, "graphDownloadsColor1", 5);
+      PreferenceConverter.setDefault(store, "graphDownloadsColor2", new RGB(0, 125, 0));
+      setDColor(store, display, "graphBackgroundColor", 2);
+      PreferenceConverter.setDefault(store, "graphGridColor", new RGB(0, 128, 64));
+      setDColor(store, display, "graphTextColor", 1);
+      setDColor(store, display, "graphLabelBackgroundColor", 1);
+      setDColor(store, display, "graphLabelLineColor", 7);
+      setDColor(store, display, "graphLabelTextColor", 2);
+      setDColor(store, display, "networkEnabledColor", 6);
+      setDColor(store, display, "serverDisconnectedColor", 2);
+      setDColor(store, display, "serverConnectingColor", 8);
+      setDColor(store, display, "serverConnectedColor", 6);
+      setDColor(store, display, "addrBlockedColor", 4);
+      setDColor(store, display, "resultDefaultColor", 2);
+      setDColor(store, display, "resultAlreadyDownloadedColor", 6);
+      setDColor(store, display, "resultFakeColor", 4);
+      store.setDefault("defaultWebBrowser", "");
+      store.setDefault("consoleToolItems", 5);
+      store.setDefault("consoleToolItem1", "cs");
+      store.setDefault("consoleToolItem2", "version");
+      store.setDefault("consoleToolItem3", "??");
+      store.setDefault("consoleToolItem4", "log");
+      store.setDefault("consoleToolItem5", "sysinfo");
+      store.setDefault("webBrowserTabsOnTop", false);
+      store.setDefault("webBrowserToolItems", 4);
+      store.setDefault("webBrowserToolItem1", "http://btjunkie.org/");
+      store.setDefault("webBrowserToolItem2", "http://mininova.org/");
+      store.setDefault("webBrowserToolItem3", "http://eztv.it/");
+      store.setDefault("webBrowserToolItem4", "http://isohunt.com/");
+      store.setDefault("maxFavoriteLength", 50);
+      store.setDefault("hm_0_hostname", "127.0.0.1");
+      store.setDefault("hm_0_username", "admin");
+      store.setDefault("hm_0_password", "");
+      store.setDefault("hm_0_port", 4001);
+      store.setDefault("hm_0_protocol", 0);
+      store.setDefault("hm_0_ssh_host", "192.168.0.1");
+      store.setDefault("hm_0_ssh_rhost", "127.0.0.1");
+      store.setDefault("hm_0_ssh_port", 22);
+      store.setDefault("hm_0_ssh_rport", 4001);
+      store.setDefault("hm_0_ssh_lport", 4001);
+      store.setDefault("hm_0_ssh_fwd_p", false);
+      store.setDefault("hm_0_ssh_prport", 4080);
+      store.setDefault("hm_0_ssh_plport", 4080);
+      store.setDefault("refineFilterNegation", false);
+      store.setDefault("refineFilterAlternates", false);
+      store.setDefault("searchSaveEntries", true);
+      store.setDefault("searchForceDownload", false);
+      store.setDefault("searchTooltips", true);
+      store.setDefault("searchTooltipsOffset", true);
+      store.setDefault("searchFilterPornography", false);
+      store.setDefault("searchFilterProfanity", false);
+      store.setDefault("maintainSortOrder", false);
+      store.setDefault("updateDelay", 2);
+      store.setDefault("graphUpdateDelay", 1);
+      store.setDefault("statsDelay", 600);
+      store.setDefault("useGradient", true);
+      RGB rgb = display.getSystemColor(31).getRGB();
+      Color color = WidgetFactory.changeColor(rgb, 10);
+      PreferenceConverter.setDefault(store, "viewGradientColor", color.getRGB());
+      color.dispose();
+      store.setDefault("displayNodes", true);
+      store.setDefault("displayChunkGraphs", false);
+      store.setDefault("displayGridLines", true);
+      store.setDefault("followSelection", false);
+      store.setDefault("tableCellEditors", false);
+      store.setDefault("displayTableColors", true);
+      store.setDefault("coreExecutable", "");
+      store.setDefault("useCombo", false);
+      store.setDefault("minimizeOnClose", false);
+      store.setDefault("systrayOnMinimize", false);
+      store.setDefault("systrayEnabled", true);
+      store.setDefault("systraySingleClick", true);
+      store.setDefault("dragAndDrop", true);
+      store.setDefault("humanReadable", true);
+      store.setDefault("maxMegabytes", false);
+      store.setDefault("humanReadableDecimals", -1);
+      store.setDefault("verboseNumbers", true);
+      store.setDefault("pollUpStats", true);
+      store.setDefault("pollUploaders", true);
+      store.setDefault("pollPending", false);
+      store.setDefault("pollDelay", 5);
+      store.setDefault("requestFileInfoDelay", 300);
+      store.setDefault("resultsCTabFolderTabsOnTop", true);
+      store.setDefault("roomsCTabFolderTabsOnTop", true);
+      store.setDefault("messagesCTabFolderTabsOnTop", true);
+      store.setDefault("webBrowserCTabFolderTabsOnTop", false);
+      store.setDefault("downloadsShowTabs", false);
+      store.setDefault("downloadsTabs", 1);
+      store.setDefault("downloadsTab_0_Name", SResources.getString("l.all"));
+      store.setDefault("downloadsTab_0_Filters", "");
+      store.setDefault("clientsShowTabs", false);
+      store.setDefault("clientsTabs", 1);
+      store.setDefault("clientsTab_0_Name", SResources.getString("l.all"));
+      store.setDefault("clientsTab_0_Filters", "");
+      store.setDefault("friendsShowTabs", false);
+      store.setDefault("friendsTabs", 1);
+      store.setDefault("friendsTab_0_Name", SResources.getString("l.all"));
+      store.setDefault("friendsTab_0_Filters", "");
+      store.setDefault("roomsShowTabs", false);
+      store.setDefault("roomsTabs", 1);
+      store.setDefault("roomsTab_0_Name", SResources.getString("l.all"));
+      store.setDefault("roomsTab_0_Filters", "");
+      store.setDefault("uploadsShowTabs", false);
+      store.setDefault("uploadsTabs", 1);
+      store.setDefault("uploadsTab_0_Name", SResources.getString("l.all"));
+      store.setDefault("uploadsTab_0_Filters", "");
+      store.setDefault("serverShowTabs", true);
+      store.setDefault("serverTabs", 2);
+      store.setDefault("serverTab_0_Name", SResources.getString("e.state.connected"));
+      store.setDefault("serverTab_0_Filters", "1,22,");
+      store.setDefault("serverTab_1_Name", SResources.getString("l.all"));
+      store.setDefault("serverTab_1_Filters", "");
+      store.setDefault("autoReconnect", false);
+      store.setDefault("autoReconnectDelay", 30);
+      store.setDefault("useLastFile", false);
+      store.setDefault("allowMultipleInstances", false);
+      store.setDefault("downloadsFilterQueued", false);
+      store.setDefault("downloadsFilterPaused", false);
+      store.setDefault("autoCloseRooms", true);
+      store.setDefault("autoOpenRooms", false);
+      store.setDefault("previewExecutable", "");
+      store.setDefault("previewWorkingDirectory", "");
+      store.setDefault("previewUseHttp", false);
+      store.setDefault("versionCheck", false);
+      store.setDefault("versionCheckPopup", true);
+      store.setDefault(
          "bwPresets",
          "max_hard_download_rate;max_hard_upload_rate;max_upload_slots;max_concurrent_downloads;max_opened_connections;max_connections_per_second;ED2K-max_indirect_connections;ED2K-max_udp_sends;"
       );
-      var0.setDefault("bwPreset1_max_hard_download_rate", 100);
-      var0.setDefault("bwPreset1_max_hard_upload_rate", 25);
-      var0.setDefault("bwPreset1_max_upload_slots", 15);
-      var0.setDefault("bwPreset1_max_concurrent_downloads", 60);
-      var0.setDefault("bwPreset1_max_opened_connections", 200);
-      var0.setDefault("bwPreset1_max_connections_per_second", 5);
-      var0.setDefault("bwPreset1_ED2K-max_indirect_connections", 100);
-      var0.setDefault("bwPreset1_ED2K-max_udp_sends", 10);
-      var0.setDefault("bwPreset2_max_hard_download_rate", 40);
-      var0.setDefault("bwPreset2_max_hard_upload_rate", 20);
-      var0.setDefault("bwPreset2_max_upload_slots", 10);
-      var0.setDefault("bwPreset2_max_concurrent_downloads", 25);
-      var0.setDefault("bwPreset2_max_opened_connections", 200);
-      var0.setDefault("bwPreset2_max_connections_per_second", 5);
-      var0.setDefault("bwPreset2_ED2K-max_indirect_connections", 100);
-      var0.setDefault("bwPreset2_ED2K-max_udp_sends", 10);
-      var0.setDefault("bwPreset3_max_hard_download_rate", 25);
-      var0.setDefault("bwPreset3_max_hard_upload_rate", 10);
-      var0.setDefault("bwPreset3_max_upload_slots", 5);
-      var0.setDefault("bwPreset3_max_concurrent_downloads", 10);
-      var0.setDefault("bwPreset3_max_opened_connections", 200);
-      var0.setDefault("bwPreset3_max_connections_per_second", 5);
-      var0.setDefault("bwPreset3_ED2K-max_indirect_connections", 100);
-      var0.setDefault("bwPreset3_ED2K-max_udp_sends", 10);
-      PreferenceConverter.setDefault(var0, "tableFontData", var2);
-      PreferenceConverter.setDefault(var0, "headerFontData", var2);
-      var0.setDefault("statisticsSashOrientation", 256);
-      var0.setDefault("statisticsSashMaximized", -1);
-      var0.setDefault("mainWindowSashOrientation", 512);
-      var0.setDefault("mainWindowSashMaximized", 0);
-      var0.setDefault("graphSashOrientation", 512);
-      var0.setDefault("graphSashMaximized", -1);
-      var0.setDefault("clientSashOrientation", 256);
-      var0.setDefault("clientSashMaximized", 0);
-      var0.setDefault("transferSashOrientation", 512);
-      var0.setDefault("transferSashMaximized", -1);
-      var0.setDefault("uploadsSashOrientation", 256);
-      var0.setDefault("uploadsSashMaximized", 0);
-      var0.setDefault("locale", "");
-      var0.setDefault("searchSashOrientation", 256);
-      var0.setDefault("searchSashMaximized", -1);
-      PreferenceConverter.setDefault(var0, "searchSashChild0", new Rectangle(0, 0, 2, 0));
-      PreferenceConverter.setDefault(var0, "searchSashChild1", new Rectangle(0, 0, 5, 0));
-      var0.setDefault("serversSashOrientation", 512);
-      var0.setDefault("serversSashMaximized", -1);
-      PreferenceConverter.setDefault(var0, "serversSashChild0", new Rectangle(0, 0, 4, 0));
-      PreferenceConverter.setDefault(var0, "serversSashChild1", new Rectangle(0, 0, 1, 0));
-      var0.setDefault("filesMessagesSashOrientation", 512);
-      var0.setDefault("filesMessagesSashMaximized", -1);
-      PreferenceConverter.setDefault(var0, "filesMessagesSashChild0", new Rectangle(0, 0, 2, 0));
-      PreferenceConverter.setDefault(var0, "filesMessagesSashChild1", new Rectangle(0, 0, 5, 0));
-      var0.setDefault("directoriesFilesSashOrientation", 256);
-      var0.setDefault("directoriesFilesSashMaximized", -1);
-      PreferenceConverter.setDefault(var0, "directoriesFilesSashChild0", new Rectangle(0, 0, 1, 0));
-      PreferenceConverter.setDefault(var0, "directoriesFilesSashChild1", new Rectangle(0, 0, 5, 0));
-      var0.setDefault("clientFilesSashOrientation", 256);
-      var0.setDefault("clientFilesSashMaximized", -1);
-      PreferenceConverter.setDefault(var0, "clientFilesSashChild0", new Rectangle(0, 0, 1, 0));
-      PreferenceConverter.setDefault(var0, "clientFilesSashChild1", new Rectangle(0, 0, 5, 0));
-      var0.setDefault("messagesSashOrientation", 256);
-      var0.setDefault("messagesSashMaximized", -1);
-      PreferenceConverter.setDefault(var0, "messagesSashChild0", new Rectangle(0, 0, 2, 0));
-      PreferenceConverter.setDefault(var0, "messagesSashChild1", new Rectangle(0, 0, 5, 0));
-      var0.setDefault("roomsSashOrientation", 256);
-      var0.setDefault("roomsSashMaximized", -1);
-      PreferenceConverter.setDefault(var0, "roomsSashChild0", new Rectangle(0, 0, 2, 0));
-      PreferenceConverter.setDefault(var0, "roomsSashChild1", new Rectangle(0, 0, 5, 0));
-      var0.setDefault("roomSashOrientation", 256);
-      var0.setDefault("roomSashMaximized", -1);
-      PreferenceConverter.setDefault(var0, "roomSashChild0", new Rectangle(0, 0, 2, 0));
-      PreferenceConverter.setDefault(var0, "roomSashChild1", new Rectangle(0, 0, 5, 0));
-      var0.setDefault("statistics.BitTorrentOrientation", 256);
-      var0.setDefault("statistics.BitTorrentMaximized", -1);
-      var0.setDefault("statistics.DonkeyOrientation", 256);
-      var0.setDefault("statistics.DonkeyMaximized", -1);
-      var0.setDefault("statistics.Donkey.0Orientation", 512);
-      var0.setDefault("statistics.Donkey.1Orientation", 512);
-      var0.setDefault("serverDynamicColumn", IDSelector.getID(1));
-      var0.setDefault("clientDirectoriesDynamicColumn", IDSelector.getID(0));
-      var0.setDefault("channelUsersDynamicColumn", IDSelector.getID(0));
-      var0.setDefault("fd.subFilesDynamicColumn", IDSelector.getID(0));
-      var0.setDefault(
+      store.setDefault("bwPreset1_max_hard_download_rate", 100);
+      store.setDefault("bwPreset1_max_hard_upload_rate", 25);
+      store.setDefault("bwPreset1_max_upload_slots", 15);
+      store.setDefault("bwPreset1_max_concurrent_downloads", 60);
+      store.setDefault("bwPreset1_max_opened_connections", 200);
+      store.setDefault("bwPreset1_max_connections_per_second", 5);
+      store.setDefault("bwPreset1_ED2K-max_indirect_connections", 100);
+      store.setDefault("bwPreset1_ED2K-max_udp_sends", 10);
+      store.setDefault("bwPreset2_max_hard_download_rate", 40);
+      store.setDefault("bwPreset2_max_hard_upload_rate", 20);
+      store.setDefault("bwPreset2_max_upload_slots", 10);
+      store.setDefault("bwPreset2_max_concurrent_downloads", 25);
+      store.setDefault("bwPreset2_max_opened_connections", 200);
+      store.setDefault("bwPreset2_max_connections_per_second", 5);
+      store.setDefault("bwPreset2_ED2K-max_indirect_connections", 100);
+      store.setDefault("bwPreset2_ED2K-max_udp_sends", 10);
+      store.setDefault("bwPreset3_max_hard_download_rate", 25);
+      store.setDefault("bwPreset3_max_hard_upload_rate", 10);
+      store.setDefault("bwPreset3_max_upload_slots", 5);
+      store.setDefault("bwPreset3_max_concurrent_downloads", 10);
+      store.setDefault("bwPreset3_max_opened_connections", 200);
+      store.setDefault("bwPreset3_max_connections_per_second", 5);
+      store.setDefault("bwPreset3_ED2K-max_indirect_connections", 100);
+      store.setDefault("bwPreset3_ED2K-max_udp_sends", 10);
+      PreferenceConverter.setDefault(store, "tableFontData", fontData);
+      PreferenceConverter.setDefault(store, "headerFontData", fontData);
+      store.setDefault("statisticsSashOrientation", 256);
+      store.setDefault("statisticsSashMaximized", -1);
+      store.setDefault("mainWindowSashOrientation", 512);
+      store.setDefault("mainWindowSashMaximized", 0);
+      store.setDefault("graphSashOrientation", 512);
+      store.setDefault("graphSashMaximized", -1);
+      store.setDefault("clientSashOrientation", 256);
+      store.setDefault("clientSashMaximized", 0);
+      store.setDefault("transferSashOrientation", 512);
+      store.setDefault("transferSashMaximized", -1);
+      store.setDefault("uploadsSashOrientation", 256);
+      store.setDefault("uploadsSashMaximized", 0);
+      store.setDefault("locale", "");
+      store.setDefault("searchSashOrientation", 256);
+      store.setDefault("searchSashMaximized", -1);
+      PreferenceConverter.setDefault(store, "searchSashChild0", new Rectangle(0, 0, 2, 0));
+      PreferenceConverter.setDefault(store, "searchSashChild1", new Rectangle(0, 0, 5, 0));
+      store.setDefault("serversSashOrientation", 512);
+      store.setDefault("serversSashMaximized", -1);
+      PreferenceConverter.setDefault(store, "serversSashChild0", new Rectangle(0, 0, 4, 0));
+      PreferenceConverter.setDefault(store, "serversSashChild1", new Rectangle(0, 0, 1, 0));
+      store.setDefault("filesMessagesSashOrientation", 512);
+      store.setDefault("filesMessagesSashMaximized", -1);
+      PreferenceConverter.setDefault(store, "filesMessagesSashChild0", new Rectangle(0, 0, 2, 0));
+      PreferenceConverter.setDefault(store, "filesMessagesSashChild1", new Rectangle(0, 0, 5, 0));
+      store.setDefault("directoriesFilesSashOrientation", 256);
+      store.setDefault("directoriesFilesSashMaximized", -1);
+      PreferenceConverter.setDefault(store, "directoriesFilesSashChild0", new Rectangle(0, 0, 1, 0));
+      PreferenceConverter.setDefault(store, "directoriesFilesSashChild1", new Rectangle(0, 0, 5, 0));
+      store.setDefault("clientFilesSashOrientation", 256);
+      store.setDefault("clientFilesSashMaximized", -1);
+      PreferenceConverter.setDefault(store, "clientFilesSashChild0", new Rectangle(0, 0, 1, 0));
+      PreferenceConverter.setDefault(store, "clientFilesSashChild1", new Rectangle(0, 0, 5, 0));
+      store.setDefault("messagesSashOrientation", 256);
+      store.setDefault("messagesSashMaximized", -1);
+      PreferenceConverter.setDefault(store, "messagesSashChild0", new Rectangle(0, 0, 2, 0));
+      PreferenceConverter.setDefault(store, "messagesSashChild1", new Rectangle(0, 0, 5, 0));
+      store.setDefault("roomsSashOrientation", 256);
+      store.setDefault("roomsSashMaximized", -1);
+      PreferenceConverter.setDefault(store, "roomsSashChild0", new Rectangle(0, 0, 2, 0));
+      PreferenceConverter.setDefault(store, "roomsSashChild1", new Rectangle(0, 0, 5, 0));
+      store.setDefault("roomSashOrientation", 256);
+      store.setDefault("roomSashMaximized", -1);
+      PreferenceConverter.setDefault(store, "roomSashChild0", new Rectangle(0, 0, 2, 0));
+      PreferenceConverter.setDefault(store, "roomSashChild1", new Rectangle(0, 0, 5, 0));
+      store.setDefault("statistics.BitTorrentOrientation", 256);
+      store.setDefault("statistics.BitTorrentMaximized", -1);
+      store.setDefault("statistics.DonkeyOrientation", 256);
+      store.setDefault("statistics.DonkeyMaximized", -1);
+      store.setDefault("statistics.Donkey.0Orientation", 512);
+      store.setDefault("statistics.Donkey.1Orientation", 512);
+      store.setDefault("serverDynamicColumn", IDSelector.getID(1));
+      store.setDefault("clientDirectoriesDynamicColumn", IDSelector.getID(0));
+      store.setDefault("channelUsersDynamicColumn", IDSelector.getID(0));
+      store.setDefault("fd.subFilesDynamicColumn", IDSelector.getID(0));
+      store.setDefault(
          "serverStateFilters", EnumHostState.CONNECTING.getValue() | EnumHostState.CONNECTED_INITIATING.getValue() | EnumHostState.CONNECTED.getValue()
       );
-      return var0;
+      return store;
    }
 
-   public static void setLocaleString(String var0) {
-      localeString = var0;
+   public static void setLocaleString(String name) {
+      localeString = name;
    }
 
    public static String getHomeDirectory() {
       return homeDirectory;
    }
 
-   public static void setHomeDirectory(String var0) {
+   public static void setHomeDirectory(String directory) {
       customHomeDir = true;
-      homeDirectory = var0;
-      String var1 = System.getProperty("file.separator");
-      if (!var0.endsWith(var1)) {
-         homeDirectory = homeDirectory + var1;
+      homeDirectory = directory;
+      String separator = System.getProperty("file.separator");
+      if (!directory.endsWith(separator)) {
+         homeDirectory = homeDirectory + separator;
       }
    }
 
-   public static void setPrefFile(String var0) {
+   public static void setPrefFile(String fileName) {
       customPrefFile = true;
-      prefFileName = var0;
-      preferenceStore = new PreferenceStore(var0);
+      prefFileName = fileName;
+      preferenceStore = new PreferenceStore(fileName);
    }
 }

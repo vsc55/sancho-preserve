@@ -14,81 +14,81 @@ public class ServerTableLabelProvider extends GTableLabelProvider {
    private Color disconnectColor;
    private Color addrBlockedColor;
 
-   public ServerTableLabelProvider(ServerTableView var1) {
-      super(var1);
+   public ServerTableLabelProvider(ServerTableView tableView) {
+      super(tableView);
    }
 
-   public Image getColumnImage(Object var1, int var2) {
-      Server var3 = (Server)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public Image getColumnImage(Object element, int columnIndex) {
+      Server server = (Server)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getNetworkImage();
+            return server.getNetworkImage();
          case 3:
-            return var3.getAddr().getImage();
+            return server.getAddr().getImage();
          case 9:
-            return var3.getPreferredImage();
+            return server.getPreferredImage();
          case 10:
-            return var3.getHighLowImage();
+            return server.getHighLowImage();
          default:
             return null;
       }
    }
 
-   public String getColumnText(Object var1, int var2) {
-      Server var3 = (Server)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      Server server = (Server)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getNetworkName();
+            return server.getNetworkName();
          case 1:
-            return var3.getName();
+            return server.getName();
          case 2:
-            return var3.getDescription();
+            return server.getDescription();
          case 3:
-            return var3.getAddr().toString();
+            return server.getAddr().toString();
          case 4:
-            return String.valueOf(var3.getPort()).intern();
+            return String.valueOf(server.getPort()).intern();
          case 5:
-            return String.valueOf(var3.getScore()).intern();
+            return String.valueOf(server.getScore()).intern();
          case 6:
-            return var3.getNumUsersString();
+            return server.getNumUsersString();
          case 7:
-            return var3.getNumFilesString();
+            return server.getNumFilesString();
          case 8:
-            return var3.getStateString();
+            return server.getStateString();
          case 9:
-            return var3.getPreferredString();
+            return server.getPreferredString();
          case 10:
-            return var3.getHighLowIDString();
+            return server.getHighLowIDString();
          case 11:
-            return var3.getVersion();
+            return server.getVersion();
          case 12:
-            return var3.getMaxUsersString();
+            return server.getMaxUsersString();
          case 13:
-            return var3.getLowIDUsersString();
+            return server.getLowIDUsersString();
          case 14:
-            return var3.getSoftLimitString();
+            return server.getSoftLimitString();
          case 15:
-            return var3.getHardLimitString();
+            return server.getHardLimitString();
          case 16:
-            return var3.getPingString();
+            return server.getPingString();
          default:
             return "";
       }
    }
 
-   public Color getForeground(Object var1, int var2) {
+   public Color getForeground(Object element, int columnIndex) {
       if (!this.colors) {
          return null;
       } else {
-         Server var3 = (Server)var1;
-         if (var3.getAddr().isBlocked()) {
+         Server server = (Server)element;
+         if (server.getAddr().isBlocked()) {
             return this.addrBlockedColor;
-         } else if (var3.isConnected()) {
+         } else if (server.isConnected()) {
             return this.connectedColor;
-         } else if (var3.getStateEnum() == EnumHostState.CONNECTING) {
+         } else if (server.getStateEnum() == EnumHostState.CONNECTING) {
             return this.connectingColor;
          } else {
-            return var3.getStateEnum() == EnumHostState.NOT_CONNECTED ? this.disconnectColor : null;
+            return server.getStateEnum() == EnumHostState.NOT_CONNECTED ? this.disconnectColor : null;
          }
       }
    }

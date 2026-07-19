@@ -76,24 +76,24 @@ public abstract class GView implements DisposeListener {
    // $VF: synthetic field
    static Class class$sancho$view$viewer$filters$NetworkViewerFilter;
 
-   public void setInput(Object var1) {
-      this.getViewer().setInput(var1);
+   public void setInput(Object input) {
+      this.getViewer().setInput(input);
    }
 
-   public void addFilter(ViewerFilter var1) {
+   public void addFilter(ViewerFilter filter) {
       this.setRedraw(false);
-      this.sViewer.addFilter(var1);
+      this.sViewer.addFilter(filter);
       this.setRedraw(true);
    }
 
    protected void addMenuListener() {
-      Menu var1 = this.getComposite().getMenu();
-      if (var1 != null) {
-         var1.addMenuListener(new MenuAdapter() {
-            public void menuShown(MenuEvent var1) {
-               Menu var2 = GView.this.getComposite().getMenu();
-               if (!GView.this.getViewer().getSelection().isEmpty() && var2.getItemCount() > 0) {
-                  var2.setDefaultItem(var2.getItem(0));
+      Menu menu = this.getComposite().getMenu();
+      if (menu != null) {
+         menu.addMenuListener(new MenuAdapter() {
+            public void menuShown(MenuEvent event) {
+               Menu menu = GView.this.getComposite().getMenu();
+               if (!GView.this.getViewer().getSelection().isEmpty() && menu.getItemCount() > 0) {
+                  menu.setDefaultItem(menu.getItem(0));
                }
             }
          });
@@ -102,7 +102,7 @@ public abstract class GView implements DisposeListener {
 
    public abstract int getItemCount();
 
-   public abstract String getColumnText(int var1);
+   public abstract String getColumnText(int columnIndex);
 
    public abstract int getColumnCount();
 
@@ -110,7 +110,7 @@ public abstract class GView implements DisposeListener {
 
    public abstract void selectAll();
 
-   public abstract Item getItemAt(int var1, int var2);
+   public abstract Item getItemAt(int x, int y);
 
    protected abstract void disposeAllColumns();
 
@@ -121,8 +121,8 @@ public abstract class GView implements DisposeListener {
    protected void createContents() {
       this.sViewer.setUseHashlookup(true);
       this.allColumns = IDSelector.createIDString(this.columnLabels);
-      Composite var1 = this.getComposite();
-      var1.setRedraw(false);
+      Composite composite = this.getComposite();
+      composite.setRedraw(false);
       this.createColumns();
       this.getContentProvider().initialize();
       this.getTableLabelProvider().initialize();
@@ -138,7 +138,7 @@ public abstract class GView implements DisposeListener {
       this.getComposite().addDisposeListener(this);
       this.loadFilters();
       this.setInput();
-      var1.setRedraw(true);
+      composite.setRedraw(true);
    }
 
    public String getAllColumnIDs() {
@@ -165,10 +165,10 @@ public abstract class GView implements DisposeListener {
       return this.dynamicColumn.equals("") ? -1 : this.columnIDs.indexOf(this.dynamicColumn);
    }
 
-   public AbstractViewerFilter getFilter(Class var1) {
-      for (int var2 = 0; var2 < this.getFilters().length; var2++) {
-         if (var1.isInstance(this.getFilters()[var2])) {
-            return (AbstractViewerFilter)this.getFilters()[var2];
+   public AbstractViewerFilter getFilter(Class filterClass) {
+      for (int i = 0; i < this.getFilters().length; i++) {
+         if (filterClass.isInstance(this.getFilters()[i])) {
+            return (AbstractViewerFilter)this.getFilters()[i];
          }
       }
 
@@ -236,116 +236,116 @@ public abstract class GView implements DisposeListener {
    }
 
    public void loadDynamicColumn() {
-      String var1 = PreferenceLoader.loadString(this.preferenceString + "DynamicColumn");
-      if (!var1.equals("")) {
-         this.setDynamicColumn(var1);
+      String column = PreferenceLoader.loadString(this.preferenceString + "DynamicColumn");
+      if (!column.equals("")) {
+         this.setDynamicColumn(column);
       }
 
-      int var2 = PreferenceLoader.loadInt(this.preferenceString + "MinDynamicColumnWidth");
-      if (var2 > 0) {
-         this.setMinDynamicColumnWidth(var2);
+      int width = PreferenceLoader.loadInt(this.preferenceString + "MinDynamicColumnWidth");
+      if (width > 0) {
+         this.setMinDynamicColumnWidth(width);
       }
    }
 
    public void loadExclusionStateFilters() {
-      int var1 = PreferenceLoader.loadInt(this.preferenceString + "ExclusionStateFilters");
-      if (var1 > 0) {
-         ExclusionStateViewerFilter var2 = new ExclusionStateViewerFilter(this);
-         var2.setFiltered(var1);
-         this.addFilter(var2);
+      int filtered = PreferenceLoader.loadInt(this.preferenceString + "ExclusionStateFilters");
+      if (filtered > 0) {
+         ExclusionStateViewerFilter filter = new ExclusionStateViewerFilter(this);
+         filter.setFiltered(filtered);
+         this.addFilter(filter);
       }
    }
 
-   public void swapFilters(String var1) {
+   public void swapFilters(String filters) {
       this.setRedraw(false);
       this.resetFilters();
-      if (var1 != null) {
-         this.addFilters(var1);
+      if (filters != null) {
+         this.addFilters(filters);
       }
 
       this.setRedraw(true);
    }
 
    public String filtersToString() {
-      String var1 = "";
-      ViewerFilter[] var2 = this.getFilters();
+      String text = "";
+      ViewerFilter[] filters = this.getFilters();
 
-      for (int var3 = 0; var3 < var2.length; var3++) {
-         var1 = var1 + var2[var3].toString();
+      for (int i = 0; i < filters.length; i++) {
+         text = text + filters[i].toString();
       }
 
-      return var1;
+      return text;
    }
 
-   public void addFilters(String var1) {
-      StringTokenizer var2 = new StringTokenizer(var1, ",");
+   public void addFilters(String filters) {
+      StringTokenizer tokenizer = new StringTokenizer(filters, ",");
 
-      while (var2.hasMoreTokens()) {
-         String var3 = var2.nextToken();
-         String var4;
-         if (var2.hasMoreTokens()) {
-            var4 = var2.nextToken();
+      while (tokenizer.hasMoreTokens()) {
+         String idToken = tokenizer.nextToken();
+         String value;
+         if (tokenizer.hasMoreTokens()) {
+            value = tokenizer.nextToken();
          } else {
-            var4 = "";
+            value = "";
          }
 
-         int var5;
+         int id;
          try {
-            var5 = Integer.parseInt(var3);
-         } catch (NumberFormatException var7) {
-            var5 = 0;
+            id = Integer.parseInt(idToken);
+         } catch (NumberFormatException exception) {
+            id = 0;
          }
 
-         this.loadFilter(var5, var4);
+         this.loadFilter(id, value);
       }
    }
 
-   public static int filterToInt(ViewerFilter var0) {
-      if (var0 instanceof StateViewerFilter) {
+   public static int filterToInt(ViewerFilter filter) {
+      if (filter instanceof StateViewerFilter) {
          return 1;
-      } else if (var0 instanceof ExclusionStateViewerFilter) {
+      } else if (filter instanceof ExclusionStateViewerFilter) {
          return 2;
-      } else if (var0 instanceof NetworkViewerFilter) {
+      } else if (filter instanceof NetworkViewerFilter) {
          return 3;
-      } else if (var0 instanceof RefineFilter) {
+      } else if (filter instanceof RefineFilter) {
          return 5;
       } else {
-         return var0 instanceof FileExtensionViewerFilter ? 4 : 0;
+         return filter instanceof FileExtensionViewerFilter ? 4 : 0;
       }
    }
 
-   public void loadFilter(int var1, String var2) {
-      int var3 = 0;
+   public void loadFilter(int id, String value) {
+      int filtered = 0;
 
       try {
-         var3 = Integer.parseInt(var2);
-      } catch (NumberFormatException var8) {
+         filtered = Integer.parseInt(value);
+      } catch (NumberFormatException exception) {
       }
 
-      switch (var1) {
+      switch (id) {
          case 1:
-            StateViewerFilter var4 = new StateViewerFilter(this);
-            var4.setFiltered(var3);
-            this.addFilter(var4);
+            StateViewerFilter stateFilter = new StateViewerFilter(this);
+            stateFilter.setFiltered(filtered);
+            this.addFilter(stateFilter);
             break;
          case 2:
-            ExclusionStateViewerFilter var5 = new ExclusionStateViewerFilter(this);
-            var5.setFiltered(var3);
-            this.addFilter(var5);
+            ExclusionStateViewerFilter exclusionStateFilter = new ExclusionStateViewerFilter(this);
+            exclusionStateFilter.setFiltered(filtered);
+            this.addFilter(exclusionStateFilter);
             break;
          case 3:
-            NetworkViewerFilter var6 = new NetworkViewerFilter(this);
-            var6.setFiltered(var3);
-            this.addFilter(var6);
+            NetworkViewerFilter networkFilter = new NetworkViewerFilter(this);
+            networkFilter.setFiltered(filtered);
+            this.addFilter(networkFilter);
             break;
          case 4:
-            FileExtensionViewerFilter var7 = new FileExtensionViewerFilter(this);
-            var7.setFiltered(var3);
-            this.addFilter(var7);
+            FileExtensionViewerFilter fileExtensionFilter = new FileExtensionViewerFilter(this);
+            fileExtensionFilter.setFiltered(filtered);
+            this.addFilter(fileExtensionFilter);
             break;
          case 5:
-            this.refineString = var2;
-            this.viewFrame.setRefineText(var2);
+            this.refineString = value;
+            this.viewFrame.setRefineText(value);
             this.updateRefineFilter();
       }
    }
@@ -365,26 +365,26 @@ public abstract class GView implements DisposeListener {
    }
 
    public void loadNetworkFilters() {
-      int var1 = PreferenceLoader.loadInt(this.preferenceString + "NetworkFilters");
-      if (var1 > 0) {
-         NetworkViewerFilter var2 = new NetworkViewerFilter(this);
-         var2.setFiltered(var1);
-         this.addFilter(var2);
+      int filtered = PreferenceLoader.loadInt(this.preferenceString + "NetworkFilters");
+      if (filtered > 0) {
+         NetworkViewerFilter filter = new NetworkViewerFilter(this);
+         filter.setFiltered(filtered);
+         this.addFilter(filter);
       }
    }
 
    public void loadStateFilters() {
-      int var1 = PreferenceLoader.loadInt(this.preferenceString + "StateFilters");
-      if (var1 > 0) {
-         StateViewerFilter var2 = new StateViewerFilter(this);
-         var2.setFiltered(var1);
-         this.addFilter(var2);
+      int filtered = PreferenceLoader.loadInt(this.preferenceString + "StateFilters");
+      if (filtered > 0) {
+         StateViewerFilter filter = new StateViewerFilter(this);
+         filter.setFiltered(filtered);
+         this.addFilter(filter);
       }
    }
 
-   public void setRedraw(boolean var1) {
+   public void setRedraw(boolean redraw) {
       if (this.forceRedraw) {
-         this.getComposite().setRedraw(var1);
+         this.getComposite().setRedraw(redraw);
       }
    }
 
@@ -392,13 +392,13 @@ public abstract class GView implements DisposeListener {
       this.sViewer.refresh();
    }
 
-   public void refresh(boolean var1) {
-      if (var1) {
+   public void refresh(boolean redraw) {
+      if (redraw) {
          this.setRedraw(false);
       }
 
       this.refresh();
-      if (var1) {
+      if (redraw) {
          this.setRedraw(true);
       }
    }
@@ -411,25 +411,25 @@ public abstract class GView implements DisposeListener {
       }
    }
 
-   public void removeFilter(ViewerFilter var1) {
+   public void removeFilter(ViewerFilter filter) {
       this.setRedraw(false);
-      this.sViewer.removeFilter(var1);
+      this.sViewer.removeFilter(filter);
       this.setRedraw(true);
    }
 
    public void clearAll() {
-      ICustomViewer var1 = (ICustomViewer)this.getViewer();
-      var1.clearAll();
+      ICustomViewer viewer = (ICustomViewer)this.getViewer();
+      viewer.clearAll();
    }
 
    public void resetColumns() {
-      ICustomViewer var1 = (ICustomViewer)this.getViewer();
-      Object var2 = var1.getInput();
-      var1.setInput(null);
-      var1.setEditors(false);
+      ICustomViewer viewer = (ICustomViewer)this.getViewer();
+      Object input = viewer.getInput();
+      viewer.setInput(null);
+      viewer.setEditors(false);
       this.gSorter.setColumnIndex(0);
       this.createColumns();
-      var1.setInput(var2);
+      viewer.setInput(input);
       this.resetDynamicColumn();
       this.setSortIndicator();
       this.updateDisplay();
@@ -445,53 +445,53 @@ public abstract class GView implements DisposeListener {
       this.setRedraw(true);
    }
 
-   public abstract int getColumnWidthsExcept(int var1);
+   public abstract int getColumnWidthsExcept(int columnIndex);
 
-   public abstract void setColumnWidth(int var1, int var2);
+   public abstract void setColumnWidth(int columnIndex, int width);
 
    public void resizeColumns() {
-      Composite var1 = this.getComposite();
-      if (var1 != null && !var1.isDisposed() && this.dynamicColumn != null && !this.dynamicColumn.equals("")) {
-         int var2 = var1.getBounds().width;
-         ScrollBar var3 = var1.getVerticalBar();
-         boolean var4 = var3 != null ? var3.getThumb() < var3.getMaximum() : false;
-         if (this.oldTableWidth != var2 || var4 != this.oldTableScrollBar) {
-            this.oldTableWidth = var2;
-            this.oldTableScrollBar = var4;
-            ICustomViewer var5 = (ICustomViewer)this.getViewer();
-            int var6 = 0;
-            int var7 = this.dynamicColumn.charAt(0) - 'A';
-            int[] var8 = var5.getColumnIDs();
-            int var9 = -1;
+      Composite composite = this.getComposite();
+      if (composite != null && !composite.isDisposed() && this.dynamicColumn != null && !this.dynamicColumn.equals("")) {
+         int compositeWidth = composite.getBounds().width;
+         ScrollBar scrollBar = composite.getVerticalBar();
+         boolean hasScrollBar = scrollBar != null ? scrollBar.getThumb() < scrollBar.getMaximum() : false;
+         if (this.oldTableWidth != compositeWidth || hasScrollBar != this.oldTableScrollBar) {
+            this.oldTableWidth = compositeWidth;
+            this.oldTableScrollBar = hasScrollBar;
+            ICustomViewer viewer = (ICustomViewer)this.getViewer();
+            int totalWidth = 0;
+            int dynamicColumnID = this.dynamicColumn.charAt(0) - 'A';
+            int[] columnIDs = viewer.getColumnIDs();
+            int dynamicColumnIndex = -1;
 
-            for (int var10 = 0; var10 < var8.length; var10++) {
-               if (var7 == var8[var10]) {
-                  var9 = var10;
+            for (int i = 0; i < columnIDs.length; i++) {
+               if (dynamicColumnID == columnIDs[i]) {
+                  dynamicColumnIndex = i;
                }
             }
 
-            if (this.getColumnCount() == var8.length && var9 != -1) {
-               var6 = this.getColumnWidthsExcept(var9);
-               if (var1 instanceof Tree) {
-                  var6++;
+            if (this.getColumnCount() == columnIDs.length && dynamicColumnIndex != -1) {
+               totalWidth = this.getColumnWidthsExcept(dynamicColumnIndex);
+               if (composite instanceof Tree) {
+                  totalWidth++;
                }
 
-               if (var4) {
-                  var6 += var3.getSize().x;
+               if (hasScrollBar) {
+                  totalWidth += scrollBar.getSize().x;
                }
 
                try {
-                  this.setColumnWidth(var9, Math.max(this.minDynamicColumnWidth, var2 - var6));
-               } catch (Exception var12) {
-                  var12.printStackTrace();
+                  this.setColumnWidth(dynamicColumnIndex, Math.max(this.minDynamicColumnWidth, compositeWidth - totalWidth));
+               } catch (Exception exception) {
+                  exception.printStackTrace();
                }
             }
          }
       }
    }
 
-   public void saveEmptyGViewerFilter(String var1) {
-      PreferenceLoader.getPreferenceStore().setValue(this.preferenceString + var1, 0);
+   public void saveEmptyGViewerFilter(String filterName) {
+      PreferenceLoader.getPreferenceStore().setValue(this.preferenceString + filterName, 0);
    }
 
    public void saveFilters() {
@@ -523,47 +523,47 @@ public abstract class GView implements DisposeListener {
       }
    }
 
-   public void saveFilters(String var1, Class var2) {
-      boolean var3 = false;
+   public void saveFilters(String filterName, Class filterClass) {
+      boolean saved = false;
 
-      for (int var4 = 0; var4 < this.getFilters().length; var4++) {
-         if (var2.isInstance(this.getFilters()[var4])) {
-            this.saveGViewerFilter((AbstractViewerFilter)this.getFilters()[var4], var1);
-            var3 = true;
+      for (int i = 0; i < this.getFilters().length; i++) {
+         if (filterClass.isInstance(this.getFilters()[i])) {
+            this.saveGViewerFilter((AbstractViewerFilter)this.getFilters()[i], filterName);
+            saved = true;
          }
       }
 
-      if (!var3) {
-         this.saveEmptyGViewerFilter(var1);
+      if (!saved) {
+         this.saveEmptyGViewerFilter(filterName);
       }
    }
 
-   public void saveGViewerFilter(AbstractViewerFilter var1, String var2) {
-      PreferenceLoader.getPreferenceStore().setValue(this.preferenceString + var2, var1.getFiltered());
+   public void saveGViewerFilter(AbstractViewerFilter filter, String filterName) {
+      PreferenceLoader.getPreferenceStore().setValue(this.preferenceString + filterName, filter.getFiltered());
    }
 
-   public void setActive(boolean var1) {
-      this.active = var1;
-      this.getContentProvider().setActive(var1);
+   public void setActive(boolean active) {
+      this.active = active;
+      this.getContentProvider().setActive(active);
    }
 
    public void resetDynamicColumn() {
-      String var1 = this.dynamicColumn;
+      String column = this.dynamicColumn;
       this.dynamicColumn = "";
-      this.setDynamicColumn(var1);
+      this.setDynamicColumn(column);
    }
 
-   public void setDynamicColumn(int var1) {
-      this.setDynamicColumn(String.valueOf(this.columnIDs.charAt(var1)));
+   public void setDynamicColumn(int columnIndex) {
+      this.setDynamicColumn(String.valueOf(this.columnIDs.charAt(columnIndex)));
    }
 
-   public void setDynamicColumn(String var1) {
-      if (!"gtk".equals(SWT.getPlatform()) && var1 != null && var1.length() <= 1) {
-         if (this.columnIDs.indexOf(var1) != -1 && !this.dynamicColumn.equals(var1)) {
-            this.dynamicColumn = var1;
+   public void setDynamicColumn(String column) {
+      if (!"gtk".equals(SWT.getPlatform()) && column != null && column.length() <= 1) {
+         if (this.columnIDs.indexOf(column) != -1 && !this.dynamicColumn.equals(column)) {
+            this.dynamicColumn = column;
             if (this.controlAdapter == null) {
                this.controlAdapter = new ControlAdapter() {
-                  public void controlResized(ControlEvent var1) {
+                  public void controlResized(ControlEvent event) {
                      GView.this.resizeColumns();
                   }
                };
@@ -578,22 +578,22 @@ public abstract class GView implements DisposeListener {
 
    public abstract void setInput();
 
-   public void setMinDynamicColumnWidth(int var1) {
-      this.minDynamicColumnWidth = var1;
+   public void setMinDynamicColumnWidth(int width) {
+      this.minDynamicColumnWidth = width;
    }
 
-   public void setRefineString(String var1) {
-      this.refineString = var1;
+   public void setRefineString(String refineString) {
+      this.refineString = refineString;
       this.updateRefineFilter();
    }
 
-   public void setVisible(boolean var1) {
-      this.visible = var1;
-      this.getContentProvider().setVisible(var1);
+   public void setVisible(boolean visible) {
+      this.visible = visible;
+      this.getContentProvider().setVisible(visible);
    }
 
-   public boolean sortByColumn(int var1) {
-      this.gSorter.setColumnIndex(var1);
+   public boolean sortByColumn(int columnIndex) {
+      this.gSorter.setColumnIndex(columnIndex);
       this.refresh();
       return this.gSorter.getDirection();
    }
@@ -602,9 +602,9 @@ public abstract class GView implements DisposeListener {
       this.sViewer.setInput(null);
    }
 
-   public abstract void setLinesVisible(boolean var1);
+   public abstract void setLinesVisible(boolean visible);
 
-   public abstract void setFont(Font var1);
+   public abstract void setFont(Font font);
 
    public void updateDisplay() {
       ((ICustomViewer)this.getViewer()).updateDisplay();
@@ -631,10 +631,10 @@ public abstract class GView implements DisposeListener {
    public void onDisconnect() {
       this.getComposite().setMenu(null);
       if (this.popupMenu != null) {
-         IContributionItem[] var1 = this.popupMenu.getItems();
+         IContributionItem[] items = this.popupMenu.getItems();
 
-         for (int var2 = 0; var2 < var1.length; var2++) {
-            var1[var2].dispose();
+         for (int i = 0; i < items.length; i++) {
+            items[i].dispose();
          }
 
          this.popupMenu.removeAll();
@@ -644,12 +644,12 @@ public abstract class GView implements DisposeListener {
    }
 
    public void createMenu() {
-      Composite var1 = this.getComposite();
-      if (var1.getMenu() == null) {
+      Composite composite = this.getComposite();
+      if (composite.getMenu() == null) {
          this.popupMenu = new MenuManager("");
          this.popupMenu.setRemoveAllWhenShown(true);
          this.popupMenu.addMenuListener(this.getTableMenuListener());
-         var1.setMenu(this.popupMenu.createContextMenu(var1));
+         composite.setMenu(this.popupMenu.createContextMenu(composite));
       }
    }
 
@@ -657,18 +657,18 @@ public abstract class GView implements DisposeListener {
       this.createMenu();
    }
 
-   public void widgetDisposed(DisposeEvent var1) {
+   public void widgetDisposed(DisposeEvent event) {
       PreferenceLoader.getPreferenceStore().setValue(this.preferenceString + "DynamicColumn", this.dynamicColumn);
       PreferenceLoader.getPreferenceStore().setValue(this.preferenceString + "MinDynamicColumnWidth", this.minDynamicColumnWidth);
       this.saveFilters();
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException exception) {
+         throw new NoClassDefFoundError(exception.getMessage());
       }
    }
 }

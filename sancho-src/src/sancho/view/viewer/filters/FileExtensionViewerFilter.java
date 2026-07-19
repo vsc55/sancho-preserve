@@ -5,11 +5,11 @@ import sancho.model.mldonkey.File;
 import sancho.view.viewer.GView;
 
 public class FileExtensionViewerFilter extends AbstractViewerFilter {
-   public FileExtensionViewerFilter(GView var1) {
-      super(var1);
+   public FileExtensionViewerFilter(GView gView) {
+      super(gView);
    }
 
-   public boolean select(Viewer var1, Object var2, Object var3) {
-      return var3 instanceof File ? this.isFiltered(((File)var3).getFileType()) : true;
+   public boolean select(Viewer viewer, Object parentElement, Object element) {
+      return element instanceof File ? this.isFiltered(((File)element).getFileType()) : true;
    }
 }

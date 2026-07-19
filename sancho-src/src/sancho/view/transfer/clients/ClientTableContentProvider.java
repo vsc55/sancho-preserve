@@ -13,45 +13,45 @@ public class ClientTableContentProvider extends GTableContentProviderOM {
    private static final String RS_CONNECTED = SResources.getString("l.connected");
    private File inputElementFile;
 
-   public ClientTableContentProvider(ClientTableView var1, CLabel var2) {
-      super(var1);
+   public ClientTableContentProvider(ClientTableView view, CLabel label) {
+      super(view);
       this.updateOnUpdate = true;
    }
 
-   public Object[] getElements(Object var1) {
-      if (var1 instanceof File) {
-         File var2 = (File)var1;
-         ObjectMap var3 = var2.getClientWeakMap();
-         synchronized (var3) {
-            var3.clearAllLists();
-            return var3.getKeyArray();
+   public Object[] getElements(Object element) {
+      if (element instanceof File) {
+         File file = (File)element;
+         ObjectMap clientMap = file.getClientWeakMap();
+         synchronized (clientMap) {
+            clientMap.clearAllLists();
+            return clientMap.getKeyArray();
          }
       } else {
          return GTableContentProvider.EMPTY_ARRAY;
       }
    }
 
-   public void inputChanged(Viewer var1, Object var2, Object var3) {
-      super.inputChanged(var1, var2, var3);
+   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      super.inputChanged(viewer, oldInput, newInput);
       this.inputElementFile = null;
-      if (var2 != null && var2 instanceof File) {
-         File var4 = (File)var2;
-         var4.getClientWeakMap().deleteObserver(this);
+      if (oldInput != null && oldInput instanceof File) {
+         File oldFile = (File)oldInput;
+         oldFile.getClientWeakMap().deleteObserver(this);
       }
 
-      if (var3 != null && var3 instanceof File) {
-         File var5 = (File)var3;
-         this.inputElementFile = var5;
-         var5.getClientWeakMap().addObserver(this);
-         this.updateHeaderLabel(var5.getClientWeakMap().size());
-      } else if (var3 == null) {
+      if (newInput != null && newInput instanceof File) {
+         File newFile = (File)newInput;
+         this.inputElementFile = newFile;
+         newFile.getClientWeakMap().addObserver(this);
+         this.updateHeaderLabel(newFile.getClientWeakMap().size());
+      } else if (newInput == null) {
          this.updateHeaderLabel();
       }
    }
 
-   public void updateHeaderLabel(int var1) {
+   public void updateHeaderLabel(int count) {
       if (this.inputElementFile != null) {
-         this.gView.getViewFrame().updateCLabelText(RS_CLIENTS + ": " + this.inputElementFile.getConnected() + " / " + var1 + " " + RS_CONNECTED);
+         this.gView.getViewFrame().updateCLabelText(RS_CLIENTS + ": " + this.inputElementFile.getConnected() + " / " + count + " " + RS_CONNECTED);
       }
    }
 

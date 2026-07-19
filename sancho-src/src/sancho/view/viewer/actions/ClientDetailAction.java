@@ -12,12 +12,12 @@ public class ClientDetailAction extends Action {
    private Client client;
    private Shell parentShell;
 
-   public ClientDetailAction(Shell var1, File var2, Client var3) {
+   public ClientDetailAction(Shell parentShell, File file, Client client) {
       super(SResources.getString("m.d.clientDetails"));
       this.setImageDescriptor(SResources.getImageDescriptor("info"));
-      this.parentShell = var1;
-      this.file = var2;
-      this.client = var3;
+      this.parentShell = parentShell;
+      this.file = file;
+      this.client = client;
    }
 
    public void run() {

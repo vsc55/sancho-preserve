@@ -8,27 +8,27 @@ import sancho.view.viewer.table.GTableContentProvider;
 public class ClientFilesTableContentProvider extends GTableContentProvider {
    public static final String RS_CLIENT_FILES = SResources.getString("l.clientFiles");
 
-   public ClientFilesTableContentProvider(ClientFilesTableView var1) {
-      super(var1);
+   public ClientFilesTableContentProvider(ClientFilesTableView view) {
+      super(view);
    }
 
-   public Object[] getElements(Object var1) {
-      if (var1 instanceof Map) {
-         Map var2 = (Map)var1;
-         this.updateHeaderLabel(var2.size());
-         return var2.keySet().toArray();
+   public Object[] getElements(Object input) {
+      if (input instanceof Map) {
+         Map map = (Map)input;
+         this.updateHeaderLabel(map.size());
+         return map.keySet().toArray();
       } else {
          return GTableContentProvider.EMPTY_ARRAY;
       }
    }
 
-   public void inputChanged(Viewer var1, Object var2, Object var3) {
-      super.inputChanged(var1, var2, var3);
+   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      super.inputChanged(viewer, oldInput, newInput);
       this.updateHeaderLabel();
    }
 
-   public void updateHeaderLabel(int var1) {
-      this.gView.getViewFrame().updateCLabelText(RS_CLIENT_FILES + ": " + var1);
+   public void updateHeaderLabel(int count) {
+      this.gView.getViewFrame().updateCLabelText(RS_CLIENT_FILES + ": " + count);
    }
 
    public void updateHeaderLabel() {

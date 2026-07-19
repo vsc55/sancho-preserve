@@ -5,37 +5,37 @@ import sancho.model.mldonkey.SharedFile;
 import sancho.view.viewer.table.GTableLabelProvider;
 
 public class UploadTableLabelProvider extends GTableLabelProvider {
-   public UploadTableLabelProvider(UploadTableView var1) {
-      super(var1);
+   public UploadTableLabelProvider(UploadTableView tableView) {
+      super(tableView);
    }
 
-   public Image getColumnImage(Object var1, int var2) {
-      SharedFile var3 = (SharedFile)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public Image getColumnImage(Object element, int columnIndex) {
+      SharedFile sharedFile = (SharedFile)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getNetworkImage();
+            return sharedFile.getNetworkImage();
          case 3:
-            return var3.getFileTypeImage();
+            return sharedFile.getFileTypeImage();
          default:
             return null;
       }
    }
 
-   public String getColumnText(Object var1, int var2) {
-      SharedFile var3 = (SharedFile)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      SharedFile sharedFile = (SharedFile)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getNetworkName();
+            return sharedFile.getNetworkName();
          case 1:
-            return var3.getUploadedString();
+            return sharedFile.getUploadedString();
          case 2:
-            return var3.getRequestsString();
+            return sharedFile.getRequestsString();
          case 3:
-            return var3.getName();
+            return sharedFile.getName();
          case 4:
-            return var3.getSizeString();
+            return sharedFile.getSizeString();
          case 5:
-            return var3.getMagic();
+            return sharedFile.getMagic();
          default:
             return "";
       }

@@ -9,37 +9,37 @@ public class DownloadCompleteTableMenuListener extends GTableMenuListener implem
    // $VF: synthetic field
    static Class class$sancho$view$downloadComplete$DownloadCompleteItem;
 
-   public DownloadCompleteTableMenuListener(DownloadCompleteTableView var1) {
-      super(var1);
+   public DownloadCompleteTableMenuListener(DownloadCompleteTableView view) {
+      super(view);
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
+   public void selectionChanged(SelectionChangedEvent event) {
       this.collectSelections(
-         var1,
+         event,
          class$sancho$view$downloadComplete$DownloadCompleteItem == null
             ? (class$sancho$view$downloadComplete$DownloadCompleteItem = class$("sancho.view.downloadComplete.DownloadCompleteItem"))
             : class$sancho$view$downloadComplete$DownloadCompleteItem
       );
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager menuManager) {
       if (this.selectedObjects.size() > 0) {
-         String[] var2 = new String[this.selectedObjects.size()];
+         String[] links = new String[this.selectedObjects.size()];
 
-         for (int var3 = 0; var3 < this.selectedObjects.size(); var3++) {
-            var2[var3] = ((DownloadCompleteItem)this.selectedObjects.get(var3)).getLink();
+         for (int i = 0; i < this.selectedObjects.size(); i++) {
+            links[i] = ((DownloadCompleteItem)this.selectedObjects.get(i)).getLink();
          }
 
-         this.addClipboardMenu(var1);
+         this.addClipboardMenu(menuManager);
       }
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException classNotFoundException) {
+         throw new NoClassDefFoundError(classNotFoundException.getMessage());
       }
    }
 }

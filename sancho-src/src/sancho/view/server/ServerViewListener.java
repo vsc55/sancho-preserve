@@ -11,24 +11,24 @@ import sancho.view.viewer.actions.ColumnSelectorAction;
 import sancho.view.viewer.actions.RemoveAllFiltersAction;
 
 public class ServerViewListener extends TabbedSashViewListener {
-   public ServerViewListener(TabbedSashViewFrame var1) {
-      super(var1);
+   public ServerViewListener(TabbedSashViewFrame viewFrame) {
+      super(viewFrame);
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
-      var1.add(new ColumnSelectorAction(this.gView));
-      var1.add(new Separator());
-      this.createDynamicColumnSubMenu(var1);
-      this.createSortByColumnSubMenu(var1);
-      MyMenuManager var2 = new MyMenuManager(SResources.getString("mi.show"));
-      var2.setImageString("target");
-      var2.add(new RemoveAllFiltersAction(this.gView));
-      var2.add(new Separator());
-      this.createNetworkWithServersFilterSubMenu(var2);
-      var2.add(new Separator());
-      this.createStateFilterMenuItems(var2);
-      var1.add(var2);
-      var1.add(new ToggleTabsAction((TabbedSashViewFrame)this.viewFrame));
-      this.createSashActions(var1, "l.serverUsers");
+   public void menuAboutToShow(IMenuManager manager) {
+      manager.add(new ColumnSelectorAction(this.gView));
+      manager.add(new Separator());
+      this.createDynamicColumnSubMenu(manager);
+      this.createSortByColumnSubMenu(manager);
+      MyMenuManager subMenu = new MyMenuManager(SResources.getString("mi.show"));
+      subMenu.setImageString("target");
+      subMenu.add(new RemoveAllFiltersAction(this.gView));
+      subMenu.add(new Separator());
+      this.createNetworkWithServersFilterSubMenu(subMenu);
+      subMenu.add(new Separator());
+      this.createStateFilterMenuItems(subMenu);
+      manager.add(subMenu);
+      manager.add(new ToggleTabsAction((TabbedSashViewFrame)this.viewFrame));
+      this.createSashActions(manager, "l.serverUsers");
    }
 }

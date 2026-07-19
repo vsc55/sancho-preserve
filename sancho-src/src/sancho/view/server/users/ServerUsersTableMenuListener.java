@@ -7,13 +7,13 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import sancho.view.viewer.table.GTableMenuListener;
 
 public class ServerUsersTableMenuListener extends GTableMenuListener implements ISelectionChangedListener, IMenuListener {
-   public ServerUsersTableMenuListener(ServerUsersTableView var1) {
-      super(var1);
+   public ServerUsersTableMenuListener(ServerUsersTableView view) {
+      super(view);
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
+   public void selectionChanged(SelectionChangedEvent event) {
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager menuManager) {
    }
 }

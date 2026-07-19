@@ -4,28 +4,28 @@ import org.eclipse.swt.graphics.Image;
 import sancho.view.viewer.table.GTableLabelProvider;
 
 public class DownloadCompleteTableLabelProvider extends GTableLabelProvider {
-   public DownloadCompleteTableLabelProvider(DownloadCompleteTableView var1) {
-      super(var1);
+   public DownloadCompleteTableLabelProvider(DownloadCompleteTableView view) {
+      super(view);
    }
 
-   public Image getColumnImage(Object var1, int var2) {
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public Image getColumnImage(Object element, int columnIndex) {
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          default:
             return null;
       }
    }
 
-   public String getColumnText(Object var1, int var2) {
-      DownloadCompleteItem var3 = (DownloadCompleteItem)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      DownloadCompleteItem item = (DownloadCompleteItem)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getName();
+            return item.getName();
          case 1:
-            return var3.getSizeString();
+            return item.getSizeString();
          case 2:
-            return var3.getHash();
+            return item.getHash();
          case 3:
-            return var3.getDateString();
+            return item.getDateString();
          default:
             return "";
       }

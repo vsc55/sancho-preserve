@@ -16,31 +16,31 @@ public class SearchTab_Audio extends ASearchTab2 {
    private Combo artistCombo;
    private Combo bitrateCombo;
 
-   public SearchTab_Audio(ResultViewFrame var1, SearchTab var2) {
-      super(var1, var2);
+   public SearchTab_Audio(ResultViewFrame viewFrame, SearchTab searchTab) {
+      super(viewFrame, searchTab);
    }
 
-   public Control createTab(CTabFolder var1) {
-      Composite var2 = this.createMainComposite(var1);
-      this.searchCombo = this.createSavedSearchCombo(var2, "s.a.title", "audioTitleSearchFor");
-      this.artistCombo = this.createSavedSearchCombo(var2, "s.a.artist", "audioArtistSearchFor");
-      this.albumCombo = this.createSavedSearchCombo(var2, "s.a.album", "audioAlbumSearchFor");
-      this.createSeparator(var2);
-      String[] var3 = new String[]{"", "32kb", "64kb", "96kb", "128kb", "160kb", "192kb", "256kb", "320kb"};
-      this.bitrateCombo = this.createCombo(var2, 8, "s.a.bitrate", var3);
-      this.createNetworkCombo(var2);
-      var3 = new String[]{"", "mp3", "ogg", "wav", "midi"};
-      this.formatCombo = this.createCombo(var2, 0, "s.format", var3);
-      this.searchTypeCombo = this.createSearchTypeCombo(var2);
-      this.createSeparator(var2);
-      var3 = new String[]{"", "3", "5", "10", "25", "50"};
-      this.minAvailCombo = this.createCombo(var2, 0, "s.minAvail", var3);
-      this.minCombo = this.createMinMaxCombo(var2, 0, "s.minSize");
-      this.maxCombo = this.createMinMaxCombo(var2, 0, "s.maxSize");
-      var3 = new String[]{"", "50", "100", "200", "400"};
-      this.resultCombo = this.createIntegerCombo(var2, 0, "s.maxResults", var3);
-      var2.setData(this);
-      return var2;
+   public Control createTab(CTabFolder tabFolder) {
+      Composite composite = this.createMainComposite(tabFolder);
+      this.searchCombo = this.createSavedSearchCombo(composite, "s.a.title", "audioTitleSearchFor");
+      this.artistCombo = this.createSavedSearchCombo(composite, "s.a.artist", "audioArtistSearchFor");
+      this.albumCombo = this.createSavedSearchCombo(composite, "s.a.album", "audioAlbumSearchFor");
+      this.createSeparator(composite);
+      String[] values = new String[]{"", "32kb", "64kb", "96kb", "128kb", "160kb", "192kb", "256kb", "320kb"};
+      this.bitrateCombo = this.createCombo(composite, 8, "s.a.bitrate", values);
+      this.createNetworkCombo(composite);
+      values = new String[]{"", "mp3", "ogg", "wav", "midi"};
+      this.formatCombo = this.createCombo(composite, 0, "s.format", values);
+      this.searchTypeCombo = this.createSearchTypeCombo(composite);
+      this.createSeparator(composite);
+      values = new String[]{"", "3", "5", "10", "25", "50"};
+      this.minAvailCombo = this.createCombo(composite, 0, "s.minAvail", values);
+      this.minCombo = this.createMinMaxCombo(composite, 0, "s.minSize");
+      this.maxCombo = this.createMinMaxCombo(composite, 0, "s.maxSize");
+      values = new String[]{"", "50", "100", "200", "400"};
+      this.resultCombo = this.createIntegerCombo(composite, 0, "s.maxResults", values);
+      composite.setData(this);
+      return composite;
    }
 
    public String getText() {
@@ -48,76 +48,76 @@ public class SearchTab_Audio extends ASearchTab2 {
    }
 
    public void performSearch() {
-      String var1 = this.searchCombo.getText();
-      String var2 = this.albumCombo.getText();
-      String var3 = this.artistCombo.getText();
-      String var4 = "";
-      if (!var1.equals("") || !var3.equals("") || !var2.equals("")) {
+      String titleText = this.searchCombo.getText();
+      String albumText = this.albumCombo.getText();
+      String artistText = this.artistCombo.getText();
+      String resultName = "";
+      if (!titleText.equals("") || !artistText.equals("") || !albumText.equals("")) {
          if (Sancho.hasCollectionFactory()) {
-            SearchQuery var5 = this.viewFrame.getCore().getCollectionFactory().getSearchQuery();
-            if (!var1.equals("")) {
-               this.searchCombo.add(var1, 0);
-               var5.setMp3Title(var1);
-               var4 = var4 + var1;
+            SearchQuery query = this.viewFrame.getCore().getCollectionFactory().getSearchQuery();
+            if (!titleText.equals("")) {
+               this.searchCombo.add(titleText, 0);
+               query.setMp3Title(titleText);
+               resultName = resultName + titleText;
             }
 
-            if (!var3.equals("")) {
-               this.artistCombo.add(var3, 0);
-               var5.setMp3Artist(var3);
-               if (var4.length() > 0) {
-                  var4 = var4 + "/";
+            if (!artistText.equals("")) {
+               this.artistCombo.add(artistText, 0);
+               query.setMp3Artist(artistText);
+               if (resultName.length() > 0) {
+                  resultName = resultName + "/";
                }
 
-               var4 = var4 + var3;
+               resultName = resultName + artistText;
             }
 
-            if (!var2.equals("")) {
-               this.albumCombo.add(var2, 0);
-               var5.setMp3Album(var2);
-               if (var4.length() > 0) {
-                  var4 = var4 + "/";
+            if (!albumText.equals("")) {
+               this.albumCombo.add(albumText, 0);
+               query.setMp3Album(albumText);
+               if (resultName.length() > 0) {
+                  resultName = resultName + "/";
                }
 
-               var4 = var4 + var2;
+               resultName = resultName + albumText;
             }
 
             this.artistCombo.setText("");
             this.albumCombo.setText("");
             this.searchCombo.setText("");
-            String var6 = this.bitrateCombo.getText();
-            if (!var6.equals("")) {
-               int var7;
+            String bitrateText = this.bitrateCombo.getText();
+            if (!bitrateText.equals("")) {
+               int bitrate;
                try {
-                  var7 = Integer.parseInt(var6.substring(0, var6.length() - 2));
-               } catch (NumberFormatException var10) {
-                  var7 = 0;
+                  bitrate = Integer.parseInt(bitrateText.substring(0, bitrateText.length() - 2));
+               } catch (NumberFormatException notANumber) {
+                  bitrate = 0;
                }
 
-               var5.setMp3Bitrate(String.valueOf(var7));
+               query.setMp3Bitrate(String.valueOf(bitrate));
             }
 
-            this.parseSearchType(this.searchTypeCombo, var5);
-            this.addMinSizeToQuery(var5, this.minCombo);
-            this.addMaxSizeToQuery(var5, this.maxCombo);
+            this.parseSearchType(this.searchTypeCombo, query);
+            this.addMinSizeToQuery(query, this.minCombo);
+            this.addMaxSizeToQuery(query, this.maxCombo);
             if (!this.resultCombo.getText().equals("")) {
-               int var11 = 0;
+               int maxResults = 0;
 
                try {
-                  var11 = Integer.parseInt(this.resultCombo.getText());
-               } catch (NumberFormatException var9) {
-                  var11 = 100;
+                  maxResults = Integer.parseInt(this.resultCombo.getText());
+               } catch (NumberFormatException notANumber) {
+                  maxResults = 100;
                }
 
-               var5.setMaxSearchResults(var11);
+               query.setMaxSearchResults(maxResults);
             }
 
             if (!this.formatCombo.getText().equals("")) {
-               var5.setFormat(this.formatCombo.getText());
+               query.setFormat(this.formatCombo.getText());
             }
 
-            this.addNetwork(var5);
-            var5.send();
-            new ResultTab(this.viewFrame, this.searchTab.getCTabFolder(), this.searchTab, var5.getSearchId(), var4);
+            this.addNetwork(query);
+            query.send();
+            new ResultTab(this.viewFrame, this.searchTab.getCTabFolder(), this.searchTab, query.getSearchId(), resultName);
          }
       }
    }

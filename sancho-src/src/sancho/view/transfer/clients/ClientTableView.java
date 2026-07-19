@@ -24,8 +24,8 @@ public class ClientTableView extends GTableView {
    public static final int SUI = 12;
    public static final int COUNTRY = 13;
 
-   public ClientTableView(ViewFrame var1) {
-      super(var1);
+   public ClientTableView(ViewFrame viewFrame) {
+      super(viewFrame);
       this.preferenceString = "client";
       this.columnLabels = new String[]{
          "client.network",
@@ -57,21 +57,21 @@ public class ClientTableView extends GTableView {
          EnumHostState.NOT_CONNECTED_WAS_QUEUED
       };
       this.gSorter = new ClientTableSorter(this);
-      this.tableContentProvider = new ClientTableContentProvider(this, var1.getCLabel());
+      this.tableContentProvider = new ClientTableContentProvider(this, viewFrame.getCLabel());
       this.tableLabelProvider = new ClientTableLabelProvider(this);
       this.tableMenuListener = new ClientTableMenuListener(this);
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
    }
 
-   protected void createContents(Composite var1) {
-      super.createContents(var1);
+   protected void createContents(Composite composite) {
+      super.createContents(composite);
       this.sViewer.addSelectionChangedListener((ClientTableMenuListener)this.tableMenuListener);
    }
 
    public void updateDisplay() {
       super.updateDisplay();
-      Table var1 = this.getTable();
-      var1.setForeground(PreferenceLoader.loadColor("downloadsAvailableColor"));
+      Table table = this.getTable();
+      table.setForeground(PreferenceLoader.loadColor("downloadsAvailableColor"));
    }
 
    public void setInput() {

@@ -10,44 +10,44 @@ import org.eclipse.swt.graphics.ImageData;
 class MyImageDescriptor extends ImageDescriptor {
    private String name;
 
-   MyImageDescriptor(String var1) {
-      this.name = var1;
+   MyImageDescriptor(String name) {
+      this.name = name;
    }
 
-   public boolean equals(Object var1) {
-      if (!(var1 instanceof MyImageDescriptor)) {
+   public boolean equals(Object obj) {
+      if (!(obj instanceof MyImageDescriptor)) {
          return false;
       } else {
-         MyImageDescriptor var2 = (MyImageDescriptor)var1;
-         return this.name.equals(var2.name);
+         MyImageDescriptor other = (MyImageDescriptor)obj;
+         return this.name.equals(other.name);
       }
    }
 
    public ImageData getImageData() {
-      InputStream var1 = this.getStream();
-      ImageData var2 = null;
-      if (var1 != null) {
+      InputStream stream = this.getStream();
+      ImageData imageData = null;
+      if (stream != null) {
          try {
-            var2 = new ImageData(var1);
-         } catch (SWTException var13) {
-            if (var13.code != 40) {
-               throw var13;
+            imageData = new ImageData(stream);
+         } catch (SWTException swtException) {
+            if (swtException.code != 40) {
+               throw swtException;
             }
          } finally {
             try {
-               var1.close();
-            } catch (IOException var12) {
+               stream.close();
+            } catch (IOException ioException) {
             }
          }
       }
 
-      return var2;
+      return imageData;
    }
 
    private InputStream getStream() {
-      Object var1 = null;
-      var1 = SResources.imagesClass.getResourceAsStream("img/" + this.name);
-      return var1 == null ? null : new BufferedInputStream((InputStream)var1);
+      Object stream = null;
+      stream = SResources.imagesClass.getResourceAsStream("img/" + this.name);
+      return stream == null ? null : new BufferedInputStream((InputStream)stream);
    }
 
    public int hashCode() {

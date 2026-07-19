@@ -5,9 +5,9 @@ import org.eclipse.jface.viewers.IContentProvider;
 public interface IGContentProvider extends IContentProvider {
    void initialize();
 
-   void setActive(boolean var1);
+   void setActive(boolean active);
 
-   void setVisible(boolean var1);
+   void setVisible(boolean visible);
 
-   void setNeedsRefresh(boolean var1);
+   void setNeedsRefresh(boolean needsRefresh);
 }

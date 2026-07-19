@@ -8,8 +8,8 @@ import sancho.view.viewFrame.SashViewFrame;
 public class InfoViewFrame extends SashViewFrame {
    Text myText = new Text(this.getChildComposite(), 778);
 
-   public InfoViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
-      super(var1, var2, var3, var4);
+   public InfoViewFrame(SashForm sashForm, String name, String tooltip, AbstractTab tab) {
+      super(sashForm, name, tooltip, tab);
       this.createViewListener(new InfoViewListener(this));
    }
 

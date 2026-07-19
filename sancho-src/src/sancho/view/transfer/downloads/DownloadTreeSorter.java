@@ -15,70 +15,70 @@ public class DownloadTreeSorter extends GSorter {
    private ITableLabelProvider labelProvider;
    private boolean maintainSortOrder = false;
 
-   public DownloadTreeSorter(GView var1) {
-      super(var1);
+   public DownloadTreeSorter(GView gView) {
+      super(gView);
    }
 
-   public int category(Object var1) {
-      if (var1 instanceof File) {
+   public int category(Object element) {
+      if (element instanceof File) {
          return 1;
       } else {
-         return var1 instanceof FileClient ? 2 : 3;
+         return element instanceof FileClient ? 2 : 3;
       }
    }
 
-   private static int fileStateRank(EnumFileState var0) {
-      if (var0 == EnumFileState.DOWNLOADED) {
+   private static int fileStateRank(EnumFileState fileState) {
+      if (fileState == EnumFileState.DOWNLOADED) {
          return 0;
-      } else if (var0 == EnumFileState.QUEUED) {
+      } else if (fileState == EnumFileState.QUEUED) {
          return 1;
       } else {
-         return var0 == EnumFileState.PAUSED ? 2 : 3;
+         return fileState == EnumFileState.PAUSED ? 2 : 3;
       }
    }
 
-   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
-      int var5 = this.category(var2);
-      int var6 = this.category(var3);
-      if (var5 != var6) {
-         return var5 - var6;
-      } else if (var2 instanceof File) {
-         File var11 = (File)var2;
-         File var12 = (File)var3;
-         switch (var4) {
+   protected int _compare(Viewer viewer, Object first, Object second, int columnId) {
+      int firstCategory = this.category(first);
+      int secondCategory = this.category(second);
+      if (firstCategory != secondCategory) {
+         return firstCategory - secondCategory;
+      } else if (first instanceof File) {
+         File firstFile = (File)first;
+         File secondFile = (File)second;
+         switch (columnId) {
             case 0:
-               return this.compareInts(var11.getId(), var12.getId());
+               return this.compareInts(firstFile.getId(), secondFile.getId());
             case 1:
-               return this.compareStrings(var11.getEnumNetwork().getName(), var12.getEnumNetwork().getName());
+               return this.compareStrings(firstFile.getEnumNetwork().getName(), secondFile.getEnumNetwork().getName());
             case 2:
-               return this.compareStrings(var11.getName(), var12.getName());
+               return this.compareStrings(firstFile.getName(), secondFile.getName());
             case 3:
-               return this.compareLongs(var11.getSize(), var12.getSize());
+               return this.compareLongs(firstFile.getSize(), secondFile.getSize());
             case 4:
-               return this.compareLongs(var11.getDownloaded(), var12.getDownloaded());
+               return this.compareLongs(firstFile.getDownloaded(), secondFile.getDownloaded());
             case 5:
-               return this.comparePercents(var11.getPercent(), var12.getPercent());
+               return this.comparePercents(firstFile.getPercent(), secondFile.getPercent());
             case 6:
-               return this.compareInts(var11.getSources(), var12.getSources());
+               return this.compareInts(firstFile.getSources(), secondFile.getSources());
             case 7:
-               return this.compareInts(var11.getRelativeAvail(), var12.getRelativeAvail());
+               return this.compareInts(firstFile.getRelativeAvail(), secondFile.getRelativeAvail());
             case 8: {
                // Rank by state (Downloaded < Queued < Paused < other), then break
                // ties by rate. The old constant returns (-1/2/3) gave the same sign
                // for both a,b and b,a on same-state pairs, violating the comparator
                // contract (TimSort abort with 2+ files sharing a state).
-               int var13 = fileStateRank(var11.getFileStateEnum());
-               int var14 = fileStateRank(var12.getFileStateEnum());
-               return var13 != var14 ? var13 - var14 : this.comparePercents(var11.getRate(), var12.getRate());
+               int firstRank = fileStateRank(firstFile.getFileStateEnum());
+               int secondRank = fileStateRank(secondFile.getFileStateEnum());
+               return firstRank != secondRank ? firstRank - secondRank : this.comparePercents(firstFile.getRate(), secondFile.getRate());
             }
             case 9:
-               return this.compareInts(var11.getNumChunks(), var12.getNumChunks());
+               return this.compareInts(firstFile.getNumChunks(), secondFile.getNumChunks());
             case 10: {
                // Both empty ETAs must compare equal, else compare(a,b)==compare(b,a)==1
                // breaks antisymmetry (same class fixed in case 8 / compareStrings).
-               this.labelProvider = (ITableLabelProvider)((TreeViewer)var1).getLabelProvider();
-               boolean firstEtaEmpty = this.labelProvider.getColumnText(var2, this.columnIndex).equals("");
-               boolean secondEtaEmpty = this.labelProvider.getColumnText(var3, this.columnIndex).equals("");
+               this.labelProvider = (ITableLabelProvider)((TreeViewer)viewer).getLabelProvider();
+               boolean firstEtaEmpty = this.labelProvider.getColumnText(first, this.columnIndex).equals("");
+               boolean secondEtaEmpty = this.labelProvider.getColumnText(second, this.columnIndex).equals("");
                if (firstEtaEmpty && secondEtaEmpty) {
                   return 0;
                } else if (firstEtaEmpty) {
@@ -86,52 +86,52 @@ public class DownloadTreeSorter extends GSorter {
                } else if (secondEtaEmpty) {
                   return -1;
                } else {
-                  return this.compareLongs(var11.getETA(), var12.getETA());
+                  return this.compareLongs(firstFile.getETA(), secondFile.getETA());
                }
             }
             case 11:
-               return this.compareInts(var11.getPriority(), var12.getPriority());
+               return this.compareInts(firstFile.getPriority(), secondFile.getPriority());
             case 12:
-               return this.compareInts(var11.getLastSeen(), var12.getLastSeen());
+               return this.compareInts(firstFile.getLastSeen(), secondFile.getLastSeen());
             case 13:
-               return this.compareLongs(var11.getAge(), var12.getAge());
+               return this.compareLongs(firstFile.getAge(), secondFile.getAge());
             case 14:
-               return this.compareLongs(var11.getETA2(), var12.getETA2());
+               return this.compareLongs(firstFile.getETA2(), secondFile.getETA2());
             case 15:
-               return this.compareInts(var11.getNumClients(), var12.getNumClients());
+               return this.compareInts(firstFile.getNumClients(), secondFile.getNumClients());
             case 16:
-               return this.compareInts(var11.getNumSources(), var12.getNumSources());
+               return this.compareInts(firstFile.getNumSources(), secondFile.getNumSources());
             case 17:
-               return this.compareLongs(var11.getRemaining(), var12.getRemaining());
+               return this.compareLongs(firstFile.getRemaining(), secondFile.getRemaining());
             case 18:
-               return this.compareInts(var11.getNumComments(), var12.getNumComments());
+               return this.compareInts(firstFile.getNumComments(), secondFile.getNumComments());
             case 19:
-               return this.compareStrings(var11.getUser(), var12.getUser());
+               return this.compareStrings(firstFile.getUser(), secondFile.getUser());
             case 20:
-               return this.compareStrings(var11.getGroup(), var12.getGroup());
+               return this.compareStrings(firstFile.getGroup(), secondFile.getGroup());
             default:
                return 0;
          }
       } else {
-         Client var7 = ((FileClient)var2).getClient();
-         Client var8 = ((FileClient)var3).getClient();
-         switch (var4) {
+         Client firstClient = ((FileClient)first).getClient();
+         Client secondClient = ((FileClient)second).getClient();
+         switch (columnId) {
             case 0:
-               return this.compareInts(var7.getId(), var8.getId());
+               return this.compareInts(firstClient.getId(), secondClient.getId());
             case 1:
-               return this.compareStrings(var7.getEnumNetwork().getName(), var8.getEnumNetwork().getName());
+               return this.compareStrings(firstClient.getEnumNetwork().getName(), secondClient.getEnumNetwork().getName());
             case 2:
-               return this.compareStrings(var7.getName(), var8.getName());
+               return this.compareStrings(firstClient.getName(), secondClient.getName());
             case 3:
             case 11:
-               this.labelProvider = (ITableLabelProvider)((TreeViewer)var1).getLabelProvider();
-               return this.compareStrings(this.labelProvider.getColumnText(var2, this.columnIndex), this.labelProvider.getColumnText(var3, this.columnIndex));
+               this.labelProvider = (ITableLabelProvider)((TreeViewer)viewer).getLabelProvider();
+               return this.compareStrings(this.labelProvider.getColumnText(first, this.columnIndex), this.labelProvider.getColumnText(second, this.columnIndex));
             case 4:
-               return this.compareLongs(var7.getDownloaded(), var8.getDownloaded());
+               return this.compareLongs(firstClient.getDownloaded(), secondClient.getDownloaded());
             case 5:
-               return this.compareInts(var7.getPort(), var8.getPort());
+               return this.compareInts(firstClient.getPort(), secondClient.getPort());
             case 6:
-               return this.compareAddrs(var7.getAddr(), var8.getAddr());
+               return this.compareAddrs(firstClient.getAddr(), secondClient.getAddr());
             case 7:
             case 8:
             case 10:
@@ -139,30 +139,30 @@ public class DownloadTreeSorter extends GSorter {
             default:
                return 0;
             case 9:
-               FileClient var9 = (FileClient)var2;
-               FileClient var10 = (FileClient)var3;
-               return this.compareInts(var7.getNumChunks(var9.getFile().getId()), var8.getNumChunks(var10.getFile().getId()));
+               FileClient firstFileClient = (FileClient)first;
+               FileClient secondFileClient = (FileClient)second;
+               return this.compareInts(firstClient.getNumChunks(firstFileClient.getFile().getId()), secondClient.getNumChunks(secondFileClient.getFile().getId()));
             case 13:
-               return this.compareInts(var7.getConnectedTime(), var8.getConnectedTime());
+               return this.compareInts(firstClient.getConnectedTime(), secondClient.getConnectedTime());
          }
       }
    }
 
-   public boolean isSorterProperty(Object var1, String var2) {
-      if (this.maintainSortOrder && var1 instanceof File) {
-         File var3 = (File)var1;
+   public boolean isSorterProperty(Object element, String property) {
+      if (this.maintainSortOrder && element instanceof File) {
+         File file = (File)element;
          switch (this.cViewer.getColumnIDs()[this.columnIndex]) {
             case 4:
             case 17:
-               return var3.hasChangedBit(4);
+               return file.hasChangedBit(4);
             case 5:
-               return var3.hasChangedBit(32);
+               return file.hasChangedBit(32);
             case 6:
-               return var3.hasChangedBit(512);
+               return file.hasChangedBit(512);
             case 7:
-               return var3.hasChangedBit(2);
+               return file.hasChangedBit(2);
             case 8:
-               return var3.hasChangedBit(64) || var3.hasChangedBit(128);
+               return file.hasChangedBit(64) || file.hasChangedBit(128);
             case 9:
             case 11:
             case 13:
@@ -172,19 +172,19 @@ public class DownloadTreeSorter extends GSorter {
             default:
                return false;
             case 10:
-               return var3.hasChangedBit(8);
+               return file.hasChangedBit(8);
             case 12:
-               return var3.hasChangedBit(16);
+               return file.hasChangedBit(16);
             case 18:
-               return var3.hasChangedBit(2048);
+               return file.hasChangedBit(2048);
          }
       } else {
          return false;
       }
    }
 
-   public boolean sortOrder(int var1) {
-      switch (this.cViewer.getColumnIDs()[var1]) {
+   public boolean sortOrder(int columnIndex) {
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
          case 1:
          case 2:

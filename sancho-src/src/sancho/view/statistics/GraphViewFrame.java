@@ -8,10 +8,10 @@ import sancho.view.viewFrame.SashViewFrame;
 public class GraphViewFrame extends SashViewFrame {
    GraphCanvas graphCanvas;
 
-   public GraphViewFrame(SashForm var1, String var2, String var3, AbstractTab var4, String var5) {
-      super(var1, var2, var3, var4);
-      this.graphCanvas = new GraphCanvas(this.childComposite, SResources.getString(var2), var5, this);
-      this.createViewListener(new GraphViewListener(this, this.graphCanvas, var2.equals("graph.uploads") ? "graph.downloads" : "graph.uploads"));
+   public GraphViewFrame(SashForm sashForm, String name, String tooltip, AbstractTab tab, String graphName) {
+      super(sashForm, name, tooltip, tab);
+      this.graphCanvas = new GraphCanvas(this.childComposite, SResources.getString(name), graphName, this);
+      this.createViewListener(new GraphViewListener(this, this.graphCanvas, name.equals("graph.uploads") ? "graph.downloads" : "graph.uploads"));
    }
 
    public GraphCanvas getGraphCanvas() {

@@ -5,25 +5,25 @@ import sancho.model.mldonkey.Network;
 import sancho.view.viewer.GSorter;
 
 public class NetworksTableSorter extends GSorter {
-   public NetworksTableSorter(NetworksTableView var1) {
-      super(var1);
+   public NetworksTableSorter(NetworksTableView view) {
+      super(view);
       this.setDirection(true);
    }
 
-   public boolean sortOrder(int var1) {
+   public boolean sortOrder(int id) {
       return true;
    }
 
-   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
-      Network var5 = (Network)var2;
-      Network var6 = (Network)var3;
-      switch (var4) {
+   protected int _compare(Viewer viewer, Object object1, Object object2, int id) {
+      Network network1 = (Network)object1;
+      Network network2 = (Network)object2;
+      switch (id) {
          case 0:
-            return this.compareStrings(var5.getName(), var6.getName());
+            return this.compareStrings(network1.getName(), network2.getName());
          case 1:
-            return this.compareLongs(var5.getUploaded(), var6.getUploaded());
+            return this.compareLongs(network1.getUploaded(), network2.getUploaded());
          case 2:
-            return this.compareLongs(var5.getDownloaded(), var6.getDownloaded());
+            return this.compareLongs(network1.getDownloaded(), network2.getDownloaded());
          default:
             return 0;
       }

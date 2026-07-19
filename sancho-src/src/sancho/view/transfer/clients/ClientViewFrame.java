@@ -7,8 +7,8 @@ import sancho.view.viewFrame.TabbedSashViewFrame;
 import sancho.view.viewer.GView;
 
 public class ClientViewFrame extends TabbedSashViewFrame {
-   public ClientViewFrame(SashForm var1, String var2, String var3, AbstractTab var4, GView var5) {
-      super(var1, var2, var3, var4, "clients");
+   public ClientViewFrame(SashForm sashForm, String title, String imageString, AbstractTab tab, GView gView) {
+      super(sashForm, title, imageString, tab, "clients");
       this.gView = new ClientTableView(this);
       this.createViewListener(new ClientViewListener(this));
       this.createViewToolBar();

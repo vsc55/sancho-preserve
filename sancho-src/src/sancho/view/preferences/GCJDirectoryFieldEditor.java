@@ -7,36 +7,36 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 
 public class GCJDirectoryFieldEditor extends DirectoryFieldEditor {
-   public GCJDirectoryFieldEditor(String var1, String var2, Composite var3) {
-      super(var1, var2, var3);
+   public GCJDirectoryFieldEditor(String name, String labelText, Composite parent) {
+      super(name, labelText, parent);
    }
 
    protected String changePressed() {
-      String var1 = this.getTextControl().getText();
-      if (var1.equals("") && SWT.getPlatform().equals("win32")) {
-         var1 = ".";
+      String text = this.getTextControl().getText();
+      if (text.equals("") && SWT.getPlatform().equals("win32")) {
+         text = ".";
       }
 
-      File var2 = new File(var1);
-      if (!var2.exists()) {
-         var2 = null;
+      File file = new File(text);
+      if (!file.exists()) {
+         file = null;
       }
 
-      File var3 = this.getDirectory(var2);
-      return var3 == null ? null : var3.getAbsolutePath();
+      File directory = this.getDirectory(file);
+      return directory == null ? null : directory.getAbsolutePath();
    }
 
-   private File getDirectory(File var1) {
-      DirectoryDialog var2 = new DirectoryDialog(this.getShell(), 4096);
-      if (var1 != null) {
-         var2.setFilterPath(var1.getPath());
+   private File getDirectory(File startingDirectory) {
+      DirectoryDialog dialog = new DirectoryDialog(this.getShell(), 4096);
+      if (startingDirectory != null) {
+         dialog.setFilterPath(startingDirectory.getPath());
       }
 
-      String var3 = var2.open();
-      if (var3 != null) {
-         var3 = var3.trim();
-         if (var3.length() > 0) {
-            return new File(var3);
+      String path = dialog.open();
+      if (path != null) {
+         path = path.trim();
+         if (path.length() > 0) {
+            return new File(path);
          }
       }
 

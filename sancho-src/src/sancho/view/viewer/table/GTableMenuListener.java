@@ -32,99 +32,99 @@ public abstract class GTableMenuListener implements IMenuListener, ISelectionCha
    protected List selectedObjects = Collections.synchronizedList(new ArrayList());
    protected CustomTableViewer tableViewer;
 
-   public GTableMenuListener(GView var1) {
-      this.gView = var1;
+   public GTableMenuListener(GView gView) {
+      this.gView = gView;
    }
 
-   protected void addSelectAllMenu(IMenuManager var1) {
-      var1.add(new Separator());
-      var1.add(new SelectAllAction(this, true));
-      var1.add(new SelectAllAction(this, false));
+   protected void addSelectAllMenu(IMenuManager menuManager) {
+      menuManager.add(new Separator());
+      menuManager.add(new SelectAllAction(this, true));
+      menuManager.add(new SelectAllAction(this, false));
    }
 
-   protected void addWebServicesMenu(IMenuManager var1, String var2, String var3, long var4) {
+   protected void addWebServicesMenu(IMenuManager menuManager, String name, String hash, long size) {
       if (VersionInfo.useWebServices()) {
-         MyMenuManager var6 = new MyMenuManager(SResources.getString("mi.webServices"));
-         var6.setImageString("earth");
-         var6.add(new WebServicesAction(1, var2, var3, var4));
-         var6.add(new WebServicesAction(2, var2, var3, var4));
-         var6.add(new WebServicesAction(5, var2, var3, var4));
-         var6.add(new WebServicesAction(6, var2, var3, var4));
+         MyMenuManager menu = new MyMenuManager(SResources.getString("mi.webServices"));
+         menu.setImageString("earth");
+         menu.add(new WebServicesAction(1, name, hash, size));
+         menu.add(new WebServicesAction(2, name, hash, size));
+         menu.add(new WebServicesAction(5, name, hash, size));
+         menu.add(new WebServicesAction(6, name, hash, size));
 
-         for (int var7 = 1; !PreferenceLoader.loadString("webServiceName" + var7).equals(""); var7++) {
-            var6.add(new WebServicesAction(-var7, var2, var3, var4));
+         for (int i = 1; !PreferenceLoader.loadString("webServiceName" + i).equals(""); i++) {
+            menu.add(new WebServicesAction(-i, name, hash, size));
          }
 
-         var1.add(var6);
+         menuManager.add(menu);
       }
    }
 
-   protected void addClipboardMenu(IMenuManager var1) {
-      MyMenuManager var2 = new MyMenuManager(SResources.getString("m.d.copyTo"));
-      var2.setImageString("copy");
-      boolean var3 = true;
-      boolean var4 = false;
-      boolean var5 = false;
+   protected void addClipboardMenu(IMenuManager menuManager) {
+      MyMenuManager menu = new MyMenuManager(SResources.getString("m.d.copyTo"));
+      menu.setImageString("copy");
+      boolean hasEd2k = true;
+      boolean hasSha1 = false;
+      boolean hasSig2dat = false;
 
-      for (int var6 = 0; var6 < this.selectedObjects.size(); var6++) {
-         IObject_UID var7 = (IObject_UID)this.selectedObjects.get(var6);
-         String[] var8 = var7.getUIDs();
-         if (var8 == null) {
-            var3 = true;
+      for (int i = 0; i < this.selectedObjects.size(); i++) {
+         IObject_UID object = (IObject_UID)this.selectedObjects.get(i);
+         String[] uids = object.getUIDs();
+         if (uids == null) {
+            hasEd2k = true;
          } else {
-            for (int var9 = 0; var9 < var8.length; var9++) {
-               if (var8[var9].startsWith("urn:ed2k")) {
-                  var3 = true;
-               } else if (var8[var9].startsWith("urn:sig2dat")) {
-                  var5 = true;
-               } else if (var8[var9].startsWith("urn:sha1") || var8[var9].startsWith("urn:ttr")) {
-                  var4 = true;
+            for (int j = 0; j < uids.length; j++) {
+               if (uids[j].startsWith("urn:ed2k")) {
+                  hasEd2k = true;
+               } else if (uids[j].startsWith("urn:sig2dat")) {
+                  hasSig2dat = true;
+               } else if (uids[j].startsWith("urn:sha1") || uids[j].startsWith("urn:ttr")) {
+                  hasSha1 = true;
                }
             }
          }
       }
 
-      int var10 = 0;
-      if (var3) {
-         this.addAllTypes(var2, CopyUIDLinksToClipboardAction.ED2K, this.selectedObjects);
-         var10++;
+      int typeCount = 0;
+      if (hasEd2k) {
+         this.addAllTypes(menu, CopyUIDLinksToClipboardAction.ED2K, this.selectedObjects);
+         typeCount++;
       }
 
-      if (var5) {
-         if (var10 > 0) {
-            var2.add(new Separator());
+      if (hasSig2dat) {
+         if (typeCount > 0) {
+            menu.add(new Separator());
          }
 
-         this.addAllTypes(var2, CopyUIDLinksToClipboardAction.SIG2DAT, this.selectedObjects);
-         var10++;
+         this.addAllTypes(menu, CopyUIDLinksToClipboardAction.SIG2DAT, this.selectedObjects);
+         typeCount++;
       }
 
-      if (var4) {
-         if (var10 > 0) {
-            var2.add(new Separator());
+      if (hasSha1) {
+         if (typeCount > 0) {
+            menu.add(new Separator());
          }
 
-         this.addAllTypes(var2, CopyUIDLinksToClipboardAction.MAGNET, this.selectedObjects);
+         this.addAllTypes(menu, CopyUIDLinksToClipboardAction.MAGNET, this.selectedObjects);
       }
 
-      var1.add(var2);
+      menuManager.add(menu);
    }
 
-   protected void addAllTypes(MenuManager var1, int var2, List var3) {
-      int[] var4 = new int[]{CopyUIDLinksToClipboardAction.NORMAL, CopyUIDLinksToClipboardAction.HTML, CopyUIDLinksToClipboardAction.BBCODE};
+   protected void addAllTypes(MenuManager menuManager, int uidType, List objects) {
+      int[] formats = new int[]{CopyUIDLinksToClipboardAction.NORMAL, CopyUIDLinksToClipboardAction.HTML, CopyUIDLinksToClipboardAction.BBCODE};
 
-      for (int var5 = 0; var5 < var4.length; var5++) {
-         var1.add(new CopyUIDLinksToClipboardAction(var2, var4[var5], var3));
+      for (int i = 0; i < formats.length; i++) {
+         menuManager.add(new CopyUIDLinksToClipboardAction(uidType, formats[i], objects));
       }
    }
 
-   protected void collectSelections(SelectionChangedEvent var1, Class var2) {
-      IStructuredSelection var3 = (IStructuredSelection)var1.getSelection();
+   protected void collectSelections(SelectionChangedEvent event, Class type) {
+      IStructuredSelection selection = (IStructuredSelection)event.getSelection();
       this.selectedObjects.clear();
 
-      for (Object var4 : var3) {
-         if (var2.isInstance(var4)) {
-            this.selectedObjects.add(var4);
+      for (Object object : selection) {
+         if (type.isInstance(object)) {
+            this.selectedObjects.add(object);
          }
       }
    }
@@ -136,8 +136,8 @@ public abstract class GTableMenuListener implements IMenuListener, ISelectionCha
 
    public void selectAll() {
       this.gView.selectAll();
-      ICustomViewer var1 = (ICustomViewer)this.gView.getViewer();
-      var1.updateSelection(this.gView.getViewer().getSelection());
+      ICustomViewer customViewer = (ICustomViewer)this.gView.getViewer();
+      customViewer.updateSelection(this.gView.getViewer().getSelection());
    }
 
    public void initialize() {
@@ -145,13 +145,13 @@ public abstract class GTableMenuListener implements IMenuListener, ISelectionCha
          this.tableViewer = ((GTableView)this.gView).getTableViewer();
       }
 
-      String var1 = SWT.getPlatform();
+      String platform = SWT.getPlatform();
       // Skip the extra mouse listener on macOS (old "carbon" and modern "cocoa"),
       // matching the original intent — the platform handles the popup itself.
-      if (!var1.equals("fox") && !var1.equals("carbon") && !var1.equals("cocoa")) {
+      if (!platform.equals("fox") && !platform.equals("carbon") && !platform.equals("cocoa")) {
          this.gView.getComposite().addMouseListener(new MouseAdapter() {
-            public void mouseDown(MouseEvent var1) {
-               if (GTableMenuListener.this.gView.getItemAt(var1.x, var1.y) == null) {
+            public void mouseDown(MouseEvent event) {
+               if (GTableMenuListener.this.gView.getItemAt(event.x, event.y) == null) {
                   GTableMenuListener.this.deselectAll();
                }
             }
@@ -159,14 +159,14 @@ public abstract class GTableMenuListener implements IMenuListener, ISelectionCha
       }
 
       this.gView.getComposite().addKeyListener(new KeyAdapter() {
-         public void keyPressed(KeyEvent var1) {
-            if ((var1.stateMask & SWT.MOD1) != 0 && (var1.stateMask & 131072) != 0 && var1.character == 1) {
+         public void keyPressed(KeyEvent event) {
+            if ((event.stateMask & SWT.MOD1) != 0 && (event.stateMask & 131072) != 0 && event.character == 1) {
                GTableMenuListener.this.deselectAll();
-            } else if (var1.stateMask == SWT.MOD1 && var1.character == 1) {
+            } else if (event.stateMask == SWT.MOD1 && event.character == 1) {
                GTableMenuListener.this.selectAll();
-            } else if (var1.keyCode == 127) {
+            } else if (event.keyCode == 127) {
                GTableMenuListener.this.onDeleteKey();
-            } else if (var1.keyCode == 16777227) {
+            } else if (event.keyCode == 16777227) {
                GTableMenuListener.this.onF2Key();
             }
          }
@@ -179,7 +179,7 @@ public abstract class GTableMenuListener implements IMenuListener, ISelectionCha
    protected void onF2Key() {
    }
 
-   public abstract void menuAboutToShow(IMenuManager var1);
+   public abstract void menuAboutToShow(IMenuManager menuManager);
 
-   public abstract void selectionChanged(SelectionChangedEvent var1);
+   public abstract void selectionChanged(SelectionChangedEvent event);
 }

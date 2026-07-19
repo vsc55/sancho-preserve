@@ -18,21 +18,21 @@ public class ToolButton {
    private String toolTipText;
    private boolean useSmallButtons;
 
-   public ToolButton(ToolBar var1, int var2) {
-      this(var1, var2, -1);
+   public ToolButton(ToolBar toolBar, int style) {
+      this(toolBar, style, -1);
    }
 
-   public ToolButton(ToolBar var1, int var2, int var3) {
-      if (var3 < 0) {
-         this.toolItem = new ToolItem(var1, this.toolItemStyle);
+   public ToolButton(ToolBar toolBar, int style, int index) {
+      if (index < 0) {
+         this.toolItem = new ToolItem(toolBar, this.toolItemStyle);
       } else {
-         this.toolItem = new ToolItem(var1, var2, this.toolItemStyle);
+         this.toolItem = new ToolItem(toolBar, style, this.toolItemStyle);
       }
    }
 
-   public void addSelectionListener(SelectionListener var1) {
-      this.listener = var1;
-      this.toolItem.addSelectionListener(var1);
+   public void addSelectionListener(SelectionListener listener) {
+      this.listener = listener;
+      this.toolItem.addSelectionListener(listener);
    }
 
    public void dispose() {
@@ -64,9 +64,9 @@ public class ToolButton {
       this.setImage(this.useSmallButtons ? this.smallInactiveImage : this.bigInactiveImage);
    }
 
-   public void resetItem(ToolBar var1) {
+   public void resetItem(ToolBar toolBar) {
       this.toolItem.dispose();
-      this.toolItem = new ToolItem(var1, this.toolItemStyle);
+      this.toolItem = new ToolItem(toolBar, this.toolItemStyle);
       this.setText(this.text);
       this.setToolTipText(this.toolTipText);
       this.setActive(this.active);
@@ -74,46 +74,46 @@ public class ToolButton {
       this.resetImage();
    }
 
-   public void setActive(boolean var1) {
-      this.toolItem.setSelection(var1);
-      this.active = var1;
+   public void setActive(boolean active) {
+      this.toolItem.setSelection(active);
+      this.active = active;
    }
 
-   public void setBigActiveImage(Image var1) {
-      this.bigActiveImage = var1;
+   public void setBigActiveImage(Image image) {
+      this.bigActiveImage = image;
    }
 
-   public void setBigInactiveImage(Image var1) {
-      this.bigInactiveImage = var1;
+   public void setBigInactiveImage(Image image) {
+      this.bigInactiveImage = image;
    }
 
-   public void setHotImage(Image var1) {
-      this.toolItem.setHotImage(var1);
+   public void setHotImage(Image image) {
+      this.toolItem.setHotImage(image);
    }
 
-   public void setImage(Image var1) {
-      this.toolItem.setImage(var1);
+   public void setImage(Image image) {
+      this.toolItem.setImage(image);
    }
 
-   public void setSmallActiveImage(Image var1) {
-      this.smallActiveImage = var1;
+   public void setSmallActiveImage(Image image) {
+      this.smallActiveImage = image;
    }
 
-   public void setSmallInactiveImage(Image var1) {
-      this.smallInactiveImage = var1;
+   public void setSmallInactiveImage(Image image) {
+      this.smallInactiveImage = image;
    }
 
-   public void setText(String var1) {
-      this.text = var1;
-      this.toolItem.setText(var1);
+   public void setText(String text) {
+      this.text = text;
+      this.toolItem.setText(text);
    }
 
-   public void setToolTipText(String var1) {
-      this.toolTipText = var1;
-      this.toolItem.setToolTipText(var1);
+   public void setToolTipText(String text) {
+      this.toolTipText = text;
+      this.toolItem.setToolTipText(text);
    }
 
-   public void useSmallButtons(boolean var1) {
-      this.useSmallButtons = var1;
+   public void useSmallButtons(boolean useSmallButtons) {
+      this.useSmallButtons = useSmallButtons;
    }
 }

@@ -20,8 +20,8 @@ public class UploadersTableView extends GTableView {
    public static final int FILENAME = 10;
    public static final int SUI = 11;
 
-   public UploadersTableView(ViewFrame var1) {
-      super(var1);
+   public UploadersTableView(ViewFrame viewFrame) {
+      super(viewFrame);
       this.preferenceString = "uploaders";
       this.columnLabels = new String[]{
          "uploaders.network",
@@ -43,11 +43,11 @@ public class UploadersTableView extends GTableView {
       this.tableContentProvider = new UploadersTableContentProvider(this);
       this.tableLabelProvider = new UploadersTableLabelProvider(this);
       this.tableMenuListener = new UploadersTableMenuListener(this);
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
    }
 
-   protected void createContents(Composite var1) {
-      super.createContents(var1);
+   protected void createContents(Composite composite) {
+      super.createContents(composite);
       this.sViewer.addSelectionChangedListener((UploadersTableMenuListener)this.tableMenuListener);
    }
 

@@ -178,69 +178,69 @@ public class EditMP3TagsDialog extends Dialog {
       "Synthpop"
    };
 
-   public EditMP3TagsDialog(Shell var1, File var2) {
-      super(var1);
-      this.file = var2;
+   public EditMP3TagsDialog(Shell shell, File file) {
+      super(shell);
+      this.file = file;
    }
 
-   protected void configureShell(Shell var1) {
-      super.configureShell(var1);
-      var1.setImage(VersionInfo.getProgramIcon());
-      var1.setText(SResources.getString("Edit MP3 Tags"));
+   protected void configureShell(Shell shell) {
+      super.configureShell(shell);
+      shell.setImage(VersionInfo.getProgramIcon());
+      shell.setText(SResources.getString("Edit MP3 Tags"));
    }
 
-   protected Control createDialogArea(Composite var1) {
-      Composite var2 = (Composite)super.createDialogArea(var1);
-      var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 10, 5, false));
-      this.createLabel(var2, "Artist:");
-      this.artist = this.createText(var2, this.file.getFormat().getMP3Artist());
-      this.createLabel(var2, "Album:");
-      this.album = this.createText(var2, this.file.getFormat().getMP3Album());
-      this.createLabel(var2, "Title:");
-      this.title = this.createText(var2, this.file.getFormat().getMP3Title());
-      this.createLabel(var2, "Comment:");
-      this.comment = this.createText(var2, this.file.getFormat().getMP3Comment());
-      this.createLabel(var2, "Track number:");
-      this.trackNumber = new BSpinner(var2, 2048);
+   protected Control createDialogArea(Composite parent) {
+      Composite composite = (Composite)super.createDialogArea(parent);
+      composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 10, 5, false));
+      this.createLabel(composite, "Artist:");
+      this.artist = this.createText(composite, this.file.getFormat().getMP3Artist());
+      this.createLabel(composite, "Album:");
+      this.album = this.createText(composite, this.file.getFormat().getMP3Album());
+      this.createLabel(composite, "Title:");
+      this.title = this.createText(composite, this.file.getFormat().getMP3Title());
+      this.createLabel(composite, "Comment:");
+      this.comment = this.createText(composite, this.file.getFormat().getMP3Comment());
+      this.createLabel(composite, "Track number:");
+      this.trackNumber = new BSpinner(composite, 2048);
       this.trackNumber.setLayoutData(new GridData(768));
       this.trackNumber.setSelection(this.file.getFormat().getMP3TrackNum());
-      this.createLabel(var2, "Year");
-      this.year = this.createText(var2, this.file.getFormat().getMP3Year());
-      this.createLabel(var2, "Genre:");
-      this.genre = new Combo(var2, 2048);
+      this.createLabel(composite, "Year");
+      this.year = this.createText(composite, this.file.getFormat().getMP3Year());
+      this.createLabel(composite, "Genre:");
+      this.genre = new Combo(composite, 2048);
       this.genre.setLayoutData(new GridData(768));
 
-      for (int var3 = 0; var3 < genres.length; var3++) {
-         this.genre.add(genres[var3]);
+      for (int i = 0; i < genres.length; i++) {
+         this.genre.add(genres[i]);
       }
 
       this.genre.select(this.file.getFormat().getMP3Genre());
-      return var2;
+      return composite;
    }
 
-   protected void createLabel(Composite var1, String var2) {
-      Label var3 = new Label(var1, 0);
-      var3.setText(var2);
-      var3.setLayoutData(new GridData(128));
+   protected void createLabel(Composite parent, String text) {
+      Label label = new Label(parent, 0);
+      label.setText(text);
+      label.setLayoutData(new GridData(128));
    }
 
-   protected Text createText(Composite var1, String var2) {
-      Text var3 = new Text(var1, 2048);
-      var3.setLayoutData(new GridData(768));
-      var3.setText(var2);
-      return var3;
+   protected Text createText(Composite parent, String value) {
+      Text text = new Text(parent, 2048);
+      text.setLayoutData(new GridData(768));
+      text.setText(value);
+      return text;
    }
 
-   protected Control createButtonBar(Composite var1) {
-      Composite var2 = new Composite(var1, 0);
-      var2.setLayoutData(new GridData(768));
-      var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 0, false));
-      Button var3 = new Button(var2, 0);
-      var3.setLayoutData(new GridData(768));
-      var3.setText(SResources.getString("b.ok"));
-      var3.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            Object[] var2 = new Object[]{
+   protected Control createButtonBar(Composite parent) {
+      Composite composite = new Composite(parent, 0);
+      composite.setLayoutData(new GridData(768));
+      composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 0, false));
+      Button okButton = new Button(composite, 0);
+      okButton.setLayoutData(new GridData(768));
+      okButton.setText(SResources.getString("b.ok"));
+      okButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
+            Object[] args = new Object[]{
                Integer.valueOf(EditMP3TagsDialog.this.file.getId()),
                EditMP3TagsDialog.this.title.getText(),
                EditMP3TagsDialog.this.artist.getText(),
@@ -250,21 +250,21 @@ public class EditMP3TagsDialog extends Dialog {
                Integer.valueOf(EditMP3TagsDialog.this.trackNumber.getSelection()),
                Integer.valueOf(EditMP3TagsDialog.this.genre.getSelectionIndex())
             };
-            Sancho.send((short)26, var2);
+            Sancho.send((short)26, args);
             EditMP3TagsDialog.this.close();
          }
       });
-      Button var4 = new Button(var2, 0);
-      var4.setLayoutData(new GridData(768));
-      var4.setText(SResources.getString("b.cancel"));
-      var4.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      Button cancelButton = new Button(composite, 0);
+      cancelButton.setLayoutData(new GridData(768));
+      cancelButton.setText(SResources.getString("b.cancel"));
+      cancelButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             EditMP3TagsDialog.this.close();
          }
       });
       // OK is the default button so Enter in the tag fields commits the edits (the
       // hand-rolled button bar set no default, so Enter did nothing).
-      var2.getShell().setDefaultButton(var3);
-      return var2;
+      composite.getShell().setDefaultButton(okButton);
+      return composite;
    }
 }

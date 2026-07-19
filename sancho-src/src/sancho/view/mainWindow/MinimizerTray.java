@@ -34,18 +34,18 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
    private boolean closeMe = false;
    private MainWindow mainWindow;
 
-   public MinimizerTray(MainWindow var1, String var2) {
-      super(var1, var2);
-      this.mainWindow = var1;
+   public MinimizerTray(MainWindow mainWindow, String titleBarText) {
+      super(mainWindow, titleBarText);
+      this.mainWindow = mainWindow;
       this.createTrayIcon();
       this.createMenu();
       this.shell.addDisposeListener(this);
       this.setConnected(true);
    }
 
-   public void setConnected(boolean var1) {
-      super.setConnected(var1);
-      if (var1 && Sancho.hasCollectionFactory()) {
+   public void setConnected(boolean connected) {
+      super.setConnected(connected);
+      if (connected && Sancho.hasCollectionFactory()) {
          Sancho.getCore().getClientStats().addObserver(this);
       }
    }
@@ -56,21 +56,21 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
       // throws ERROR_NULL_ARGUMENT, which killed startup. The old "trayItem == null"
       // guard was dead (a constructor never returns null). Guard the tray itself; when
       // absent, leave trayItem null and let the app run with plain window minimize.
-      Tray var1 = this.mainWindow.getShell().getDisplay().getSystemTray();
-      if (var1 != null) {
-         this.trayItem = new TrayItem(var1, 0);
+      Tray tray = this.mainWindow.getShell().getDisplay().getSystemTray();
+      if (tray != null) {
+         this.trayItem = new TrayItem(tray, 0);
          this.trayItem.setImage(VersionInfo.getTrayIcon());
          this.trayItem.setToolTipText(this.titleBarText);
          this.trayItem.addListener(35, new Listener() {
-            public void handleEvent(Event var1) {
-               Menu var2 = MinimizerTray.this.trayMenu;
-               if (var2 != null && !var2.isDisposed()) {
-                  var2.setVisible(true);
+            public void handleEvent(Event event) {
+               Menu menu = MinimizerTray.this.trayMenu;
+               if (menu != null && !menu.isDisposed()) {
+                  menu.setVisible(true);
                }
             }
          });
          this.trayItem.addSelectionListener(new SelectionAdapter() {
-            public void widgetDefaultSelected(SelectionEvent var1) {
+            public void widgetDefaultSelected(SelectionEvent event) {
                if (!PreferenceLoader.loadBoolean("systraySingleClick")) {
                   if (MinimizerTray.this.shell.isVisible()) {
                      MinimizerTray.this.hide();
@@ -83,7 +83,7 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
                }
             }
 
-            public void widgetSelected(SelectionEvent var1) {
+            public void widgetSelected(SelectionEvent event) {
                if (PreferenceLoader.loadBoolean("systraySingleClick")) {
                   if (MinimizerTray.this.shell.isVisible()) {
                      MinimizerTray.this.hide();
@@ -140,8 +140,8 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
       this.hide();
    }
 
-   public boolean minimize(boolean var1) {
-      if (!var1 && !PreferenceLoader.loadBoolean("systrayOnMinimize")) {
+   public boolean minimize(boolean force) {
+      if (!force && !PreferenceLoader.loadBoolean("systrayOnMinimize")) {
          return true;
       } else {
          this.hide();
@@ -168,20 +168,20 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
       this.isRestoring = false;
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
-      var1.add(new DNDBoxAction(this.mainWindow));
-      var1.add(new Separator());
-      var1.add(new PreferencesAction(this.mainWindow));
-      new BandwidthDialog(this.shell, var1);
-      var1.add(new Separator());
-      var1.add(new HideRestoreAction());
-      var1.add(new CloseAction());
+   public void menuAboutToShow(IMenuManager menuManager) {
+      menuManager.add(new DNDBoxAction(this.mainWindow));
+      menuManager.add(new Separator());
+      menuManager.add(new PreferencesAction(this.mainWindow));
+      new BandwidthDialog(this.shell, menuManager);
+      menuManager.add(new Separator());
+      menuManager.add(new HideRestoreAction());
+      menuManager.add(new CloseAction());
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
-      if (var1 instanceof ClientStats) {
-         final ClientStats var4 = (ClientStats)var1;
-         if (var4 != null && this.shell != null && !this.shell.isDisposed()) {
+   public void update(MyObservable observable, Object arg, int id) {
+      if (observable instanceof ClientStats) {
+         final ClientStats clientStats = (ClientStats)observable;
+         if (clientStats != null && this.shell != null && !this.shell.isDisposed()) {
             this.shell.getDisplay().asyncExec(new Runnable() {
                public void run() {
                   if (MinimizerTray.this.shell != null
@@ -189,10 +189,10 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
                      && MinimizerTray.this.trayItem != null
                      && !MinimizerTray.this.trayItem.isDisposed()) {
                      if (MinimizerTray.this.shell.isVisible() && MinimizerTray.this.shell.getMinimized()) {
-                        MinimizerTray.this.setTitleBar(var4);
+                        MinimizerTray.this.setTitleBar(clientStats);
                      }
 
-                     MinimizerTray.this.setTrayToolTip(var4);
+                     MinimizerTray.this.setTrayToolTip(clientStats);
                   }
                }
             });
@@ -200,22 +200,22 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
       }
    }
 
-   public void setTrayToolTip(ClientStats var1) {
-      StringBuffer var2 = new StringBuffer(32);
-      var2.append(this.titleBarText);
-      var2.append("\n");
-      var2.append(Sancho.getCoreFactory().getDescription());
-      var2.append("\n");
-      var2.append("DL: ");
-      var2.append(var1.getTcpDownRateString());
-      var2.append(", UL: ");
-      var2.append(var1.getTcpUpRateString());
+   public void setTrayToolTip(ClientStats clientStats) {
+      StringBuffer buffer = new StringBuffer(32);
+      buffer.append(this.titleBarText);
+      buffer.append("\n");
+      buffer.append(Sancho.getCoreFactory().getDescription());
+      buffer.append("\n");
+      buffer.append("DL: ");
+      buffer.append(clientStats.getTcpDownRateString());
+      buffer.append(", UL: ");
+      buffer.append(clientStats.getTcpUpRateString());
       if (this.trayItem != null && !this.trayItem.isDisposed()) {
-         this.trayItem.setToolTipText(var2.toString());
+         this.trayItem.setToolTipText(buffer.toString());
       }
    }
 
-   public void widgetDisposed(DisposeEvent var1) {
+   public void widgetDisposed(DisposeEvent disposeEvent) {
       if (Sancho.hasCollectionFactory()) {
          Sancho.getCore().getClientStats().deleteObserver(this);
       }

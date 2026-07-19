@@ -11,25 +11,25 @@ public abstract class AbstractViewerFilter extends ViewerFilter {
    protected int filtered;
    protected int counter;
 
-   public AbstractViewerFilter(GView var1) {
-      this.gView = var1;
+   public AbstractViewerFilter(GView gView) {
+      this.gView = gView;
    }
 
-   public void setFiltered(int var1) {
-      this.filtered = var1;
-      this.counter = SwissArmy.countBits(var1);
+   public void setFiltered(int filtered) {
+      this.filtered = filtered;
+      this.counter = SwissArmy.countBits(filtered);
    }
 
-   public void add(AbstractEnum var1) {
-      if (!this.isFiltered(var1)) {
-         this.filtered = this.filtered | var1.getValue();
+   public void add(AbstractEnum option) {
+      if (!this.isFiltered(option)) {
+         this.filtered = this.filtered | option.getValue();
          this.counter++;
       }
    }
 
-   public void remove(AbstractEnum var1) {
-      if (this.isFiltered(var1)) {
-         this.filtered = this.filtered - var1.getValue();
+   public void remove(AbstractEnum option) {
+      if (this.isFiltered(option)) {
+         this.filtered = this.filtered - option.getValue();
          this.counter--;
       }
    }
@@ -42,11 +42,11 @@ public abstract class AbstractViewerFilter extends ViewerFilter {
       return this.counter;
    }
 
-   public boolean isFiltered(AbstractEnum var1) {
-      return (this.filtered & var1.getValue()) != 0;
+   public boolean isFiltered(AbstractEnum option) {
+      return (this.filtered & option.getValue()) != 0;
    }
 
-   public abstract boolean select(Viewer var1, Object var2, Object var3);
+   public abstract boolean select(Viewer viewer, Object parentElement, Object element);
 
    public String toString() {
       return GView.filterToInt(this) + "," + this.filtered + ",";

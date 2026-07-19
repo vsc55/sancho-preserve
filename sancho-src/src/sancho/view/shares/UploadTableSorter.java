@@ -5,12 +5,12 @@ import sancho.model.mldonkey.SharedFile;
 import sancho.view.viewer.GSorter;
 
 public class UploadTableSorter extends GSorter {
-   public UploadTableSorter(UploadTableView var1) {
-      super(var1);
+   public UploadTableSorter(UploadTableView tableView) {
+      super(tableView);
    }
 
-   public boolean sortOrder(int var1) {
-      switch (this.cViewer.getColumnIDs()[var1]) {
+   public boolean sortOrder(int columnIndex) {
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 1:
          case 2:
             return false;
@@ -19,27 +19,27 @@ public class UploadTableSorter extends GSorter {
       }
    }
 
-   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
-      if (var2 == null) {
+   protected int _compare(Viewer viewer, Object object1, Object object2, int columnId) {
+      if (object1 == null) {
          return 1;
-      } else if (var3 == null) {
+      } else if (object2 == null) {
          return -1;
       } else {
-         SharedFile var5 = (SharedFile)var2;
-         SharedFile var6 = (SharedFile)var3;
-         switch (var4) {
+         SharedFile sharedFile1 = (SharedFile)object1;
+         SharedFile sharedFile2 = (SharedFile)object2;
+         switch (columnId) {
             case 0:
-               return this.compareStrings(var5.getNetworkName(), var6.getNetworkName());
+               return this.compareStrings(sharedFile1.getNetworkName(), sharedFile2.getNetworkName());
             case 1:
-               return this.compareLongs(var5.getBytesUploaded(), var6.getBytesUploaded());
+               return this.compareLongs(sharedFile1.getBytesUploaded(), sharedFile2.getBytesUploaded());
             case 2:
-               return this.compareLongs((long)var5.getRequests(), (long)var6.getRequests());
+               return this.compareLongs((long)sharedFile1.getRequests(), (long)sharedFile2.getRequests());
             case 3:
-               return this.compareStrings(var5.getName(), var6.getName());
+               return this.compareStrings(sharedFile1.getName(), sharedFile2.getName());
             case 4:
-               return this.compareLongs(var5.getSize(), var6.getSize());
+               return this.compareLongs(sharedFile1.getSize(), sharedFile2.getSize());
             case 5:
-               return this.compareStrings(var5.getMagic(), var6.getMagic());
+               return this.compareStrings(sharedFile1.getMagic(), sharedFile2.getMagic());
             default:
                return 0;
          }

@@ -7,15 +7,15 @@ import sancho.view.utility.SResources;
 public class ConnectClientAction extends Action {
    Client[] clientArray;
 
-   public ConnectClientAction(Client[] var1) {
+   public ConnectClientAction(Client[] clientArray) {
       super(SResources.getString("mi.connectClient"));
       this.setImageDescriptor(SResources.getImageDescriptor("menu-connect"));
-      this.clientArray = var1;
+      this.clientArray = clientArray;
    }
 
    public void run() {
-      for (int var1 = 0; var1 < this.clientArray.length; var1++) {
-         this.clientArray[var1].connect();
+      for (int i = 0; i < this.clientArray.length; i++) {
+         this.clientArray[i].connect();
       }
    }
 }

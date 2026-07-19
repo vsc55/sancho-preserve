@@ -18,17 +18,17 @@ import sancho.view.viewer.GView;
 public class SetMinDynamicColumnWidthAction extends Action {
    GView gView;
 
-   public SetMinDynamicColumnWidthAction(GView var1) {
+   public SetMinDynamicColumnWidthAction(GView gView) {
       super(SResources.getString("mi.setMinWidth"));
-      this.gView = var1;
+      this.gView = gView;
    }
 
    public void run() {
-      MinWidthDialog var1 = new MinWidthDialog(
+      MinWidthDialog dialog = new MinWidthDialog(
          this.gView.getShell(), SResources.getString("mi.setMinWidth"), this.gView.getMinDynamicColumnWidth()
       );
-      if (var1.open() == 0) {
-         this.gView.setMinDynamicColumnWidth(var1.getIntValue());
+      if (dialog.open() == 0) {
+         this.gView.setMinDynamicColumnWidth(dialog.getIntValue());
       }
    }
 
@@ -39,43 +39,43 @@ public class SetMinDynamicColumnWidthAction extends Action {
       String title;
       BSpinner spinner;
 
-      public MinWidthDialog(Shell var1, String var2, int var3) {
-         super(var1);
-         this.initialValue = var3;
-         this.title = var2;
+      public MinWidthDialog(Shell shell, String title, int initialValue) {
+         super(shell);
+         this.initialValue = initialValue;
+         this.title = title;
       }
 
-      protected void configureShell(Shell var1) {
-         super.configureShell(var1);
-         var1.setImage(VersionInfo.getProgramIcon());
-         var1.setText(this.title);
+      protected void configureShell(Shell shell) {
+         super.configureShell(shell);
+         shell.setImage(VersionInfo.getProgramIcon());
+         shell.setText(this.title);
       }
 
-      protected Control createDialogArea(Composite var1) {
-         Composite var2 = (Composite)super.createDialogArea(var1);
-         var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 10, 5, false));
-         this.spinner = new BSpinner(var2, 2048);
+      protected Control createDialogArea(Composite parent) {
+         Composite composite = (Composite)super.createDialogArea(parent);
+         composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 10, 5, false));
+         this.spinner = new BSpinner(composite, 2048);
          this.spinner.setMaximum(1000);
          this.spinner.setSelection(this.initialValue);
-         Scale var3 = new Scale(var2, 256);
-         var3.setLayoutData(new GridData(768));
-         var3.setMinimum(0);
-         var3.setMaximum(1000);
-         var3.setSelection(this.initialValue);
-         var3.setIncrement(1);
-         var3.setPageIncrement(5);
-         var3.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent var1) {
-               int var2 = var3.getSelection();
-               MinWidthDialog.this.spinner.setSelection(var2);
+         Scale scale = new Scale(composite, 256);
+         scale.setLayoutData(new GridData(768));
+         scale.setMinimum(0);
+         scale.setMaximum(1000);
+         scale.setSelection(this.initialValue);
+         scale.setIncrement(1);
+         scale.setPageIncrement(5);
+         scale.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent event) {
+               int value = scale.getSelection();
+               MinWidthDialog.this.spinner.setSelection(value);
             }
          });
-         return var2;
+         return composite;
       }
 
-      protected void buttonPressed(int var1) {
+      protected void buttonPressed(int buttonId) {
          this.intValue = this.spinner.getSelection();
-         super.buttonPressed(var1);
+         super.buttonPressed(buttonId);
       }
 
       public int getIntValue() {

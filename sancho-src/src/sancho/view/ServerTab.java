@@ -10,18 +10,18 @@ import sancho.view.utility.AbstractTab;
 import sancho.view.utility.WidgetFactory;
 
 public class ServerTab extends AbstractTab {
-   public ServerTab(MainWindow var1, String var2) {
-      super(var1, var2);
+   public ServerTab(MainWindow mainWindow, String name) {
+      super(mainWindow, name);
    }
 
-   protected void createContents(Composite var1) {
-      String var2 = "serversSash";
-      SashForm var3 = WidgetFactory.createSashForm(var1, var2);
-      ServerViewFrame var4 = new ServerViewFrame(var3, "tab.servers", "tab.servers.buttonSmall", this);
-      ServerUsersViewFrame var5 = new ServerUsersViewFrame(var3, "l.serverUsers", "tab.servers.buttonSmall", this);
-      ((ServerTableView)var4.getGView()).setServerUsersTableView((ServerUsersTableView)var5.getGView());
-      this.addViewFrame(var4);
-      this.addViewFrame(var5);
-      WidgetFactory.loadSashForm(var3, var2);
+   protected void createContents(Composite composite) {
+      String sashName = "serversSash";
+      SashForm sashForm = WidgetFactory.createSashForm(composite, sashName);
+      ServerViewFrame serverViewFrame = new ServerViewFrame(sashForm, "tab.servers", "tab.servers.buttonSmall", this);
+      ServerUsersViewFrame serverUsersViewFrame = new ServerUsersViewFrame(sashForm, "l.serverUsers", "tab.servers.buttonSmall", this);
+      ((ServerTableView)serverViewFrame.getGView()).setServerUsersTableView((ServerUsersTableView)serverUsersViewFrame.getGView());
+      this.addViewFrame(serverViewFrame);
+      this.addViewFrame(serverUsersViewFrame);
+      WidgetFactory.loadSashForm(sashForm, sashName);
    }
 }

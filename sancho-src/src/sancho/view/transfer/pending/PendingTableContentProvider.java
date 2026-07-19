@@ -11,32 +11,32 @@ public class PendingTableContentProvider extends GTableContentProviderOM {
    public static final String RS_PENDING = SResources.getString("l.pending");
    public static final String RS_DISABLED = SResources.getString("l.disabled");
 
-   public PendingTableContentProvider(PendingTableView var1) {
-      super(var1);
+   public PendingTableContentProvider(PendingTableView view) {
+      super(view);
    }
 
-   public void inputChanged(Viewer var1, Object var2, Object var3) {
-      super.inputChanged(var1, var2, var3);
-      if (var2 != null) {
-         ((MyObservable)var2).deleteObserver(this);
+   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      super.inputChanged(viewer, oldInput, newInput);
+      if (oldInput != null) {
+         ((MyObservable)oldInput).deleteObserver(this);
       }
 
-      if (var3 != null) {
-         ObjectMap var4 = (ObjectMap)var3;
-         var4.addObserver(this);
+      if (newInput != null) {
+         ObjectMap objectMap = (ObjectMap)newInput;
+         objectMap.addObserver(this);
          if (!PreferenceLoader.loadBoolean("pollPending")) {
             this.updateHeaderLabel();
          } else {
-            this.updateHeaderLabel(var4.size());
+            this.updateHeaderLabel(objectMap.size());
          }
       } else {
          this.updateHeaderLabel();
       }
    }
 
-   protected void updateHeaderLabel(int var1) {
+   protected void updateHeaderLabel(int count) {
       if (this.gView != null && !this.gView.isDisposed()) {
-         this.gView.getViewFrame().updateCLabelText(RS_PENDING + ": " + var1);
+         this.gView.getViewFrame().updateCLabelText(RS_PENDING + ": " + count);
       }
    }
 

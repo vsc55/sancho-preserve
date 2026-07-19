@@ -24,9 +24,9 @@ public class ResultTableView extends GTableView implements IDoubleClickListener 
    public static final int AVAILABILITY = 8;
    public static final int COMPLETE_SOURCES = 9;
 
-   public ResultTableView(ResultViewFrame var1, CTabItem var2, AbstractTab var3) {
-      super(var1);
-      var2.setData("gView", this);
+   public ResultTableView(ResultViewFrame viewFrame, CTabItem cTabItem, AbstractTab searchTab) {
+      super(viewFrame);
+      cTabItem.setData("gView", this);
       this.preferenceString = "result";
       this.columnLabels = new String[]{
          "result.network",
@@ -46,23 +46,23 @@ public class ResultTableView extends GTableView implements IDoubleClickListener 
       this.tableContentProvider = new ResultTableContentProvider(this);
       this.tableLabelProvider = new ResultTableLabelProvider(this);
       this.gSorter = new ResultTableSorter(this);
-      this.tableMenuListener = new ResultTableMenuListener(this, var2);
-      this.createContents(var1.getCTabFolder());
+      this.tableMenuListener = new ResultTableMenuListener(this, cTabItem);
+      this.createContents(viewFrame.getCTabFolder());
    }
 
    public void setInput() {
    }
 
-   public void setInput(Object var1) {
-      this.sViewer.setInput(var1);
+   public void setInput(Object input) {
+      this.sViewer.setInput(input);
    }
 
    public GTableMenuListener getMenuListener() {
       return this.tableMenuListener;
    }
 
-   protected void createContents(Composite var1) {
-      super.createContents(var1);
+   protected void createContents(Composite composite) {
+      super.createContents(composite);
       this.sViewer.addSelectionChangedListener((ResultTableMenuListener)this.tableMenuListener);
       if (PreferenceLoader.loadBoolean("searchFilterPornography")) {
          this.sViewer.addFilter(new WordViewerFilter(2));
@@ -76,7 +76,7 @@ public class ResultTableView extends GTableView implements IDoubleClickListener 
       ((ResultViewFrame)this.getViewFrame()).onCTabFolderSelection();
    }
 
-   public void doubleClick(DoubleClickEvent var1) {
+   public void doubleClick(DoubleClickEvent event) {
       ((ResultTableMenuListener)this.getMenuListener()).downloadSelected();
    }
 }

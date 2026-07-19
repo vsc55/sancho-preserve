@@ -17,9 +17,9 @@ public class DownloadCompleteDialog extends Dialog {
    MainWindow mainWindow;
    Text textInfo;
 
-   public DownloadCompleteDialog(Shell var1, MainWindow var2) {
-      super(var1);
-      this.mainWindow = var2;
+   public DownloadCompleteDialog(Shell parentShell, MainWindow mainWindow) {
+      super(parentShell);
+      this.mainWindow = mainWindow;
       this.setBlockOnOpen(false);
    }
 
@@ -27,10 +27,10 @@ public class DownloadCompleteDialog extends Dialog {
       return super.getShellStyle() | 16 | 16384;
    }
 
-   protected void configureShell(Shell var1) {
-      super.configureShell(var1);
-      var1.setText(SResources.getString("l.downloadComplete"));
-      var1.setImage(VersionInfo.getProgramIcon());
+   protected void configureShell(Shell shell) {
+      super.configureShell(shell);
+      shell.setText(SResources.getString("l.downloadComplete"));
+      shell.setImage(VersionInfo.getProgramIcon());
    }
 
    protected void constrainShellSize() {
@@ -38,20 +38,20 @@ public class DownloadCompleteDialog extends Dialog {
       this.getShell().setBounds(PreferenceLoader.loadRectangle("downloadCompleteWindowBounds"));
    }
 
-   public void addFile(File var1) {
-      this.textInfo.append("[" + var1.getId() + "] " + var1.getName() + " - " + var1.getED2K() + this.textInfo.getLineDelimiter());
+   public void addFile(File file) {
+      this.textInfo.append("[" + file.getId() + "] " + file.getName() + " - " + file.getED2K() + this.textInfo.getLineDelimiter());
       this.getShell().setText(SResources.getString("l.downloadComplete") + " (" + (this.textInfo.getLineCount() - 1) + ")");
    }
 
-   protected Control createDialogArea(Composite var1) {
-      Composite var2 = (Composite)super.createDialogArea(var1);
-      this.textInfo = new Text(var2, 2826);
+   protected Control createDialogArea(Composite parent) {
+      Composite composite = (Composite)super.createDialogArea(parent);
+      this.textInfo = new Text(composite, 2826);
       this.textInfo.setLayoutData(new GridData(1808));
-      return var2;
+      return composite;
    }
 
-   protected void createButtonsForButtonBar(Composite var1) {
-      this.createButton(var1, 0, SResources.getString("b.ok"), true);
+   protected void createButtonsForButtonBar(Composite parent) {
+      this.createButton(parent, 0, SResources.getString("b.ok"), true);
    }
 
    public boolean close() {

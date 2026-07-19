@@ -23,79 +23,79 @@ public abstract class ViewListener implements IMenuListener {
    protected Control control;
    protected GView gView;
 
-   public ViewListener(ViewFrame var1) {
-      this.viewFrame = var1;
-      this.control = var1.getControl();
-      this.gView = var1.getGView();
+   public ViewListener(ViewFrame viewFrame) {
+      this.viewFrame = viewFrame;
+      this.control = viewFrame.getControl();
+      this.gView = viewFrame.getGView();
    }
 
-   protected void createNetworkWithServersFilterSubMenu(MenuManager var1) {
+   protected void createNetworkWithServersFilterSubMenu(MenuManager menuManager) {
       if (Sancho.hasCollectionFactory()) {
-         Network[] var2 = this.viewFrame.getCore().getNetworkCollection().getNetworks();
+         Network[] networks = this.viewFrame.getCore().getNetworkCollection().getNetworks();
 
-         for (int var3 = 0; var3 < var2.length; var3++) {
-            Network var4 = var2[var3];
-            if (var4.isEnabled() && (var4.hasServers() || var4.hasSupernodes())) {
-               var1.add(new NetworkFilterAction(this.viewFrame.getGView(), var4));
+         for (int i = 0; i < networks.length; i++) {
+            Network network = networks[i];
+            if (network.isEnabled() && (network.hasServers() || network.hasSupernodes())) {
+               menuManager.add(new NetworkFilterAction(this.viewFrame.getGView(), network));
             }
          }
       }
    }
 
-   protected void createEnabledNetworkFilterSubMenu(MenuManager var1) {
+   protected void createEnabledNetworkFilterSubMenu(MenuManager menuManager) {
       if (Sancho.hasCollectionFactory()) {
-         Network[] var2 = this.viewFrame.getCore().getNetworkCollection().getNetworks();
+         Network[] networks = this.viewFrame.getCore().getNetworkCollection().getNetworks();
 
-         for (int var3 = 0; var3 < var2.length; var3++) {
-            Network var4 = var2[var3];
-            if (var4.isEnabled() && !var4.isVirtual()) {
-               var1.add(new NetworkFilterAction(this.viewFrame.getGView(), var4));
+         for (int i = 0; i < networks.length; i++) {
+            Network network = networks[i];
+            if (network.isEnabled() && !network.isVirtual()) {
+               menuManager.add(new NetworkFilterAction(this.viewFrame.getGView(), network));
             }
          }
       }
    }
 
-   protected void createStateFilterMenuItems(MenuManager var1) {
+   protected void createStateFilterMenuItems(MenuManager menuManager) {
       if (this.gView.getValidStates() != null) {
-         for (int var2 = 0; var2 < this.gView.getValidStates().length; var2++) {
-            var1.add(new StateFilterAction(this.gView.getValidStates()[var2].getName(), this.gView, this.gView.getValidStates()[var2]));
+         for (int i = 0; i < this.gView.getValidStates().length; i++) {
+            menuManager.add(new StateFilterAction(this.gView.getValidStates()[i].getName(), this.gView, this.gView.getValidStates()[i]));
          }
       }
    }
 
-   protected void createExtensionFilterMenuItems(MenuManager var1) {
+   protected void createExtensionFilterMenuItems(MenuManager menuManager) {
       if (this.gView.getValidExtensions() != null) {
-         for (int var2 = 0; var2 < this.gView.getValidExtensions().length; var2++) {
-            var1.add(new ExtensionFilterAction(this.gView.getValidExtensions()[var2].getName(), this.gView, this.gView.getValidExtensions()[var2]));
+         for (int i = 0; i < this.gView.getValidExtensions().length; i++) {
+            menuManager.add(new ExtensionFilterAction(this.gView.getValidExtensions()[i].getName(), this.gView, this.gView.getValidExtensions()[i]));
          }
       }
    }
 
-   protected void createSortByColumnSubMenu(IMenuManager var1) {
+   protected void createSortByColumnSubMenu(IMenuManager menuManager) {
       if (this.viewFrame.getGView() != null) {
-         MyMenuManager var2 = new MyMenuManager(SResources.getString("mi.sort"));
-         var2.setImageString("sort");
+         MyMenuManager subMenu = new MyMenuManager(SResources.getString("mi.sort"));
+         subMenu.setImageString("sort");
 
-         for (int var3 = 0; var3 < this.viewFrame.getGView().getColumnCount(); var3++) {
-            var2.add(new SortByColumnAction(this.viewFrame.getGView(), var3));
+         for (int i = 0; i < this.viewFrame.getGView().getColumnCount(); i++) {
+            subMenu.add(new SortByColumnAction(this.viewFrame.getGView(), i));
          }
 
-         var1.add(var2);
+         menuManager.add(subMenu);
       }
    }
 
-   protected void createDynamicColumnSubMenu(IMenuManager var1) {
+   protected void createDynamicColumnSubMenu(IMenuManager menuManager) {
       if (this.viewFrame.getGView() != null && !SWT.getPlatform().equals("gtk")) {
-         MyMenuManager var2 = new MyMenuManager(SResources.getString("mi.dynamicColumn"));
-         var2.setImageString("dynamic");
+         MyMenuManager subMenu = new MyMenuManager(SResources.getString("mi.dynamicColumn"));
+         subMenu.setImageString("dynamic");
 
-         for (int var3 = 0; var3 < this.viewFrame.getGView().getColumnCount(); var3++) {
-            var2.add(new SetDynamicColumnAction(this.viewFrame.getGView(), var3));
+         for (int i = 0; i < this.viewFrame.getGView().getColumnCount(); i++) {
+            subMenu.add(new SetDynamicColumnAction(this.viewFrame.getGView(), i));
          }
 
-         var2.add(new Separator());
-         var2.add(new SetMinDynamicColumnWidthAction(this.viewFrame.getGView()));
-         var1.add(var2);
+         subMenu.add(new Separator());
+         subMenu.add(new SetMinDynamicColumnWidthAction(this.viewFrame.getGView()));
+         menuManager.add(subMenu);
       }
    }
 }

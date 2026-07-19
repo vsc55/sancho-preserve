@@ -69,155 +69,155 @@ public class SResources {
    private SResources() {
    }
 
-   public static synchronized Program getOSPreviewApp(String var0) {
-      if (!ppHashMap.containsKey(var0)) {
-         ppHashMap.put(var0, Program.findProgram(var0));
+   public static synchronized Program getOSPreviewApp(String extension) {
+      if (!ppHashMap.containsKey(extension)) {
+         ppHashMap.put(extension, Program.findProgram(extension));
       }
 
-      return (Program)ppHashMap.get(var0);
+      return (Program)ppHashMap.get(extension);
    }
 
    public static void initialize() {
       createImageRegistry();
    }
 
-   public static String[] getPreviewApps(String var0) {
-      ArrayList var1 = new ArrayList();
-      String var2 = PreferenceLoader.loadString("previewExtensions");
-      if (var2.equals("")) {
+   public static String[] getPreviewApps(String fileName) {
+      ArrayList apps = new ArrayList();
+      String previewExtensions = PreferenceLoader.loadString("previewExtensions");
+      if (previewExtensions.equals("")) {
          return null;
       } else {
-         StringTokenizer var3 = new StringTokenizer(var2, ";");
-         String var4 = "";
-         String var5 = "";
+         StringTokenizer tokenizer = new StringTokenizer(previewExtensions, ";");
+         String extension = "";
+         String app = "";
 
-         while (var3.hasMoreTokens()) {
-            var4 = var3.nextToken();
-            if (var3.hasMoreTokens()) {
-               var5 = var3.nextToken();
-               if (var0.toLowerCase().endsWith(var4.toLowerCase())) {
-                  var1.add(var5);
+         while (tokenizer.hasMoreTokens()) {
+            extension = tokenizer.nextToken();
+            if (tokenizer.hasMoreTokens()) {
+               app = tokenizer.nextToken();
+               if (fileName.toLowerCase().endsWith(extension.toLowerCase())) {
+                  apps.add(app);
                }
             }
          }
 
          if (!PreferenceLoader.loadString("previewExecutable").equals("")) {
-            var1.add(PreferenceLoader.loadString("previewExecutable"));
+            apps.add(PreferenceLoader.loadString("previewExecutable"));
          }
 
-         if (var1.size() == 0) {
+         if (apps.size() == 0) {
             return null;
          } else {
-            String[] var6 = new String[var1.size()];
-            var1.toArray(var6);
-            return var6;
+            String[] result = new String[apps.size()];
+            apps.toArray(result);
+            return result;
          }
       }
    }
 
-   public static String getDefaultIconString(String var0) {
-      if (var0.equals("pdf")) {
+   public static String getDefaultIconString(String extension) {
+      if (extension.equals("pdf")) {
          return "ft_pdf";
-      } else if (var0.equals("nfo")) {
+      } else if (extension.equals("nfo")) {
          return "ft_info";
       } else {
-         EnumExtension var1 = EnumExtension.GET_EXT(var0);
-         if (var1 == EnumExtension.ARCHIVE) {
+         EnumExtension extType = EnumExtension.GET_EXT(extension);
+         if (extType == EnumExtension.ARCHIVE) {
             return "ft_archive";
-         } else if (var1 == EnumExtension.VIDEO) {
+         } else if (extType == EnumExtension.VIDEO) {
             return "ft_video";
-         } else if (var1 == EnumExtension.DOCUMENT) {
+         } else if (extType == EnumExtension.DOCUMENT) {
             return "ft_document";
-         } else if (var1 == EnumExtension.IMAGE) {
+         } else if (extType == EnumExtension.IMAGE) {
             return "ft_image";
-         } else if (var1 == EnumExtension.AUDIO) {
+         } else if (extType == EnumExtension.AUDIO) {
             return "ft_sound";
          } else {
-            return var1 == EnumExtension.PROGRAM ? "ft_application" : "ft_unknown";
+            return extType == EnumExtension.PROGRAM ? "ft_application" : "ft_unknown";
          }
       }
    }
 
-   public static synchronized Image getFileTypeImage(String var0) {
-      var0 = var0.toLowerCase();
-      String var1 = getProgramName(var0);
-      if (var1 == null) {
-         var1 = updateExt2NameRegistry(var0);
+   public static synchronized Image getFileTypeImage(String extension) {
+      extension = extension.toLowerCase();
+      String programName = getProgramName(extension);
+      if (programName == null) {
+         programName = updateExt2NameRegistry(extension);
       }
 
-      if (var1.equals("")) {
-         return getImage(getDefaultIconString(var0));
+      if (programName.equals("")) {
+         return getImage(getDefaultIconString(extension));
       } else {
-         Image var2 = getImage(var1);
-         return var2 == null ? getImage(getDefaultIconString(var0)) : var2;
+         Image image = getImage(programName);
+         return image == null ? getImage(getDefaultIconString(extension)) : image;
       }
    }
 
-   public static synchronized ImageDescriptor getFileTypeImageDescriptor(String var0) {
-      var0 = var0.toLowerCase();
-      String var1 = getProgramName(var0);
-      if (var1 == null) {
-         var1 = updateExt2NameRegistry(var0);
+   public static synchronized ImageDescriptor getFileTypeImageDescriptor(String extension) {
+      extension = extension.toLowerCase();
+      String programName = getProgramName(extension);
+      if (programName == null) {
+         programName = updateExt2NameRegistry(extension);
       }
 
-      if (var1.equals("")) {
-         return getImageDescriptor(getDefaultIconString(var0));
+      if (programName.equals("")) {
+         return getImageDescriptor(getDefaultIconString(extension));
       } else {
-         ImageDescriptor var2 = getImageDescriptor(var1);
-         return var2 == null ? getImageDescriptor(getDefaultIconString(var0)) : var2;
+         ImageDescriptor descriptor = getImageDescriptor(programName);
+         return descriptor == null ? getImageDescriptor(getDefaultIconString(extension)) : descriptor;
       }
    }
 
-   public static String getProgramName(String var0) {
+   public static String getProgramName(String extension) {
       if (ext2NameRegistry == null) {
          ext2NameRegistry = new Hashtable();
       }
 
-      return (String)ext2NameRegistry.get(var0.toLowerCase());
+      return (String)ext2NameRegistry.get(extension.toLowerCase());
    }
 
-   public static void putProgramName(String var0, String var1) {
+   public static void putProgramName(String extension, String name) {
       if (ext2NameRegistry == null) {
          ext2NameRegistry = new Hashtable();
       }
 
-      ext2NameRegistry.put(var0.toLowerCase(), var1);
+      ext2NameRegistry.put(extension.toLowerCase(), name);
    }
 
-   public static String updateExt2NameRegistry(String var0) {
-      String var1 = null;
-      Program var2 = null;
-      if (!var0.equals("")) {
-         var2 = Program.findProgram(var0);
+   public static String updateExt2NameRegistry(String extension) {
+      String programName = null;
+      Program program = null;
+      if (!extension.equals("")) {
+         program = Program.findProgram(extension);
       }
 
-      if (var2 != null) {
-         var1 = var2.getName();
-         if (getImage(var1) == null) {
-            ImageData var3 = var2.getImageData();
-            if (var3 != null) {
-               if (var3.height != 16 && var3.width != 16) {
-                  var3 = var3.scaledTo(16, 16);
+      if (program != null) {
+         programName = program.getName();
+         if (getImage(programName) == null) {
+            ImageData imageData = program.getImageData();
+            if (imageData != null) {
+               if (imageData.height != 16 && imageData.width != 16) {
+                  imageData = imageData.scaledTo(16, 16);
                }
 
-               ResourcesImageDescriptor var4 = new ResourcesImageDescriptor(var1, new Image(null, var3));
-               putImage(var1, var4);
+               ResourcesImageDescriptor descriptor = new ResourcesImageDescriptor(programName, new Image(null, imageData));
+               putImage(programName, descriptor);
             }
          }
       } else {
-         var1 = "";
+         programName = "";
       }
 
-      putProgramName(var0, var1);
-      return var1;
+      putProgramName(extension, programName);
+      return programName;
    }
 
-   public static synchronized Image getImage(String var0) {
-      return getImageRegistry().get(var0);
+   public static synchronized Image getImage(String name) {
+      return getImageRegistry().get(name);
    }
 
-   public static synchronized ImageDescriptor getImageDescriptor(String var0) {
-      return getImageRegistry().getDescriptor(var0);
+   public static synchronized ImageDescriptor getImageDescriptor(String name) {
+      return getImageRegistry().getDescriptor(name);
    }
 
    private static ImageRegistry getImageRegistry() {
@@ -228,63 +228,63 @@ public class SResources {
       return imageRegistry;
    }
 
-   public static synchronized void putImage(String var0, Image var1) {
+   public static synchronized void putImage(String name, Image image) {
       try {
-         getImageRegistry().put(var0, var1);
-      } catch (IllegalArgumentException var3) {
-         var3.printStackTrace();
+         getImageRegistry().put(name, image);
+      } catch (IllegalArgumentException illegalArgument) {
+         illegalArgument.printStackTrace();
       }
    }
 
-   public static synchronized void putImage(String var0, ImageDescriptor var1) {
+   public static synchronized void putImage(String name, ImageDescriptor descriptor) {
       try {
-         getImageRegistry().put(var0, var1);
-      } catch (IllegalArgumentException var3) {
-         var3.printStackTrace();
+         getImageRegistry().put(name, descriptor);
+      } catch (IllegalArgumentException illegalArgument) {
+         illegalArgument.printStackTrace();
       }
    }
 
-   public static String getString(String var0) {
-      String var1 = (String)stringRegistry.get(var0);
-      return var1 == null ? var0 : var1.intern();
+   public static String getString(String key) {
+      String value = (String)stringRegistry.get(key);
+      return value == null ? key : value.intern();
    }
 
    private static void createImageRegistry() {
-      ImageRegistry var0 = getImageRegistry();
-      var0.put("splashScreen", createRawImage("splash.png"));
-      var0.put("splashHighlight", createRawImage("splash-hl.png"));
-      var0.put("about", createRawImage("about.png"));
-      var0.put("welcome", createRawImage("welcome.png"));
-      var0.put("ProgramIcon", createRawImage("icon.png"));
-      var0.put("ProgramIcon-12", createRawImage("icon-12.png"));
-      var0.put("ProgramIcon-128", createRawImage("icon-128.png"));
-      var0.put("tray-16", createRawImage("tray-16.png"));
-      var0.put("tray-22", createRawImage("tray-22.png"));
-      var0.put("tray-icon", createRawImage("sancho.ico"));
-      String[] var1 = new String[]{"statistics", "console", "transfers", "search", "servers", "friends", "shares", "rooms", "webbrowser"};
+      ImageRegistry registry = getImageRegistry();
+      registry.put("splashScreen", createRawImage("splash.png"));
+      registry.put("splashHighlight", createRawImage("splash-hl.png"));
+      registry.put("about", createRawImage("about.png"));
+      registry.put("welcome", createRawImage("welcome.png"));
+      registry.put("ProgramIcon", createRawImage("icon.png"));
+      registry.put("ProgramIcon-12", createRawImage("icon-12.png"));
+      registry.put("ProgramIcon-128", createRawImage("icon-128.png"));
+      registry.put("tray-16", createRawImage("tray-16.png"));
+      registry.put("tray-22", createRawImage("tray-22.png"));
+      registry.put("tray-icon", createRawImage("sancho.ico"));
+      String[] tabNames = new String[]{"statistics", "console", "transfers", "search", "servers", "friends", "shares", "rooms", "webbrowser"};
 
-      for (int var2 = 0; var2 < var1.length; var2++) {
-         String var3 = "tab." + var1[var2];
-         var0.put(var3 + ".button", createRawImage(var1[var2] + ".png"));
-         var0.put(var3 + ".buttonActive", createActiveImage(var0.getDescriptor(var3 + ".button")));
-         var0.put(var3 + ".buttonSmall", createRawImage(var1[var2] + "-16.png"));
-         var0.put(var3 + ".buttonSmallActive", createActiveImage(var0.getDescriptor("tab." + var1[var2] + ".buttonSmall")));
+      for (int i = 0; i < tabNames.length; i++) {
+         String key = "tab." + tabNames[i];
+         registry.put(key + ".button", createRawImage(tabNames[i] + ".png"));
+         registry.put(key + ".buttonActive", createActiveImage(registry.getDescriptor(key + ".button")));
+         registry.put(key + ".buttonSmall", createRawImage(tabNames[i] + "-16.png"));
+         registry.put(key + ".buttonSmallActive", createActiveImage(registry.getDescriptor("tab." + tabNames[i] + ".buttonSmall")));
       }
 
-      var0.put("FriendsButtonSmallBW", createRawImage("friends-16-bw.png"));
-      var0.put("FriendsButtonSmallBWPlus", createRawImage("friends-16-bw-plus.png"));
-      var0.put("FriendsButtonSmallPlus", createRawImage("friends-16-plus.png"));
-      var0.put("rateDownArrow", createRawImage("down.png"));
-      var0.put("rateUpArrow", createRawImage("up.png"));
-      var0.put("RedCrossSmall", createRawImage("red_cross-12.png"));
-      createNetworksIcons(var0);
-      createMiscIcons(var0);
-      createFlagIcons(var0);
-      createEPIcons(var0);
+      registry.put("FriendsButtonSmallBW", createRawImage("friends-16-bw.png"));
+      registry.put("FriendsButtonSmallBWPlus", createRawImage("friends-16-bw-plus.png"));
+      registry.put("FriendsButtonSmallPlus", createRawImage("friends-16-plus.png"));
+      registry.put("rateDownArrow", createRawImage("down.png"));
+      registry.put("rateUpArrow", createRawImage("up.png"));
+      registry.put("RedCrossSmall", createRawImage("red_cross-12.png"));
+      createNetworksIcons(registry);
+      createMiscIcons(registry);
+      createFlagIcons(registry);
+      createEPIcons(registry);
    }
 
-   public static void createMiscIcons(ImageRegistry var0) {
-      String[] var1 = new String[]{
+   public static void createMiscIcons(ImageRegistry registry) {
+      String[] names = new String[]{
          "ep_unknown",
          "ep_transferring",
          "ep_noneeded",
@@ -479,17 +479,17 @@ public class SResources {
          "transparency"
       };
 
-      for (int var2 = 0; var2 < var1.length; var2++) {
-         var0.put(var1[var2], createID_M(var1[var2]));
+      for (int i = 0; i < names.length; i++) {
+         registry.put(names[i], createID_M(names[i]));
       }
 
-      for (int var3 = 1; var3 < 10; var3++) {
-         var0.put(String.valueOf(var3), createID_M(String.valueOf(var3)));
+      for (int digit = 1; digit < 10; digit++) {
+         registry.put(String.valueOf(digit), createID_M(String.valueOf(digit)));
       }
    }
 
-   public static void createFlagIcons(ImageRegistry var0) {
-      String[] var1 = new String[]{
+   public static void createFlagIcons(ImageRegistry registry) {
+      String[] names = new String[]{
          "--",
          "a1",
          "a2",
@@ -746,93 +746,93 @@ public class SResources {
          "me"
       };
 
-      for (int var2 = 0; var2 < var1.length; var2++) {
-         var0.put("f_" + var1[var2], createID_F(var1[var2]));
+      for (int i = 0; i < names.length; i++) {
+         registry.put("f_" + names[i], createID_F(names[i]));
       }
    }
 
-   public static void createEPIcons(ImageRegistry var0) {
-      var0.put("epRatingPoor", createID_E("ep_rating_poor"));
-      var0.put("epRatingFair", createID_E("ep_rating_fair"));
-      var0.put("epRatingGood", createID_E("ep_rating_good"));
-      var0.put("epRatingExcellent", createID_E("ep_rating_excellent"));
-      var0.put("epRatingFake", createID_E("ep_rating_fake"));
+   public static void createEPIcons(ImageRegistry registry) {
+      registry.put("epRatingPoor", createID_E("ep_rating_poor"));
+      registry.put("epRatingFair", createID_E("ep_rating_fair"));
+      registry.put("epRatingGood", createID_E("ep_rating_good"));
+      registry.put("epRatingExcellent", createID_E("ep_rating_excellent"));
+      registry.put("epRatingFake", createID_E("ep_rating_fake"));
    }
 
-   public static void createNetworksIcons(ImageRegistry var0) {
-      String[] var1 = new String[]{"directconnect", "donkey", "gnutella", "gnutella2", "fasttrack", "soulseek", "opennap", "unknown"};
+   public static void createNetworksIcons(ImageRegistry registry) {
+      String[] names = new String[]{"directconnect", "donkey", "gnutella", "gnutella2", "fasttrack", "soulseek", "opennap", "unknown"};
 
-      for (int var3 = 0; var3 < var1.length; var3++) {
-         String var2 = "e.network." + var1[var3];
-         var0.put(var2 + ".connected", createID_N(var1[var3] + "_connected"));
-         var0.put(var2 + ".connected-16", createID_N(var1[var3] + "_connected-16"));
-         var0.put(var2 + ".disconnected", createID_N(var1[var3] + "_disconnected"));
-         var0.put(var2 + ".disabled", createID_N(var1[var3] + "_disabled"));
-         var0.put(var2 + ".badconnect", createID_N(var1[var3] + "_badconnect"));
+      for (int i = 0; i < names.length; i++) {
+         String key = "e.network." + names[i];
+         registry.put(key + ".connected", createID_N(names[i] + "_connected"));
+         registry.put(key + ".connected-16", createID_N(names[i] + "_connected-16"));
+         registry.put(key + ".disconnected", createID_N(names[i] + "_disconnected"));
+         registry.put(key + ".disabled", createID_N(names[i] + "_disabled"));
+         registry.put(key + ".badconnect", createID_N(names[i] + "_badconnect"));
       }
 
-      var1 = new String[]{"bittorrent", "multinet", "filetp"};
+      names = new String[]{"bittorrent", "multinet", "filetp"};
 
-      for (int var4 = 0; var4 < var1.length; var4++) {
-         String var6 = "e.network." + var1[var4];
-         var0.put(var6 + ".connected", createID_N(var1[var4] + "_connected"));
-         var0.put(var6 + ".connected-16", createID_N(var1[var4] + "_connected-16"));
-         var0.put(var6 + ".disabled", createID_N(var1[var4] + "_disabled"));
+      for (int i = 0; i < names.length; i++) {
+         String key = "e.network." + names[i];
+         registry.put(key + ".connected", createID_N(names[i] + "_connected"));
+         registry.put(key + ".connected-16", createID_N(names[i] + "_connected-16"));
+         registry.put(key + ".disabled", createID_N(names[i] + "_disabled"));
       }
    }
 
-   public static Image createActiveImage(ImageDescriptor var0) {
-      return createActiveImage(null, var0.getImageData());
+   public static Image createActiveImage(ImageDescriptor descriptor) {
+      return createActiveImage(null, descriptor.getImageData());
    }
 
-   public static Image createActiveImage(Display var0, ImageData var1) {
-      Image var2 = new Image(var0, var1);
-      GC var3 = new GC(var2);
-      PaletteData var4 = var1.palette;
+   public static Image createActiveImage(Display display, ImageData imageData) {
+      Image image = new Image(display, imageData);
+      GC gc = new GC(image);
+      PaletteData palette = imageData.palette;
 
-      for (int var5 = 0; var5 < var1.width; var5++) {
-         for (int var6 = 0; var6 < var1.height; var6++) {
-            int var7 = var1.getPixel(var5, var6);
-            RGB var8 = var4.getRGB(var7);
-            if (var7 != var1.transparentPixel) {
-               Color var9 = WidgetFactory.changeColor(var8, 20, 255);
-               var3.setForeground(var9);
-               var3.drawPoint(var5, var6);
-               var9.dispose();
+      for (int x = 0; x < imageData.width; x++) {
+         for (int y = 0; y < imageData.height; y++) {
+            int pixel = imageData.getPixel(x, y);
+            RGB rgb = palette.getRGB(pixel);
+            if (pixel != imageData.transparentPixel) {
+               Color color = WidgetFactory.changeColor(rgb, 20, 255);
+               gc.setForeground(color);
+               gc.drawPoint(x, y);
+               color.dispose();
             }
          }
       }
 
-      var3.dispose();
-      return var2;
+      gc.dispose();
+      return image;
    }
 
-   private static ImageDescriptor createRawImage(String var0) {
-      return new MyImageDescriptor(var0);
+   private static ImageDescriptor createRawImage(String path) {
+      return new MyImageDescriptor(path);
    }
 
-   private static ImageDescriptor createID_M(String var0) {
-      return createRawImage("m/" + var0 + ".png");
+   private static ImageDescriptor createID_M(String name) {
+      return createRawImage("m/" + name + ".png");
    }
 
-   private static ImageDescriptor createID_F(String var0) {
-      return createRawImage("f/" + var0 + ".png");
+   private static ImageDescriptor createID_F(String name) {
+      return createRawImage("f/" + name + ".png");
    }
 
-   private static ImageDescriptor createID_N(String var0) {
-      return createRawImage("n/" + var0 + ".png");
+   private static ImageDescriptor createID_N(String name) {
+      return createRawImage("n/" + name + ".png");
    }
 
-   private static ImageDescriptor createID_E(String var0) {
-      return createRawImage("e/" + var0 + ".png");
+   private static ImageDescriptor createID_E(String name) {
+      return createRawImage("e/" + name + ".png");
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException notFound) {
+         throw new NoClassDefFoundError(notFound.getMessage());
       }
    }
 
@@ -885,7 +885,7 @@ public class SResources {
                bundle = ResourceBundle.getBundle(bundleName, locale, classpathLoader, noOsFallback);
             }
          }
-      } catch (Exception var11) {
+      } catch (Exception exception) {
          bundle = ResourceBundle.getBundle(bundleName, Locale.ROOT, classpathLoader, noOsFallback);
       }
 

@@ -33,109 +33,109 @@ import sancho.view.utility.WidgetFactory;
 public class LinkEntry {
    private StatusLine statusLine;
 
-   public LinkEntry(StatusLine var1, Composite var2) {
-      this.statusLine = var1;
-      this.createContents(var2);
+   public LinkEntry(StatusLine statusLine, Composite composite) {
+      this.statusLine = statusLine;
+      this.createContents(composite);
    }
 
-   public void createContents(Composite var1) {
-      MyViewForm var2 = WidgetFactory.createViewForm(var1, false);
-      var2.setLayoutData(new GridData(1808));
-      CLabel var3 = WidgetFactory.createCLabel(var2, "sl.linkEntryHeader", "up_arrow_green");
-      var3.setFont(PreferenceLoader.loadFont("headerFontData"));
-      final Text var4 = new Text(var2, 578);
-      var4.setLayoutData(new FillLayout());
-      var4.setFont(PreferenceLoader.loadFont("ircConsoleFontData"));
-      var4.setForeground(PreferenceLoader.loadColor("ircConsoleInputForeground"));
-      var4.setBackground(PreferenceLoader.loadColor("ircConsoleInputBackground"));
-      var4.addKeyListener(new KeyAdapter() {
-         public void keyPressed(KeyEvent var1) {
-            if ((var1.stateMask & SWT.MOD1) != 0 && (var1.character == '\n' || var1.character == '\r' || var1.character == 16777296)) {
-               LinkEntry.this.enterLinks(var4);
-               var1.doit = false;
+   public void createContents(Composite composite) {
+      MyViewForm viewForm = WidgetFactory.createViewForm(composite, false);
+      viewForm.setLayoutData(new GridData(1808));
+      CLabel label = WidgetFactory.createCLabel(viewForm, "sl.linkEntryHeader", "up_arrow_green");
+      label.setFont(PreferenceLoader.loadFont("headerFontData"));
+      final Text text = new Text(viewForm, 578);
+      text.setLayoutData(new FillLayout());
+      text.setFont(PreferenceLoader.loadFont("ircConsoleFontData"));
+      text.setForeground(PreferenceLoader.loadColor("ircConsoleInputForeground"));
+      text.setBackground(PreferenceLoader.loadColor("ircConsoleInputBackground"));
+      text.addKeyListener(new KeyAdapter() {
+         public void keyPressed(KeyEvent event) {
+            if ((event.stateMask & SWT.MOD1) != 0 && (event.character == '\n' || event.character == '\r' || event.character == 16777296)) {
+               LinkEntry.this.enterLinks(text);
+               event.doit = false;
             }
          }
       });
-      Composite var5 = new Composite(var2, 0);
-      var5.setLayout(WidgetFactory.createGridLayout(1, 1, 1, 0, 0, false));
-      ToolBar var6 = new ToolBar(var5, 8519680);
-      var6.setBackground(var6.getDisplay().getSystemColor(22));
-      ToolItem var7 = new ToolItem(var6, 8);
-      var7.setToolTipText(SResources.getString("sl.addLocalTorrents"));
-      var7.setImage(SResources.getImage("folder-12"));
-      var7.setText("");
-      var7.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      Composite toolBarComposite = new Composite(viewForm, 0);
+      toolBarComposite.setLayout(WidgetFactory.createGridLayout(1, 1, 1, 0, 0, false));
+      ToolBar toolBar = new ToolBar(toolBarComposite, 8519680);
+      toolBar.setBackground(toolBar.getDisplay().getSystemColor(22));
+      ToolItem torrentsItem = new ToolItem(toolBar, 8);
+      torrentsItem.setToolTipText(SResources.getString("sl.addLocalTorrents"));
+      torrentsItem.setImage(SResources.getImage("folder-12"));
+      torrentsItem.setText("");
+      torrentsItem.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             LinkEntry.this.statusLine.getMainWindow().sendTorrentsFromHD();
          }
       });
-      ToolItem var8 = new ToolItem(var6, 8);
-      var8.setText(SResources.getString("sl.clear"));
-      var8.setImage(SResources.getImage("clear-12"));
-      var8.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            var4.setText("");
+      ToolItem clearItem = new ToolItem(toolBar, 8);
+      clearItem.setText(SResources.getString("sl.clear"));
+      clearItem.setImage(SResources.getImage("clear-12"));
+      clearItem.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
+            text.setText("");
          }
       });
-      ToolItem var9 = new ToolItem(var6, 8);
-      var9.setText(SResources.getString("sl.send"));
-      var9.setImage(SResources.getImage("up_arrow_green"));
-      var9.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            LinkEntry.this.enterLinks(var4);
+      ToolItem sendItem = new ToolItem(toolBar, 8);
+      sendItem.setText(SResources.getString("sl.send"));
+      sendItem.setImage(SResources.getImage("up_arrow_green"));
+      sendItem.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
+            LinkEntry.this.enterLinks(text);
          }
       });
-      var2.setTopLeft(var3);
-      var2.setContent(var4);
-      var2.setTopRight(var5);
-      var6.pack();
+      viewForm.setTopLeft(label);
+      viewForm.setContent(text);
+      viewForm.setTopRight(toolBarComposite);
+      toolBar.pack();
       if (PreferenceLoader.loadBoolean("dragAndDrop")) {
-         this.activateDropTarget(var4);
+         this.activateDropTarget(text);
       }
    }
 
-   public void enterLinks(Text var1) {
-      String var2 = var1.getText();
-      Pattern var3 = null;
+   public void enterLinks(Text text) {
+      String input = text.getText();
+      Pattern pattern = null;
 
       try {
-         String var4 = "(ed2k://\\|file\\|[^\\|]+\\|(\\d+)\\|([\\dabcdef]+)\\|)|(sfdl://\\|.+?\\|[^\\|]+\\|(\\d+)\\|([\\dabcdef]+)\\|)";
-         var4 = var4 + "|(sig2dat:///?\\|File:[^\\|]+\\|Length:.+?\\|UUHash:\\=.+?\\=)|(\\\"magnet:\\?xt=.+?\\\")";
-         var4 = var4 + "|(magnet:\\?xt=.+?\n)|(\"http://.+\\.torrent\\?[^>]+\")|(http://.+\\.torrent)";
-         if (var1.getLineCount() == 1) {
-            var4 = var4 + "|(magnet:\\?xt=.+)|(http://.+?\\.torrent.+)|(.+?\\.torrent.*)|(.+?\\.torrent)";
+         String regex = "(ed2k://\\|file\\|[^\\|]+\\|(\\d+)\\|([\\dabcdef]+)\\|)|(sfdl://\\|.+?\\|[^\\|]+\\|(\\d+)\\|([\\dabcdef]+)\\|)";
+         regex = regex + "|(sig2dat:///?\\|File:[^\\|]+\\|Length:.+?\\|UUHash:\\=.+?\\=)|(\\\"magnet:\\?xt=.+?\\\")";
+         regex = regex + "|(magnet:\\?xt=.+?\n)|(\"http://.+\\.torrent\\?[^>]+\")|(http://.+\\.torrent)";
+         if (text.getLineCount() == 1) {
+            regex = regex + "|(magnet:\\?xt=.+)|(http://.+?\\.torrent.+)|(.+?\\.torrent.*)|(.+?\\.torrent)";
          }
 
-         var3 = Pattern.compile(var4, Pattern.CASE_INSENSITIVE);
-      } catch (PatternSyntaxException var7) {
-         var7.printStackTrace();
+         pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+      } catch (PatternSyntaxException patternSyntaxException) {
+         patternSyntaxException.printStackTrace();
       }
 
-      Matcher var10 = var3.matcher(var2);
-      int var5 = 0;
+      Matcher matcher = pattern.matcher(input);
+      int count = 0;
 
-      while (var10.find()) {
-         String var6 = SwissArmy.replaceAll(var10.group(), "\"", "");
-         var6 = SwissArmy.replaceAll(var6, "\n", "");
+      while (matcher.find()) {
+         String link = SwissArmy.replaceAll(matcher.group(), "\"", "");
+         link = SwissArmy.replaceAll(link, "\n", "");
          if (Sancho.hasCollectionFactory()) {
-            SwissArmy.sendLink(Sancho.getCore(), var6);
+            SwissArmy.sendLink(Sancho.getCore(), link);
          }
 
-         var5++;
+         count++;
       }
 
-      this.statusLine.setText(SResources.getString("sl.linksSent") + var5);
-      var1.setText("");
+      this.statusLine.setText(SResources.getString("sl.linksSent") + count);
+      text.setText("");
    }
 
-   private void activateDropTarget(final Text var1) {
-      byte var2 = 23;
-      DropTarget var3 = new DropTarget(var1, var2);
-      final UniformResourceLocator var4 = UniformResourceLocator.getInstance();
-      final TextTransfer var5 = TextTransfer.getInstance();
-      final FileTransfer var6 = FileTransfer.getInstance();
-      var3.setTransfer(new Transfer[]{var4, var5, var6});
-      var3.addDropListener(new DropTargetAdapter() {
+   private void activateDropTarget(final Text text) {
+      byte operations = 23;
+      DropTarget dropTarget = new DropTarget(text, operations);
+      final UniformResourceLocator urlTransfer = UniformResourceLocator.getInstance();
+      final TextTransfer textTransfer = TextTransfer.getInstance();
+      final FileTransfer fileTransfer = FileTransfer.getInstance();
+      dropTarget.setTransfer(new Transfer[]{urlTransfer, textTransfer, fileTransfer});
+      dropTarget.addDropListener(new DropTargetAdapter() {
          public void dragEnter(DropTargetEvent event) {
             if (event.detail == 16) {
                if ((event.operations & 4) != 0) {
@@ -152,19 +152,19 @@ public class LinkEntry {
 
          public void drop(DropTargetEvent event) {
             if (event.data != null) {
-               if (var5.isSupportedType(event.currentDataType) || var4.isSupportedType(event.currentDataType)) {
-                  var1.append((String)event.data);
+               if (textTransfer.isSupportedType(event.currentDataType) || urlTransfer.isSupportedType(event.currentDataType)) {
+                  text.append((String)event.data);
                }
 
-               if (var6.isSupportedType(event.currentDataType)) {
+               if (fileTransfer.isSupportedType(event.currentDataType)) {
                   String[] droppedFileNames = (String[])event.data;
 
                   for (int i = 0; i < droppedFileNames.length; i++) {
                      if (i > 0) {
-                        var1.append(var1.getLineDelimiter());
+                        text.append(text.getLineDelimiter());
                      }
 
-                     var1.append(droppedFileNames[i]);
+                     text.append(droppedFileNames[i]);
                   }
                }
             }

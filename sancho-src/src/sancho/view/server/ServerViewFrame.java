@@ -28,8 +28,8 @@ import sancho.view.utility.WidgetFactory;
 import sancho.view.viewFrame.TabbedSashViewFrame;
 
 public class ServerViewFrame extends TabbedSashViewFrame {
-   public ServerViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
-      super(var1, var2, var3, var4, "server");
+   public ServerViewFrame(SashForm sashForm, String prefString, String labelText, AbstractTab tab) {
+      super(sashForm, prefString, labelText, tab, "server");
       this.gView = new ServerTableView(this);
       this.createViewListener(new ServerViewListener(this));
       this.createViewToolBar();
@@ -39,50 +39,50 @@ public class ServerViewFrame extends TabbedSashViewFrame {
    public void createViewToolBar() {
       super.createViewToolBar();
       this.addToolItem("ti.s.cleanOld", "minus", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             if (Sancho.hasCollectionFactory()) {
                ServerViewFrame.this.getCore().getServerCollection().cleanOldServers();
             }
          }
       });
       this.addToolItem("ti.s.addServer", "plus", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             if (Sancho.hasCollectionFactory()) {
-               AddServerByIPDialog var2 = new AddServerByIPDialog(ServerViewFrame.this.gView.getShell());
-               if (var2.open() == 0) {
-                  String var3 = var2.getName();
-                  short var4 = (short)var2.getPort();
-                  InetAddress var5 = null;
+               AddServerByIPDialog dialog = new AddServerByIPDialog(ServerViewFrame.this.gView.getShell());
+               if (dialog.open() == 0) {
+                  String name = dialog.getName();
+                  short port = (short)dialog.getPort();
+                  InetAddress address = null;
 
                   try {
-                     var5 = InetAddress.getByName(var3);
-                  } catch (UnknownHostException var8) {
-                     MessageBox var7 = new MessageBox(ServerViewFrame.this.gView.getShell(), 40);
-                     var7.setText(SResources.getString("l.lookupError"));
-                     var7.setMessage(SResources.getString("l.resolveError"));
-                     var7.open();
+                     address = InetAddress.getByName(name);
+                  } catch (UnknownHostException unknownHostException) {
+                     MessageBox messageBox = new MessageBox(ServerViewFrame.this.gView.getShell(), 40);
+                     messageBox.setText(SResources.getString("l.lookupError"));
+                     messageBox.setMessage(SResources.getString("l.resolveError"));
+                     messageBox.open();
                   }
 
-                  if (Sancho.hasCollectionFactory() && var5 != null) {
-                     ServerViewFrame.this.gView.getCore().getServerCollection().addServer(var2.getNetwork(), var5, var4);
+                  if (Sancho.hasCollectionFactory() && address != null) {
+                     ServerViewFrame.this.gView.getCore().getServerCollection().addServer(dialog.getNetwork(), address, port);
                   }
                }
             }
          }
       });
       this.addToolItem("ti.s.addServerMet", "plus-globe", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            InputDialog var2 = new InputDialog(
+         public void widgetSelected(SelectionEvent event) {
+            InputDialog dialog = new InputDialog(
                ServerViewFrame.this.gView.getShell(),
                SResources.getString("ti.s.addServerMet"),
                SResources.getString("t.srv.linkToMet"),
                SResources.getString("t.srv.linkToMetDefault"),
                new HTTPValidator()
             );
-            var2.open();
-            String var3 = var2.getValue();
-            if (var3 != null && Sancho.hasCollectionFactory()) {
-               ServerViewFrame.this.getCore().getServerCollection().addServerList(var3);
+            dialog.open();
+            String text = dialog.getValue();
+            if (text != null && Sancho.hasCollectionFactory()) {
+               ServerViewFrame.this.getCore().getServerCollection().addServerList(text);
             }
          }
       });
@@ -99,56 +99,56 @@ public class ServerViewFrame extends TabbedSashViewFrame {
       private String name;
       private Text nameText;
 
-      public AddServerByIPDialog(Shell var1) {
-         super(var1);
+      public AddServerByIPDialog(Shell shell) {
+         super(shell);
       }
 
-      protected void configureShell(Shell var1) {
-         super.configureShell(var1);
-         var1.setImage(VersionInfo.getProgramIcon());
-         var1.setText(SResources.getString("ti.s.addServer"));
+      protected void configureShell(Shell shell) {
+         super.configureShell(shell);
+         shell.setImage(VersionInfo.getProgramIcon());
+         shell.setText(SResources.getString("ti.s.addServer"));
       }
 
-      public void createLabel(Composite var1, String var2) {
-         new Label(var1, 0).setText(SResources.getString(var2));
+      public void createLabel(Composite composite, String key) {
+         new Label(composite, 0).setText(SResources.getString(key));
       }
 
-      protected Control createDialogArea(Composite var1) {
-         Composite var2 = (Composite)super.createDialogArea(var1);
-         var2.setLayout(WidgetFactory.createGridLayout(4, 5, 5, 10, 5, false));
-         this.createLabel(var2, "hm.host");
-         this.nameText = new Text(var2, 2048);
+      protected Control createDialogArea(Composite parent) {
+         Composite composite = (Composite)super.createDialogArea(parent);
+         composite.setLayout(WidgetFactory.createGridLayout(4, 5, 5, 10, 5, false));
+         this.createLabel(composite, "hm.host");
+         this.nameText = new Text(composite, 2048);
          this.nameText.setLayoutData(new GridData(768));
-         this.createLabel(var2, "hm.port");
-         this.spinner = new BSpinner(var2, 2048);
+         this.createLabel(composite, "hm.port");
+         this.spinner = new BSpinner(composite, 2048);
          this.spinner.setMaximum(65535);
          this.spinner.setSelection(4661);
-         this.createLabel(var2, "s.network");
-         this.combo = new Combo(var2, 8);
-         GridData var3 = new GridData(768);
-         var3.horizontalSpan = 3;
-         this.combo.setLayoutData(var3);
+         this.createLabel(composite, "s.network");
+         this.combo = new Combo(composite, 8);
+         GridData gridData = new GridData(768);
+         gridData.horizontalSpan = 3;
+         this.combo.setLayoutData(gridData);
          if (!Sancho.hasCollectionFactory()) {
-            return var2;
+            return composite;
          } else {
-            Network[] var4 = ServerViewFrame.this.gView.getCore().getNetworkCollection().getNetworks();
+            Network[] networks = ServerViewFrame.this.gView.getCore().getNetworkCollection().getNetworks();
 
-            for (int var5 = 0; var5 < var4.length; var5++) {
-               Network var6 = var4[var5];
-               if (var6.isEnabled() && var6.hasServers()) {
-                  this.combo.add(var6.getName());
-                  this.combo.setData(var6.getName(), var6);
+            for (int i = 0; i < networks.length; i++) {
+               Network network = networks[i];
+               if (network.isEnabled() && network.hasServers()) {
+                  this.combo.add(network.getName());
+                  this.combo.setData(network.getName(), network);
                }
             }
 
             this.combo.select(0);
-            return var2;
+            return composite;
          }
       }
 
-      protected void buttonPressed(int var1) {
-         int var2 = this.combo.getSelectionIndex();
-         if (var2 != -1) {
+      protected void buttonPressed(int buttonId) {
+         int index = this.combo.getSelectionIndex();
+         if (index != -1) {
             this.network = (Network)this.combo.getData(this.combo.getItem(this.combo.getSelectionIndex()));
          } else {
             this.network = null;
@@ -156,7 +156,7 @@ public class ServerViewFrame extends TabbedSashViewFrame {
 
          this.port = this.spinner.getSelection();
          this.name = this.nameText.getText();
-         super.buttonPressed(var1);
+         super.buttonPressed(buttonId);
       }
 
       public String getName() {
@@ -176,14 +176,14 @@ public class ServerViewFrame extends TabbedSashViewFrame {
    static class HTTPValidator implements IInputValidator {
       static Pattern regex;
 
-      public String isValid(String var1) {
-         return regex.matcher(var1).find() ? null : SResources.getString("l.invalidInput");
+      public String isValid(String text) {
+         return regex.matcher(text).find() ? null : SResources.getString("l.invalidInput");
       }
 
       static {
          try {
             regex = Pattern.compile("http(s)?://\\S*");
-         } catch (PatternSyntaxException var1) {
+         } catch (PatternSyntaxException patternSyntaxException) {
          }
       }
    }

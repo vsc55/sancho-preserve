@@ -44,23 +44,23 @@ public class DownloadTreeLabelProvider extends GTableLabelProvider implements IT
    private Hashtable chunkImageDataCache = new Hashtable();
    private int margin = SWT.getPlatform().equals("win32") ? 1 : 4;
 
-   public DownloadTreeLabelProvider(GView var1) {
-      super(var1);
+   public DownloadTreeLabelProvider(GView gView) {
+      super(gView);
    }
 
-   private void drawName(Event var1) {
-      TreeItem var2 = (TreeItem)var1.item;
-      Object var3 = var2.getData();
-      if (var3 != null) {
-         if (var3 instanceof File) {
-            File var4 = (File)var3;
-            Image var5 = var4.getAvgRatingImage();
-            if (var5 != null) {
-               Rectangle var6 = var2.getBounds(var1.index);
-               Rectangle var7 = var5.getBounds();
-               int var8 = var6.x + var6.width - 2 - var7.width;
-               int var9 = var1.y + 1;
-               var1.gc.drawImage(var5, var8, var9);
+   private void drawName(Event event) {
+      TreeItem item = (TreeItem)event.item;
+      Object data = item.getData();
+      if (data != null) {
+         if (data instanceof File) {
+            File file = (File)data;
+            Image image = file.getAvgRatingImage();
+            if (image != null) {
+               Rectangle itemBounds = item.getBounds(event.index);
+               Rectangle imageBounds = image.getBounds();
+               int x = itemBounds.x + itemBounds.width - 2 - imageBounds.width;
+               int y = event.y + 1;
+               event.gc.drawImage(image, x, y);
             }
          }
       }
@@ -73,69 +73,69 @@ public class DownloadTreeLabelProvider extends GTableLabelProvider implements IT
       this.chunkImageDataCache.remove(element);
    }
 
-   private void drawChunks(Event var1) {
-      ICustomViewer var2 = (ICustomViewer)this.gView.getViewer();
-      if (var2.getEditors()) {
-         TreeItem var3 = (TreeItem)var1.item;
-         Rectangle var4 = var3.getBounds(var1.index);
-         Object var5 = var3.getData();
-         if (var5 != null) {
-            ChunkImageData var6 = (ChunkImageData)this.chunkImageDataCache.get(var5);
-            if (var6 == null) {
-               File var7 = null;
-               Client var8 = null;
-               if (var5 instanceof File) {
-                  var7 = (File)var5;
-               } else if (var5 instanceof FileClient) {
-                  FileClient var9 = (FileClient)var5;
-                  var7 = var9.getFile();
-                  var8 = var9.getClient();
+   private void drawChunks(Event event) {
+      ICustomViewer viewer = (ICustomViewer)this.gView.getViewer();
+      if (viewer.getEditors()) {
+         TreeItem item = (TreeItem)event.item;
+         Rectangle bounds = item.getBounds(event.index);
+         Object data = item.getData();
+         if (data != null) {
+            ChunkImageData chunkImageData = (ChunkImageData)this.chunkImageDataCache.get(data);
+            if (chunkImageData == null) {
+               File file = null;
+               Client client = null;
+               if (data instanceof File) {
+                  file = (File)data;
+               } else if (data instanceof FileClient) {
+                  FileClient fileClient = (FileClient)data;
+                  file = fileClient.getFile();
+                  client = fileClient.getClient();
                }
 
-               var6 = new ChunkImageData(this.gView.getComposite().getDisplay(), var8, var7, null, true, var4.width, var1.height);
-               this.chunkImageDataCache.put(var5, var6);
+               chunkImageData = new ChunkImageData(this.gView.getComposite().getDisplay(), client, file, null, true, bounds.width, event.height);
+               this.chunkImageDataCache.put(data, chunkImageData);
             }
 
-            var6.drawTo(var4.width - this.margin, var1);
+            chunkImageData.drawTo(bounds.width - this.margin, event);
          }
       }
    }
 
    public void setUpOwnerDraw() {
       this.gView.getViewer().getControl().addListener(42, new Listener() {
-         public void handleEvent(Event var1) {
-            switch (DownloadTreeLabelProvider.this.cViewer.getColumnIDs()[var1.index]) {
+         public void handleEvent(Event event) {
+            switch (DownloadTreeLabelProvider.this.cViewer.getColumnIDs()[event.index]) {
                case 9:
-                  DownloadTreeLabelProvider.this.drawChunks(var1);
+                  DownloadTreeLabelProvider.this.drawChunks(event);
             }
          }
       });
    }
 
-   public Image getColumnImage(Object var1, int var2) {
-      if (var1 instanceof File) {
-         File var4 = (File)var1;
-         switch (this.cViewer.getColumnIDs()[var2]) {
+   public Image getColumnImage(Object element, int columnIndex) {
+      if (element instanceof File) {
+         File file = (File)element;
+         switch (this.cViewer.getColumnIDs()[columnIndex]) {
             case 1:
-               return var4.getEnumNetwork().getImage();
+               return file.getEnumNetwork().getImage();
             case 2:
-               return var4.getFileTypeImage();
+               return file.getFileTypeImage();
             case 11:
-               return var4.getPriorityImage();
+               return file.getPriorityImage();
             case 18:
-               return var4.getCommentImage();
+               return file.getCommentImage();
             default:
                return null;
          }
-      } else if (var1 instanceof FileClient) {
-         Client var3 = ((FileClient)var1).getClient();
-         switch (this.cViewer.getColumnIDs()[var2]) {
+      } else if (element instanceof FileClient) {
+         Client client = ((FileClient)element).getClient();
+         switch (this.cViewer.getColumnIDs()[columnIndex]) {
             case 0:
-               return var3.getEnumNetwork().getImage();
+               return client.getEnumNetwork().getImage();
             case 1:
-               return var3.getEnumNetwork().getImage();
+               return client.getEnumNetwork().getImage();
             case 2:
-               return var3.getNameImage();
+               return client.getNameImage();
             case 3:
             case 4:
             case 5:
@@ -146,81 +146,81 @@ public class DownloadTreeLabelProvider extends GTableLabelProvider implements IT
             default:
                return null;
             case 6:
-               return var3.getAddr().getImage();
+               return client.getAddr().getImage();
             case 11:
-               return var3.getSoftwareImage();
+               return client.getSoftwareImage();
          }
       } else {
          return null;
       }
    }
 
-   public String getColumnText(Object var1, int var2) {
-      if (var1 instanceof File) {
-         File var4 = (File)var1;
-         switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      if (element instanceof File) {
+         File file = (File)element;
+         switch (this.cViewer.getColumnIDs()[columnIndex]) {
             case 0:
-               return String.valueOf(var4.getId()).intern();
+               return String.valueOf(file.getId()).intern();
             case 1:
-               return var4.getEnumNetwork().getName();
+               return file.getEnumNetwork().getName();
             case 2:
-               return var4.getName();
+               return file.getName();
             case 3:
-               return var4.getSizeString();
+               return file.getSizeString();
             case 4:
-               return var4.getDownloadedString();
+               return file.getDownloadedString();
             case 5:
-               return var4.getPercentString();
+               return file.getPercentString();
             case 6:
-               return var4.getSourcesString();
+               return file.getSourcesString();
             case 7:
-               return var4.getRelativeAvailString();
+               return file.getRelativeAvailString();
             case 8:
-               return var4.getRateString();
+               return file.getRateString();
             case 9:
-               return String.valueOf(var4.getNumChunks()).intern();
+               return String.valueOf(file.getNumChunks()).intern();
             case 10:
-               return var4.getEtaString();
+               return file.getEtaString();
             case 11:
-               return var4.getPriorityString();
+               return file.getPriorityString();
             case 12:
-               return var4.getLastSeenString();
+               return file.getLastSeenString();
             case 13:
-               return var4.getAgeString();
+               return file.getAgeString();
             case 14:
-               return var4.getEta2String();
+               return file.getEta2String();
             case 15:
-               return String.valueOf(var4.getNumClients()).intern();
+               return String.valueOf(file.getNumClients()).intern();
             case 16:
-               return String.valueOf(var4.getNumSources()).intern();
+               return String.valueOf(file.getNumSources()).intern();
             case 17:
-               return var4.getRemainingString();
+               return file.getRemainingString();
             case 18:
-               return var4.getNumCommentsString();
+               return file.getNumCommentsString();
             case 19:
-               return var4.getUser();
+               return file.getUser();
             case 20:
-               return var4.getGroup();
+               return file.getGroup();
             default:
                return "";
          }
-      } else if (var1 instanceof FileClient) {
-         Client var3 = ((FileClient)var1).getClient();
-         switch (this.cViewer.getColumnIDs()[var2]) {
+      } else if (element instanceof FileClient) {
+         Client client = ((FileClient)element).getClient();
+         switch (this.cViewer.getColumnIDs()[columnIndex]) {
             case 0:
-               return String.valueOf(var3.getId()).intern();
+               return String.valueOf(client.getId()).intern();
             case 1:
-               return var3.getEnumNetwork().getName();
+               return client.getEnumNetwork().getName();
             case 2:
-               return var3.getName();
+               return client.getName();
             case 3:
-               return var3.getModeString();
+               return client.getModeString();
             case 4:
-               return var3.getDownloadedString();
+               return client.getDownloadedString();
             case 5:
-               return String.valueOf(var3.getPort()).intern();
+               return String.valueOf(client.getPort()).intern();
             case 6:
-               return var3.getAddr().toString();
+               return client.getAddr().toString();
             case 7:
             case 8:
             case 10:
@@ -228,78 +228,78 @@ public class DownloadTreeLabelProvider extends GTableLabelProvider implements IT
             default:
                return "";
             case 9:
-               return String.valueOf(var3.getNumChunks(((FileClient)var1).getFile().getId())).intern();
+               return String.valueOf(client.getNumChunks(((FileClient)element).getFile().getId())).intern();
             case 11:
-               return var3.getSoftware();
+               return client.getSoftware();
             case 13:
-               return var3.getConnectedTimeString();
+               return client.getConnectedTimeString();
          }
       } else {
          return "";
       }
    }
 
-   public Font getFont(Object var1, int var2) {
-      if (var1 instanceof File) {
-         File var3 = (File)var1;
-         if (var3.getFileStateEnum() == EnumFileState.QUEUED) {
+   public Font getFont(Object element, int columnIndex) {
+      if (element instanceof File) {
+         File file = (File)element;
+         if (file.getFileStateEnum() == EnumFileState.QUEUED) {
             return this.queuedFont;
-         } else if (var3.getFileStateEnum() == EnumFileState.PAUSED) {
+         } else if (file.getFileStateEnum() == EnumFileState.PAUSED) {
             return this.pausedFont;
-         } else if (var3.getFileStateEnum() == EnumFileState.DOWNLOADED) {
+         } else if (file.getFileStateEnum() == EnumFileState.DOWNLOADED) {
             return this.downloadedFont;
-         } else if (var3.getRate() / 1000.0F > 20.0F) {
+         } else if (file.getRate() / 1000.0F > 20.0F) {
             return this.rateAbove20Font;
-         } else if (var3.getRate() / 1000.0F > 10.0F) {
+         } else if (file.getRate() / 1000.0F > 10.0F) {
             return this.rateAbove10Font;
          } else {
-            return var3.getRate() / 1000.0F > 0.0F ? this.rateAbove0Font : null;
+            return file.getRate() / 1000.0F > 0.0F ? this.rateAbove0Font : null;
          }
       } else {
          return null;
       }
    }
 
-   public Color getForeground(Object var1, int var2) {
+   public Color getForeground(Object element, int columnIndex) {
       if (!this.displayColors) {
          return null;
-      } else if (var1 instanceof File) {
-         File var4 = (File)var1;
-         if (this.indicateFakes && var4.containsFake()) {
+      } else if (element instanceof File) {
+         File file = (File)element;
+         if (this.indicateFakes && file.containsFake()) {
             return this.containsFakeColor;
-         } else if (var4.getFileStateEnum() == EnumFileState.QUEUED) {
+         } else if (file.getFileStateEnum() == EnumFileState.QUEUED) {
             return this.queuedFileColor;
-         } else if (var4.getFileStateEnum() == EnumFileState.PAUSED) {
+         } else if (file.getFileStateEnum() == EnumFileState.PAUSED) {
             return this.pausedFileColor;
-         } else if (var4.getFileStateEnum() == EnumFileState.DOWNLOADED) {
+         } else if (file.getFileStateEnum() == EnumFileState.DOWNLOADED) {
             return this.downloadedFileColor;
-         } else if (var4.getRate() / 1000.0F > 20.0F) {
+         } else if (file.getRate() / 1000.0F > 20.0F) {
             return this.rateAbove20Color;
-         } else if (var4.getRate() / 1000.0F > 10.0F) {
+         } else if (file.getRate() / 1000.0F > 10.0F) {
             return this.rateAbove10Color;
-         } else if (var4.getRate() / 1000.0F > 0.0F) {
+         } else if (file.getRate() / 1000.0F > 0.0F) {
             return this.rateAbove0Color;
          } else {
-            return var4.getRelativeAvail() == 0 ? this.unAvailableFileColor : this.availableFileColor;
+            return file.getRelativeAvail() == 0 ? this.unAvailableFileColor : this.availableFileColor;
          }
-      } else if (var1 instanceof FileClient) {
-         Client var3 = ((FileClient)var1).getClient();
-         return var3.getStateEnum() == EnumHostState.CONNECTED_DOWNLOADING ? this.rateAbove0Color : null;
+      } else if (element instanceof FileClient) {
+         Client client = ((FileClient)element).getClient();
+         return client.getStateEnum() == EnumHostState.CONNECTED_DOWNLOADING ? this.rateAbove0Color : null;
       } else {
          return null;
       }
    }
 
-   public Color getBackground(Object var1, int var2) {
+   public Color getBackground(Object element, int columnIndex) {
       if (this.alternateColors) {
-         IGContentProvider var3 = (IGContentProvider)this.gView.getViewer().getContentProvider();
-         if (var3 instanceof GTreeContentProvider) {
-            Object var4 = var1;
-            if (var1 instanceof FileClient) {
-               var4 = ((FileClient)var1).getFile();
+         IGContentProvider contentProvider = (IGContentProvider)this.gView.getViewer().getContentProvider();
+         if (contentProvider instanceof GTreeContentProvider) {
+            Object file = element;
+            if (element instanceof FileClient) {
+               file = ((FileClient)element).getFile();
             }
 
-            if (((GTreeContentProvider)var3).getSFIndex(var4) % 2 != 0) {
+            if (((GTreeContentProvider)contentProvider).getSFIndex(file) % 2 != 0) {
                return this.alternateColor;
             }
          }
@@ -308,7 +308,7 @@ public class DownloadTreeLabelProvider extends GTableLabelProvider implements IT
       return null;
    }
 
-   public boolean isLabelProperty(Object var1, String var2) {
+   public boolean isLabelProperty(Object element, String property) {
       return true;
    }
 

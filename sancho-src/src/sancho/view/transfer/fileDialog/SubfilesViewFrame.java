@@ -6,9 +6,9 @@ import sancho.view.utility.AbstractTab;
 import sancho.view.viewFrame.ViewFrame;
 
 public class SubfilesViewFrame extends ViewFrame {
-   public SubfilesViewFrame(Composite var1, String var2, String var3, AbstractTab var4, IPreview var5) {
-      super(var1, var2, var3, var4);
-      this.gView = new SubfilesTableView(this, var5);
+   public SubfilesViewFrame(Composite composite, String prefString, String labelText, AbstractTab tab, IPreview preview) {
+      super(composite, prefString, labelText, tab);
+      this.gView = new SubfilesTableView(this, preview);
       this.createViewListener(new SubfilesViewListener(this));
       this.createViewToolBar();
    }

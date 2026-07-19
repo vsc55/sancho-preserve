@@ -13,34 +13,34 @@ public class NetworksTableMenuListener extends GTableMenuListener implements ISe
    // $VF: synthetic field
    static Class class$sancho$model$mldonkey$Network;
 
-   public NetworksTableMenuListener(NetworksTableView var1) {
-      super(var1);
+   public NetworksTableMenuListener(NetworksTableView view) {
+      super(view);
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
+   public void selectionChanged(SelectionChangedEvent event) {
       this.collectSelections(
-         var1,
+         event,
          class$sancho$model$mldonkey$Network == null
             ? (class$sancho$model$mldonkey$Network = class$("sancho.model.mldonkey.Network"))
             : class$sancho$model$mldonkey$Network
       );
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager menuManager) {
       if (this.selectedObjects.size() > 0) {
-         var1.add(new CopyNetworkToClipboardAction());
+         menuManager.add(new CopyNetworkToClipboardAction());
          if (this.gView.getCore().getProtocol() >= 41) {
-            var1.add(new GetStatsAction());
+            menuManager.add(new GetStatsAction());
          }
       }
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException exception) {
+         throw new NoClassDefFoundError(exception.getMessage());
       }
    }
 
@@ -52,19 +52,19 @@ public class NetworksTableMenuListener extends GTableMenuListener implements ISe
       }
 
       public void run() {
-         StringBuffer var1 = new StringBuffer(50);
-         String var2 = System.getProperty("line.separator");
+         StringBuffer buffer = new StringBuffer(50);
+         String lineSeparator = System.getProperty("line.separator");
 
-         for (int var3 = 0; var3 < NetworksTableMenuListener.this.selectedObjects.size(); var3++) {
-            Network var4 = (Network)NetworksTableMenuListener.this.selectedObjects.get(var3);
-            if (var3 > 0) {
-               var1.append(var2);
+         for (int i = 0; i < NetworksTableMenuListener.this.selectedObjects.size(); i++) {
+            Network network = (Network)NetworksTableMenuListener.this.selectedObjects.get(i);
+            if (i > 0) {
+               buffer.append(lineSeparator);
             }
 
-            var1.append(var4.toString());
+            buffer.append(network.toString());
          }
 
-         MainWindow.copyToClipboard(var1.toString());
+         MainWindow.copyToClipboard(buffer.toString());
       }
    }
 
@@ -76,9 +76,9 @@ public class NetworksTableMenuListener extends GTableMenuListener implements ISe
       }
 
       public void run() {
-         for (int var1 = 0; var1 < NetworksTableMenuListener.this.selectedObjects.size(); var1++) {
-            Network var2 = (Network)NetworksTableMenuListener.this.selectedObjects.get(var1);
-            var2.getStats();
+         for (int i = 0; i < NetworksTableMenuListener.this.selectedObjects.size(); i++) {
+            Network network = (Network)NetworksTableMenuListener.this.selectedObjects.get(i);
+            network.getStats();
          }
       }
    }

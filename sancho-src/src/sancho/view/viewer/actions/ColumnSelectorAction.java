@@ -18,31 +18,31 @@ public class ColumnSelectorAction extends Action {
       this.gViewList = new ArrayList();
    }
 
-   public ColumnSelectorAction(GView var1) {
+   public ColumnSelectorAction(GView gView) {
       this();
-      this.gViewList.add(var1);
+      this.gViewList.add(gView);
    }
 
-   public ColumnSelectorAction(CTabFolder var1) {
+   public ColumnSelectorAction(CTabFolder cTabFolder) {
       this();
 
-      for (int var2 = 0; var2 < var1.getItems().length; var2++) {
-         CTabItem var3 = var1.getItems()[var2];
-         if (var3.getData("gView") != null) {
-            this.gViewList.add(var3.getData("gView"));
+      for (int i = 0; i < cTabFolder.getItems().length; i++) {
+         CTabItem item = cTabFolder.getItems()[i];
+         if (item.getData("gView") != null) {
+            this.gViewList.add(item.getData("gView"));
          }
       }
    }
 
    public void run() {
       if (this.gViewList.size() != 0) {
-         GView var1 = (GView)this.gViewList.get(0);
-         IDSelector var2 = new IDSelector(var1.getShell(), var1.getColumnLabels(), var1.getPreferenceString(), "TableColumns", "l.tableColumns");
-         if (var2.open() == 0) {
-            var2.savePrefs();
+         GView gView = (GView)this.gViewList.get(0);
+         IDSelector idSelector = new IDSelector(gView.getShell(), gView.getColumnLabels(), gView.getPreferenceString(), "TableColumns", "l.tableColumns");
+         if (idSelector.open() == 0) {
+            idSelector.savePrefs();
 
-            for (int var3 = 0; var3 < this.gViewList.size(); var3++) {
-               ((GView)this.gViewList.get(var3)).resetColumns();
+            for (int i = 0; i < this.gViewList.size(); i++) {
+               ((GView)this.gViewList.get(i)).resetColumns();
             }
          }
       }

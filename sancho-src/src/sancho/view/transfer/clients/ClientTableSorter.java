@@ -7,12 +7,12 @@ import sancho.model.mldonkey.File;
 import sancho.view.viewer.GSorter;
 
 public class ClientTableSorter extends GSorter {
-   public ClientTableSorter(ClientTableView var1) {
-      super(var1);
+   public ClientTableSorter(ClientTableView view) {
+      super(view);
    }
 
-   public boolean sortOrder(int var1) {
-      switch (this.cViewer.getColumnIDs()[var1]) {
+   public boolean sortOrder(int columnIndex) {
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 3:
          case 4:
          case 5:
@@ -24,37 +24,37 @@ public class ClientTableSorter extends GSorter {
       }
    }
 
-   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
-      Client var5 = (Client)var2;
-      Client var6 = (Client)var3;
-      switch (var4) {
+   protected int _compare(Viewer viewer, Object element1, Object element2, int columnID) {
+      Client client1 = (Client)element1;
+      Client client2 = (Client)element2;
+      switch (columnID) {
          case 3:
-            return this.compareLongs(var5.getUploaded(), var6.getUploaded());
+            return this.compareLongs(client1.getUploaded(), client2.getUploaded());
          case 4:
-            return this.compareLongs(var5.getDownloaded(), var6.getDownloaded());
+            return this.compareLongs(client1.getDownloaded(), client2.getDownloaded());
          case 5:
-            return this.compareInts(var5.getConnectedTime(), var6.getConnectedTime());
+            return this.compareInts(client1.getConnectedTime(), client2.getConnectedTime());
          case 6:
-            return this.compareAddrs(var5.getAddr(), var6.getAddr());
+            return this.compareAddrs(client1.getAddr(), client2.getAddr());
          case 7:
-            return this.compareInts(var5.getPort(), var6.getPort());
+            return this.compareInts(client1.getPort(), client2.getPort());
          case 8:
          case 12:
          default:
-            return this.compareDefault((TableViewer)var1, this.columnIndex, var2, var3);
+            return this.compareDefault((TableViewer)viewer, this.columnIndex, element1, element2);
          case 9:
-            return this.compareClientStates(var5, var6);
+            return this.compareClientStates(client1, client2);
          case 10:
-            return this.compareBooleans(var5.hasFiles(), var6.hasFiles());
+            return this.compareBooleans(client1.hasFiles(), client2.hasFiles());
          case 11:
-            File var7 = (File)this.gView.getViewer().getInput();
-            if (var7 instanceof File) {
-               return this.comparePercents(var5.getFileAvailabilityPercent(var7), var6.getFileAvailabilityPercent(var7));
+            File file = (File)this.gView.getViewer().getInput();
+            if (file instanceof File) {
+               return this.comparePercents(client1.getFileAvailabilityPercent(file), client2.getFileAvailabilityPercent(file));
             }
 
             return 0;
          case 13:
-            return this.compareStrings(var5.getAddr().getCountry(), var6.getAddr().getCountry());
+            return this.compareStrings(client1.getAddr().getCountry(), client2.getAddr().getCountry());
       }
    }
 }

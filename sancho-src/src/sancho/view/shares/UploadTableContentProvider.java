@@ -13,56 +13,56 @@ public class UploadTableContentProvider extends GTableContentProvider {
    private static final String S_UPLOADS = SResources.getString("l.uploads");
    private long lastTimeStamp;
 
-   public UploadTableContentProvider(UploadTableView var1) {
-      super(var1);
+   public UploadTableContentProvider(UploadTableView view) {
+      super(view);
    }
 
-   public void setActive(boolean var1) {
-      SharedFileCollection var2 = (SharedFileCollection)this.gView.getViewer().getInput();
-      if (var2 != null) {
-         if (var1) {
-            var2.addObserver(this);
+   public void setActive(boolean active) {
+      SharedFileCollection collection = (SharedFileCollection)this.gView.getViewer().getInput();
+      if (collection != null) {
+         if (active) {
+            collection.addObserver(this);
             this.needsRefresh = true;
          } else {
-            var2.deleteObserver(this);
+            collection.deleteObserver(this);
          }
       }
 
-      super.setActive(var1);
+      super.setActive(active);
    }
 
-   public Object[] getElements(Object var1) {
-      synchronized (var1) {
-         SharedFileCollection var3 = (SharedFileCollection)var1;
-         var3.clearAllLists();
-         return var3.getValues();
+   public Object[] getElements(Object input) {
+      synchronized (input) {
+         SharedFileCollection collection = (SharedFileCollection)input;
+         collection.clearAllLists();
+         return collection.getValues();
       }
    }
 
-   public void inputChanged(Viewer var1, Object var2, Object var3) {
-      super.inputChanged(var1, var2, var3);
-      SharedFileCollection var4 = (SharedFileCollection)var2;
-      SharedFileCollection var5 = (SharedFileCollection)var3;
-      if (var4 != null) {
-         var4.deleteObserver(this);
+   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      super.inputChanged(viewer, oldInput, newInput);
+      SharedFileCollection oldCollection = (SharedFileCollection)oldInput;
+      SharedFileCollection newCollection = (SharedFileCollection)newInput;
+      if (oldCollection != null) {
+         oldCollection.deleteObserver(this);
       }
 
-      if (var5 != null) {
+      if (newCollection != null) {
          if (this.gView.isActive()) {
-            var5.addObserver(this);
+            newCollection.addObserver(this);
          }
 
          if (Sancho.hasCollectionFactory()) {
-            var5.getCore().getClientStats().addObserver(this);
+            newCollection.getCore().getClientStats().addObserver(this);
          }
       }
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
+   public void update(MyObservable observable, Object data, int type) {
       if (this.gView != null && !this.gView.isDisposed()) {
          if (this.gView.isActive() && this.gView.isVisible()) {
-            if (var1 instanceof ClientStats) {
-               ClientStats var4 = (ClientStats)var1;
+            if (observable instanceof ClientStats) {
+               ClientStats stats = (ClientStats)observable;
                if (System.currentTimeMillis() > this.lastTimeStamp + 5000L) {
                   this.lastTimeStamp = System.currentTimeMillis();
                   this.gView
@@ -70,29 +70,29 @@ public class UploadTableContentProvider extends GTableContentProvider {
                      .updateCLabelTextInGuiThread(
                         S_UPLOADS
                            + ": "
-                           + var4.getNumSharedFiles()
+                           + stats.getNumSharedFiles()
                            + " ("
-                           + SwissArmy.calcStringSize(var4.getUploadCounter())
+                           + SwissArmy.calcStringSize(stats.getUploadCounter())
                            + "/"
-                           + var4.getCore().getSharedFileCollection().getTotalSizeString()
+                           + stats.getCore().getSharedFileCollection().getTotalSizeString()
                            + ")"
                      );
                }
-            } else if (var1 instanceof SharedFileCollection) {
-               final SharedFileCollection var5 = (SharedFileCollection)var1;
+            } else if (observable instanceof SharedFileCollection) {
+               final SharedFileCollection collection = (SharedFileCollection)observable;
                this.tableViewer.getTable().getDisplay().asyncExec(new Runnable() {
                   public void run() {
                      if (gView != null && !gView.isDisposed()) {
-                        if (var5.removed()) {
-                           tableViewer.remove(var5.getAndClearRemoved());
+                        if (collection.removed()) {
+                           tableViewer.remove(collection.getAndClearRemoved());
                         }
 
-                        if (var5.added()) {
-                           tableViewer.add(var5.getAndClearAdded());
+                        if (collection.added()) {
+                           tableViewer.add(collection.getAndClearAdded());
                         }
 
-                        if (var5.updated()) {
-                           tableViewer.update(var5.getAndClearUpdated(), SResources.SA_Z);
+                        if (collection.updated()) {
+                           tableViewer.update(collection.getAndClearUpdated(), SResources.SA_Z);
                         }
                      }
                   }

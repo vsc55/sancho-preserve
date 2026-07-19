@@ -7,15 +7,15 @@ import sancho.view.utility.SResources;
 public class AddUserAsFriendAction extends Action {
    private User[] userArray;
 
-   public AddUserAsFriendAction(User[] var1) {
+   public AddUserAsFriendAction(User[] userArray) {
       super(SResources.getString("dd.c.addFriend"));
       this.setImageDescriptor(SResources.getImageDescriptor("tab.friends.buttonSmall"));
-      this.userArray = var1;
+      this.userArray = userArray;
    }
 
    public void run() {
-      for (int var1 = 0; var1 < this.userArray.length; var1++) {
-         this.userArray[var1].addAsFriend();
+      for (int i = 0; i < this.userArray.length; i++) {
+         this.userArray[i].addAsFriend();
       }
    }
 }

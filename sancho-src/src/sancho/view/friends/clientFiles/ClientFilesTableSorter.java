@@ -6,32 +6,32 @@ import sancho.model.mldonkey.Result;
 import sancho.view.viewer.GSorter;
 
 public class ClientFilesTableSorter extends GSorter {
-   public ClientFilesTableSorter(ClientFilesTableView var1) {
-      super(var1);
+   public ClientFilesTableSorter(ClientFilesTableView view) {
+      super(view);
    }
 
-   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
-      Result var5 = (Result)var2;
-      Result var6 = (Result)var3;
-      switch (var4) {
+   protected int _compare(Viewer viewer, Object element1, Object element2, int columnId) {
+      Result result1 = (Result)element1;
+      Result result2 = (Result)element2;
+      switch (columnId) {
          case 0:
-            return this.compareStrings(var5.getName(), var6.getName());
+            return this.compareStrings(result1.getName(), result2.getName());
          case 1:
-            return this.compareLongs(var5.getSize(), var6.getSize());
+            return this.compareLongs(result1.getSize(), result2.getSize());
          case 2:
-            return this.compareStrings(var5.getFormat(), var6.getFormat());
+            return this.compareStrings(result1.getFormat(), result2.getFormat());
          case 3:
-            return this.compareStrings(var5.getType(), var6.getType());
+            return this.compareStrings(result1.getType(), result2.getType());
          case 4:
-            return this.compareStrings(var5.getCodecTag(), var6.getCodecTag());
+            return this.compareStrings(result1.getCodecTag(), result2.getCodecTag());
          case 5:
-            return this.compareInts(var5.getBitrateTag(), var6.getBitrateTag());
+            return this.compareInts(result1.getBitrateTag(), result2.getBitrateTag());
          case 6:
-            return this.compareStrings(var5.getLengthTag(), var6.getLengthTag());
+            return this.compareStrings(result1.getLengthTag(), result2.getLengthTag());
          case 7:
-            return this.compareStrings(var5.getMD4(), var6.getMD4());
+            return this.compareStrings(result1.getMD4(), result2.getMD4());
          default:
-            return this.compareDefault((TableViewer)var1, this.columnIndex, var2, var3);
+            return this.compareDefault((TableViewer)viewer, this.columnIndex, element1, element2);
       }
    }
 }

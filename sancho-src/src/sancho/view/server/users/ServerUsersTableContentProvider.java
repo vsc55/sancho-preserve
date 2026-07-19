@@ -5,15 +5,15 @@ import sancho.model.mldonkey.Server;
 import sancho.view.viewer.table.GTableContentProvider;
 
 public class ServerUsersTableContentProvider extends GTableContentProvider {
-   public ServerUsersTableContentProvider(ServerUsersTableView var1, CLabel var2) {
-      super(var1);
+   public ServerUsersTableContentProvider(ServerUsersTableView view, CLabel label) {
+      super(view);
    }
 
-   public Object[] getElements(Object var1) {
-      if (var1 instanceof Server) {
-         Server var2 = (Server)var1;
-         if (var2.hasUsers()) {
-            return var2.getUsers();
+   public Object[] getElements(Object inputElement) {
+      if (inputElement instanceof Server) {
+         Server server = (Server)inputElement;
+         if (server.hasUsers()) {
+            return server.getUsers();
          }
       }
 

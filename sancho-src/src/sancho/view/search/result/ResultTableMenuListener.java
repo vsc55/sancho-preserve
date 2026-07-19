@@ -62,9 +62,9 @@ public class ResultTableMenuListener extends GTableMenuListener {
    // $VF: synthetic field
    static Class class$sancho$model$mldonkey$Result;
 
-   public ResultTableMenuListener(GTableView var1, CTabItem var2) {
-      super(var1);
-      this.cTabItem = var2;
+   public ResultTableMenuListener(GTableView tableView, CTabItem cTabItem) {
+      super(tableView);
+      this.cTabItem = cTabItem;
    }
 
    public void initialize() {
@@ -73,42 +73,42 @@ public class ResultTableMenuListener extends GTableMenuListener {
          final ToolTipHandler toolTipHandler = new ToolTipHandler(this.gView.getShell());
          toolTipHandler.activateHoverHelp(this.gView.getComposite(), (ICustomViewer)this.gView.getViewer());
          this.gView.getComposite().addDisposeListener(new DisposeListener() {
-            public void widgetDisposed(DisposeEvent var1) {
+            public void widgetDisposed(DisposeEvent event) {
                toolTipHandler.dispose();
             }
          });
       }
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
+   public void selectionChanged(SelectionChangedEvent event) {
       this.collectSelections(
-         var1,
+         event,
          class$sancho$model$mldonkey$Result == null
             ? (class$sancho$model$mldonkey$Result = class$("sancho.model.mldonkey.Result"))
             : class$sancho$model$mldonkey$Result
       );
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager menuManager) {
       if (this.selectedObjects.size() > 0) {
-         var1.add(new DownloadAction());
-         var1.add(new ResultDetailAction());
-         var1.add(new RemoveResultsAction());
-         var1.add(new Separator());
-         var1.add(new CopyNameAction());
-         this.addClipboardMenu(var1);
-         var1.add(new Separator());
-         Result var2 = (Result)this.selectedObjects.get(0);
-         this.addWebServicesMenu(var1, var2.getMD4(), var2.getED2K(), var2.getSize());
-         this.addSelectAllMenu(var1);
+         menuManager.add(new DownloadAction());
+         menuManager.add(new ResultDetailAction());
+         menuManager.add(new RemoveResultsAction());
+         menuManager.add(new Separator());
+         menuManager.add(new CopyNameAction());
+         this.addClipboardMenu(menuManager);
+         menuManager.add(new Separator());
+         Result result = (Result)this.selectedObjects.get(0);
+         this.addWebServicesMenu(menuManager, result.getMD4(), result.getED2K(), result.getSize());
+         this.addSelectAllMenu(menuManager);
       }
    }
 
    public void removeSelected() {
       if (this.selectedObjects.size() != 0) {
-         ObjectMap var1 = (ObjectMap)this.gView.getViewer().getInput();
-         if (var1 != null) {
-            var1.remove(this.selectedObjects.toArray());
+         ObjectMap objectMap = (ObjectMap)this.gView.getViewer().getInput();
+         if (objectMap != null) {
+            objectMap.remove(this.selectedObjects.toArray());
          }
       }
    }
@@ -117,75 +117,75 @@ public class ResultTableMenuListener extends GTableMenuListener {
       this.removeSelected();
    }
 
-   public boolean downloadResult(Result var1) {
+   public boolean downloadResult(Result result) {
       if (!Sancho.hasCollectionFactory()) {
          return true;
       } else {
-         boolean var2 = PreferenceLoader.loadBoolean("searchForceDownload");
-         if (var1.downloaded() && !var2) {
-            Shell var3 = this.tableViewer.getTable().getShell();
-            MessageBox var4 = new MessageBox(var3, 194);
-            var4.setText(SResources.getString("s.alreadyDownloadedTitle"));
-            var4.setMessage(var1.getName() + "\n" + SResources.getString("s.alreadyDownloadedText"));
-            if (var4.open() == 64) {
-               this.gView.getCore().getResultCollection().download(var1, true);
-               this.updateItem(5000, var1);
+         boolean force = PreferenceLoader.loadBoolean("searchForceDownload");
+         if (result.downloaded() && !force) {
+            Shell shell = this.tableViewer.getTable().getShell();
+            MessageBox messageBox = new MessageBox(shell, 194);
+            messageBox.setText(SResources.getString("s.alreadyDownloadedTitle"));
+            messageBox.setMessage(result.getName() + "\n" + SResources.getString("s.alreadyDownloadedText"));
+            if (messageBox.open() == 64) {
+               this.gView.getCore().getResultCollection().download(result, true);
+               this.updateItem(5000, result);
                return true;
             } else {
                return false;
             }
          } else {
-            this.gView.getCore().getResultCollection().download(var1, var2);
-            this.updateItem(5000, var1);
+            this.gView.getCore().getResultCollection().download(result, force);
+            this.updateItem(5000, result);
             return true;
          }
       }
    }
 
-   protected void updateItem(int var1, final Result var2) {
-      this.tableViewer.getTable().getDisplay().timerExec(var1, new Runnable() {
+   protected void updateItem(int delay, final Result result) {
+      this.tableViewer.getTable().getDisplay().timerExec(delay, new Runnable() {
          public void run() {
             if (tableViewer != null && tableViewer.getTable() != null && !tableViewer.getTable().isDisposed()) {
-               tableViewer.update(new Object[]{var2}, null);
+               tableViewer.update(new Object[]{result}, null);
             }
          }
       });
    }
 
-   public void downloadSingleFile(Result var1) {
-      this.downloadResult(var1);
+   public void downloadSingleFile(Result result) {
+      this.downloadResult(result);
       this.postDownloadStats(1, "");
    }
 
    public void downloadSelected() {
       if (Sancho.hasCollectionFactory()) {
-         String var1 = "";
-         int var2 = 0;
+         String failedNames = "";
+         int count = 0;
 
-         for (int var3 = 0; var3 < this.selectedObjects.size(); var3++) {
-            Result var4 = (Result)this.selectedObjects.get(var3);
-            if (this.downloadResult(var4)) {
-               var2++;
+         for (int i = 0; i < this.selectedObjects.size(); i++) {
+            Result result = (Result)this.selectedObjects.get(i);
+            if (this.downloadResult(result)) {
+               count++;
             } else {
-               var1 = var1 + var4.getName() + "\n";
+               failedNames = failedNames + result.getName() + "\n";
             }
          }
 
-         this.postDownloadStats(var2, var1);
+         this.postDownloadStats(count, failedNames);
       }
    }
 
-   public void postDownloadStats(int var1, String var2) {
-      SearchTab var3 = (SearchTab)this.cTabItem.getParent().getData();
-      var3.getMainWindow().getStatusline().setText(SResources.getString("s.sl.startedDownload") + var1);
+   public void postDownloadStats(int count, String failedNames) {
+      SearchTab searchTab = (SearchTab)this.cTabItem.getParent().getData();
+      searchTab.getMainWindow().getStatusline().setText(SResources.getString("s.sl.startedDownload") + count);
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException exception) {
+         throw new NoClassDefFoundError(exception.getMessage());
       }
    }
 
@@ -209,9 +209,9 @@ public class ResultTableMenuListener extends GTableMenuListener {
       }
 
       public void run() {
-         Result var1 = (Result)selectedObjects.get(0);
-         if (var1 instanceof Result) {
-            new ResultDetailDialog(gView.getShell(), var1).open();
+         Result result = (Result)selectedObjects.get(0);
+         if (result instanceof Result) {
+            new ResultDetailDialog(gView.getShell(), result).open();
          }
       }
    }
@@ -236,19 +236,19 @@ public class ResultTableMenuListener extends GTableMenuListener {
       }
 
       public void run() {
-         String var1 = "";
-         String var2 = System.getProperty("line.separator");
+         String text = "";
+         String separator = System.getProperty("line.separator");
 
-         for (int var3 = 0; var3 < selectedObjects.size(); var3++) {
-            Result var4 = (Result)selectedObjects.get(var3);
-            if (var1.length() > 0) {
-               var1 = var1 + var2;
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            Result result = (Result)selectedObjects.get(i);
+            if (text.length() > 0) {
+               text = text + separator;
             }
 
-            var1 = var1 + var4.getName();
+            text = text + result.getName();
          }
 
-         MainWindow.copyToClipboard(var1);
+         MainWindow.copyToClipboard(text);
       }
    }
 
@@ -280,62 +280,62 @@ public class ResultTableMenuListener extends GTableMenuListener {
       private int[] roundRectR;
       private Region tipRegion;
 
-      int[] roundRect(int var1, int var2, int var3, int var4) {
-         int[] var5 = new int[]{0, 6, 1, 5, 1, 4, 4, 1, 5, 1, 6, 0};
-         int[] var6 = new int[]{-6, 0, -5, 1, -4, 1, -1, 4, -1, 5, 0, 6};
-         int[] var7 = new int[]{0, -6, -1, -5, -1, -4, -4, -1, -5, -1, -6, 0};
-         int[] var8 = new int[]{6, 0, 5, -1, 4, -1, 1, -4, 1, -5, 0, -6};
-         int[] var9 = new int[48];
-         int var10 = 0;
-         int[] var11 = var5;
-         int[] var12 = var6;
+      int[] roundRect(int x, int y, int width, int height) {
+         int[] topLeft = new int[]{0, 6, 1, 5, 1, 4, 4, 1, 5, 1, 6, 0};
+         int[] topRight = new int[]{-6, 0, -5, 1, -4, 1, -1, 4, -1, 5, 0, 6};
+         int[] bottomRight = new int[]{0, -6, -1, -5, -1, -4, -4, -1, -5, -1, -6, 0};
+         int[] bottomLeft = new int[]{6, 0, 5, -1, 4, -1, 1, -4, 1, -5, 0, -6};
+         int[] points = new int[48];
+         int index = 0;
+         int[] corners = topLeft;
+         int[] cornersRight = topRight;
 
-         for (int var13 = 0; var13 < var11.length / 2; var13++) {
-            var9[var10++] = var1 + var11[2 * var13];
-            var9[var10++] = var2 + var11[2 * var13 + 1];
+         for (int i = 0; i < corners.length / 2; i++) {
+            points[index++] = x + corners[2 * i];
+            points[index++] = y + corners[2 * i + 1];
          }
 
-         for (int var14 = 0; var14 < var12.length / 2; var14++) {
-            var9[var10++] = var1 + var3 + var12[2 * var14];
-            var9[var10++] = var2 + var12[2 * var14 + 1];
+         for (int i = 0; i < cornersRight.length / 2; i++) {
+            points[index++] = x + width + cornersRight[2 * i];
+            points[index++] = y + cornersRight[2 * i + 1];
          }
 
-         var11 = var7;
-         var12 = var8;
+         corners = bottomRight;
+         cornersRight = bottomLeft;
 
-         for (int var15 = 0; var15 < var11.length / 2; var15++) {
-            var9[var10++] = var1 + var11[2 * var15] + var3;
-            var9[var10++] = var2 + var11[2 * var15 + 1] + var4;
+         for (int i = 0; i < corners.length / 2; i++) {
+            points[index++] = x + corners[2 * i] + width;
+            points[index++] = y + corners[2 * i + 1] + height;
          }
 
-         for (int var16 = 0; var16 < var12.length / 2; var16++) {
-            var9[var10++] = var1 + var12[2 * var16];
-            var9[var10++] = var2 + var12[2 * var16 + 1] + var4;
+         for (int i = 0; i < cornersRight.length / 2; i++) {
+            points[index++] = x + cornersRight[2 * i];
+            points[index++] = y + cornersRight[2 * i + 1] + height;
          }
 
-         return var9;
+         return points;
       }
 
-      public ToolTipHandler(Composite var2) {
+      public ToolTipHandler(Composite composite) {
          this.pt = new Point(0, 0);
-         GC var3 = new GC(var2);
-         this.charHeight = var3.getFontMetrics().getHeight();
-         var3.dispose();
-         this.display = var2.getDisplay();
+         GC gc = new GC(composite);
+         this.charHeight = gc.getFontMetrics().getHeight();
+         gc.dispose();
+         this.display = composite.getDisplay();
          this.tipShell = new Shell(this.display, 278540);
          this.tipShell.setBackground(this.display.getSystemColor(29));
          this.tipShell.addPaintListener(new PaintListener() {
-            public void paintControl(PaintEvent var1) {
+            public void paintControl(PaintEvent event) {
                if (roundRect != null) {
-                  var1.gc.setBackground(tipShell.getDisplay().getSystemColor(29));
-                  var1.gc.setForeground(tipShell.getDisplay().getSystemColor(28));
-                  var1.gc.fillPolygon(roundRect);
-                  var1.gc.drawPolygon(roundRect);
+                  event.gc.setBackground(tipShell.getDisplay().getSystemColor(29));
+                  event.gc.setForeground(tipShell.getDisplay().getSystemColor(28));
+                  event.gc.fillPolygon(roundRect);
+                  event.gc.drawPolygon(roundRect);
                }
             }
          });
          this.tipShell.addDisposeListener(new DisposeListener() {
-            public void widgetDisposed(DisposeEvent var1) {
+            public void widgetDisposed(DisposeEvent event) {
                if (boldFont != null) {
                   boldFont.dispose();
                }
@@ -346,26 +346,26 @@ public class ResultTableMenuListener extends GTableMenuListener {
             }
          });
          this.tipShell.addListener(21, new Listener() {
-            public void handleEvent(Event var1) {
-               var1.doit = false;
+            public void handleEvent(Event event) {
+               event.doit = false;
             }
          });
          this.tipShell.setLayout(WidgetFactory.createGridLayout(1, 10, 5, 0, 5, false));
          this.setColors(this.tipShell);
-         Composite var4 = new Composite(this.tipShell, 0);
-         var4.setLayoutData(new GridData(768));
-         var4.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 3, 0, false));
-         this.setColors(var4);
-         this.tipLabelImage = new Label(var4, 0);
-         this.tipLabelTitle = new Label(var4, 0);
+         Composite headerComposite = new Composite(this.tipShell, 0);
+         headerComposite.setLayoutData(new GridData(768));
+         headerComposite.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 3, 0, false));
+         this.setColors(headerComposite);
+         this.tipLabelImage = new Label(headerComposite, 0);
+         this.tipLabelTitle = new Label(headerComposite, 0);
          this.tipLabelTitle.setLayoutData(new GridData(768));
-         FontData[] var5 = this.tipLabelTitle.getFont().getFontData();
+         FontData[] fontData = this.tipLabelTitle.getFont().getFontData();
 
-         for (int var6 = 0; var6 < var5.length; var6++) {
-            var5[var6].setStyle(1);
+         for (int i = 0; i < fontData.length; i++) {
+            fontData[i].setStyle(1);
          }
 
-         this.boldFont = new Font(null, var5);
+         this.boldFont = new Font(null, fontData);
          this.tipLabelTitle.setFont(this.boldFont);
          this.setColors(this.tipLabelImage);
          this.setColors(this.tipLabelTitle);
@@ -383,27 +383,27 @@ public class ResultTableMenuListener extends GTableMenuListener {
          this.setColors(this.namesList);
          this.createSeparator(this.tipShell);
          if (!PreferenceLoader.loadBoolean("searchTooltipsOffset")) {
-            Composite var7 = new Composite(this.tipShell, 0);
-            var7.setLayoutData(new GridData(768));
-            var7.setLayout(WidgetFactory.createGridLayout(3, 0, 0, 0, 0, false));
-            var7.setBackground(this.namesList.getDisplay().getSystemColor(29));
-            ToolBar var8 = new ToolBar(var7, 8388608);
-            this.setColors(var8);
-            var8.setLayoutData(new GridData(1));
-            Composite var9 = new Composite(var7, 0);
-            this.setColors(var9);
-            GridData var10 = new GridData(1808);
-            var10.heightHint = 1;
-            var9.setLayoutData(var10);
-            ToolItem var11 = new ToolItem(var8, 0);
-            var11.setImage(SResources.getImage("down_arrow_green"));
-            var11.setToolTipText(SResources.getString("s.download"));
-            var11.addSelectionListener(new SelectionAdapter() {
-               public void widgetSelected(SelectionEvent var1) {
+            Composite toolBarComposite = new Composite(this.tipShell, 0);
+            toolBarComposite.setLayoutData(new GridData(768));
+            toolBarComposite.setLayout(WidgetFactory.createGridLayout(3, 0, 0, 0, 0, false));
+            toolBarComposite.setBackground(this.namesList.getDisplay().getSystemColor(29));
+            ToolBar downloadToolBar = new ToolBar(toolBarComposite, 8388608);
+            this.setColors(downloadToolBar);
+            downloadToolBar.setLayoutData(new GridData(1));
+            Composite spacerComposite = new Composite(toolBarComposite, 0);
+            this.setColors(spacerComposite);
+            GridData gridData = new GridData(1808);
+            gridData.heightHint = 1;
+            spacerComposite.setLayoutData(gridData);
+            ToolItem downloadToolItem = new ToolItem(downloadToolBar, 0);
+            downloadToolItem.setImage(SResources.getImage("down_arrow_green"));
+            downloadToolItem.setToolTipText(SResources.getString("s.download"));
+            downloadToolItem.addSelectionListener(new SelectionAdapter() {
+               public void widgetSelected(SelectionEvent event) {
                   downloadSingleFile(result);
                }
             });
-            this.toolBar = new ToolBar(var7, 8388608);
+            this.toolBar = new ToolBar(toolBarComposite, 8388608);
             this.setColors(this.toolBar);
             this.toolBar.setLayoutData(new GridData(128));
             if (VersionInfo.useWebServices()) {
@@ -419,24 +419,24 @@ public class ResultTableMenuListener extends GTableMenuListener {
          this.tipLabelText.setMenu(this.popupMenu.createContextMenu(this.tipShell));
       }
 
-      public CustomSeparator createSeparator(Composite var1) {
-         CustomSeparator var2 = new CustomSeparator(var1);
-         var2.setLayoutData(new GridData(768));
-         return var2;
+      public CustomSeparator createSeparator(Composite composite) {
+         CustomSeparator separator = new CustomSeparator(composite);
+         separator.setLayoutData(new GridData(768));
+         return separator;
       }
 
-      public void setColors(Control var1) {
-         var1.setBackground(var1.getDisplay().getSystemColor(29));
-         var1.setForeground(var1.getDisplay().getSystemColor(28));
+      public void setColors(Control control) {
+         control.setBackground(control.getDisplay().getSystemColor(29));
+         control.setForeground(control.getDisplay().getSystemColor(28));
       }
 
-      public void addToolItem(String var1, String var2, final int var3) {
-         ToolItem var4 = new ToolItem(this.toolBar, 0);
-         var4.setImage(SResources.getImage(var1));
-         var4.setToolTipText(SResources.getString(var2));
-         var4.addSelectionListener(new SelectionAdapter() {
+      public void addToolItem(String imageName, String tooltipKey, final int serviceId) {
+         ToolItem toolItem = new ToolItem(this.toolBar, 0);
+         toolItem.setImage(SResources.getImage(imageName));
+         toolItem.setToolTipText(SResources.getString(tooltipKey));
+         toolItem.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent arg0) {
-               WebServicesAction.launch(var3, md4, ed2k, fileSize);
+               WebServicesAction.launch(serviceId, md4, ed2k, fileSize);
                setVisible(false);
             }
          });
@@ -470,63 +470,63 @@ public class ResultTableMenuListener extends GTableMenuListener {
 
       public void activateHoverHelp(final Control control, final ICustomViewer cViewer) {
          control.addMouseListener(new MouseAdapter() {
-            public void mouseDown(MouseEvent var1) {
+            public void mouseDown(MouseEvent event) {
                if (tipShell.isVisible()) {
                   setVisible(false);
                }
             }
          });
          control.addMouseTrackListener(new MouseTrackAdapter() {
-            public void mouseExit(MouseEvent var1) {
-               if (tipShell.isVisible() && pt.x != var1.x && pt.y != var1.y) {
+            public void mouseExit(MouseEvent event) {
+               if (tipShell.isVisible() && pt.x != event.x && pt.y != event.y) {
                   setVisible(false);
                }
 
                tipWidget = null;
             }
 
-            public void mouseHover(MouseEvent var1) {
-               if (var1.widget != null && !var1.widget.isDisposed()) {
-                  pt.x = var1.x;
-                  pt.y = var1.y;
+            public void mouseHover(MouseEvent event) {
+               if (event.widget != null && !event.widget.isDisposed()) {
+                  pt.x = event.x;
+                  pt.y = event.y;
                   tipPosition = control.toDisplay(pt);
-                  Rectangle var2 = tipShell.getBounds();
-                  var2.x -= 10;
-                  var2.y -= 10;
-                  var2.width += 20;
-                  var2.height += 20;
-                  if (!tipShell.isVisible() || !var2.contains(tipPosition)) {
-                     Widget var3 = var1.widget;
-                     Table var4 = (Table)var3;
-                     int var5 = 0;
-                     int var6 = 0;
-                     boolean var7 = false;
+                  Rectangle rect = tipShell.getBounds();
+                  rect.x -= 10;
+                  rect.y -= 10;
+                  rect.width += 20;
+                  rect.height += 20;
+                  if (!tipShell.isVisible() || !rect.contains(tipPosition)) {
+                     Widget widget = event.widget;
+                     Table table = (Table)widget;
+                     int columnStart = 0;
+                     int columnEnd = 0;
+                     boolean found = false;
 
-                     for (int var8 = 0; var8 < var4.getColumns().length; var8++) {
-                        if (cViewer.getColumnIDs()[var8] == 1) {
-                           var6 = var5 + var4.getColumns()[var8].getWidth();
-                           var7 = true;
+                     for (int i = 0; i < table.getColumns().length; i++) {
+                        if (cViewer.getColumnIDs()[i] == 1) {
+                           columnEnd = columnStart + table.getColumns()[i].getWidth();
+                           found = true;
                            break;
                         }
 
-                        var5 += var4.getColumns()[var8].getWidth();
+                        columnStart += table.getColumns()[i].getWidth();
                      }
 
-                     ScrollBar var9 = var4.getHorizontalBar();
-                     int var10 = var9 != null ? var9.getSelection() : 0;
-                     var5 -= var10;
-                     var6 -= var10;
-                     TableItem var17 = var4.getItem(pt);
-                     if (var17 == null) {
+                     ScrollBar scrollBar = table.getHorizontalBar();
+                     int scroll = scrollBar != null ? scrollBar.getSelection() : 0;
+                     columnStart -= scroll;
+                     columnEnd -= scroll;
+                     TableItem item = table.getItem(pt);
+                     if (item == null) {
                         setVisible(false);
                         tipWidget = null;
                      }
 
-                     if (var17 != tipWidget) {
-                        tipWidget = var17;
-                        if (!var7 || var5 < pt.x && pt.x < var6) {
-                           TableItem var11 = var17;
-                           result = (Result)var11.getData();
+                     if (item != tipWidget) {
+                        tipWidget = item;
+                        if (!found || columnStart < pt.x && pt.x < columnEnd) {
+                           TableItem hoverItem = item;
+                           result = (Result)hoverItem.getData();
                            if (result == null) {
                               setVisible(false);
                               tipWidget = null;
@@ -541,49 +541,49 @@ public class ResultTableMenuListener extends GTableMenuListener {
                               tipLabelText.setText(result.getToolTipContent());
                               namesList.removeAll();
                               namesList.pack();
-                              GridData var12 = new GridData();
-                              var12.heightHint = 0;
-                              var12.widthHint = 0;
-                              namesSeparator.setLayoutData(var12);
-                              var12 = new GridData();
-                              var12.heightHint = 0;
-                              var12.widthHint = 0;
-                              namesList.setLayoutData(var12);
-                              var12 = new GridData(768);
-                              var12.heightHint = 0;
-                              var12.widthHint = 0;
-                              namesComposite.setLayoutData(var12);
+                              GridData gridData = new GridData();
+                              gridData.heightHint = 0;
+                              gridData.widthHint = 0;
+                              namesSeparator.setLayoutData(gridData);
+                              gridData = new GridData();
+                              gridData.heightHint = 0;
+                              gridData.widthHint = 0;
+                              namesList.setLayoutData(gridData);
+                              gridData = new GridData(768);
+                              gridData.heightHint = 0;
+                              gridData.widthHint = 0;
+                              namesComposite.setLayoutData(gridData);
                               tipShell.pack();
-                              String[] var13 = result.getNames();
-                              if (var13 != null && var13.length > 1) {
-                                 int var14 = result.getNames().length;
-                                 var14 = var14 > 6 ? 6 : var14;
-                                 String[] var15 = new String[var13.length];
-                                 System.arraycopy(var13, 0, var15, 0, var13.length);
-                                 Arrays.sort(var15, String.CASE_INSENSITIVE_ORDER);
-                                 var12 = new GridData(768);
+                              String[] names = result.getNames();
+                              if (names != null && names.length > 1) {
+                                 int nameCount = result.getNames().length;
+                                 nameCount = nameCount > 6 ? 6 : nameCount;
+                                 String[] sortedNames = new String[names.length];
+                                 System.arraycopy(names, 0, sortedNames, 0, names.length);
+                                 Arrays.sort(sortedNames, String.CASE_INSENSITIVE_ORDER);
+                                 gridData = new GridData(768);
                                  namesSeparator.setLayoutData(new GridData(768));
-                                 namesComposite.setLayoutData(var12);
-                                 var12 = new GridData();
-                                 var12.heightHint = var14 * charHeight;
-                                 var12.widthHint = tipShell.getBounds().width;
-                                 namesList.setLayoutData(var12);
+                                 namesComposite.setLayoutData(gridData);
+                                 gridData = new GridData();
+                                 gridData.heightHint = nameCount * charHeight;
+                                 gridData.widthHint = tipShell.getBounds().width;
+                                 namesList.setLayoutData(gridData);
 
-                                 for (int var16 = 0; var16 < var15.length; var16++) {
-                                    namesList.add(var15[var16]);
+                                 for (int i = 0; i < sortedNames.length; i++) {
+                                    namesList.add(sortedNames[i]);
                                  }
                               } else {
-                                 var12 = new GridData();
-                                 var12.heightHint = 0;
-                                 var12.widthHint = 0;
-                                 namesSeparator.setLayoutData(var12);
-                                 var12 = new GridData();
-                                 var12.heightHint = 0;
-                                 var12.widthHint = 0;
-                                 namesList.setLayoutData(var12);
-                                 var12 = new GridData(768);
-                                 var12.heightHint = 0;
-                                 namesComposite.setLayoutData(var12);
+                                 gridData = new GridData();
+                                 gridData.heightHint = 0;
+                                 gridData.widthHint = 0;
+                                 namesSeparator.setLayoutData(gridData);
+                                 gridData = new GridData();
+                                 gridData.heightHint = 0;
+                                 gridData.widthHint = 0;
+                                 namesList.setLayoutData(gridData);
+                                 gridData = new GridData(768);
+                                 gridData.heightHint = 0;
+                                 namesComposite.setLayoutData(gridData);
                               }
 
                               setHoverLocation(tipShell, tipPosition);
@@ -599,29 +599,29 @@ public class ResultTableMenuListener extends GTableMenuListener {
          });
       }
 
-      private void setVisible(boolean var1) {
-         this.tipShell.setVisible(var1);
-         this.isVisible = var1;
+      private void setVisible(boolean visible) {
+         this.tipShell.setVisible(visible);
+         this.isVisible = visible;
          this.stopTimer();
-         if (var1) {
+         if (visible) {
             this.startTimer();
          } else {
             this.result = null;
          }
       }
 
-      private void setHoverLocation(Shell var1, Point var2) {
+      private void setHoverLocation(Shell shell, Point point) {
          this.vscroll = gView.getComposite().getVerticalBar().getSelection();
-         Rectangle var3 = var1.getDisplay().getBounds();
-         var1.pack();
-         Rectangle var4 = var1.getBounds();
-         int var5 = PreferenceLoader.loadBoolean("searchTooltipsOffset") ? 10 : -5;
-         var4.x = Math.max(Math.min(var2.x, var3.width - var4.width), 0) + var5;
-         var4.y = Math.max(Math.min(var2.y, var3.height - var4.height), 0) + var5;
-         var1.setLocation(var4.x, var4.y);
-         Point var6 = var1.computeSize(-1, -1);
-         this.roundRect = this.roundRect(0, 0, var6.x - 1, var6.y - 1);
-         this.roundRectR = this.roundRect(0, 0, var6.x, var6.y);
+         Rectangle displayBounds = shell.getDisplay().getBounds();
+         shell.pack();
+         Rectangle bounds = shell.getBounds();
+         int offset = PreferenceLoader.loadBoolean("searchTooltipsOffset") ? 10 : -5;
+         bounds.x = Math.max(Math.min(point.x, displayBounds.width - bounds.width), 0) + offset;
+         bounds.y = Math.max(Math.min(point.y, displayBounds.height - bounds.height), 0) + offset;
+         shell.setLocation(bounds.x, bounds.y);
+         Point size = shell.computeSize(-1, -1);
+         this.roundRect = this.roundRect(0, 0, size.x - 1, size.y - 1);
+         this.roundRectR = this.roundRect(0, 0, size.x, size.y);
          // setRegion() does not dispose the previously installed region, and this runs
          // on every hover/reposition, so dispose the old one to avoid leaking GDI
          // region handles over a long browsing session.
@@ -629,14 +629,14 @@ public class ResultTableMenuListener extends GTableMenuListener {
             this.tipRegion.dispose();
          }
 
-         Region var7 = new Region();
-         var7.add(this.roundRectR);
-         var1.setRegion(var7);
-         this.tipRegion = var7;
+         Region region = new Region();
+         region.add(this.roundRectR);
+         shell.setRegion(region);
+         this.tipRegion = region;
       }
 
-      public void menuAboutToShow(IMenuManager var1) {
-         var1.add(new CopyToolTipToClipboardAction());
+      public void menuAboutToShow(IMenuManager menuManager) {
+         menuManager.add(new CopyToolTipToClipboardAction());
       }
 
       // Tooltip context-menu action that copies the current result's tooltip text to the clipboard.
@@ -658,27 +658,27 @@ public class ResultTableMenuListener extends GTableMenuListener {
    private static final class CustomSeparator extends Canvas {
       private int lineWidth;
 
-      public CustomSeparator(Composite var2) {
-         super(var2, 0);
+      public CustomSeparator(Composite composite) {
+         super(composite, 0);
          this.lineWidth = 1;
          this.addPaintListener(new PaintListener() {
-            public void paintControl(PaintEvent var1) {
-               onPaint(var1);
+            public void paintControl(PaintEvent event) {
+               onPaint(event);
             }
          });
       }
 
-      public Point computeSize(int var1, int var2, boolean var3) {
+      public Point computeSize(int wHint, int hHint, boolean changed) {
          this.checkWidget();
-         if (var1 == -1) {
-            var1 = this.lineWidth;
+         if (wHint == -1) {
+            wHint = this.lineWidth;
          }
 
-         if (var2 == -1) {
-            var2 = this.lineWidth;
+         if (hHint == -1) {
+            hHint = this.lineWidth;
          }
 
-         return new Point(var1, var2);
+         return new Point(wHint, hHint);
       }
 
       public boolean setFocus() {
@@ -686,14 +686,14 @@ public class ResultTableMenuListener extends GTableMenuListener {
          return false;
       }
 
-      private void onPaint(PaintEvent var1) {
-         Rectangle var2 = this.getClientArea();
-         if (var2.width != 0 && var2.height != 0) {
-            Display var3 = this.getDisplay();
-            var1.gc.setLineWidth(this.lineWidth);
-            Color var4 = var3.getSystemColor(28);
-            var1.gc.setForeground(var4);
-            var1.gc.drawLine(0, 0, var2.width - 1, 0);
+      private void onPaint(PaintEvent event) {
+         Rectangle rect = this.getClientArea();
+         if (rect.width != 0 && rect.height != 0) {
+            Display display = this.getDisplay();
+            event.gc.setLineWidth(this.lineWidth);
+            Color color = display.getSystemColor(28);
+            event.gc.setForeground(color);
+            event.gc.drawLine(0, 0, rect.width - 1, 0);
          }
       }
    }
@@ -704,9 +704,9 @@ public class ResultTableMenuListener extends GTableMenuListener {
       boolean stop;
       Display display;
 
-      public ToolTipTimerTask(ToolTipHandler var2) {
-         this.toolTipHandler = var2;
-         this.display = var2.display;
+      public ToolTipTimerTask(ToolTipHandler toolTipHandler) {
+         this.toolTipHandler = toolTipHandler;
+         this.display = toolTipHandler.display;
       }
 
       public void run() {
@@ -715,18 +715,18 @@ public class ResultTableMenuListener extends GTableMenuListener {
          }
 
          if (this.toolTipHandler.isVisible) {
-            Point var1 = this.toolTipHandler.display.getCursorLocation();
+            Point cursorLocation = this.toolTipHandler.display.getCursorLocation();
             if (gView != null
                && !gView.isDisposed()
                && gView.getComposite().getVerticalBar() != null) {
-               int var2 = gView.getComposite().getVerticalBar().getSelection();
-               if (var1.equals(this.toolTipHandler.tipPosition) && var2 == this.toolTipHandler.vscroll) {
+               int selection = gView.getComposite().getVerticalBar().getSelection();
+               if (cursorLocation.equals(this.toolTipHandler.tipPosition) && selection == this.toolTipHandler.vscroll) {
                   return;
                }
             }
 
-            Shell var3 = this.toolTipHandler.tipShell;
-            if (var3 != null && !var3.isDisposed() && var3.isVisible() && !var3.getBounds().contains(var1)) {
+            Shell shell = this.toolTipHandler.tipShell;
+            if (shell != null && !shell.isDisposed() && shell.isVisible() && !shell.getBounds().contains(cursorLocation)) {
                this.toolTipHandler.setVisible(false);
             }
          }

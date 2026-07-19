@@ -14,9 +14,9 @@ public class RoomUsersTableView extends GTableView {
    public static final int SERVER = 4;
    public Room room;
 
-   public RoomUsersTableView(ViewFrame var1, Room var2) {
-      super(var1);
-      this.room = var2;
+   public RoomUsersTableView(ViewFrame viewFrame, Room room) {
+      super(viewFrame);
+      this.room = room;
       this.preferenceString = "roomUsers";
       this.columnLabels = new String[]{"roomUsers.name", "roomUsers.tags", "roomUsers.addr", "roomUsers.port", "roomUsers.server"};
       this.columnAlignment = new int[]{16384, 16384, 131072, 131072, 131072};
@@ -25,11 +25,11 @@ public class RoomUsersTableView extends GTableView {
       this.tableContentProvider = new RoomUsersTableContentProvider(this);
       this.tableLabelProvider = new RoomUsersTableLabelProvider(this);
       this.tableMenuListener = new RoomUsersTableMenuListener(this);
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
    }
 
-   protected void createContents(Composite var1) {
-      super.createContents(var1);
+   protected void createContents(Composite composite) {
+      super.createContents(composite);
       this.sViewer.addSelectionChangedListener((RoomUsersTableMenuListener)this.tableMenuListener);
       this.addMenuListener();
    }

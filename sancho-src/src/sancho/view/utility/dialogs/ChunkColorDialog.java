@@ -18,21 +18,21 @@ import sancho.view.utility.WidgetFactory;
 public class ChunkColorDialog extends Dialog {
    private List prefCSList = new ArrayList();
 
-   public ChunkColorDialog(Shell var1) {
-      super(var1 == null ? new Shell() : var1);
+   public ChunkColorDialog(Shell shell) {
+      super(shell == null ? new Shell() : shell);
    }
 
-   protected void configureShell(Shell var1) {
-      super.configureShell(var1);
-      var1.setText(SResources.getString("l.chunkGraphs"));
-      var1.setImage(VersionInfo.getProgramIcon());
+   protected void configureShell(Shell shell) {
+      super.configureShell(shell);
+      shell.setText(SResources.getString("l.chunkGraphs"));
+      shell.setImage(VersionInfo.getProgramIcon());
    }
 
-   protected void buttonPressed(int var1) {
-      if (var1 == 0) {
-         for (int var3 = 0; var3 < this.prefCSList.size(); var3++) {
-            PrefColorSelector var2 = (PrefColorSelector)this.prefCSList.get(var3);
-            var2.save();
+   protected void buttonPressed(int buttonId) {
+      if (buttonId == 0) {
+         for (int index = 0; index < this.prefCSList.size(); index++) {
+            PrefColorSelector prefColorSelector = (PrefColorSelector)this.prefCSList.get(index);
+            prefColorSelector.save();
          }
 
          PreferenceLoader.saveStore();
@@ -40,23 +40,23 @@ public class ChunkColorDialog extends Dialog {
          ChunkImageData.loadColors();
       }
 
-      super.buttonPressed(var1);
+      super.buttonPressed(buttonId);
    }
 
-   protected Control createDialogArea(Composite var1) {
-      Composite var2 = (Composite)super.createDialogArea(var1);
-      var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
-      String[] var3 = PreferenceLoader.getChunkStrings();
+   protected Control createDialogArea(Composite parent) {
+      Composite composite = (Composite)super.createDialogArea(parent);
+      composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
+      String[] chunkStrings = PreferenceLoader.getChunkStrings();
 
-      for (int var4 = 0; var4 < var3.length; var4++) {
-         String var5 = "chunk" + var3[var4].substring(0, 1).toUpperCase() + var3[var4].substring(1);
-         String var6 = "p.d.chunk." + var3[var4];
-         Label var7 = new Label(var2, 0);
-         var7.setText(SResources.getString(var6));
-         this.prefCSList.add(new PrefColorSelector(var2, var5));
+      for (int i = 0; i < chunkStrings.length; i++) {
+         String prefKey = "chunk" + chunkStrings[i].substring(0, 1).toUpperCase() + chunkStrings[i].substring(1);
+         String labelKey = "p.d.chunk." + chunkStrings[i];
+         Label label = new Label(composite, 0);
+         label.setText(SResources.getString(labelKey));
+         this.prefCSList.add(new PrefColorSelector(composite, prefKey));
       }
 
-      return var2;
+      return composite;
    }
 
    // One color picker bound to a single chunk-color preference key.
@@ -64,10 +64,10 @@ public class ChunkColorDialog extends Dialog {
       ColorSelector cs;
       String prefString;
 
-      public PrefColorSelector(Composite var1, String var2) {
-         this.cs = new ColorSelector(var1);
-         this.cs.setColorValue(PreferenceLoader.loadRGB(var2));
-         this.prefString = var2;
+      public PrefColorSelector(Composite parent, String prefKey) {
+         this.cs = new ColorSelector(parent);
+         this.cs.setColorValue(PreferenceLoader.loadRGB(prefKey));
+         this.prefString = prefKey;
       }
 
       public void save() {

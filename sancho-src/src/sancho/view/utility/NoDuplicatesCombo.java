@@ -4,17 +4,17 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 
 public class NoDuplicatesCombo extends Combo {
-   public NoDuplicatesCombo(Composite var1, int var2) {
-      super(var1, var2);
+   public NoDuplicatesCombo(Composite composite, int style) {
+      super(composite, style);
    }
 
-   public void add(String var1, int var2) {
-      if (!var1.equals("")) {
-         if (this.indexOf(var1) != -1) {
-            this.remove(var1);
+   public void add(String text, int index) {
+      if (!text.equals("")) {
+         if (this.indexOf(text) != -1) {
+            this.remove(text);
          }
 
-         super.add(var1, var2);
+         super.add(text, index);
       }
    }
 

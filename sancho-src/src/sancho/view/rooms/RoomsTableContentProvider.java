@@ -7,73 +7,73 @@ import sancho.view.utility.SResources;
 import sancho.view.viewer.table.GTableContentProvider;
 
 public class RoomsTableContentProvider extends GTableContentProvider {
-   public RoomsTableContentProvider(RoomsTableView var1) {
-      super(var1);
+   public RoomsTableContentProvider(RoomsTableView view) {
+      super(view);
    }
 
-   public Object[] getElements(Object var1) {
-      if (var1 instanceof RoomCollection) {
-         synchronized (var1) {
-            RoomCollection var3 = (RoomCollection)var1;
-            var3.clearAllLists();
-            return var3.getValues();
+   public Object[] getElements(Object input) {
+      if (input instanceof RoomCollection) {
+         synchronized (input) {
+            RoomCollection roomCollection = (RoomCollection)input;
+            roomCollection.clearAllLists();
+            return roomCollection.getValues();
          }
       } else {
          return GTableContentProvider.EMPTY_ARRAY;
       }
    }
 
-   public void setActive(boolean var1) {
-      if (var1) {
-         MyObservable var2;
-         if ((var2 = (MyObservable)this.gView.getViewer().getInput()) != null) {
-            var2.addObserver(this);
+   public void setActive(boolean active) {
+      if (active) {
+         MyObservable observable;
+         if ((observable = (MyObservable)this.gView.getViewer().getInput()) != null) {
+            observable.addObserver(this);
             this.needsRefresh = true;
          }
       } else {
-         MyObservable var3;
-         if ((var3 = (MyObservable)this.gView.getViewer().getInput()) != null) {
-            var3.deleteObserver(this);
+         MyObservable observable;
+         if ((observable = (MyObservable)this.gView.getViewer().getInput()) != null) {
+            observable.deleteObserver(this);
          }
       }
 
-      super.setActive(var1);
+      super.setActive(active);
    }
 
-   public void inputChanged(Viewer var1, Object var2, Object var3) {
-      super.inputChanged(var1, var2, var3);
-      if (var2 != null) {
-         ((MyObservable)var2).deleteObserver(this);
+   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      super.inputChanged(viewer, oldInput, newInput);
+      if (oldInput != null) {
+         ((MyObservable)oldInput).deleteObserver(this);
       }
 
-      if (var3 != null) {
+      if (newInput != null) {
          if (this.gView.isActive()) {
-            ((MyObservable)var3).addObserver(this);
+            ((MyObservable)newInput).addObserver(this);
          }
 
          this.updateHeaderLabel();
       }
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
+   public void update(MyObservable observable, Object arg, int id) {
       if (this.gView != null && !this.gView.isDisposed()) {
-         if (var1 instanceof RoomCollection) {
-            final RoomCollection var4 = (RoomCollection)var1;
+         if (observable instanceof RoomCollection) {
+            final RoomCollection roomCollection = (RoomCollection)observable;
             this.tableViewer.getTable().getDisplay().asyncExec(new Runnable() {
                public void run() {
                   if (gView != null && !gView.isDisposed()) {
-                     if (var4.removed()) {
-                        tableViewer.remove(var4.getAndClearRemoved());
+                     if (roomCollection.removed()) {
+                        tableViewer.remove(roomCollection.getAndClearRemoved());
                         updateHeaderLabel();
                      }
 
-                     if (var4.added()) {
-                        tableViewer.add(var4.getAndClearAdded());
+                     if (roomCollection.added()) {
+                        tableViewer.add(roomCollection.getAndClearAdded());
                         updateHeaderLabel();
                      }
 
-                     if (var4.updated()) {
-                        tableViewer.update(var4.getAndClearUpdated(), SResources.SA_Z);
+                     if (roomCollection.updated()) {
+                        tableViewer.update(roomCollection.getAndClearUpdated(), SResources.SA_Z);
                      }
                   }
                }

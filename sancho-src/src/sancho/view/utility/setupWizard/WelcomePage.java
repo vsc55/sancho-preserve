@@ -17,18 +17,18 @@ public class WelcomePage extends WizardPage {
       this.setMessage(SResources.getString("hm.configureCore"));
    }
 
-   public void createControl(Composite var1) {
-      Composite var2 = new Composite(var1, 0);
-      var2.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
-      Label var3 = new Label(var2, 0);
-      Image var4 = SResources.getImage("welcome");
-      var3.setImage(var4);
-      var3.setLayoutData(new GridData(576));
-      CLabel var5 = new CLabel(var2, 64);
-      GridData var6 = new GridData(64);
-      var6.widthHint = var4.getBounds().width;
-      var5.setLayoutData(var6);
-      var5.setText(SResources.getString("hm.prefFile") + " " + PreferenceLoader.getPrefFile());
-      this.setControl(var2);
+   public void createControl(Composite parent) {
+      Composite composite = new Composite(parent, 0);
+      composite.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
+      Label label = new Label(composite, 0);
+      Image image = SResources.getImage("welcome");
+      label.setImage(image);
+      label.setLayoutData(new GridData(576));
+      CLabel prefFileLabel = new CLabel(composite, 64);
+      GridData gridData = new GridData(64);
+      gridData.widthHint = image.getBounds().width;
+      prefFileLabel.setLayoutData(gridData);
+      prefFileLabel.setText(SResources.getString("hm.prefFile") + " " + PreferenceLoader.getPrefFile());
+      this.setControl(composite);
    }
 }

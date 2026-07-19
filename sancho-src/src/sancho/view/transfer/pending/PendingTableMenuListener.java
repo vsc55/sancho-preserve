@@ -9,32 +9,32 @@ public class PendingTableMenuListener extends GTableMenuListenerClient {
    // $VF: synthetic field
    static Class class$sancho$model$mldonkey$Client;
 
-   public PendingTableMenuListener(GTableView var1) {
-      super(var1);
+   public PendingTableMenuListener(GTableView view) {
+      super(view);
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
+   public void selectionChanged(SelectionChangedEvent event) {
       this.collectSelections(
-         var1,
+         event,
          class$sancho$model$mldonkey$Client == null
             ? (class$sancho$model$mldonkey$Client = class$("sancho.model.mldonkey.Client"))
             : class$sancho$model$mldonkey$Client
       );
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager menuManager) {
       if (this.selectedObjects.size() > 0) {
-         this.addClientActions(this.gView.getShell(), null, var1, this.createClientArray());
-         this.addSelectAllMenu(var1);
+         this.addClientActions(this.gView.getShell(), null, menuManager, this.createClientArray());
+         this.addSelectAllMenu(menuManager);
       }
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String name) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(name);
+      } catch (ClassNotFoundException notFound) {
+         throw new NoClassDefFoundError(notFound.getMessage());
       }
    }
 }

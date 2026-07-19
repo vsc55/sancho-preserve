@@ -17,13 +17,13 @@ public class FriendsTableMenuListener extends GTableMenuListenerClient {
    // $VF: synthetic field
    static Class class$sancho$model$mldonkey$Client;
 
-   public FriendsTableMenuListener(FriendsTableView var1) {
-      super(var1);
+   public FriendsTableMenuListener(FriendsTableView view) {
+      super(view);
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
+   public void selectionChanged(SelectionChangedEvent event) {
       this.collectSelections(
-         var1,
+         event,
          class$sancho$model$mldonkey$Client == null
             ? (class$sancho$model$mldonkey$Client = class$("sancho.model.mldonkey.Client"))
             : class$sancho$model$mldonkey$Client
@@ -33,28 +33,28 @@ public class FriendsTableMenuListener extends GTableMenuListenerClient {
       }
    }
 
-   public void setDirectoriesView(ClientDirectoriesTableView var1) {
-      this.clientDirectoriesTableView = var1;
+   public void setDirectoriesView(ClientDirectoriesTableView view) {
+      this.clientDirectoriesTableView = view;
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager menuManager) {
       if (this.selectedObjects.size() > 0) {
-         var1.add(new SendMessageAction());
-         this.addClientActions(this.gView.getShell(), (File)null, var1, this.createClientArray());
-         var1.add(new RemoveFriendAction());
+         menuManager.add(new SendMessageAction());
+         this.addClientActions(this.gView.getShell(), (File)null, menuManager, this.createClientArray());
+         menuManager.add(new RemoveFriendAction());
       }
 
       if (this.gView.getItemCount() > 0) {
-         var1.add(new RemoveAllFriendsAction());
+         menuManager.add(new RemoveAllFriendsAction());
       }
 
-      var1.add(new AddByIPAction());
+      menuManager.add(new AddByIPAction());
    }
 
    private void removeSelectedFriends() {
-      for (int var1 = 0; var1 < this.selectedObjects.size(); var1++) {
-         Client var2 = (Client)this.selectedObjects.get(var1);
-         var2.removeAsFriend();
+      for (int i = 0; i < this.selectedObjects.size(); i++) {
+         Client client = (Client)this.selectedObjects.get(i);
+         client.removeAsFriend();
       }
    }
 
@@ -63,11 +63,11 @@ public class FriendsTableMenuListener extends GTableMenuListenerClient {
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException exception) {
+         throw new NoClassDefFoundError(exception.getMessage());
       }
    }
 
@@ -102,8 +102,8 @@ public class FriendsTableMenuListener extends GTableMenuListenerClient {
    // Menu action: remove the selected friend(s).
    private class RemoveFriendAction extends Action {
       public RemoveFriendAction() {
-         String var2 = selectedObjects.size() > 1 ? " (" + selectedObjects.size() + ")" : "";
-         this.setText(SResources.getString("mi.f.removeFriend") + var2);
+         String text = selectedObjects.size() > 1 ? " (" + selectedObjects.size() + ")" : "";
+         this.setText(SResources.getString("mi.f.removeFriend") + text);
          this.setImageDescriptor(SResources.getImageDescriptor("FriendsButtonSmallBW"));
       }
 
@@ -115,16 +115,16 @@ public class FriendsTableMenuListener extends GTableMenuListenerClient {
    // Menu action: open a message tab for the selected friend(s).
    private class SendMessageAction extends Action {
       public SendMessageAction() {
-         String var2 = selectedObjects.size() > 1 ? " (" + selectedObjects.size() + ")" : "";
-         this.setText(SResources.getString("mi.f.sendMessage") + var2);
+         String text = selectedObjects.size() > 1 ? " (" + selectedObjects.size() + ")" : "";
+         this.setText(SResources.getString("mi.f.sendMessage") + text);
          this.setImageDescriptor(SResources.getImageDescriptor("resume"));
       }
 
       public void run() {
-         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
-            Client var2 = (Client)selectedObjects.get(var1);
-            FriendsTab var3 = (FriendsTab)gView.getViewFrame().getATab();
-            var3.openTab(var2);
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            Client client = (Client)selectedObjects.get(i);
+            FriendsTab tab = (FriendsTab)gView.getViewFrame().getATab();
+            tab.openTab(client);
          }
       }
    }

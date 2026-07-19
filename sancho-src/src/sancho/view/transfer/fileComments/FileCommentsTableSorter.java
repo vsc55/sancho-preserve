@@ -5,27 +5,27 @@ import sancho.model.mldonkey.utility.FileComment;
 import sancho.view.viewer.GSorter;
 
 public class FileCommentsTableSorter extends GSorter {
-   public FileCommentsTableSorter(FileCommentsTableView var1) {
-      super(var1);
+   public FileCommentsTableSorter(FileCommentsTableView view) {
+      super(view);
       this.setDirection(true);
    }
 
-   public boolean sortOrder(int var1) {
+   public boolean sortOrder(int columnIndex) {
       return true;
    }
 
-   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
-      FileComment var5 = (FileComment)var2;
-      FileComment var6 = (FileComment)var3;
-      switch (var4) {
+   protected int _compare(Viewer viewer, Object object1, Object object2, int columnIndex) {
+      FileComment comment1 = (FileComment)object1;
+      FileComment comment2 = (FileComment)object2;
+      switch (columnIndex) {
          case 0:
-            return this.compareStrings(var5.getName(), var6.getName());
+            return this.compareStrings(comment1.getName(), comment2.getName());
          case 1:
-            return this.compareAddrs(var5.getAddr(), var6.getAddr());
+            return this.compareAddrs(comment1.getAddr(), comment2.getAddr());
          case 2:
-            return this.compareInts(var5.getRating(), var6.getRating());
+            return this.compareInts(comment1.getRating(), comment2.getRating());
          case 3:
-            return this.compareStrings(var5.getComment(), var6.getComment());
+            return this.compareStrings(comment1.getComment(), comment2.getComment());
          default:
             return 0;
       }

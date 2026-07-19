@@ -14,8 +14,8 @@ public class ClientFilesTableView extends GTableView {
    public static final int LENGTH = 6;
    public static final int HASH = 7;
 
-   public ClientFilesTableView(ClientFilesViewFrame var1) {
-      super(var1);
+   public ClientFilesTableView(ClientFilesViewFrame viewFrame) {
+      super(viewFrame);
       this.preferenceString = "clientFiles";
       this.columnLabels = new String[]{
          "clientFiles.name",
@@ -33,22 +33,22 @@ public class ClientFilesTableView extends GTableView {
       this.tableLabelProvider = new ClientFilesTableLabelProvider(this);
       this.gSorter = new ClientFilesTableSorter(this);
       this.tableMenuListener = new ClientFilesTableMenuListener(this);
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
    }
 
    public void setInput() {
    }
 
-   public void setInput(Object var1) {
-      this.sViewer.setInput(var1);
+   public void setInput(Object input) {
+      this.sViewer.setInput(input);
    }
 
    public GTableMenuListener getMenuListener() {
       return this.tableMenuListener;
    }
 
-   protected void createContents(Composite var1) {
-      super.createContents(var1);
+   protected void createContents(Composite composite) {
+      super.createContents(composite);
       this.sViewer.addSelectionChangedListener((ClientFilesTableMenuListener)this.tableMenuListener);
    }
 }

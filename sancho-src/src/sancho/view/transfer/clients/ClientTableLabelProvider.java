@@ -13,19 +13,19 @@ public class ClientTableLabelProvider extends GTableLabelProvider {
    Color connectedColor;
    Color disconnectedColor;
 
-   public ClientTableLabelProvider(ClientTableView var1) {
-      super(var1);
+   public ClientTableLabelProvider(ClientTableView view) {
+      super(view);
    }
 
-   public Image getColumnImage(Object var1, int var2) {
-      Client var3 = (Client)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public Image getColumnImage(Object element, int columnIndex) {
+      Client client = (Client)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getEnumNetwork().getImage();
+            return client.getEnumNetwork().getImage();
          case 1:
-            return var3.getNameImage();
+            return client.getNameImage();
          case 2:
-            return var3.getSoftwareImage();
+            return client.getSoftwareImage();
          case 3:
          case 4:
          case 5:
@@ -34,70 +34,70 @@ public class ClientTableLabelProvider extends GTableLabelProvider {
          default:
             return null;
          case 6:
-            return var3.getAddr().getImage();
+            return client.getAddr().getImage();
          case 8:
-            return var3.getClientModeEnum().getImage();
+            return client.getClientModeEnum().getImage();
          case 9:
-            return var3.getStateEnum().getImage();
+            return client.getStateEnum().getImage();
          case 10:
-            return var3.hasFilesImage();
+            return client.hasFilesImage();
          case 12:
-            return var3.getSUIImage();
+            return client.getSUIImage();
          case 13:
-            return var3.getAddr().getImage();
+            return client.getAddr().getImage();
       }
    }
 
-   public String getColumnText(Object var1, int var2) {
-      Client var3 = (Client)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      Client client = (Client)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getEnumNetwork().getName();
+            return client.getEnumNetwork().getName();
          case 1:
-            return var3.getName();
+            return client.getName();
          case 2:
-            return var3.getSoftware();
+            return client.getSoftware();
          case 3:
-            return var3.getUploadedString();
+            return client.getUploadedString();
          case 4:
-            return var3.getDownloadedString();
+            return client.getDownloadedString();
          case 5:
-            return var3.getConnectedTimeString();
+            return client.getConnectedTimeString();
          case 6:
-            return var3.getAddr().toString();
+            return client.getAddr().toString();
          case 7:
-            return String.valueOf(var3.getPort()).intern();
+            return String.valueOf(client.getPort()).intern();
          case 8:
-            return var3.getModeString();
+            return client.getModeString();
          case 9:
-            return var3.getDetailedClientActivity();
+            return client.getDetailedClientActivity();
          case 10:
-            return var3.hasFilesString();
+            return client.hasFilesString();
          case 11:
-            File var4 = (File)this.gView.getViewer().getInput();
-            if (var4 instanceof File) {
-               return var3.getFileAvailabilityPercentString(var4);
+            File file = (File)this.gView.getViewer().getInput();
+            if (file instanceof File) {
+               return client.getFileAvailabilityPercentString(file);
             }
 
             return "";
          case 12:
-            return var3.getSUIString();
+            return client.getSUIString();
          case 13:
-            return var3.getAddr().getCountry();
+            return client.getAddr().getCountry();
          default:
             return "";
       }
    }
 
-   public Color getForeground(Object var1, int var2) {
+   public Color getForeground(Object element, int columnIndex) {
       if (!this.displayColors) {
          return null;
       } else {
-         Client var3 = (Client)var1;
-         if (var3.hasFiles()) {
+         Client client = (Client)element;
+         if (client.hasFiles()) {
             return this.hasFilesColor;
          } else {
-            return var3.isConnected() ? this.connectedColor : this.disconnectedColor;
+            return client.isConnected() ? this.connectedColor : this.disconnectedColor;
          }
       }
    }

@@ -53,19 +53,19 @@ public class CoreVerbosityDialog extends Dialog {
    Button[] buttonArray = new Button[this.rawKeywords.length + 1];
    Hashtable desc = new Hashtable();
 
-   public CoreVerbosityDialog(Shell var1) {
-      super(var1);
+   public CoreVerbosityDialog(Shell shell) {
+      super(shell);
       Arrays.sort((Object[])this.rawKeywords);
-      int var2 = 0;
-      int var3 = 0;
-      int var4 = 0;
+      int sourceIndex = 0;
+      int columnBase = 0;
+      int rowCount = 0;
 
-      for (int var5 = 0; var5 < this.rawKeywords.length; var5++) {
-         this.keywords[var5] = this.rawKeywords[var2];
-         var2 += 9;
-         if (var4++ == 2) {
-            var4 = 0;
-            var2 = ++var3;
+      for (int i = 0; i < this.rawKeywords.length; i++) {
+         this.keywords[i] = this.rawKeywords[sourceIndex];
+         sourceIndex += 9;
+         if (rowCount++ == 2) {
+            rowCount = 0;
+            sourceIndex = ++columnBase;
          }
       }
 
@@ -99,119 +99,119 @@ public class CoreVerbosityDialog extends Dialog {
       this.desc.put("hid", "hidden errors");
    }
 
-   protected void configureShell(Shell var1) {
-      super.configureShell(var1);
-      String var2 = "";
+   protected void configureShell(Shell shell) {
+      super.configureShell(shell);
+      String versionSuffix = "";
       if (Sancho.hasCollectionFactory()) {
-         String var3 = Sancho.getCore().getCoreVersion();
-         if (var3.length() > 0) {
-            var2 = " " + var3;
+         String coreVersion = Sancho.getCore().getCoreVersion();
+         if (coreVersion.length() > 0) {
+            versionSuffix = " " + coreVersion;
          }
       }
 
-      var1.setText(SResources.getString("menu.tools.coreVerbosity") + var2);
-      var1.setImage(VersionInfo.getProgramIcon());
+      shell.setText(SResources.getString("menu.tools.coreVerbosity") + versionSuffix);
+      shell.setImage(VersionInfo.getProgramIcon());
    }
 
-   protected Control createDialogArea(Composite var1) {
-      Composite var2 = (Composite)super.createDialogArea(var1);
-      var2.setLayout(WidgetFactory.createGridLayout(3, 5, 5, 10, 3, false));
+   protected Control createDialogArea(Composite parent) {
+      Composite composite = (Composite)super.createDialogArea(parent);
+      composite.setLayout(WidgetFactory.createGridLayout(3, 5, 5, 10, 3, false));
       if (!Sancho.hasCollectionFactory()) {
-         return var2;
+         return composite;
       } else {
-         Option var3 = (Option)Sancho.getCore().getCollectionFactory().getOptionCollection().get("verbosity");
-         if (var3 == null) {
-            return var2;
+         Option option = (Option)Sancho.getCore().getCollectionFactory().getOptionCollection().get("verbosity");
+         if (option == null) {
+            return composite;
          } else {
-            ArrayList var4 = new ArrayList();
-            StringTokenizer var5 = new StringTokenizer(var3.getValue(), " ");
+            ArrayList selectedKeywords = new ArrayList();
+            StringTokenizer tokenizer = new StringTokenizer(option.getValue(), " ");
 
-            while (var5.hasMoreTokens()) {
-               String var6 = var5.nextToken().toLowerCase();
-               if (var6.equals("raw")) {
-                  var6 = "mr";
+            while (tokenizer.hasMoreTokens()) {
+               String keyword = tokenizer.nextToken().toLowerCase();
+               if (keyword.equals("raw")) {
+                  keyword = "mr";
                }
 
-               if (var6.equals("ultra")) {
-                  var6 = "super";
+               if (keyword.equals("ultra")) {
+                  keyword = "super";
                }
 
-               var4.add(var6);
+               selectedKeywords.add(keyword);
             }
 
-            this.buttonArray[0] = new Button(var2, 32);
+            this.buttonArray[0] = new Button(composite, 32);
             this.buttonArray[0].setText("all: All");
             this.buttonArray[0].setData("keyword", "all");
-            if (var4.contains("all")) {
+            if (selectedKeywords.contains("all")) {
                this.buttonArray[0].setSelection(true);
             }
 
-            GridData var11 = new GridData(768);
-            var11.horizontalSpan = 3;
-            this.buttonArray[0].setLayoutData(var11);
-            Label var7 = new Label(var2, 258);
-            var11 = new GridData(768);
-            var11.horizontalSpan = 3;
-            var7.setLayoutData(var11);
+            GridData gridData = new GridData(768);
+            gridData.horizontalSpan = 3;
+            this.buttonArray[0].setLayoutData(gridData);
+            Label label = new Label(composite, 258);
+            gridData = new GridData(768);
+            gridData.horizontalSpan = 3;
+            label.setLayoutData(gridData);
 
-            for (int var8 = 0; var8 < this.keywords.length; var8++) {
-               Button var9 = new Button(var2, 32);
-               var9.setLayoutData(new GridData(768));
-               var9.setText(this.keywords[var8] + ": " + this.desc.get(this.keywords[var8]));
-               var9.setData("keyword", this.keywords[var8]);
-               if (var4.contains(this.keywords[var8])) {
-                  var9.setSelection(true);
+            for (int i = 0; i < this.keywords.length; i++) {
+               Button button = new Button(composite, 32);
+               button.setLayoutData(new GridData(768));
+               button.setText(this.keywords[i] + ": " + this.desc.get(this.keywords[i]));
+               button.setData("keyword", this.keywords[i]);
+               if (selectedKeywords.contains(this.keywords[i])) {
+                  button.setSelection(true);
                }
 
-               this.buttonArray[var8 + 1] = var9;
+               this.buttonArray[i + 1] = button;
             }
 
-            var7 = new Label(var2, 258);
-            var11 = new GridData(768);
-            var11.horizontalSpan = 3;
-            var7.setLayoutData(var11);
-            return var2;
+            label = new Label(composite, 258);
+            gridData = new GridData(768);
+            gridData.horizontalSpan = 3;
+            label.setLayoutData(gridData);
+            return composite;
          }
       }
    }
 
-   protected void createButtonsForButtonBar(Composite var1) {
-      Button var2 = this.createButton(var1, 666, SResources.getString("b.deselectAll"), false);
-      var2.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            for (int var2 = 0; var2 < CoreVerbosityDialog.this.buttonArray.length; var2++) {
-               if (CoreVerbosityDialog.this.buttonArray[var2] != null) {
-                  CoreVerbosityDialog.this.buttonArray[var2].setSelection(false);
+   protected void createButtonsForButtonBar(Composite parent) {
+      Button button = this.createButton(parent, 666, SResources.getString("b.deselectAll"), false);
+      button.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
+            for (int i = 0; i < CoreVerbosityDialog.this.buttonArray.length; i++) {
+               if (CoreVerbosityDialog.this.buttonArray[i] != null) {
+                  CoreVerbosityDialog.this.buttonArray[i].setSelection(false);
                }
             }
          }
       });
       // OK is the default button so Enter accepts instead of cancelling (which
       // discarded the verbosity changes).
-      this.createButton(var1, 0, SResources.getString("b.ok"), true);
-      this.createButton(var1, 1, SResources.getString("b.cancel"), false);
+      this.createButton(parent, 0, SResources.getString("b.ok"), true);
+      this.createButton(parent, 1, SResources.getString("b.cancel"), false);
    }
 
-   protected void buttonPressed(int var1) {
-      if (var1 == 0 && Sancho.hasCollectionFactory()) {
-         Option var2 = (Option)Sancho.getCore().getCollectionFactory().getOptionCollection().get("verbosity");
-         if (var2 != null) {
-            StringBuffer var3 = new StringBuffer();
+   protected void buttonPressed(int buttonId) {
+      if (buttonId == 0 && Sancho.hasCollectionFactory()) {
+         Option option = (Option)Sancho.getCore().getCollectionFactory().getOptionCollection().get("verbosity");
+         if (option != null) {
+            StringBuffer buffer = new StringBuffer();
 
-            for (int var4 = 0; var4 < this.buttonArray.length; var4++) {
-               if (this.buttonArray[var4].getSelection()) {
-                  if (var3.length() > 0) {
-                     var3.append(" ");
+            for (int i = 0; i < this.buttonArray.length; i++) {
+               if (this.buttonArray[i].getSelection()) {
+                  if (buffer.length() > 0) {
+                     buffer.append(" ");
                   }
 
-                  var3.append(this.buttonArray[var4].getData("keyword"));
+                  buffer.append(this.buttonArray[i].getData("keyword"));
                }
             }
 
-            var2.setValue(var3.toString());
+            option.setValue(buffer.toString());
          }
       }
 
-      super.buttonPressed(var1);
+      super.buttonPressed(buttonId);
    }
 }

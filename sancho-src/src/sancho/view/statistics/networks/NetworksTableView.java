@@ -11,8 +11,8 @@ public class NetworksTableView extends GTableView {
    public static final int UPLOADED = 1;
    public static final int DOWNLOADED = 2;
 
-   public NetworksTableView(ViewFrame var1) {
-      super(var1);
+   public NetworksTableView(ViewFrame viewFrame) {
+      super(viewFrame);
       this.preferenceString = "networks";
       this.columnLabels = new String[]{"networks.name", "networks.uploaded", "networks.downloaded"};
       this.columnAlignment = new int[]{16384, 131072, 131072};
@@ -21,11 +21,11 @@ public class NetworksTableView extends GTableView {
       this.tableContentProvider = new NetworksTableContentProvider(this);
       this.tableLabelProvider = new NetworksTableLabelProvider(this);
       this.tableMenuListener = new NetworksTableMenuListener(this);
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
    }
 
-   protected void createContents(Composite var1) {
-      super.createContents(var1);
+   protected void createContents(Composite composite) {
+      super.createContents(composite);
       this.sViewer.addSelectionChangedListener((NetworksTableMenuListener)this.tableMenuListener);
       this.addMenuListener();
       this.updateHeader();

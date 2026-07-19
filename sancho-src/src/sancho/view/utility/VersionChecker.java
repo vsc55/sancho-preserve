@@ -27,10 +27,10 @@ public class VersionChecker implements Runnable {
    String newVersion;
    StatusLine statusLine;
 
-   public VersionChecker(Shell var1, StatusLine var2, int var3) {
-      this.shell = var1;
-      this.statusLine = var2;
-      var1.getDisplay().timerExec(var3, this);
+   public VersionChecker(Shell shell, StatusLine statusLine, int delay) {
+      this.shell = shell;
+      this.statusLine = statusLine;
+      shell.getDisplay().timerExec(delay, this);
    }
 
    public void run() {
@@ -39,49 +39,49 @@ public class VersionChecker implements Runnable {
          public void run() {
             try {
                VersionChecker.this.url = new URL(VersionInfo.getHomePage2() + "/version.php");
-            } catch (MalformedURLException var5) {
-               Sancho.pDebug("VersionChecker: " + var5);
+            } catch (MalformedURLException malformedURLException) {
+               Sancho.pDebug("VersionChecker: " + malformedURLException);
                return;
             }
 
             try {
-               URLConnection var1 = VersionChecker.this.url.openConnection();
-               StringBuffer var6 = new StringBuffer(64);
-               var6.append(VersionInfo.getName());
-               var6.append("/");
-               var6.append(VersionInfo.getVersion());
-               var6.append(" ");
-               var6.append("(");
-               var6.append(System.getProperty("os.name"));
-               var6.append(" ");
-               var6.append(System.getProperty("os.version"));
-               var6.append("/");
-               var6.append(VersionInfo.getSWTPlatform());
-               var6.append(")");
-               var6.append(" ");
-               var6.append("(");
-               var6.append(System.getProperty("java.vm.name"));
-               var6.append(" ");
-               var6.append(System.getProperty("java.vm.version"));
-               var6.append(")");
-               var1.setRequestProperty("User-Agent", var6.toString());
-               BufferedReader var3 = new BufferedReader(new InputStreamReader(var1.getInputStream()));
-               VersionChecker.this.newVersion = var3.readLine();
-               var3.close();
+               URLConnection connection = VersionChecker.this.url.openConnection();
+               StringBuffer buffer = new StringBuffer(64);
+               buffer.append(VersionInfo.getName());
+               buffer.append("/");
+               buffer.append(VersionInfo.getVersion());
+               buffer.append(" ");
+               buffer.append("(");
+               buffer.append(System.getProperty("os.name"));
+               buffer.append(" ");
+               buffer.append(System.getProperty("os.version"));
+               buffer.append("/");
+               buffer.append(VersionInfo.getSWTPlatform());
+               buffer.append(")");
+               buffer.append(" ");
+               buffer.append("(");
+               buffer.append(System.getProperty("java.vm.name"));
+               buffer.append(" ");
+               buffer.append(System.getProperty("java.vm.version"));
+               buffer.append(")");
+               connection.setRequestProperty("User-Agent", buffer.toString());
+               BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+               VersionChecker.this.newVersion = reader.readLine();
+               reader.close();
                if (!VersionChecker.this.shell.isDisposed() && !VersionChecker.this.shell.getDisplay().isDisposed()) {
                   // Success: report the fetched version back on the UI thread.
                   VersionChecker.this.shell.getDisplay().asyncExec(new Runnable() {
                      public void run() {
-                        VersionChecker var2 = VersionChecker.this;
-                        String var1 = var2.newVersion;
+                        VersionChecker checker = VersionChecker.this;
+                        String version = checker.newVersion;
                         // A dead/parked update host can answer with HTML (or an empty body -> null)
                         // instead of a version string. Only act when it actually looks like a version,
                         // so we don't show a bogus "latest version" text or a false new-version popup
                         // (and don't NPE on a null line).
-                        boolean var3 = var1 != null && var1.matches("\\d+(\\.\\d+)*(-\\d+)?");
-                        if (var2.shell != null && !var2.shell.isDisposed()) {
-                           if (var2.statusLine != null && var3) {
-                              var2.statusLine
+                        boolean isVersion = version != null && version.matches("\\d+(\\.\\d+)*(-\\d+)?");
+                        if (checker.shell != null && !checker.shell.isDisposed()) {
+                           if (checker.statusLine != null && isVersion) {
+                              checker.statusLine
                                  .setText(
                                     "["
                                        + VersionInfo.getName()
@@ -90,20 +90,20 @@ public class VersionChecker implements Runnable {
                                        + VersionInfo.getVersion()
                                        + " / "
                                        + SResources.getString("l.latest")
-                                       + var1
+                                       + version
                                  );
                            }
 
-                           if (var3 && !var1.equals(VersionInfo.getVersion()) && PreferenceLoader.loadBoolean("versionCheckPopup")) {
-                              new VersionDialog(var2.shell, var1).open();
+                           if (isVersion && !version.equals(VersionInfo.getVersion()) && PreferenceLoader.loadBoolean("versionCheckPopup")) {
+                              new VersionDialog(checker.shell, version).open();
                            }
                         }
                      }
                   });
                }
-            } catch (IOException var4) {
-               Sancho.pDebug("VersionChecker: " + var4);
-               String var2 = var4.toString();
+            } catch (IOException ioException) {
+               Sancho.pDebug("VersionChecker: " + ioException);
+               String text = ioException.toString();
                // Failure: note that the version check could not reach the server.
                VersionChecker.this.shell.getDisplay().asyncExec(new Runnable() {
                   public void run() {
@@ -121,65 +121,65 @@ public class VersionChecker implements Runnable {
    private static class VersionDialog extends Dialog {
       String string;
 
-      public VersionDialog(Shell var1, String var2) {
-         super(var1);
-         this.string = var2;
+      public VersionDialog(Shell shell, String version) {
+         super(shell);
+         this.string = version;
       }
 
-      protected void configureShell(Shell var1) {
-         super.configureShell(var1);
-         var1.setText(SResources.getString("l.newVersionTitle"));
+      protected void configureShell(Shell shell) {
+         super.configureShell(shell);
+         shell.setText(SResources.getString("l.newVersionTitle"));
       }
 
-      protected Control createDialogArea(Composite var1) {
-         Composite var2 = (Composite)super.createDialogArea(var1);
-         var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
-         Label var3 = new Label(var2, 0);
-         GridData var4 = new GridData(832);
-         var4.horizontalSpan = 2;
-         var3.setLayoutData(var4);
-         var3.setText(VersionInfo.getName() + ": " + SResources.getString("l.newVersionText"));
-         this.createLabel(var2, SResources.getString("l.current"), 128);
-         this.createLabel(var2, VersionInfo.getVersion(), 32);
-         this.createLabel(var2, SResources.getString("l.latest"), 128);
-         this.createLabel(var2, this.string, 32);
-         return var2;
+      protected Control createDialogArea(Composite parent) {
+         Composite composite = (Composite)super.createDialogArea(parent);
+         composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
+         Label label = new Label(composite, 0);
+         GridData gridData = new GridData(832);
+         gridData.horizontalSpan = 2;
+         label.setLayoutData(gridData);
+         label.setText(VersionInfo.getName() + ": " + SResources.getString("l.newVersionText"));
+         this.createLabel(composite, SResources.getString("l.current"), 128);
+         this.createLabel(composite, VersionInfo.getVersion(), 32);
+         this.createLabel(composite, SResources.getString("l.latest"), 128);
+         this.createLabel(composite, this.string, 32);
+         return composite;
       }
 
-      private void createLabel(Composite var1, String var2, int var3) {
-         Label var4 = new Label(var1, 0);
-         var4.setLayoutData(new GridData(512 | var3));
-         var4.setText(var2);
+      private void createLabel(Composite composite, String text, int style) {
+         Label label = new Label(composite, 0);
+         label.setLayoutData(new GridData(512 | style));
+         label.setText(text);
       }
 
-      protected Control createButtonBar(Composite var1) {
-         Composite var2 = new Composite(var1, 0);
-         var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
-         var2.setLayoutData(new GridData(768));
-         this.createButton(var2, 128, SResources.getString("b.close"), new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent var1) {
+      protected Control createButtonBar(Composite parent) {
+         Composite composite = new Composite(parent, 0);
+         composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
+         composite.setLayoutData(new GridData(768));
+         this.createButton(composite, 128, SResources.getString("b.close"), new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent event) {
                VersionDialog.this.close();
             }
          });
          this.createButton(
-            var2,
+            composite,
             768,
             SResources.getString("l.visit") + " " + SResources.getString("ti.web.sancho"),
             new SelectionAdapter() {
-               public void widgetSelected(SelectionEvent var1) {
+               public void widgetSelected(SelectionEvent event) {
                   WebLauncher.openLink(VersionInfo.getHomePage2());
                   VersionDialog.this.close();
                }
             }
          );
-         return var2;
+         return composite;
       }
 
-      protected void createButton(Composite var1, int var2, String var3, SelectionListener var4) {
-         Button var5 = new Button(var1, 0);
-         var5.setLayoutData(new GridData(var2));
-         var5.setText(var3);
-         var5.addSelectionListener(var4);
+      protected void createButton(Composite composite, int style, String text, SelectionListener listener) {
+         Button button = new Button(composite, 0);
+         button.setLayoutData(new GridData(style));
+         button.setText(text);
+         button.addSelectionListener(listener);
       }
    }
 }

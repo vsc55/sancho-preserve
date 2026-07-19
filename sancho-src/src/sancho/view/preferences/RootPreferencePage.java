@@ -29,339 +29,339 @@ import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
 
 public class RootPreferencePage extends CPreferencePage {
-   public RootPreferencePage(String var1) {
-      super(var1);
+   public RootPreferencePage(String title) {
+      super(title);
    }
 
-   protected Control createContents(Composite var1) {
-      Composite var2 = new Composite(var1, 0);
-      var2.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
-      TabFolder var3 = new TabFolder(var2, 128);
-      var3.setLayoutData(new GridData(1808));
-      this.createGeneralTab(var3);
-      this.createDownloadsTab(var3);
-      this.createSearchTab(var3);
-      this.createConsoleTab(var3);
-      this.createGraphTab(var3);
-      this.createRoomsTab(var3);
-      this.createWebBrowserTab(var3);
-      return var2;
+   protected Control createContents(Composite parent) {
+      Composite composite = new Composite(parent, 0);
+      composite.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
+      TabFolder tabFolder = new TabFolder(composite, 128);
+      tabFolder.setLayoutData(new GridData(1808));
+      this.createGeneralTab(tabFolder);
+      this.createDownloadsTab(tabFolder);
+      this.createSearchTab(tabFolder);
+      this.createConsoleTab(tabFolder);
+      this.createGraphTab(tabFolder);
+      this.createRoomsTab(tabFolder);
+      this.createWebBrowserTab(tabFolder);
+      return composite;
    }
 
-   protected void createGeneralTab(TabFolder var1) {
-      Composite var2 = this.createNewTab(var1, "p.general", "preferences");
-      String[] var3;
+   protected void createGeneralTab(TabFolder tabFolder) {
+      Composite composite = this.createNewTab(tabFolder, "p.general", "preferences");
+      String[] filterExtensions;
       if (VersionInfo.getOSPlatform().equals("Windows")) {
-         var3 = new String[]{"*.exe;*.bat"};
+         filterExtensions = new String[]{"*.exe;*.bat"};
       } else {
-         var3 = new String[]{"*"};
+         filterExtensions = new String[]{"*"};
       }
 
-      this.createInformationLabel(var2, "p.coreExecutableInfo");
-      this.setupFileEditor("coreExecutable", "p.r.general.coreExecutable", var3, var2);
-      this.setupBooleanEditor("killSpawnedCoreOnExit", "p.r.general.killSpawnedCoreOnExit", var2);
-      this.setupIntegerEditor("killSpawnedCoreDelay", "p.r.general.killSpawnedCoreDelay", 1, 1000, var2);
-      this.createSeparator(var2);
-      this.setupIntegerEditor("connectionTimeout", "p.r.general.connectionTimeout", 1, 10000, var2);
-      this.createSeparator(var2);
-      this.createInformationLabel(var2, "p.webBrowserInfo");
-      this.setupFileEditor("defaultWebBrowser", "p.r.general.defaultBrowser", var3, var2);
-      this.createSeparator(var2);
-      this.createInformationLabel(var2, "p.localeInfo");
-      Label var4 = new Label(var2, 0);
-      var4.setText(SResources.getString("p.r.general.locale"));
-      Combo var5 = new Combo(var2, 8);
-      String var6 = PreferenceLoader.loadString("locale");
-      var5.add("");
-      String[] var7 = this.getLocales();
+      this.createInformationLabel(composite, "p.coreExecutableInfo");
+      this.setupFileEditor("coreExecutable", "p.r.general.coreExecutable", filterExtensions, composite);
+      this.setupBooleanEditor("killSpawnedCoreOnExit", "p.r.general.killSpawnedCoreOnExit", composite);
+      this.setupIntegerEditor("killSpawnedCoreDelay", "p.r.general.killSpawnedCoreDelay", 1, 1000, composite);
+      this.createSeparator(composite);
+      this.setupIntegerEditor("connectionTimeout", "p.r.general.connectionTimeout", 1, 10000, composite);
+      this.createSeparator(composite);
+      this.createInformationLabel(composite, "p.webBrowserInfo");
+      this.setupFileEditor("defaultWebBrowser", "p.r.general.defaultBrowser", filterExtensions, composite);
+      this.createSeparator(composite);
+      this.createInformationLabel(composite, "p.localeInfo");
+      Label label = new Label(composite, 0);
+      label.setText(SResources.getString("p.r.general.locale"));
+      Combo combo = new Combo(composite, 8);
+      String currentLocale = PreferenceLoader.loadString("locale");
+      combo.add("");
+      String[] locales = this.getLocales();
 
-      for (int var8 = 0; var8 < var7.length; var8++) {
-         var5.add(var7[var8]);
-         if (var7[var8].equals(var6)) {
-            var5.select(var8 + 1);
+      for (int i = 0; i < locales.length; i++) {
+         combo.add(locales[i]);
+         if (locales[i].equals(currentLocale)) {
+            combo.select(i + 1);
          }
       }
 
-      var5.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            PreferenceLoader.getPreferenceStore().setValue("locale", var5.getItem(var5.getSelectionIndex()));
+      combo.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
+            PreferenceLoader.getPreferenceStore().setValue("locale", combo.getItem(combo.getSelectionIndex()));
          }
       });
-      this.createSeparator(var2);
-      this.setupBooleanEditor("autoReconnect", "p.r.general.autoReconnect", var2);
-      this.setupIntegerEditor("autoReconnectDelay", "p.r.general.autoReconnectDelay", 1, 10000, var2);
-      this.createSeparator(var2);
+      this.createSeparator(composite);
+      this.setupBooleanEditor("autoReconnect", "p.r.general.autoReconnect", composite);
+      this.setupIntegerEditor("autoReconnectDelay", "p.r.general.autoReconnectDelay", 1, 10000, composite);
+      this.createSeparator(composite);
       if (VersionInfo.hasTray()) {
-         this.setupBooleanEditor("systrayEnabled", "p.r.general.systrayEnabled", var2);
-         this.setupBooleanEditor("systraySingleClick", "p.r.general.systraySingleClick", var2);
-         this.setupBooleanEditor("minimizeOnClose", "p.r.general.systrayOnClose", var2);
-         this.setupBooleanEditor("systrayOnMinimize", "p.r.general.systrayOnMinimize", var2);
-         this.setupBooleanEditor("windowStartTray", "p.r.general.startTray", var2);
+         this.setupBooleanEditor("systrayEnabled", "p.r.general.systrayEnabled", composite);
+         this.setupBooleanEditor("systraySingleClick", "p.r.general.systraySingleClick", composite);
+         this.setupBooleanEditor("minimizeOnClose", "p.r.general.systrayOnClose", composite);
+         this.setupBooleanEditor("systrayOnMinimize", "p.r.general.systrayOnMinimize", composite);
+         this.setupBooleanEditor("windowStartTray", "p.r.general.startTray", composite);
       }
 
-      this.setupBooleanEditor("windowStartMinimized", "p.r.general.startMinimized", var2);
-      this.setupBooleanEditor("allowMultipleInstances", "p.r.general.multipleInstances", var2);
-      this.setupBooleanEditor("hostManagerOnStart", "p.r.general.hostManagerOnStart", var2);
-      this.setupBooleanEditor("useLastFile", "p.r.general.useLastFile", var2);
-      this.setupBooleanEditor("killCoreOnExit", "p.r.general.killCoreOnExit", var2);
-      this.setupBooleanEditor("versionCheck", "p.r.general.versionCheck", var2);
-      this.setupBooleanEditor("versionCheckPopup", "p.r.general.versionCheckPopup", var2);
-      this.setCompositeLayout(var2);
+      this.setupBooleanEditor("windowStartMinimized", "p.r.general.startMinimized", composite);
+      this.setupBooleanEditor("allowMultipleInstances", "p.r.general.multipleInstances", composite);
+      this.setupBooleanEditor("hostManagerOnStart", "p.r.general.hostManagerOnStart", composite);
+      this.setupBooleanEditor("useLastFile", "p.r.general.useLastFile", composite);
+      this.setupBooleanEditor("killCoreOnExit", "p.r.general.killCoreOnExit", composite);
+      this.setupBooleanEditor("versionCheck", "p.r.general.versionCheck", composite);
+      this.setupBooleanEditor("versionCheckPopup", "p.r.general.versionCheckPopup", composite);
+      this.setCompositeLayout(composite);
    }
 
-   protected void createDownloadsTab(TabFolder var1) {
-      Composite var2 = this.createNewTab(var1, "tab.transfers", "tab.transfers.buttonSmall");
-      var2.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
-      var2.setLayoutData(new GridData(1808));
-      TabFolder var3 = new TabFolder(var2, 1024);
-      var3.setLayoutData(new GridData(1808));
-      this.createDownloadsGeneral(var3);
-      this.createDownloadsPreview(var3);
-      this.createDownloadsExplorer(var3);
-      this.createDownloadsWebservices(var3);
+   protected void createDownloadsTab(TabFolder tabFolder) {
+      Composite composite = this.createNewTab(tabFolder, "tab.transfers", "tab.transfers.buttonSmall");
+      composite.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
+      composite.setLayoutData(new GridData(1808));
+      TabFolder subTabFolder = new TabFolder(composite, 1024);
+      subTabFolder.setLayoutData(new GridData(1808));
+      this.createDownloadsGeneral(subTabFolder);
+      this.createDownloadsPreview(subTabFolder);
+      this.createDownloadsExplorer(subTabFolder);
+      this.createDownloadsWebservices(subTabFolder);
    }
 
-   protected void createDownloadsGeneral(TabFolder var1) {
-      Composite var2 = this.createNewTab(var1, "p.general");
-      this.createInformationLabel(var2, "p.delayInfo");
-      this.setupIntegerEditor("updateDelay", "p.r.downloads.updateDelay", 0, 600, var2);
-      this.createSeparator(var2);
-      this.setupBooleanEditor("pollUpStats", "p.r.downloads.pollUpstats", var2);
-      this.setupIntegerEditor("pollDelay", "p.r.downloads.pollDelay", 1, 600, var2);
-      this.createSeparator(var2);
-      this.setupIntegerEditor("requestFileInfoDelay", "p.r.downloads.requestFileInfoDelay", 0, 99999, var2);
-      this.createSeparator(var2);
-      Label var3 = new Label(var2, 0);
-      var3.setText(SResources.getString("p.r.downloads.fileDoubleClick"));
-      Combo var4 = new Combo(var2, 8);
-      var4.setLayoutData(new GridData(768));
-      var4.add(SResources.getString("l.expandBranch"));
-      var4.add(SResources.getString("m.d.preview"));
-      var4.add(SResources.getString("m.d.preview") + " (OS)");
-      int var5 = PreferenceLoader.loadInt("dlFileDoubleClick");
-      if (var5 >= 0 && var5 < var4.getItemCount()) {
-         var4.select(var5);
+   protected void createDownloadsGeneral(TabFolder tabFolder) {
+      Composite composite = this.createNewTab(tabFolder, "p.general");
+      this.createInformationLabel(composite, "p.delayInfo");
+      this.setupIntegerEditor("updateDelay", "p.r.downloads.updateDelay", 0, 600, composite);
+      this.createSeparator(composite);
+      this.setupBooleanEditor("pollUpStats", "p.r.downloads.pollUpstats", composite);
+      this.setupIntegerEditor("pollDelay", "p.r.downloads.pollDelay", 1, 600, composite);
+      this.createSeparator(composite);
+      this.setupIntegerEditor("requestFileInfoDelay", "p.r.downloads.requestFileInfoDelay", 0, 99999, composite);
+      this.createSeparator(composite);
+      Label label = new Label(composite, 0);
+      label.setText(SResources.getString("p.r.downloads.fileDoubleClick"));
+      Combo combo = new Combo(composite, 8);
+      combo.setLayoutData(new GridData(768));
+      combo.add(SResources.getString("l.expandBranch"));
+      combo.add(SResources.getString("m.d.preview"));
+      combo.add(SResources.getString("m.d.preview") + " (OS)");
+      int doubleClick = PreferenceLoader.loadInt("dlFileDoubleClick");
+      if (doubleClick >= 0 && doubleClick < combo.getItemCount()) {
+         combo.select(doubleClick);
       }
 
-      var4.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            Combo var2 = (Combo)var1.widget;
-            PreferenceLoader.getPreferenceStore().setValue("dlFileDoubleClick", var2.getSelectionIndex());
+      combo.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
+            Combo combo = (Combo)event.widget;
+            PreferenceLoader.getPreferenceStore().setValue("dlFileDoubleClick", combo.getSelectionIndex());
          }
       });
-      this.createSeparator(var2);
-      this.setupIntegerEditor("dlPercentDecimals", "p.r.downloads.percentDecimals", 0, 5, var2);
-      this.setupIntegerEditor("dlRateDecimals", "p.r.downloads.rateDecimals", 0, 5, var2);
-      this.createSeparator(var2);
-      this.setupBooleanEditor("displayChunkGraphs", "p.r.downloads.displayChunkGraphs", var2);
-      this.setupBooleanEditor("displayChunkGraphPercent", "p.r.downloads.displayChunkGraphPercent", var2);
-      this.setupIntegerEditor("maxChunkGraphLength", "p.r.downloads.maxChunkGraphLength", 0, 50000, var2);
-      this.createSeparator(var2);
-      this.setupBooleanEditor("tableCellEditors", "p.r.downloads.tableCellEditors", var2);
-      this.setupBooleanEditor("dragAndDrop", "p.r.downloads.dragAndDrop", var2);
-      this.setupBooleanEditor("maintainSortOrder", "p.r.downloads.maintainSortOrder", var2);
-      this.setupBooleanEditor("dlIndicateFakes", "p.r.downloads.indicateFakes", var2);
-      this.setupBooleanEditor("downloadCompleteDialog", "p.r.downloads.downloadCompleteDialog", var2);
-      this.setupBooleanEditor("downloadCompleteLog", "p.r.downloads.downloadCompleteLog", var2);
-      this.setupBooleanEditor("mldonkey.InterestedInSources", "p.r.downloads.interestedInSources", var2);
-      this.setCompositeLayout(var2);
+      this.createSeparator(composite);
+      this.setupIntegerEditor("dlPercentDecimals", "p.r.downloads.percentDecimals", 0, 5, composite);
+      this.setupIntegerEditor("dlRateDecimals", "p.r.downloads.rateDecimals", 0, 5, composite);
+      this.createSeparator(composite);
+      this.setupBooleanEditor("displayChunkGraphs", "p.r.downloads.displayChunkGraphs", composite);
+      this.setupBooleanEditor("displayChunkGraphPercent", "p.r.downloads.displayChunkGraphPercent", composite);
+      this.setupIntegerEditor("maxChunkGraphLength", "p.r.downloads.maxChunkGraphLength", 0, 50000, composite);
+      this.createSeparator(composite);
+      this.setupBooleanEditor("tableCellEditors", "p.r.downloads.tableCellEditors", composite);
+      this.setupBooleanEditor("dragAndDrop", "p.r.downloads.dragAndDrop", composite);
+      this.setupBooleanEditor("maintainSortOrder", "p.r.downloads.maintainSortOrder", composite);
+      this.setupBooleanEditor("dlIndicateFakes", "p.r.downloads.indicateFakes", composite);
+      this.setupBooleanEditor("downloadCompleteDialog", "p.r.downloads.downloadCompleteDialog", composite);
+      this.setupBooleanEditor("downloadCompleteLog", "p.r.downloads.downloadCompleteLog", composite);
+      this.setupBooleanEditor("mldonkey.InterestedInSources", "p.r.downloads.interestedInSources", composite);
+      this.setCompositeLayout(composite);
    }
 
-   protected void createDownloadsPreview(TabFolder var1) {
-      Composite var2 = this.createNewTab(var1, "m.d.preview");
-      String[] var3;
+   protected void createDownloadsPreview(TabFolder tabFolder) {
+      Composite composite = this.createNewTab(tabFolder, "m.d.preview");
+      String[] filterExtensions;
       if (VersionInfo.getOSPlatform().equals("Windows")) {
-         var3 = new String[]{"*.exe;*.bat"};
+         filterExtensions = new String[]{"*.exe;*.bat"};
       } else {
-         var3 = new String[]{"*"};
+         filterExtensions = new String[]{"*"};
       }
 
-      this.createInformationLabel(var2, "p.previewInfo");
-      this.setupFileEditor("previewExecutable", "p.r.downloads.previewExecutable", var3, var2);
-      this.setupDirectoryEditor("previewWorkingDirectory", "p.r.downloads.previewWorkingDirectory", var2);
-      this.createSeparator(var2);
-      ArrayList var4 = new ArrayList();
-      ArrayList var5 = new ArrayList();
-      Composite var7 = new Composite(var2, 0);
-      GridData var6 = new GridData(768);
-      var6.horizontalSpan = 3;
-      var7.setLayoutData(var6);
-      var7.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 0, 0, false));
-      Composite var8 = new Composite(var7, 0);
-      var8.setLayoutData(new GridData(768));
-      var8.setLayout(WidgetFactory.createGridLayout(5, 0, 0, 0, 5, false));
-      Label var9 = new Label(var8, 0);
-      var9.setText(SResources.getString("p.previewExtensionsInfo"));
-      var6 = new GridData(768);
-      var6.horizontalSpan = 5;
-      var9.setLayoutData(var6);
-      Label var10 = new Label(var8, 0);
-      var10.setText(SResources.getString("l.ext"));
-      Text var11 = new Text(var8, 2052);
-      var11.setText("mp3");
-      new Label(var8, 0).setText("=");
-      Text var12 = new Text(var8, 2052);
-      var12.setLayoutData(new GridData(768));
-      Button var13 = new Button(var8, 0);
-      var13.setText(SResources.getString("b.browse"));
-      var13.setLayoutData(new GridData(768));
-      var13.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            FileDialog var2 = new FileDialog(var12.getShell(), 4);
-            if (var2.open() != null) {
-               String var3 = var2.getFilterPath() + System.getProperty("file.separator");
-               var3 = var3 + var2.getFileName();
-               var12.setText(var3);
+      this.createInformationLabel(composite, "p.previewInfo");
+      this.setupFileEditor("previewExecutable", "p.r.downloads.previewExecutable", filterExtensions, composite);
+      this.setupDirectoryEditor("previewWorkingDirectory", "p.r.downloads.previewWorkingDirectory", composite);
+      this.createSeparator(composite);
+      ArrayList extensions = new ArrayList();
+      ArrayList applications = new ArrayList();
+      Composite container = new Composite(composite, 0);
+      GridData gridData = new GridData(768);
+      gridData.horizontalSpan = 3;
+      container.setLayoutData(gridData);
+      container.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 0, 0, false));
+      Composite extensionComposite = new Composite(container, 0);
+      extensionComposite.setLayoutData(new GridData(768));
+      extensionComposite.setLayout(WidgetFactory.createGridLayout(5, 0, 0, 0, 5, false));
+      Label infoLabel = new Label(extensionComposite, 0);
+      infoLabel.setText(SResources.getString("p.previewExtensionsInfo"));
+      gridData = new GridData(768);
+      gridData.horizontalSpan = 5;
+      infoLabel.setLayoutData(gridData);
+      Label extLabel = new Label(extensionComposite, 0);
+      extLabel.setText(SResources.getString("l.ext"));
+      Text extensionText = new Text(extensionComposite, 2052);
+      extensionText.setText("mp3");
+      new Label(extensionComposite, 0).setText("=");
+      Text applicationText = new Text(extensionComposite, 2052);
+      applicationText.setLayoutData(new GridData(768));
+      Button browseButton = new Button(extensionComposite, 0);
+      browseButton.setText(SResources.getString("b.browse"));
+      browseButton.setLayoutData(new GridData(768));
+      browseButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
+            FileDialog dialog = new FileDialog(applicationText.getShell(), 4);
+            if (dialog.open() != null) {
+               String path = dialog.getFilterPath() + System.getProperty("file.separator");
+               path = path + dialog.getFileName();
+               applicationText.setText(path);
             }
          }
       });
-      var6 = new GridData(768);
-      var6.horizontalSpan = 5;
-      Composite var14 = new Composite(var8, 0);
-      var14.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 0, 0, false));
-      var14.setLayoutData(var6);
-      Button var15 = new Button(var14, 0);
-      var15.setText(SResources.getString("b.add"));
-      var15.setLayoutData(new GridData(768));
-      Button var16 = new Button(var14, 0);
-      var16.setText(SResources.getString("b.remove"));
-      var16.setLayoutData(new GridData(768));
-      List var17 = new List(var7, 2816);
-      var6 = new GridData();
-      var6.widthHint = 200;
-      var6.heightHint = 75;
-      var17.setLayoutData(var6);
-      var15.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            if (!var11.getText().equals("") && !var12.getText().equals("")) {
-               String var2 = var11.getText();
-               String var3 = var12.getText();
-               var4.add(var2);
-               var5.add(var3);
-               RootPreferencePage.this.refreshList(var17, var4, var5);
+      gridData = new GridData(768);
+      gridData.horizontalSpan = 5;
+      Composite buttonComposite = new Composite(extensionComposite, 0);
+      buttonComposite.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 0, 0, false));
+      buttonComposite.setLayoutData(gridData);
+      Button addButton = new Button(buttonComposite, 0);
+      addButton.setText(SResources.getString("b.add"));
+      addButton.setLayoutData(new GridData(768));
+      Button removeButton = new Button(buttonComposite, 0);
+      removeButton.setText(SResources.getString("b.remove"));
+      removeButton.setLayoutData(new GridData(768));
+      List list = new List(container, 2816);
+      gridData = new GridData();
+      gridData.widthHint = 200;
+      gridData.heightHint = 75;
+      list.setLayoutData(gridData);
+      addButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
+            if (!extensionText.getText().equals("") && !applicationText.getText().equals("")) {
+               String extension = extensionText.getText();
+               String application = applicationText.getText();
+               extensions.add(extension);
+               applications.add(application);
+               RootPreferencePage.this.refreshList(list, extensions, applications);
             }
          }
       });
-      var16.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            if (var17.getSelectionIndex() != -1) {
-               int var2 = var17.getSelectionIndex();
-               var4.remove(var2);
-               var5.remove(var2);
-               RootPreferencePage.this.refreshList(var17, var4, var5);
+      removeButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
+            if (list.getSelectionIndex() != -1) {
+               int index = list.getSelectionIndex();
+               extensions.remove(index);
+               applications.remove(index);
+               RootPreferencePage.this.refreshList(list, extensions, applications);
             }
          }
       });
-      this.loadList(var17, var4, var5);
-      this.createSeparator(var2);
-      this.setupDirectoryEditor("previewDownloadDirectory", "p.r.downloads.previewDownloadDirectory", var2);
-      this.createSeparator(var2);
-      this.createInformationLabel(var2, "p.previewHttpInfo");
-      this.setupBooleanEditor("previewUseHttp", "p.r.downloads.previewUseHttp", var2);
-      this.setCompositeLayout(var2);
+      this.loadList(list, extensions, applications);
+      this.createSeparator(composite);
+      this.setupDirectoryEditor("previewDownloadDirectory", "p.r.downloads.previewDownloadDirectory", composite);
+      this.createSeparator(composite);
+      this.createInformationLabel(composite, "p.previewHttpInfo");
+      this.setupBooleanEditor("previewUseHttp", "p.r.downloads.previewUseHttp", composite);
+      this.setCompositeLayout(composite);
    }
 
-   protected void createDownloadsExplorer(TabFolder var1) {
-      Composite var2 = this.createNewTab(var1, "p.explorer");
-      String[] var3;
+   protected void createDownloadsExplorer(TabFolder tabFolder) {
+      Composite composite = this.createNewTab(tabFolder, "p.explorer");
+      String[] filterExtensions;
       if (VersionInfo.getOSPlatform().equals("Windows")) {
-         var3 = new String[]{"*.exe;*.bat"};
+         filterExtensions = new String[]{"*.exe;*.bat"};
       } else {
-         var3 = new String[]{"*"};
+         filterExtensions = new String[]{"*"};
       }
 
-      this.createInformationLabel(var2, "p.explorerInfo");
-      this.setupFileEditor("explorerExecutable", "p.r.downloads.explorerExecutable", var3, var2);
-      this.setupDirectoryEditor("explorerOpenFolder", "p.r.downloads.explorerOpenFolder", var2);
-      this.setCompositeLayout(var2);
+      this.createInformationLabel(composite, "p.explorerInfo");
+      this.setupFileEditor("explorerExecutable", "p.r.downloads.explorerExecutable", filterExtensions, composite);
+      this.setupDirectoryEditor("explorerOpenFolder", "p.r.downloads.explorerOpenFolder", composite);
+      this.setCompositeLayout(composite);
    }
 
-   protected void createDownloadsWebservices(TabFolder var1) {
-      Composite var2 = this.createNewTab(var1, "mi.webServices");
+   protected void createDownloadsWebservices(TabFolder tabFolder) {
+      Composite composite = this.createNewTab(tabFolder, "mi.webServices");
 
-      for (int var3 = 1; var3 < 6; var3++) {
-         this.setupStringEditor("webServiceName" + var3, var3 + " ", "p.r.downloads.webservice.name", '0', var2);
-         this.setupStringEditor("webServiceURL" + var3, var3 + " ", "p.r.downloads.webservice.url", '0', var2);
-         this.createSeparator(var2);
+      for (int i = 1; i < 6; i++) {
+         this.setupStringEditor("webServiceName" + i, i + " ", "p.r.downloads.webservice.name", '0', composite);
+         this.setupStringEditor("webServiceURL" + i, i + " ", "p.r.downloads.webservice.url", '0', composite);
+         this.createSeparator(composite);
       }
 
-      this.setCompositeLayout(var2);
+      this.setCompositeLayout(composite);
    }
 
-   protected void createSearchTab(TabFolder var1) {
-      Composite var2 = this.createNewTab(var1, "tab.search", "tab.search.buttonSmall");
-      this.setupBooleanEditor("searchForceDownload", "p.r.search.forceDownload", var2);
-      this.setupBooleanEditor("searchFilterPornography", "p.r.search.filterPornography", var2);
-      this.setupBooleanEditor("searchFilterProfanity", "p.r.search.filterProfanity", var2);
-      this.setupBooleanEditor("searchTooltips", "p.r.search.tooltips", var2);
-      this.setupBooleanEditor("searchTooltipsOffset", "p.r.search.tooltipsOffset", var2);
-      this.setupBooleanEditor("searchSaveEntries", "p.r.search.saveEntries", var2);
-      this.setCompositeLayout(var2);
+   protected void createSearchTab(TabFolder tabFolder) {
+      Composite composite = this.createNewTab(tabFolder, "tab.search", "tab.search.buttonSmall");
+      this.setupBooleanEditor("searchForceDownload", "p.r.search.forceDownload", composite);
+      this.setupBooleanEditor("searchFilterPornography", "p.r.search.filterPornography", composite);
+      this.setupBooleanEditor("searchFilterProfanity", "p.r.search.filterProfanity", composite);
+      this.setupBooleanEditor("searchTooltips", "p.r.search.tooltips", composite);
+      this.setupBooleanEditor("searchTooltipsOffset", "p.r.search.tooltipsOffset", composite);
+      this.setupBooleanEditor("searchSaveEntries", "p.r.search.saveEntries", composite);
+      this.setCompositeLayout(composite);
    }
 
-   protected void createConsoleTab(TabFolder var1) {
-      Composite var2 = this.createNewTab(var1, "tab.console", "tab.console.buttonSmall");
-      this.setupIntegerEditor("consoleMaxLines", "p.r.console.maxLines", 25, 10000, var2);
-      this.createSeparator(var2);
-      this.setupIntegerEditor("consoleToolItems", "p.r.console.toolItems", 0, 9, var2);
-      this.createSeparator(var2);
+   protected void createConsoleTab(TabFolder tabFolder) {
+      Composite composite = this.createNewTab(tabFolder, "tab.console", "tab.console.buttonSmall");
+      this.setupIntegerEditor("consoleMaxLines", "p.r.console.maxLines", 25, 10000, composite);
+      this.createSeparator(composite);
+      this.setupIntegerEditor("consoleToolItems", "p.r.console.toolItems", 0, 9, composite);
+      this.createSeparator(composite);
 
-      for (int var3 = 1; var3 < 10; var3++) {
-         this.setupStringEditor("consoleToolItem" + var3, var3 + " ", "p.r.console.toolItem", '0', var2);
+      for (int i = 1; i < 10; i++) {
+         this.setupStringEditor("consoleToolItem" + i, i + " ", "p.r.console.toolItem", '0', composite);
       }
 
-      this.setCompositeLayout(var2);
+      this.setCompositeLayout(composite);
    }
 
-   protected void createGraphTab(TabFolder var1) {
-      Composite var2 = this.createNewTab(var1, "tab.statistics", "tab.statistics.buttonSmall");
-      this.createInformationLabel(var2, "p.delayInfo");
-      this.setupIntegerEditor("graphUpdateDelay", "p.r.graphs.updateDelay", 0, 600, var2);
-      this.createSeparator(var2);
-      this.setupIntegerEditor("statsDelay", "p.r.graphs.statsDelay", 1, 600, var2);
-      this.setCompositeLayout(var2);
+   protected void createGraphTab(TabFolder tabFolder) {
+      Composite composite = this.createNewTab(tabFolder, "tab.statistics", "tab.statistics.buttonSmall");
+      this.createInformationLabel(composite, "p.delayInfo");
+      this.setupIntegerEditor("graphUpdateDelay", "p.r.graphs.updateDelay", 0, 600, composite);
+      this.createSeparator(composite);
+      this.setupIntegerEditor("statsDelay", "p.r.graphs.statsDelay", 1, 600, composite);
+      this.setCompositeLayout(composite);
    }
 
-   protected void createRoomsTab(TabFolder var1) {
-      Composite var2 = this.createNewTab(var1, "tab.rooms", "tab.rooms.buttonSmall");
-      this.setupBooleanEditor("autoCloseRooms", "p.r.rooms.autoClose", var2);
-      this.setupBooleanEditor("autoOpenRooms", "p.r.rooms.autoOpen", var2);
-      this.setCompositeLayout(var2);
+   protected void createRoomsTab(TabFolder tabFolder) {
+      Composite composite = this.createNewTab(tabFolder, "tab.rooms", "tab.rooms.buttonSmall");
+      this.setupBooleanEditor("autoCloseRooms", "p.r.rooms.autoClose", composite);
+      this.setupBooleanEditor("autoOpenRooms", "p.r.rooms.autoOpen", composite);
+      this.setCompositeLayout(composite);
    }
 
-   protected void createWebBrowserTab(TabFolder var1) {
-      Composite var2 = this.createNewTab(var1, "tab.webbrowser", "tab.webbrowser.buttonSmall");
-      var2.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
-      var2.setLayoutData(new GridData(1808));
-      TabFolder var3 = new TabFolder(var2, 1024);
-      var3.setLayoutData(new GridData(1808));
-      this.createWebBrowserFavorites(var3);
-      this.createWebBrowserToolItems(var3);
+   protected void createWebBrowserTab(TabFolder tabFolder) {
+      Composite composite = this.createNewTab(tabFolder, "tab.webbrowser", "tab.webbrowser.buttonSmall");
+      composite.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
+      composite.setLayoutData(new GridData(1808));
+      TabFolder subTabFolder = new TabFolder(composite, 1024);
+      subTabFolder.setLayoutData(new GridData(1808));
+      this.createWebBrowserFavorites(subTabFolder);
+      this.createWebBrowserToolItems(subTabFolder);
    }
 
-   protected void createWebBrowserToolItems(TabFolder var1) {
-      Composite var2 = this.createNewTab(var1, "l.toolItems");
-      this.setupIntegerEditor("webBrowserToolItems", "p.r.webbrowser.toolItems", 0, 9, var2);
-      this.createSeparator(var2);
+   protected void createWebBrowserToolItems(TabFolder tabFolder) {
+      Composite composite = this.createNewTab(tabFolder, "l.toolItems");
+      this.setupIntegerEditor("webBrowserToolItems", "p.r.webbrowser.toolItems", 0, 9, composite);
+      this.createSeparator(composite);
 
-      for (int var3 = 1; var3 < 10; var3++) {
-         this.setupStringEditor("webBrowserToolItem" + var3, var3 + " ", "p.r.webbrowser.toolItem", '0', var2);
+      for (int i = 1; i < 10; i++) {
+         this.setupStringEditor("webBrowserToolItem" + i, i + " ", "p.r.webbrowser.toolItem", '0', composite);
       }
 
-      this.setCompositeLayout(var2);
+      this.setCompositeLayout(composite);
    }
 
-   protected void createWebBrowserFavorites(TabFolder var1) {
-      Composite var2 = this.createNewTab(var1, "l.favorites");
+   protected void createWebBrowserFavorites(TabFolder tabFolder) {
+      Composite composite = this.createNewTab(tabFolder, "l.favorites");
       if (SWT.getPlatform().equals("win32")) {
-         this.createInformationLabel(var2, "p.favoritesDirectoryInfo");
-         this.setupDirectoryEditor("favoritesDirectory", "p.r.webbrowser.favoritesDirectory", var2);
+         this.createInformationLabel(composite, "p.favoritesDirectoryInfo");
+         this.setupDirectoryEditor("favoritesDirectory", "p.r.webbrowser.favoritesDirectory", composite);
       }
 
-      this.setupFileEditor("bookmarksFile", "p.r.webbrowser.bookmarksFile", new String[]{"*.html", "*.htm"}, var2);
-      this.setupFileEditor("adrFile", "p.r.webbrowser.adrFile", new String[]{"*.adr"}, var2);
-      this.setupIntegerEditor("maxFavoriteLength", "p.r.webbrowser.maxFavoriteLength", 0, 500, var2);
-      this.setCompositeLayout(var2);
+      this.setupFileEditor("bookmarksFile", "p.r.webbrowser.bookmarksFile", new String[]{"*.html", "*.htm"}, composite);
+      this.setupFileEditor("adrFile", "p.r.webbrowser.adrFile", new String[]{"*.adr"}, composite);
+      this.setupIntegerEditor("maxFavoriteLength", "p.r.webbrowser.maxFavoriteLength", 0, 500, composite);
+      this.setCompositeLayout(composite);
    }
 
    protected String[] getLocales() {
@@ -421,45 +421,45 @@ public class RootPreferencePage extends CPreferencePage {
       }
    }
 
-   public void refreshList(List var1, ArrayList var2, ArrayList var3) {
-      var1.removeAll();
-      String[] var4 = new String[var2.size()];
+   public void refreshList(List list, ArrayList extensions, ArrayList applications) {
+      list.removeAll();
+      String[] items = new String[extensions.size()];
 
-      for (int var5 = 0; var5 < var2.size(); var5++) {
-         var4[var5] = var2.get(var5) + " = " + var3.get(var5);
+      for (int i = 0; i < extensions.size(); i++) {
+         items[i] = extensions.get(i) + " = " + applications.get(i);
       }
 
-      var1.setItems(var4);
-      this.saveList(var2, var3);
+      list.setItems(items);
+      this.saveList(extensions, applications);
    }
 
-   public void saveList(ArrayList var1, ArrayList var2) {
-      StringBuffer var3 = new StringBuffer();
+   public void saveList(ArrayList extensions, ArrayList applications) {
+      StringBuffer buffer = new StringBuffer();
 
-      for (int var4 = 0; var4 < var1.size(); var4++) {
-         var3.append(var1.get(var4));
-         var3.append(";");
-         var3.append(var2.get(var4));
-         var3.append(";");
+      for (int i = 0; i < extensions.size(); i++) {
+         buffer.append(extensions.get(i));
+         buffer.append(";");
+         buffer.append(applications.get(i));
+         buffer.append(";");
       }
 
-      PreferenceLoader.getPreferenceStore().setValue("previewExtensions", var3.toString());
+      PreferenceLoader.getPreferenceStore().setValue("previewExtensions", buffer.toString());
    }
 
-   public void loadList(List var1, ArrayList var2, ArrayList var3) {
-      String var4 = PreferenceLoader.loadString("previewExtensions");
-      if (!var4.equals("")) {
-         StringTokenizer var5 = new StringTokenizer(var4, ";");
-         String var6 = "";
-         String var7 = "";
+   public void loadList(List list, ArrayList extensions, ArrayList applications) {
+      String saved = PreferenceLoader.loadString("previewExtensions");
+      if (!saved.equals("")) {
+         StringTokenizer tokenizer = new StringTokenizer(saved, ";");
+         String extension = "";
+         String application = "";
 
-         while (var5.hasMoreTokens()) {
-            var6 = var5.nextToken();
-            if (var5.hasMoreTokens()) {
-               var7 = var5.nextToken();
-               var1.add(var6 + " = " + var7);
-               var2.add(var6);
-               var3.add(var7);
+         while (tokenizer.hasMoreTokens()) {
+            extension = tokenizer.nextToken();
+            if (tokenizer.hasMoreTokens()) {
+               application = tokenizer.nextToken();
+               list.add(extension + " = " + application);
+               extensions.add(extension);
+               applications.add(application);
             }
          }
       }
@@ -467,9 +467,9 @@ public class RootPreferencePage extends CPreferencePage {
 
    // Accepts sancho_*.properties translation files when enumerating available locales.
    static class PropertiesFilter implements FilenameFilter {
-      public boolean accept(File var1, String var2) {
-         String var3 = var2.toLowerCase();
-         return var3.startsWith(VersionInfo.getName()) && var3.endsWith(".properties");
+      public boolean accept(File dir, String name) {
+         String lower = name.toLowerCase();
+         return lower.startsWith(VersionInfo.getName()) && lower.endsWith(".properties");
       }
    }
 }

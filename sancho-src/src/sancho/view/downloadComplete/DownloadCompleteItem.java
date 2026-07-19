@@ -52,46 +52,46 @@ public class DownloadCompleteItem implements IObject_UID {
       return this.sizeString == null ? "" : this.sizeString;
    }
 
-   public boolean parseLine(String var1) {
-      int var2 = var1.indexOf(" ");
-      if (var2 == -1) {
+   public boolean parseLine(String line) {
+      int spaceIndex = line.indexOf(" ");
+      if (spaceIndex == -1) {
          return false;
       } else {
-         String var3 = var1.substring(0, var2);
+         String dateToken = line.substring(0, spaceIndex);
 
          try {
-            this.dateLong = Long.parseLong(var3);
+            this.dateLong = Long.parseLong(dateToken);
             this.dateString = new Date(this.dateLong).toString();
-         } catch (Exception var9) {
+         } catch (Exception exception) {
          }
 
-         String var4 = var1.substring(var2 + 1);
-         if (var4.startsWith("ed2k://|file|")) {
-            int var5 = var4.indexOf("|", 13);
-            if (var5 < 13) {
+         String linkText = line.substring(spaceIndex + 1);
+         if (linkText.startsWith("ed2k://|file|")) {
+            int separatorIndex = linkText.indexOf("|", 13);
+            if (separatorIndex < 13) {
                return false;
             } else {
-               this.name = var4.substring(13, var5);
-               int var6 = var5 + 1;
-               var5 = var4.indexOf("|", var6);
-               if (var5 < 0) {
+               this.name = linkText.substring(13, separatorIndex);
+               int startIndex = separatorIndex + 1;
+               separatorIndex = linkText.indexOf("|", startIndex);
+               if (separatorIndex < 0) {
                   return false;
                }
 
                try {
-                  this.size = Long.parseLong(var4.substring(var6, var5));
+                  this.size = Long.parseLong(linkText.substring(startIndex, separatorIndex));
                   this.sizeString = SwissArmy.calcStringSize(this.size);
-               } catch (NumberFormatException var8) {
+               } catch (NumberFormatException numberFormatException) {
                   this.size = 0L;
                }
 
-               var6 = var5 + 1;
-               var5 = var4.indexOf("|", var6);
-               if (var5 < 0) {
+               startIndex = separatorIndex + 1;
+               separatorIndex = linkText.indexOf("|", startIndex);
+               if (separatorIndex < 0) {
                   return false;
                }
 
-               this.hash = var4.substring(var6, var5).toUpperCase();
+               this.hash = linkText.substring(startIndex, separatorIndex).toUpperCase();
                return true;
             }
          } else {

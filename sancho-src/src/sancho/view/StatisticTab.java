@@ -45,94 +45,94 @@ public class StatisticTab extends AbstractTab implements MyObserver {
    private long lastTextTimeStamp;
    private CTabFolder cTabFolder;
 
-   public StatisticTab(MainWindow var1, String var2) {
-      super(var1, var2);
+   public StatisticTab(MainWindow mainWindow, String name) {
+      super(mainWindow, name);
       this.onConnect();
       this.updateDisplay();
    }
 
-   protected void createContents(Composite var1) {
-      this.cTabFolder = new CTabFolder(var1, 8388608);
-      CTabItem var2 = new CTabItem(this.cTabFolder, 0);
-      var2.setText(RS_GLOBAL);
-      var2.setImage(SResources.getImage("tab.statistics.buttonSmall"));
-      this.cTabFolder.setSelection(var2);
-      Composite var3 = new Composite(this.cTabFolder, 0);
-      var3.setLayout(new FillLayout());
-      var2.setControl(var3);
-      String var4 = "statisticsSash";
-      SashForm var5 = WidgetFactory.createSashForm(var3, var4);
-      this.createInfo(var5);
-      this.createGraphSash(var5);
-      WidgetFactory.loadSashForm(var5, var4);
+   protected void createContents(Composite parent) {
+      this.cTabFolder = new CTabFolder(parent, 8388608);
+      CTabItem tabItem = new CTabItem(this.cTabFolder, 0);
+      tabItem.setText(RS_GLOBAL);
+      tabItem.setImage(SResources.getImage("tab.statistics.buttonSmall"));
+      this.cTabFolder.setSelection(tabItem);
+      Composite composite = new Composite(this.cTabFolder, 0);
+      composite.setLayout(new FillLayout());
+      tabItem.setControl(composite);
+      String sashName = "statisticsSash";
+      SashForm sashForm = WidgetFactory.createSashForm(composite, sashName);
+      this.createInfo(sashForm);
+      this.createGraphSash(sashForm);
+      WidgetFactory.loadSashForm(sashForm, sashName);
    }
 
    public void onDisconnect() {
       super.onDisconnect();
-      CTabItem[] var1 = this.cTabFolder.getItems();
-      if (var1 != null) {
-         for (int var2 = 0; var2 < var1.length; var2++) {
-            if (var1[var2].isDisposed()) {
+      CTabItem[] tabItems = this.cTabFolder.getItems();
+      if (tabItems != null) {
+         for (int i = 0; i < tabItems.length; i++) {
+            if (tabItems[i].isDisposed()) {
                return;
             }
 
-            if (!var1[var2].getText().equals(RS_GLOBAL)) {
-               this.disposeCTab(var1[var2]);
+            if (!tabItems[i].getText().equals(RS_GLOBAL)) {
+               this.disposeCTab(tabItems[i]);
             }
          }
       }
    }
 
-   public void disposeCTab(CTabItem var1) {
-      ArrayList var2 = (ArrayList)var1.getData("VFList");
-      if (var2 != null) {
-         for (int var3 = 0; var3 < var2.size(); var3++) {
-            NetworkStatsViewFrame var4 = (NetworkStatsViewFrame)var2.get(var3);
-            if (var4 != null) {
-               var4.dispose();
+   public void disposeCTab(CTabItem tabItem) {
+      ArrayList viewFrames = (ArrayList)tabItem.getData("VFList");
+      if (viewFrames != null) {
+         for (int i = 0; i < viewFrames.size(); i++) {
+            NetworkStatsViewFrame viewFrame = (NetworkStatsViewFrame)viewFrames.get(i);
+            if (viewFrame != null) {
+               viewFrame.dispose();
             }
 
-            this.removeViewFrame(var4);
+            this.removeViewFrame(viewFrame);
          }
       }
 
-      var1.dispose();
+      tabItem.dispose();
    }
 
-   protected void updateNetworkTab(Network var1) {
-      CTabItem[] var2 = this.cTabFolder.getItems();
-      if (var2 != null) {
-         CTabItem var3 = null;
+   protected void updateNetworkTab(Network network) {
+      CTabItem[] tabItems = this.cTabFolder.getItems();
+      if (tabItems != null) {
+         CTabItem tabItem = null;
 
-         for (int var4 = 0; var4 < var2.length; var4++) {
-            if (var2[var4].isDisposed()) {
+         for (int i = 0; i < tabItems.length; i++) {
+            if (tabItems[i].isDisposed()) {
                return;
             }
 
-            if (var2[var4].getText().equals(var1.getName())) {
-               var3 = var2[var4];
+            if (tabItems[i].getText().equals(network.getName())) {
+               tabItem = tabItems[i];
             }
          }
 
-         if (var3 == null) {
-            this.createNetworkTab(var1);
+         if (tabItem == null) {
+            this.createNetworkTab(network);
          } else {
-            NetworkStatCollection[] var5 = var1.getNetworkStatCollection();
-            if (var5 != null) {
-               for (int var6 = 0; var6 < var5.length; var6++) {
-                  ArrayList var7 = (ArrayList)var3.getData("VFList");
-                  int var8 = var7.size();
-                  if (var3.getData(var5[var6].getName()) == null || var8 != var5.length) {
-                     this.disposeCTab(var3);
-                     this.createNetworkTab(var1);
+            NetworkStatCollection[] statCollections = network.getNetworkStatCollection();
+            if (statCollections != null) {
+               for (int j = 0; j < statCollections.length; j++) {
+                  ArrayList viewFrames = (ArrayList)tabItem.getData("VFList");
+                  int size = viewFrames.size();
+                  if (tabItem.getData(statCollections[j].getName()) == null || size != statCollections.length) {
+                     this.disposeCTab(tabItem);
+                     this.createNetworkTab(network);
                      return;
                   }
                }
 
-               for (int var9 = 0; var9 < var5.length; var9++) {
-                  NetworkStatsViewFrame var10 = (NetworkStatsViewFrame)var3.getData(var5[var9].getName());
-                  if (var10 != null) {
-                     var10.refreshInThread();
+               for (int k = 0; k < statCollections.length; k++) {
+                  NetworkStatsViewFrame viewFrame = (NetworkStatsViewFrame)tabItem.getData(statCollections[k].getName());
+                  if (viewFrame != null) {
+                     viewFrame.refreshInThread();
                   }
                }
             }
@@ -140,58 +140,58 @@ public class StatisticTab extends AbstractTab implements MyObserver {
       }
    }
 
-   public void createNetworkTab(Network var1) {
-      NetworkStatCollection[] var2 = var1.getNetworkStatCollection();
-      if (var2 != null) {
-         CTabItem var3 = new CTabItem(this.cTabFolder, 0);
-         var3.setText(var1.getName());
-         var3.setImage(var1.getEnumNetwork().getImage());
-         ArrayList var4 = new ArrayList();
-         var3.setData("VFList", var4);
-         Composite var5 = new Composite(this.cTabFolder, 0);
-         var5.setLayout(new FillLayout());
-         var3.setControl(var5);
-         int var6 = 0;
-         String var7 = "statistics." + var1.getName();
-         SashForm var8 = WidgetFactory.createSashForm(var5, var7);
-         SashForm var9 = var8;
-         String var10 = null;
-         boolean var11 = var2.length > 2;
-         boolean var12 = false;
+   public void createNetworkTab(Network network) {
+      NetworkStatCollection[] statCollections = network.getNetworkStatCollection();
+      if (statCollections != null) {
+         CTabItem tabItem = new CTabItem(this.cTabFolder, 0);
+         tabItem.setText(network.getName());
+         tabItem.setImage(network.getEnumNetwork().getImage());
+         ArrayList viewFrames = new ArrayList();
+         tabItem.setData("VFList", viewFrames);
+         Composite composite = new Composite(this.cTabFolder, 0);
+         composite.setLayout(new FillLayout());
+         tabItem.setControl(composite);
+         int index = 0;
+         String sashName = "statistics." + network.getName();
+         SashForm sashForm = WidgetFactory.createSashForm(composite, sashName);
+         SashForm currentSashForm = sashForm;
+         String subSashName = null;
+         boolean multiColumn = statCollections.length > 2;
+         boolean pairComplete = false;
 
-         for (int var13 = 0; var13 < var2.length; var13++) {
-            if (var11) {
-               if (var13 % 2 == 0) {
-                  var10 = "statistics." + var1.getName() + "." + var6;
-                  Composite var14 = new Composite(var8, 0);
-                  var14.setLayout(new FillLayout());
-                  var9 = WidgetFactory.createSashForm(var14, var10);
+         for (int i = 0; i < statCollections.length; i++) {
+            if (multiColumn) {
+               if (i % 2 == 0) {
+                  subSashName = "statistics." + network.getName() + "." + index;
+                  Composite composite2 = new Composite(sashForm, 0);
+                  composite2.setLayout(new FillLayout());
+                  currentSashForm = WidgetFactory.createSashForm(composite2, subSashName);
                } else {
-                  var12 = true;
+                  pairComplete = true;
                }
             }
 
-            NetworkStatsViewFrame var15 = new NetworkStatsViewFrame(
-               var9,
-               var2[var13].getName() + ": " + SwissArmy.calcStringOfSecondsFull((long)var2[var13].getUptime()),
-               var1.getEnumNetwork().getImageString(),
+            NetworkStatsViewFrame viewFrame = new NetworkStatsViewFrame(
+               currentSashForm,
+               statCollections[i].getName() + ": " + SwissArmy.calcStringOfSecondsFull((long)statCollections[i].getUptime()),
+               network.getEnumNetwork().getImageString(),
                this,
-               var1,
-               var2[var13]
+               network,
+               statCollections[i]
             );
-            var15.setVisible(true);
-            var15.setActive(true);
-            this.addViewFrame(var15);
-            var4.add(var15);
-            var3.setData(var2[var13].getName(), var15);
-            if (var12) {
-               var6++;
-               WidgetFactory.loadSashForm(var9, var10);
-               var12 = false;
+            viewFrame.setVisible(true);
+            viewFrame.setActive(true);
+            this.addViewFrame(viewFrame);
+            viewFrames.add(viewFrame);
+            tabItem.setData(statCollections[i].getName(), viewFrame);
+            if (pairComplete) {
+               index++;
+               WidgetFactory.loadSashForm(currentSashForm, subSashName);
+               pairComplete = false;
             }
          }
 
-         WidgetFactory.loadSashForm(var8, var7);
+         WidgetFactory.loadSashForm(sashForm, sashName);
       }
    }
 
@@ -213,117 +213,117 @@ public class StatisticTab extends AbstractTab implements MyObserver {
       super.dispose();
    }
 
-   private void createInfo(SashForm var1) {
-      this.networksViewFrame = new NetworksViewFrame(var1, "tab.statistics", "tab.statistics.buttonSmall", this);
+   private void createInfo(SashForm sashForm) {
+      this.networksViewFrame = new NetworksViewFrame(sashForm, "tab.statistics", "tab.statistics.buttonSmall", this);
       this.addViewFrame(this.networksViewFrame);
    }
 
-   private void createGraphSash(Composite var1) {
-      String var2 = "graphSash";
-      SashForm var3 = WidgetFactory.createSashForm(var1, var2);
-      this.createDownloadsGraph(var3);
-      this.createUploadsGraph(var3);
-      WidgetFactory.loadSashForm(var3, var2);
+   private void createGraphSash(Composite parent) {
+      String sashName = "graphSash";
+      SashForm sashForm = WidgetFactory.createSashForm(parent, sashName);
+      this.createDownloadsGraph(sashForm);
+      this.createUploadsGraph(sashForm);
+      WidgetFactory.loadSashForm(sashForm, sashName);
    }
 
-   private void createDownloadsGraph(SashForm var1) {
-      GraphViewFrame var2 = this.createGraph(var1, RS_DOWNLOADS, "Downloads");
-      this.addViewFrame(var2);
-      this.downloadsGraphCanvas = var2.getGraphCanvas();
-      this.downloadsHeaderCLabel = var2.getCLabel();
+   private void createDownloadsGraph(SashForm sashForm) {
+      GraphViewFrame graphViewFrame = this.createGraph(sashForm, RS_DOWNLOADS, "Downloads");
+      this.addViewFrame(graphViewFrame);
+      this.downloadsGraphCanvas = graphViewFrame.getGraphCanvas();
+      this.downloadsHeaderCLabel = graphViewFrame.getCLabel();
    }
 
-   private void createUploadsGraph(SashForm var1) {
-      GraphViewFrame var2 = this.createGraph(var1, RS_UPLOADS, "Uploads");
-      this.addViewFrame(var2);
-      this.uploadsGraphCanvas = var2.getGraphCanvas();
-      this.uploadsHeaderCLabel = var2.getCLabel();
+   private void createUploadsGraph(SashForm sashForm) {
+      GraphViewFrame graphViewFrame = this.createGraph(sashForm, RS_UPLOADS, "Uploads");
+      this.addViewFrame(graphViewFrame);
+      this.uploadsGraphCanvas = graphViewFrame.getGraphCanvas();
+      this.uploadsHeaderCLabel = graphViewFrame.getCLabel();
    }
 
-   private GraphViewFrame createGraph(SashForm var1, String var2, String var3) {
-      return new GraphViewFrame(var1, var2, "tab.statistics.buttonSmall", this, var3);
+   private GraphViewFrame createGraph(SashForm sashForm, String text, String name) {
+      return new GraphViewFrame(sashForm, text, "tab.statistics.buttonSmall", this, name);
    }
 
-   public void updateNetworkCollection(Object var1, int var2) {
-      if ((var2 & NetworkCollection.CHANGED_STATS) != 0) {
-         Network var3 = (Network)var1;
+   public void updateNetworkCollection(Object source, int changeFlags) {
+      if ((changeFlags & NetworkCollection.CHANGED_STATS) != 0) {
+         Network network = (Network)source;
          this.cTabFolder.getDisplay().asyncExec(new Runnable() {
             public void run() {
-               StatisticTab.this.updateNetworkTab(var3);
+               StatisticTab.this.updateNetworkTab(network);
             }
          });
       }
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
-      if (var1 instanceof NetworkCollection) {
-         this.updateNetworkCollection(var2, var3);
-      } else if (var1 instanceof ClientStats) {
-         long var4;
-         if ((var4 = System.currentTimeMillis()) - (long)(this.updateDelay * 1000) >= this.lastTimeStamp) {
-            ClientStats var6 = (ClientStats)var1;
-            if (var6 != null) {
-               this.uploadsGraphCanvas.addPoint(var6.getTcpUploadRate());
-               this.downloadsGraphCanvas.addPoint(var6.getTcpDownloadRate());
+   public void update(MyObservable observable, Object data, int changeFlags) {
+      if (observable instanceof NetworkCollection) {
+         this.updateNetworkCollection(data, changeFlags);
+      } else if (observable instanceof ClientStats) {
+         long now;
+         if ((now = System.currentTimeMillis()) - (long)(this.updateDelay * 1000) >= this.lastTimeStamp) {
+            ClientStats stats = (ClientStats)observable;
+            if (stats != null) {
+               this.uploadsGraphCanvas.addPoint(stats.getTcpUploadRate());
+               this.downloadsGraphCanvas.addPoint(stats.getTcpDownloadRate());
                if (this.isActive()) {
                   this.uploadsGraphCanvas.redrawInThread();
                   this.downloadsGraphCanvas.redrawInThread();
-                  this.updateHeaderLabels(var6);
+                  this.updateHeaderLabels(stats);
                }
 
                this.lastTimeStamp = System.currentTimeMillis();
-               if (this.lastTextTimeStamp + 30000L < var4) {
+               if (this.lastTextTimeStamp + 30000L < now) {
                   this.networksViewFrame.refreshInThread();
-                  this.lastTextTimeStamp = var4;
+                  this.lastTextTimeStamp = now;
                }
             }
          }
       }
    }
 
-   public void updateHeaderLabels(ClientStats var1) {
+   public void updateHeaderLabels(ClientStats stats) {
       if (this.uploadsHeaderCLabel != null && !this.uploadsHeaderCLabel.isDisposed()) {
          this.uploadsHeaderCLabel.getDisplay().asyncExec(new Runnable() {
             public void run() {
                if (StatisticTab.this.uploadsHeaderCLabel != null && !StatisticTab.this.uploadsHeaderCLabel.isDisposed()) {
                   StatisticTab.this.uploadsHeaderCLabel
-                     .setText(this.writeLabel(StatisticTab.this.uploadsGraphCanvas.getGraphData(), RS_UPLOADS, var1.getUploadCounter()));
+                     .setText(this.writeLabel(StatisticTab.this.uploadsGraphCanvas.getGraphData(), RS_UPLOADS, stats.getUploadCounter()));
                   StatisticTab.this.downloadsHeaderCLabel
-                     .setText(this.writeLabel(StatisticTab.this.downloadsGraphCanvas.getGraphData(), RS_DOWNLOADS, var1.getDownloadCounter()));
+                     .setText(this.writeLabel(StatisticTab.this.downloadsGraphCanvas.getGraphData(), RS_DOWNLOADS, stats.getDownloadCounter()));
                }
             }
 
-            public String writeLabel(GraphData var1, String var2, long var3) {
-               StringBuffer var5 = new StringBuffer(32);
-               var5.append(var2);
-               var5.append(": ");
-               var5.append(SwissArmy.calcStringSize(var3));
-               var5.append(" ");
-               var5.append(RS_TOTAL);
-               var5.append(", ");
-               var5.append((double)var1.getAvg() / 100.0);
-               var5.append(" ");
-               var5.append(RS_AVG);
-               var5.append(", ");
-               var5.append((double)var1.getMax() / 100.0);
-               var5.append(" ");
-               var5.append(RS_MAX);
+            public String writeLabel(GraphData graphData, String text, long counter) {
+               StringBuffer buffer = new StringBuffer(32);
+               buffer.append(text);
+               buffer.append(": ");
+               buffer.append(SwissArmy.calcStringSize(counter));
+               buffer.append(" ");
+               buffer.append(RS_TOTAL);
+               buffer.append(", ");
+               buffer.append((double)graphData.getAvg() / 100.0);
+               buffer.append(" ");
+               buffer.append(RS_AVG);
+               buffer.append(", ");
+               buffer.append((double)graphData.getMax() / 100.0);
+               buffer.append(" ");
+               buffer.append(RS_MAX);
                if (StatisticTab.this.updateDelay > 0) {
-                  var5.append(" ");
-                  var5.append(" (");
-                  var5.append(StatisticTab.this.updateDelay);
-                  var5.append("s ");
-                  var5.append(RS_DELAY);
-                  var5.append(")");
+                  buffer.append(" ");
+                  buffer.append(" (");
+                  buffer.append(StatisticTab.this.updateDelay);
+                  buffer.append("s ");
+                  buffer.append(RS_DELAY);
+                  buffer.append(")");
                }
 
-               return var5.toString();
+               return buffer.toString();
             }
          });
       }
    }
 
-   public void setInActive(boolean var1) {
+   public void setInActive(boolean inactive) {
       super.setInActive();
    }
 

@@ -12,8 +12,8 @@ import sancho.view.viewFrame.ViewFrame;
 public class ConsoleViewFrame extends ViewFrame {
    int numToolItems;
 
-   public ConsoleViewFrame(Composite var1, String var2, String var3, AbstractTab var4) {
-      super(var1, var2, var3, var4);
+   public ConsoleViewFrame(Composite composite, String prefString, String imageName, AbstractTab tab) {
+      super(composite, prefString, imageName, tab);
       this.createViewToolBar();
    }
 
@@ -21,20 +21,20 @@ public class ConsoleViewFrame extends ViewFrame {
       super.createViewToolBar();
       this.numToolItems = PreferenceLoader.loadInt("consoleToolItems");
 
-      for (int var1 = 1; var1 < this.numToolItems + 1; var1++) {
-         final int toolItemNumber = var1;
-         this.addToolItem(PreferenceLoader.loadString("consoleToolItem" + var1), String.valueOf(var1), new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent var1) {
-               String var2 = PreferenceLoader.loadString("consoleToolItem" + toolItemNumber);
-               if (!var2.equals("")) {
-                  if (var2.indexOf(";") != -1) {
-                     StringTokenizer var3 = new StringTokenizer(var2, ";");
+      for (int i = 1; i < this.numToolItems + 1; i++) {
+         final int toolItemNumber = i;
+         this.addToolItem(PreferenceLoader.loadString("consoleToolItem" + i), String.valueOf(i), new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent event) {
+               String command = PreferenceLoader.loadString("consoleToolItem" + toolItemNumber);
+               if (!command.equals("")) {
+                  if (command.indexOf(";") != -1) {
+                     StringTokenizer tokenizer = new StringTokenizer(command, ";");
 
-                     while (var3.hasMoreTokens()) {
-                        Sancho.send((short)29, var3.nextToken());
+                     while (tokenizer.hasMoreTokens()) {
+                        Sancho.send((short)29, tokenizer.nextToken());
                      }
                   } else {
-                     Sancho.send((short)29, var2);
+                     Sancho.send((short)29, command);
                   }
                }
             }
@@ -45,16 +45,16 @@ public class ConsoleViewFrame extends ViewFrame {
    public void updateDisplay() {
       super.updateDisplay();
       if (this.numToolItems != PreferenceLoader.loadInt("consoleToolItems") && this.toolBar != null) {
-         for (int var2 = this.toolBar.getItemCount() - 1; var2 >= 0; var2--) {
-            this.toolBar.getItems()[var2].dispose();
+         for (int i = this.toolBar.getItemCount() - 1; i >= 0; i--) {
+            this.toolBar.getItems()[i].dispose();
          }
 
          this.toolBar.dispose();
          this.createViewToolBar();
          this.toolBar.getParent().layout();
       } else if (this.toolBar != null) {
-         for (int var1 = 1; var1 <= this.toolBar.getItemCount(); var1++) {
-            this.toolBar.getItems()[var1 - 1].setToolTipText(PreferenceLoader.loadString("consoleToolItem" + var1));
+         for (int i = 1; i <= this.toolBar.getItemCount(); i++) {
+            this.toolBar.getItems()[i - 1].setToolTipText(PreferenceLoader.loadString("consoleToolItem" + i));
          }
       }
    }

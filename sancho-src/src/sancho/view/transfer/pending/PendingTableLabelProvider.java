@@ -5,19 +5,19 @@ import sancho.model.mldonkey.Client;
 import sancho.view.viewer.table.GTableLabelProvider;
 
 public class PendingTableLabelProvider extends GTableLabelProvider {
-   public PendingTableLabelProvider(PendingTableView var1) {
-      super(var1);
+   public PendingTableLabelProvider(PendingTableView view) {
+      super(view);
    }
 
-   public Image getColumnImage(Object var1, int var2) {
-      Client var3 = (Client)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public Image getColumnImage(Object element, int columnIndex) {
+      Client client = (Client)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getEnumNetwork().getImage();
+            return client.getEnumNetwork().getImage();
          case 1:
-            return var3.getNameImage();
+            return client.getNameImage();
          case 2:
-            return var3.getSoftwareImage();
+            return client.getSoftwareImage();
          case 3:
          case 4:
          case 5:
@@ -26,43 +26,43 @@ public class PendingTableLabelProvider extends GTableLabelProvider {
          default:
             return null;
          case 6:
-            return var3.getAddr().getImage();
+            return client.getAddr().getImage();
          case 8:
-            return var3.getClientModeEnum().getImage();
+            return client.getClientModeEnum().getImage();
          case 9:
-            return var3.getStateEnum().getImage();
+            return client.getStateEnum().getImage();
          case 11:
-            return var3.getSUIImage();
+            return client.getSUIImage();
       }
    }
 
-   public String getColumnText(Object var1, int var2) {
-      Client var3 = (Client)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      Client client = (Client)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getEnumNetwork().getName();
+            return client.getEnumNetwork().getName();
          case 1:
-            return var3.getName();
+            return client.getName();
          case 2:
-            return var3.getSoftware();
+            return client.getSoftware();
          case 3:
-            return var3.getUploadedString();
+            return client.getUploadedString();
          case 4:
-            return var3.getDownloadedString();
+            return client.getDownloadedString();
          case 5:
-            return var3.getConnectedTimeString();
+            return client.getConnectedTimeString();
          case 6:
-            return var3.getAddr().toString();
+            return client.getAddr().toString();
          case 7:
-            return String.valueOf(var3.getPort()).intern();
+            return String.valueOf(client.getPort()).intern();
          case 8:
-            return var3.getModeString();
+            return client.getModeString();
          case 9:
-            return var3.getDetailedClientActivity();
+            return client.getDetailedClientActivity();
          case 10:
-            return var3.getUploadFilename();
+            return client.getUploadFilename();
          case 11:
-            return var3.getSUIString();
+            return client.getSUIString();
          default:
             return "";
       }

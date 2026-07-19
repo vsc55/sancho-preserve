@@ -10,11 +10,11 @@ public class SubfileItem {
    long size;
    int num;
 
-   public SubfileItem(int var1, String var2, long var3, String var5) {
-      this.name = var2;
-      this.size = var3;
-      this.num = var1;
-      this.magic = var5;
+   public SubfileItem(int num, String name, long size, String magic) {
+      this.name = name;
+      this.size = size;
+      this.num = num;
+      this.magic = magic;
    }
 
    public String getName() {
@@ -38,8 +38,8 @@ public class SubfileItem {
    }
 
    public String getExtension() {
-      int var1 = this.getName().lastIndexOf(".");
-      return var1 != -1 ? this.getName().substring(var1 + 1).toLowerCase() : "";
+      int dotIndex = this.getName().lastIndexOf(".");
+      return dotIndex != -1 ? this.getName().substring(dotIndex + 1).toLowerCase() : "";
    }
 
    public synchronized Image getFileTypeImage() {

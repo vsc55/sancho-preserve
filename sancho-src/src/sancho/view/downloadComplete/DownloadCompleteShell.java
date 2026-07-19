@@ -16,14 +16,14 @@ import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.SResources;
 
 public class DownloadCompleteShell extends Dialog {
-   public DownloadCompleteShell(Shell var1) {
-      super(var1);
+   public DownloadCompleteShell(Shell shell) {
+      super(shell);
    }
 
-   protected void configureShell(Shell var1) {
-      super.configureShell(var1);
-      var1.setImage(VersionInfo.getProgramIcon());
-      var1.setText(SResources.getString("l.downloadCompleteTitle"));
+   protected void configureShell(Shell shell) {
+      super.configureShell(shell);
+      shell.setImage(VersionInfo.getProgramIcon());
+      shell.setText(SResources.getString("l.downloadCompleteTitle"));
    }
 
    protected void constrainShellSize() {
@@ -35,29 +35,29 @@ public class DownloadCompleteShell extends Dialog {
       return super.getShellStyle() | 16;
    }
 
-   protected void createButtonsForButtonBar(Composite var1) {
-      ((GridLayout)var1.getLayout()).numColumns++;
-      final Button var2 = new Button(var1, 0);
-      var2.setText(SResources.getString("b.deleteLogFile"));
-      var2.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var3) {
+   protected void createButtonsForButtonBar(Composite composite) {
+      ((GridLayout)composite.getLayout()).numColumns++;
+      final Button button = new Button(composite, 0);
+      button.setText(SResources.getString("b.deleteLogFile"));
+      button.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             File logFile = new File(VersionInfo.getDownloadLogFile());
             logFile.delete();
-            var2.setEnabled(false);
+            button.setEnabled(false);
          }
       });
-      this.createButton(var1, 0, SResources.getString("b.ok"), true);
+      this.createButton(composite, 0, SResources.getString("b.ok"), true);
    }
 
-   protected Control createDialogArea(Composite var1) {
-      Composite var2 = (Composite)super.createDialogArea(var1);
-      var2.setLayout(new FillLayout());
-      new DownloadCompleteViewFrame(var2, "l.downloadCompleteTitle", "tab.transfers.buttonSmall", null);
-      return var2;
+   protected Control createDialogArea(Composite parent) {
+      Composite composite = (Composite)super.createDialogArea(parent);
+      composite.setLayout(new FillLayout());
+      new DownloadCompleteViewFrame(composite, "l.downloadCompleteTitle", "tab.transfers.buttonSmall", null);
+      return composite;
    }
 
-   protected void buttonPressed(int var1) {
-      super.buttonPressed(var1);
+   protected void buttonPressed(int buttonId) {
+      super.buttonPressed(buttonId);
    }
 
    public boolean close() {

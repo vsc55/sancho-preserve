@@ -84,25 +84,25 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
    private DNDBox dndBox;
    private boolean closing;
 
-   public MainWindow(Display var1) {
+   public MainWindow(Display display) {
       Sancho.bHasLoaded = true;
       if (Sancho.monitorMode) {
          Splash.dispose();
-         this.shell = new Shell(var1, 262152);
+         this.shell = new Shell(display, 262152);
          this.shell.addDisposeListener(this);
          this.registeredTabs = new ArrayList();
          Sancho.getCoreFactory().addObserver(this);
          this.dndBox = new DNDBox(this);
       } else {
-         clipboard = new Clipboard(var1);
-         this.shell = new Shell(var1);
+         clipboard = new Clipboard(display);
+         this.shell = new Shell(display);
          this.shell.setImage(VersionInfo.getProgramIcon());
          this.shell.setLayout(new FillLayout());
          this.shell.addShellListener(this);
-         boolean var2 = VersionInfo.hasTray()
-            && var1.getSystemTray() != null
+         boolean useTray = VersionInfo.hasTray()
+            && display.getSystemTray() != null
             && PreferenceLoader.loadBoolean("systrayEnabled");
-         this.minimizer = (Minimizer)(var2 ? new MinimizerTray(this, this.titleBarText) : new Minimizer(this, this.titleBarText));
+         this.minimizer = (Minimizer)(useTray ? new MinimizerTray(this, this.titleBarText) : new Minimizer(this, this.titleBarText));
          this.minimizer.setTitleBarText();
          Splash.updateText("splash.creatingGUI");
          this.registeredTabs = new ArrayList();
@@ -134,35 +134,35 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
             this.toggleDNDBox();
          }
 
-         var1.addFilter(1, new Listener() {
-            public void handleEvent(Event var1) {
-               if ((var1.stateMask & SWT.MOD1) != 0 || (var1.stateMask & 65536) != 0) {
-                  if ((var1.stateMask & 65536) != 0) {
-                     if (var1.keyCode == 16777219) {
-                        int var2 = MainWindow.this.getCurrentTabIndex() - 1;
-                        if (var2 < 0) {
-                           var2 = MainWindow.this.getTabCount() - 1;
+         display.addFilter(1, new Listener() {
+            public void handleEvent(Event event) {
+               if ((event.stateMask & SWT.MOD1) != 0 || (event.stateMask & 65536) != 0) {
+                  if ((event.stateMask & 65536) != 0) {
+                     if (event.keyCode == 16777219) {
+                        int prevIndex = MainWindow.this.getCurrentTabIndex() - 1;
+                        if (prevIndex < 0) {
+                           prevIndex = MainWindow.this.getTabCount() - 1;
                         }
 
-                        MainWindow.this.setCurrentTab(var2);
-                     } else if (var1.keyCode == 16777220) {
-                        int var3 = MainWindow.this.getCurrentTabIndex() + 1;
-                        if (var3 >= MainWindow.this.getTabCount()) {
-                           var3 = 0;
+                        MainWindow.this.setCurrentTab(prevIndex);
+                     } else if (event.keyCode == 16777220) {
+                        int nextIndex = MainWindow.this.getCurrentTabIndex() + 1;
+                        if (nextIndex >= MainWindow.this.getTabCount()) {
+                           nextIndex = 0;
                         }
 
-                        MainWindow.this.setCurrentTab(var3);
+                        MainWindow.this.setCurrentTab(nextIndex);
                      }
                   }
 
-                  if (var1.keyCode >= 49 && var1.keyCode <= 57) {
-                     int var4 = var1.keyCode - 48;
-                     if (var4 <= MainWindow.this.getTabCount()) {
-                        MainWindow.this.setCurrentTab(var4 - 1);
+                  if (event.keyCode >= 49 && event.keyCode <= 57) {
+                     int tabNumber = event.keyCode - 48;
+                     if (tabNumber <= MainWindow.this.getTabCount()) {
+                        MainWindow.this.setCurrentTab(tabNumber - 1);
                      }
                   }
 
-                  if ((var1.stateMask & SWT.MOD1) != 0 && var1.keyCode == 116) {
+                  if ((event.stateMask & SWT.MOD1) != 0 && event.keyCode == 116) {
                      MainWindow.this.sendTorrentsFromHD();
                   }
                }
@@ -176,64 +176,64 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
 
       try {
          while (!this.shell.isDisposed()) {
-            if (!var1.readAndDispatch()) {
-               var1.sleep();
+            if (!display.readAndDispatch()) {
+               display.sleep();
             }
          }
-      } catch (SWTError var6) {
+      } catch (SWTError swtError) {
          if (Sancho.debug) {
-            var6.printStackTrace();
-            if (var6.throwable != null) {
-               var6.throwable.printStackTrace();
+            swtError.printStackTrace();
+            if (swtError.throwable != null) {
+               swtError.throwable.printStackTrace();
             }
          } else {
-            StringWriter var3 = new StringWriter();
+            StringWriter writer = new StringWriter();
             if (this.activeTab != null) {
-               var3.write(this.activeTab.toString() + "\n");
+               writer.write(this.activeTab.toString() + "\n");
             }
 
-            var6.printStackTrace(new PrintWriter(var3, true));
-            if (var6.throwable != null) {
-               var6.throwable.printStackTrace(new PrintWriter(var3, true));
+            swtError.printStackTrace(new PrintWriter(writer, true));
+            if (swtError.throwable != null) {
+               swtError.throwable.printStackTrace(new PrintWriter(writer, true));
             }
 
-            new BugDialog(new Shell(var1), var3.toString()).open();
+            new BugDialog(new Shell(display), writer.toString()).open();
          }
-      } catch (SWTException var7) {
+      } catch (SWTException swtException) {
          if (Sancho.debug) {
-            var7.printStackTrace();
-            if (var7.throwable != null) {
-               var7.throwable.printStackTrace();
+            swtException.printStackTrace();
+            if (swtException.throwable != null) {
+               swtException.throwable.printStackTrace();
             }
          } else {
-            StringWriter var4 = new StringWriter();
+            StringWriter writer = new StringWriter();
             if (this.activeTab != null) {
-               var4.write(this.activeTab.toString() + "\n");
+               writer.write(this.activeTab.toString() + "\n");
             }
 
-            var7.printStackTrace(new PrintWriter(var4, true));
-            if (var7.throwable != null) {
-               var7.throwable.printStackTrace(new PrintWriter(var4, true));
+            swtException.printStackTrace(new PrintWriter(writer, true));
+            if (swtException.throwable != null) {
+               swtException.throwable.printStackTrace(new PrintWriter(writer, true));
             }
 
-            new BugDialog(new Shell(var1), var4.toString()).open();
+            new BugDialog(new Shell(display), writer.toString()).open();
          }
-      } catch (Exception var8) {
+      } catch (Exception exception) {
          if (Sancho.debug) {
-            var8.printStackTrace();
+            exception.printStackTrace();
          } else {
-            StringWriter var5 = new StringWriter();
+            StringWriter writer = new StringWriter();
             if (this.activeTab != null) {
-               var5.write(this.activeTab.toString() + "\n");
+               writer.write(this.activeTab.toString() + "\n");
             }
 
-            var8.printStackTrace(new PrintWriter(var5, true));
-            new BugDialog(new Shell(var1), var5.toString()).open();
+            exception.printStackTrace(new PrintWriter(writer, true));
+            new BugDialog(new Shell(display), writer.toString()).open();
          }
       }
 
-      StringWriter var9 = new StringWriter();
-      new Throwable().printStackTrace(new PrintWriter(var9, true));
+      StringWriter writer = new StringWriter();
+      new Throwable().printStackTrace(new PrintWriter(writer, true));
    }
 
    private int getCurrentTabIndex() {
@@ -244,58 +244,58 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
       return this.registeredTabs.size();
    }
 
-   private void setCurrentTab(int var1) {
-      AbstractTab var2 = (AbstractTab)this.registeredTabs.get(var1);
-      var2.setActive();
+   private void setCurrentTab(int index) {
+      AbstractTab tab = (AbstractTab)this.registeredTabs.get(index);
+      tab.setActive();
    }
 
-   private void createContents(Shell var1) {
-      this.mainComposite = new Composite(var1, 0);
+   private void createContents(Shell shell) {
+      this.mainComposite = new Composite(shell, 0);
       this.mainComposite.setLayout(WidgetFactory.createGridLayout(1, 1, 1, 0, 1, false));
       new MenuBar(this);
       new Label(this.mainComposite, 258).setLayoutData(new GridData(768));
       this.coolBar = new CToolBar(this, PreferenceLoader.loadBoolean("toolbarSmallButtons"));
-      String var2 = "mainWindowSash";
-      SashForm var3 = WidgetFactory.createSashForm(this.mainComposite, var2);
-      var3.setLayoutData(new GridData(1808));
-      this.pageContainer = new Composite(var3, 0);
+      String sashPrefName = "mainWindowSash";
+      SashForm sashForm = WidgetFactory.createSashForm(this.mainComposite, sashPrefName);
+      sashForm.setLayoutData(new GridData(1808));
+      this.pageContainer = new Composite(sashForm, 0);
       this.stackLayout = new StackLayout();
       this.pageContainer.setLayout(this.stackLayout);
-      Composite var4 = new Composite(var3, 0);
-      var4.setLayout(new FillLayout());
-      WidgetFactory.loadSashForm(var3, var2);
+      Composite statusComposite = new Composite(sashForm, 0);
+      statusComposite.setLayout(new FillLayout());
+      WidgetFactory.loadSashForm(sashForm, sashPrefName);
       this.addTabs();
       this.coolBar.layoutCoolBar();
-      this.statusLine = new StatusLine(this, var3, this.pageContainer, var4);
+      this.statusLine = new StatusLine(this, sashForm, this.pageContainer, statusComposite);
    }
 
-   private void addTab(int var1) {
-      if (var1 != 8 || !Sancho.noBrowser) {
-         Splash.updateText("splash.creatingTab", SResources.getString(ALL_TAB_IDS[var1]), var1 + 1);
-         switch (var1) {
+   private void addTab(int tabIndex) {
+      if (tabIndex != 8 || !Sancho.noBrowser) {
+         Splash.updateText("splash.creatingTab", SResources.getString(ALL_TAB_IDS[tabIndex]), tabIndex + 1);
+         switch (tabIndex) {
             case 0:
-               this.registeredTabs.add(new TransferTab(this, ALL_TAB_IDS[var1]));
+               this.registeredTabs.add(new TransferTab(this, ALL_TAB_IDS[tabIndex]));
                break;
             case 1:
-               this.registeredTabs.add(new SearchTab(this, ALL_TAB_IDS[var1]));
+               this.registeredTabs.add(new SearchTab(this, ALL_TAB_IDS[tabIndex]));
                break;
             case 2:
-               this.registeredTabs.add(new ServerTab(this, ALL_TAB_IDS[var1]));
+               this.registeredTabs.add(new ServerTab(this, ALL_TAB_IDS[tabIndex]));
                break;
             case 3:
-               this.registeredTabs.add(new SharesTab(this, ALL_TAB_IDS[var1]));
+               this.registeredTabs.add(new SharesTab(this, ALL_TAB_IDS[tabIndex]));
                break;
             case 4:
-               this.registeredTabs.add(new ConsoleTab(this, ALL_TAB_IDS[var1]));
+               this.registeredTabs.add(new ConsoleTab(this, ALL_TAB_IDS[tabIndex]));
                break;
             case 5:
-               this.registeredTabs.add(new StatisticTab(this, ALL_TAB_IDS[var1]));
+               this.registeredTabs.add(new StatisticTab(this, ALL_TAB_IDS[tabIndex]));
                break;
             case 6:
-               this.registeredTabs.add(new FriendsTab(this, ALL_TAB_IDS[var1]));
+               this.registeredTabs.add(new FriendsTab(this, ALL_TAB_IDS[tabIndex]));
                break;
             case 7:
-               this.registeredTabs.add(new RoomsTab(this, ALL_TAB_IDS[var1]));
+               this.registeredTabs.add(new RoomsTab(this, ALL_TAB_IDS[tabIndex]));
                break;
             case 8:
                // WebBrowserTab_win32 reimplemented OLE/COM event dispatch for the
@@ -303,44 +303,44 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
                // no longer match modern 64-bit SWT (long method(long[])), so it is
                // broken. The standard Browser widget handles win32 natively now, so
                // always use the portable WebBrowserTab.
-               Object var2 = new WebBrowserTab(this, ALL_TAB_IDS[var1]);
-               this.registeredTabs.add(var2);
+               Object tab = new WebBrowserTab(this, ALL_TAB_IDS[tabIndex]);
+               this.registeredTabs.add(tab);
          }
       }
    }
 
    public void switchToFriends() {
-      for (int var1 = 0; var1 < this.registeredTabs.size(); var1++) {
-         AbstractTab var2 = (AbstractTab)this.registeredTabs.get(var1);
-         if (var2 instanceof FriendsTab) {
-            this.setCurrentTab(var1);
+      for (int i = 0; i < this.registeredTabs.size(); i++) {
+         AbstractTab tab = (AbstractTab)this.registeredTabs.get(i);
+         if (tab instanceof FriendsTab) {
+            this.setCurrentTab(i);
             break;
          }
       }
    }
 
-   public void autoSearch(String var1) {
-      for (int var2 = 0; var2 < this.registeredTabs.size(); var2++) {
-         AbstractTab var3 = (AbstractTab)this.registeredTabs.get(var2);
-         if (var3 instanceof SearchTab) {
-            ((SearchTab)var3).autoSearch(var1);
-            this.setCurrentTab(var2);
+   public void autoSearch(String text) {
+      for (int i = 0; i < this.registeredTabs.size(); i++) {
+         AbstractTab tab = (AbstractTab)this.registeredTabs.get(i);
+         if (tab instanceof SearchTab) {
+            ((SearchTab)tab).autoSearch(text);
+            this.setCurrentTab(i);
             break;
          }
       }
    }
 
    private void addTabs() {
-      String var1 = IDSelector.loadIDs("mainWindowTabs", this.getAllTabIDs());
+      String ids = IDSelector.loadIDs("mainWindowTabs", this.getAllTabIDs());
 
-      for (int var3 = 0; var3 < var1.length(); var3++) {
-         int var2 = var1.charAt(var3) - 'A';
-         this.addTab(var2);
+      for (int i = 0; i < ids.length(); i++) {
+         int tabIndex = ids.charAt(i) - 'A';
+         this.addTab(tabIndex);
       }
 
       this.setVisible(true);
-      AbstractTab var4 = (AbstractTab)this.registeredTabs.get(0);
-      var4.setActive();
+      AbstractTab tab = (AbstractTab)this.registeredTabs.get(0);
+      tab.setActive();
    }
 
    public AbstractTab getActiveTab() {
@@ -362,10 +362,10 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
    }
 
    private void removeAllTabs() {
-      for (int var1 = 0; var1 < this.registeredTabs.size(); var1++) {
-         AbstractTab var2 = (AbstractTab)this.registeredTabs.get(var1);
-         var2.setInActive();
-         var2.dispose();
+      for (int i = 0; i < this.registeredTabs.size(); i++) {
+         AbstractTab tab = (AbstractTab)this.registeredTabs.get(i);
+         tab.setInActive();
+         tab.dispose();
       }
 
       this.registeredTabs.clear();
@@ -382,23 +382,23 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
       System.gc();
    }
 
-   public void setActive(AbstractTab var1) {
+   public void setActive(AbstractTab tab) {
       if (this.activeTab != null) {
          this.activeTab.setInActive();
       }
 
-      this.stackLayout.topControl = var1.getContent();
+      this.stackLayout.topControl = tab.getContent();
       this.pageContainer.layout();
-      this.activeTab = var1;
+      this.activeTab = tab;
    }
 
    public void openPreferences() {
-      CPreferenceManager var1 = new CPreferenceManager(PreferenceLoader.getPreferenceStore());
-      if (var1.open(new Shell()) == 0) {
-         Iterator var2 = this.registeredTabs.iterator();
+      CPreferenceManager preferenceManager = new CPreferenceManager(PreferenceLoader.getPreferenceStore());
+      if (preferenceManager.open(new Shell()) == 0) {
+         Iterator iterator = this.registeredTabs.iterator();
 
-         while (var2.hasNext()) {
-            ((AbstractTab)var2.next()).updateDisplay();
+         while (iterator.hasNext()) {
+            ((AbstractTab)iterator.next()).updateDisplay();
          }
 
          if (this.getCore() != null) {
@@ -409,72 +409,72 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
       }
    }
 
-   public void restoreWindowBounds(Shell var1) {
+   public void restoreWindowBounds(Shell shell) {
       if (PreferenceLoader.loadBoolean("windowMaximized")) {
-         var1.setMaximized(true);
+         shell.setMaximized(true);
       } else {
-         var1.setBounds(PreferenceLoader.loadRectangle("windowBounds"));
+         shell.setBounds(PreferenceLoader.loadRectangle("windowBounds"));
       }
 
-      int var2 = PreferenceLoader.loadInt("windowAlpha");
-      if (var2 >= 10 && var2 <= 255) {
-         var1.setAlpha(var2);
+      int alpha = PreferenceLoader.loadInt("windowAlpha");
+      if (alpha >= 10 && alpha <= 255) {
+         shell.setAlpha(alpha);
       }
    }
 
-   public void saveWindowBounds(Shell var1) {
-      PreferenceStore var2 = PreferenceLoader.getPreferenceStore();
-      if (var1.getMaximized()) {
-         var2.setValue("windowMaximized", var1.getMaximized());
+   public void saveWindowBounds(Shell shell) {
+      PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+      if (shell.getMaximized()) {
+         preferenceStore.setValue("windowMaximized", shell.getMaximized());
       } else {
-         PreferenceConverter.setValue(var2, "windowBounds", var1.getBounds());
-         var2.setValue("windowMaximized", var1.getMaximized());
+         PreferenceConverter.setValue(preferenceStore, "windowBounds", shell.getBounds());
+         preferenceStore.setValue("windowMaximized", shell.getMaximized());
       }
 
-      var2.setValue("windowAlpha", var1.getAlpha());
+      preferenceStore.setValue("windowAlpha", shell.getAlpha());
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
+   public void update(MyObservable observable, final Object arg, int eventType) {
       if (this.shell != null && !this.shell.isDisposed() && !this.closing) {
-         if (var1 instanceof CoreFactory) {
+         if (observable instanceof CoreFactory) {
             // asyncExec so this core-thread observer callback doesn't block on the
             // UI thread; the update is fire-and-forget and asyncExec keeps order.
             this.shell.getDisplay().asyncExec(new Runnable() {
                public void run() {
                   if (MainWindow.this.shell != null && !MainWindow.this.shell.isDisposed()) {
-                     if (var2 instanceof File) {
+                     if (arg instanceof File) {
                         if (PreferenceLoader.loadBoolean("downloadCompleteDialog")) {
                            if (MainWindow.this.downloadCompleteDialog == null) {
                               MainWindow.this.downloadCompleteDialog = new DownloadCompleteDialog(new Shell(), MainWindow.this);
                               MainWindow.this.downloadCompleteDialog.open();
                            }
 
-                           MainWindow.this.downloadCompleteDialog.addFile((File)var2);
+                           MainWindow.this.downloadCompleteDialog.addFile((File)arg);
                         }
-                     } else if (var2 instanceof Boolean) {
-                        boolean var1 = var2 == Boolean.TRUE;
+                     } else if (arg instanceof Boolean) {
+                        boolean connected = arg == Boolean.TRUE;
 
-                        for (Object var3o : MainWindow.this.registeredTabs) { AbstractTab var3 = (AbstractTab)var3o;
-                           if (var1) {
-                              var3.onConnect();
+                        for (Object tabObject : MainWindow.this.registeredTabs) { AbstractTab tab = (AbstractTab)tabObject;
+                           if (connected) {
+                              tab.onConnect();
                            } else {
-                              var3.onDisconnect();
+                              tab.onDisconnect();
                            }
                         }
 
                         if (MainWindow.this.statusLine != null) {
-                           MainWindow.this.statusLine.setConnected(var1);
+                           MainWindow.this.statusLine.setConnected(connected);
                         }
 
                         if (MainWindow.this.minimizer != null) {
-                           MainWindow.this.minimizer.setConnected(var1);
+                           MainWindow.this.minimizer.setConnected(connected);
                         }
 
                         if (MainWindow.this.dndBox != null) {
-                           MainWindow.this.dndBox.setConnected(var1);
+                           MainWindow.this.dndBox.setConnected(connected);
                         }
-                     } else if (var2 instanceof String && MainWindow.this.statusLine != null) {
-                        MainWindow.this.statusLine.setText((String)var2);
+                     } else if (arg instanceof String && MainWindow.this.statusLine != null) {
+                        MainWindow.this.statusLine.setText((String)arg);
                      }
                   }
                }
@@ -484,9 +484,9 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
    }
 
    public void configureTabs() {
-      IDSelector var1 = new IDSelector(this.shell, this.getTabLegend(), this.getPreferenceString(), "Tabs", "l.tabs");
-      if (var1.open() == 0) {
-         var1.savePrefs();
+      IDSelector idSelector = new IDSelector(this.shell, this.getTabLegend(), this.getPreferenceString(), "Tabs", "l.tabs");
+      if (idSelector.open() == 0) {
+         idSelector.savePrefs();
          this.resetTabs();
       }
    }
@@ -550,24 +550,24 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
       return this.minimizer;
    }
 
-   public void setVisible(boolean var1) {
-      for (int var2 = 0; var2 < this.registeredTabs.size(); var2++) {
-         ((AbstractTab)this.registeredTabs.get(var2)).setVisible(var1);
+   public void setVisible(boolean visible) {
+      for (int i = 0; i < this.registeredTabs.size(); i++) {
+         ((AbstractTab)this.registeredTabs.get(i)).setVisible(visible);
       }
    }
 
-   public void shellActivated(ShellEvent var1) {
+   public void shellActivated(ShellEvent event) {
    }
 
-   public void shellClosed(ShellEvent var1) {
-      var1.doit = this.minimizer.close();
+   public void shellClosed(ShellEvent event) {
+      event.doit = this.minimizer.close();
       this.setVisible(false);
    }
 
-   public void shellDeactivated(ShellEvent var1) {
+   public void shellDeactivated(ShellEvent event) {
    }
 
-   public void shellDeiconified(ShellEvent var1) {
+   public void shellDeiconified(ShellEvent event) {
       if (!this.minimizer.isRestoring()) {
          this.minimizer.restore();
       }
@@ -575,44 +575,44 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
       this.setVisible(true);
    }
 
-   public void shellIconified(ShellEvent var1) {
-      var1.doit = this.minimizer.minimize();
+   public void shellIconified(ShellEvent event) {
+      event.doit = this.minimizer.minimize();
       this.setVisible(false);
    }
 
    public void sendTorrentsFromHD() {
       if (Sancho.hasCollectionFactory()) {
-         FileDialog var1 = new FileDialog(this.getShell(), 2);
-         var1.setFilterExtensions(new String[]{"*.torrent"});
-         if (var1.open() != null && Sancho.getCore() != null) {
-            String var2 = var1.getFilterPath() + System.getProperty("file.separator");
-            String[] var3 = var1.getFileNames();
+         FileDialog fileDialog = new FileDialog(this.getShell(), 2);
+         fileDialog.setFilterExtensions(new String[]{"*.torrent"});
+         if (fileDialog.open() != null && Sancho.getCore() != null) {
+            String path = fileDialog.getFilterPath() + System.getProperty("file.separator");
+            String[] fileNames = fileDialog.getFileNames();
 
-            for (int var4 = 0; var4 < var3.length; var4++) {
-               SwissArmy.sendLink(Sancho.getCore(), var2 + var3[var4]);
+            for (int i = 0; i < fileNames.length; i++) {
+               SwissArmy.sendLink(Sancho.getCore(), path + fileNames[i]);
             }
 
-            this.statusLine.setText(SResources.getString("sl.linksSent") + var3.length);
+            this.statusLine.setText(SResources.getString("sl.linksSent") + fileNames.length);
          }
       }
    }
 
-   public static void copyToClipboard(String var0) {
-      if (var0 != null && !var0.equals("") && clipboard != null && !clipboard.isDisposed()) {
-         clipboard.setContents(new String[]{var0}, new Transfer[]{TextTransfer.getInstance()});
+   public static void copyToClipboard(String text) {
+      if (text != null && !text.equals("") && clipboard != null && !clipboard.isDisposed()) {
+         clipboard.setContents(new String[]{text}, new Transfer[]{TextTransfer.getInstance()});
          if (SWT.getPlatform().equals("fox")) {
-            Shell var1 = new Shell();
-            Text var2 = new Text(var1, 2);
-            var2.setText(var0);
-            var2.selectAll();
-            var2.copy();
-            var2.dispose();
-            var1.dispose();
+            Shell shell = new Shell();
+            Text textWidget = new Text(shell, 2);
+            textWidget.setText(text);
+            textWidget.selectAll();
+            textWidget.copy();
+            textWidget.dispose();
+            shell.dispose();
          }
       }
    }
 
-   public void widgetDisposed(DisposeEvent var1) {
+   public void widgetDisposed(DisposeEvent event) {
       this.saveWindowBounds(this.shell);
       if (this.getLinkRipper() != null) {
          this.getLinkRipper().close();
@@ -626,10 +626,10 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
          this.dndBox.close();
       }
 
-      Iterator var4 = this.registeredTabs.iterator();
+      Iterator iterator = this.registeredTabs.iterator();
 
-      while (var4.hasNext()) {
-         ((AbstractTab)var4.next()).dispose();
+      while (iterator.hasNext()) {
+         ((AbstractTab)iterator.next()).dispose();
       }
 
       if (PreferenceLoader.loadBoolean("killSpawnedCoreOnExit") && (Sancho.getCoreConsole() != null || Sancho.spawnAborted)) {

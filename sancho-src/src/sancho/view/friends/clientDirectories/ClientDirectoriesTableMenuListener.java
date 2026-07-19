@@ -12,38 +12,38 @@ public class ClientDirectoriesTableMenuListener extends GTableMenuListener {
    // $VF: synthetic field
    static Class class$java$lang$String;
 
-   public ClientDirectoriesTableMenuListener(ClientDirectoriesTableView var1) {
-      super(var1);
+   public ClientDirectoriesTableMenuListener(ClientDirectoriesTableView view) {
+      super(view);
    }
 
-   public void setDirectoriesView(ClientFilesTableView var1) {
-      this.clientFilesTableView = var1;
+   public void setDirectoriesView(ClientFilesTableView view) {
+      this.clientFilesTableView = view;
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
-      this.collectSelections(var1, class$java$lang$String == null ? (class$java$lang$String = class$("java.lang.String")) : class$java$lang$String);
+   public void selectionChanged(SelectionChangedEvent event) {
+      this.collectSelections(event, class$java$lang$String == null ? (class$java$lang$String = class$("java.lang.String")) : class$java$lang$String);
       if (this.selectedObjects.size() > 0) {
-         Client var2 = (Client)this.gView.getViewer().getInput();
-         Map var3 = var2.getClientFilesResultMap(this.selectedObjects.get(0));
-         this.clientFilesTableView.setInput(var3);
+         Client client = (Client)this.gView.getViewer().getInput();
+         Map resultMap = client.getClientFilesResultMap(this.selectedObjects.get(0));
+         this.clientFilesTableView.setInput(resultMap);
       } else {
          this.clientFilesTableView.setInput(null);
       }
    }
 
-   public void setFilesView(ClientFilesTableView var1) {
-      this.clientFilesTableView = var1;
+   public void setFilesView(ClientFilesTableView view) {
+      this.clientFilesTableView = view;
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager menuManager) {
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException exception) {
+         throw new NoClassDefFoundError(exception.getMessage());
       }
    }
 }

@@ -46,29 +46,29 @@ public class ExecConsole implements MyObserver {
    private Display display;
    private boolean hasExited;
 
-   public ExecConsole(Display var1) {
-      this.display = var1;
+   public ExecConsole(Display display) {
+      this.display = display;
       this.createContents();
       this.runExec();
    }
 
-   public void appendLine(StreamMonitor var1, String var2) {
-      int var3;
-      if ((var3 = this.outputConsole.getLineCount()) > this.MAX_LINES) {
-         this.outputConsole.replaceTextRange(0, this.outputConsole.getOffsetAtLine(var3 - this.MAX_LINES + 5), "");
+   public void appendLine(StreamMonitor monitor, String line) {
+      int lineCount;
+      if ((lineCount = this.outputConsole.getLineCount()) > this.MAX_LINES) {
+         this.outputConsole.replaceTextRange(0, this.outputConsole.getOffsetAtLine(lineCount - this.MAX_LINES + 5), "");
       }
 
       this.outputConsole.setCaretOffset(this.outputConsole.getText().length());
-      int var4 = this.outputConsole.getCharCount();
-      this.outputConsole.append(var2 + this.outputConsole.getLineDelimiter());
-      if (var1.getType() == 2) {
+      int startOffset = this.outputConsole.getCharCount();
+      this.outputConsole.append(line + this.outputConsole.getLineDelimiter());
+      if (monitor.getType() == 2) {
          this.outputConsole
-            .setStyleRange(new StyleRange(var4, var2.length(), this.outputConsole.getDisplay().getSystemColor(3), this.outputConsole.getBackground()));
-      } else if (this.errorRE.matcher(var2).find()) {
-         this.outputConsole.setStyleRange(new StyleRange(var4, var2.length(), this.highlightColor, this.outputConsole.getBackground()));
+            .setStyleRange(new StyleRange(startOffset, line.length(), this.outputConsole.getDisplay().getSystemColor(3), this.outputConsole.getBackground()));
+      } else if (this.errorRE.matcher(line).find()) {
+         this.outputConsole.setStyleRange(new StyleRange(startOffset, line.length(), this.highlightColor, this.outputConsole.getBackground()));
       }
 
-      this.outputConsole.setCaretOffset(this.outputConsole.getCaretOffset() + var2.length());
+      this.outputConsole.setCaretOffset(this.outputConsole.getCaretOffset() + line.length());
       this.outputConsole.showSelection();
    }
 
@@ -86,13 +86,13 @@ public class ExecConsole implements MyObserver {
       } else {
          try {
             if (this.execProcess != null) {
-               int var1 = this.execProcess.exitValue();
-               if (var1 > 0 || var1 <= 0) {
+               int exitValue = this.execProcess.exitValue();
+               if (exitValue > 0 || exitValue <= 0) {
                   this.hasExited = true;
                   return true;
                }
             }
-         } catch (IllegalThreadStateException var2) {
+         } catch (IllegalThreadStateException illegalThreadState) {
          }
 
          return false;
@@ -105,14 +105,14 @@ public class ExecConsole implements MyObserver {
       this.shell.setText("Core");
       this.shell.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
       this.shell.addDisposeListener(new DisposeListener() {
-         public synchronized void widgetDisposed(DisposeEvent var1) {
-            PreferenceStore var2 = PreferenceLoader.getPreferenceStore();
-            PreferenceConverter.setValue(var2, "coreExecutableWindowBounds", ExecConsole.this.shell.getBounds());
+         public synchronized void widgetDisposed(DisposeEvent event) {
+            PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+            PreferenceConverter.setValue(preferenceStore, "coreExecutableWindowBounds", ExecConsole.this.shell.getBounds());
          }
       });
       this.shell.addListener(21, new Listener() {
-         public void handleEvent(Event var1) {
-            var1.doit = false;
+         public void handleEvent(Event event) {
+            event.doit = false;
             ExecConsole.this.shell.setVisible(false);
          }
       });
@@ -131,19 +131,19 @@ public class ExecConsole implements MyObserver {
       this.outputConsole.append("totalMem: " + Runtime.getRuntime().totalMemory() + this.outputConsole.getLineDelimiter());
       this.outputConsole
          .append("freeMem: " + Runtime.getRuntime().freeMemory() + this.outputConsole.getLineDelimiter() + this.outputConsole.getLineDelimiter());
-      Menu var1 = new Menu(this.outputConsole);
-      MenuItem var2 = new MenuItem(var1, 8);
-      var2.setText(SResources.getString("mi.copy"));
-      var2.addListener(13, new Listener() {
-         public void handleEvent(Event var1) {
+      Menu menu = new Menu(this.outputConsole);
+      MenuItem menuItem = new MenuItem(menu, 8);
+      menuItem.setText(SResources.getString("mi.copy"));
+      menuItem.addListener(13, new Listener() {
+         public void handleEvent(Event event) {
             MainWindow.copyToClipboard(ExecConsole.this.outputConsole.getSelectionText());
          }
       });
-      this.outputConsole.setMenu(var1);
+      this.outputConsole.setMenu(menu);
 
       try {
          this.errorRE = Pattern.compile("error", Pattern.CASE_INSENSITIVE);
-      } catch (PatternSyntaxException var4) {
+      } catch (PatternSyntaxException patternSyntaxException) {
          this.errorRE = null;
       }
    }
@@ -173,10 +173,10 @@ public class ExecConsole implements MyObserver {
    public void forceKill() {
       if (PreferenceLoader.loadBoolean("killSpawnedCoreOnExit")) {
          Sancho.send((short)3);
-         short var1 = 250;
-         int var2 = PreferenceLoader.loadInt("killSpawnedCoreDelay") * (1000 / var1);
+         short interval = 250;
+         int iterations = PreferenceLoader.loadInt("killSpawnedCoreDelay") * (1000 / interval);
 
-         for (int var3 = 0; var3 < var2; var3++) {
+         for (int i = 0; i < iterations; i++) {
             if (this.execProcess == null) {
                return;
             }
@@ -185,7 +185,7 @@ public class ExecConsole implements MyObserver {
                return;
             }
 
-            SwissArmy.threadSleep(var1);
+            SwissArmy.threadSleep(interval);
          }
 
          if (this.execProcess != null) {
@@ -198,12 +198,12 @@ public class ExecConsole implements MyObserver {
 
    public void runExec() {
       try {
-         File var1 = new File(PreferenceLoader.loadStringEnv("coreExecutable"));
-         String var2 = var1.getParent();
+         File file = new File(PreferenceLoader.loadStringEnv("coreExecutable"));
+         String parent = file.getParent();
          // Use the String[] overload: the single-String exec() splits the command
          // on whitespace, so a core path like C:\Program Files\...\mlnet.exe would
-         // try to run "C:\Program". var2 (parent dir) can be null for a bare name.
-         this.execProcess = Runtime.getRuntime().exec(new String[]{var1.toString()}, null, var2 == null ? null : new File(var2));
+         // try to run "C:\Program". parent (parent dir) can be null for a bare name.
+         this.execProcess = Runtime.getRuntime().exec(new String[]{file.toString()}, null, parent == null ? null : new File(parent));
          Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                ExecConsole.this.forceKill();
@@ -211,27 +211,27 @@ public class ExecConsole implements MyObserver {
          });
          this.stdoutMonitor = new StreamMonitor(this.execProcess.getInputStream(), 1);
          this.stdoutMonitor.addObserver(this);
-         Thread var3 = new Thread(this.stdoutMonitor);
-         var3.setDaemon(true);
-         var3.start();
+         Thread stdoutThread = new Thread(this.stdoutMonitor);
+         stdoutThread.setDaemon(true);
+         stdoutThread.start();
          this.stderrMonitor = new StreamMonitor(this.execProcess.getErrorStream(), 2);
          this.stderrMonitor.addObserver(this);
-         Thread var4 = new Thread(this.stderrMonitor);
-         var4.setDaemon(true);
-         var4.start();
-      } catch (IOException var5) {
-         Sancho.pDebug("exec:" + var5);
+         Thread stderrThread = new Thread(this.stderrMonitor);
+         stderrThread.setDaemon(true);
+         stderrThread.start();
+      } catch (IOException ioException) {
+         Sancho.pDebug("exec:" + ioException);
       }
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
-      if (var2 instanceof String) {
-         String var4 = (String)var2;
+   public void update(final MyObservable observable, Object arg, int eventType) {
+      if (arg instanceof String) {
+         final String line = (String)arg;
          if (!this.outputConsole.isDisposed()) {
             this.outputConsole.getDisplay().asyncExec(new Runnable() {
                public void run() {
                   if (!ExecConsole.this.outputConsole.isDisposed()) {
-                     ExecConsole.this.appendLine((StreamMonitor)var1, var4);
+                     ExecConsole.this.appendLine((StreamMonitor)observable, line);
                   }
                }
             });
@@ -245,10 +245,10 @@ public class ExecConsole implements MyObserver {
       private boolean keepAlive;
       private int type;
 
-      public StreamMonitor(InputStream var2, int var3) {
+      public StreamMonitor(InputStream inputStream, int type) {
          this.keepAlive = true;
-         this.inputStream = var2;
-         this.type = var3;
+         this.inputStream = inputStream;
+         this.type = type;
       }
 
       public int getType() {
@@ -257,21 +257,21 @@ public class ExecConsole implements MyObserver {
 
       public void run() {
          try {
-            BufferedReader var2 = new BufferedReader(new InputStreamReader(this.inputStream));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(this.inputStream));
 
-            String var1;
-            while (this.keepAlive && (var1 = var2.readLine()) != null) {
-               if (!ExecConsole.this.coreStarted && var1.toLowerCase().indexOf("core started") > -1) {
+            String line;
+            while (this.keepAlive && (line = reader.readLine()) != null) {
+               if (!ExecConsole.this.coreStarted && line.toLowerCase().indexOf("core started") > -1) {
                   ExecConsole.this.coreStarted = true;
                }
 
                this.setChanged();
-               this.notifyObservers(var1);
+               this.notifyObservers(line);
             }
 
-            var2.close();
-         } catch (IOException var3) {
-            Sancho.pDebug("streamMonitor:" + var3);
+            reader.close();
+         } catch (IOException ioException) {
+            Sancho.pDebug("streamMonitor:" + ioException);
          }
       }
 

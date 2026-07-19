@@ -10,96 +10,96 @@ import sancho.view.utility.SResources;
 import sancho.view.viewer.tree.GTreeContentProvider;
 
 public class DownloadTreeContentProvider extends GTreeContentProvider {
-   public DownloadTreeContentProvider(DownloadTreeView var1) {
-      super(var1);
+   public DownloadTreeContentProvider(DownloadTreeView downloadTreeView) {
+      super(downloadTreeView);
    }
 
-   public Object[] getChildren(Object var1) {
-      return var1 instanceof File ? ((File)var1).getFileClientSetArray() : GTreeContentProvider.EMPTY_ARRAY;
+   public Object[] getChildren(Object element) {
+      return element instanceof File ? ((File)element).getFileClientSetArray() : GTreeContentProvider.EMPTY_ARRAY;
    }
 
-   public Object[] getElements(Object var1) {
-      return var1 instanceof FileCollection ? ((FileCollection)var1).getAllInteresting() : GTreeContentProvider.EMPTY_ARRAY;
+   public Object[] getElements(Object inputElement) {
+      return inputElement instanceof FileCollection ? ((FileCollection)inputElement).getAllInteresting() : GTreeContentProvider.EMPTY_ARRAY;
    }
 
-   public Object getParent(Object var1) {
-      if (var1 instanceof FileClient) {
-         return ((FileClient)var1).getFile();
+   public Object getParent(Object element) {
+      if (element instanceof FileClient) {
+         return ((FileClient)element).getFile();
       } else {
-         return var1 instanceof File ? this.treeViewer.getInput() : null;
+         return element instanceof File ? this.treeViewer.getInput() : null;
       }
    }
 
-   public boolean hasChildren(Object var1) {
-      return var1 instanceof File ? ((File)var1).getFileClientSetSize() > 0 : false;
+   public boolean hasChildren(Object element) {
+      return element instanceof File ? ((File)element).getFileClientSetSize() > 0 : false;
    }
 
-   public int getNumChildren(Object var1) {
-      return var1 instanceof File ? ((File)var1).getFileClientSetSize() : 0;
+   public int getNumChildren(Object element) {
+      return element instanceof File ? ((File)element).getFileClientSetSize() : 0;
    }
 
-   public void inputChanged(Viewer var1, Object var2, Object var3) {
-      super.inputChanged(var1, var2, var3);
-      if (var2 != null) {
-         ((MyObservable)var2).deleteObserver(this);
+   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      super.inputChanged(viewer, oldInput, newInput);
+      if (oldInput != null) {
+         ((MyObservable)oldInput).deleteObserver(this);
       }
 
-      if (var3 != null) {
-         ((MyObservable)var3).addObserver(this);
+      if (newInput != null) {
+         ((MyObservable)newInput).addObserver(this);
          this.updateHeaderLabel();
       }
    }
 
-   public void onUpdate(MyObservable var1, Object var2, int var3) {
+   public void onUpdate(MyObservable observable, Object data, int updateType) {
       if (this.gView != null && !this.gView.isDisposed()) {
-         if (var1 instanceof FileCollection) {
-            FileCollection var4 = (FileCollection)var1;
-            if (var2 instanceof FileClient) {
-               FileClient var5 = (FileClient)var2;
-               switch (var3) {
+         if (observable instanceof FileCollection) {
+            FileCollection fileCollection = (FileCollection)observable;
+            if (data instanceof FileClient) {
+               FileClient fileClient = (FileClient)data;
+               switch (updateType) {
                   case 1:
-                     this.treeViewer.addChild(var5.getFile(), var5);
+                     this.treeViewer.addChild(fileClient.getFile(), fileClient);
                      break;
                   case 2:
-                     this.treeViewer.removeChild(var5.getFile(), var5);
+                     this.treeViewer.removeChild(fileClient.getFile(), fileClient);
                }
             }
 
-            if (var4.requiresRefresh()) {
+            if (fileCollection.requiresRefresh()) {
                this.treeViewer.refresh();
                this.updateHeaderLabel();
                return;
             }
 
-            if (var4.added()) {
-               synchronized (var4) {
-                  Object[] var6 = var4.getAndClearAdded();
-                  this.treeViewer.add(this.treeViewer.getInput(), var6);
+            if (fileCollection.added()) {
+               synchronized (fileCollection) {
+                  Object[] addedFiles = fileCollection.getAndClearAdded();
+                  this.treeViewer.add(this.treeViewer.getInput(), addedFiles);
 
-                  for (int var7 = 0; var7 < var6.length; var7++) {
-                     ((File)var6[var7]).clearChangedBits();
+                  for (int i = 0; i < addedFiles.length; i++) {
+                     ((File)addedFiles[i]).clearChangedBits();
                   }
                }
             }
 
-            if (var4.updated()) {
-               synchronized (var4) {
-                  Object[] var14 = var4.getAndClearUpdated();
-                  this.treeViewer.update(var14, SResources.SA_Z);
+            if (fileCollection.updated()) {
+               synchronized (fileCollection) {
+                  Object[] updatedFiles = fileCollection.getAndClearUpdated();
+                  this.treeViewer.update(updatedFiles, SResources.SA_Z);
 
-                  for (int var16 = 0; var16 < var14.length; var16++) {
-                     ((File)var14[var16]).clearChangedBits();
+                  for (int i = 0; i < updatedFiles.length; i++) {
+                     ((File)updatedFiles[i]).clearChangedBits();
                   }
                }
             }
 
-            if (var4.removed()) {
-               synchronized (var4) {
-                  Object[] var15 = var4.getAndClearRemoved();
-                  this.treeViewer.remove(var15);
+            if (fileCollection.removed()) {
+               synchronized (fileCollection) {
+                  Object[] removedFiles = fileCollection.getAndClearRemoved();
+                  this.treeViewer.remove(removedFiles);
 
-                  for (int var17 = 0; var17 < var15.length; var17++) {
-                     ((File)var15[var17]).clearChangedBits();
+                  for (int i = 0; i < removedFiles.length; i++) {
+                     ((File)removedFiles[i]).clearChangedBits();
                   }
                }
             }
@@ -111,8 +111,8 @@ public class DownloadTreeContentProvider extends GTreeContentProvider {
 
    public void updateHeaderLabel() {
       if (Sancho.hasCollectionFactory()) {
-         String var1 = this.gView.getCore().getFileCollection().getHeaderText();
-         this.gView.getViewFrame().updateCLabelText(var1);
+         String headerText = this.gView.getCore().getFileCollection().getHeaderText();
+         this.gView.getViewFrame().updateCLabelText(headerText);
       }
    }
 }

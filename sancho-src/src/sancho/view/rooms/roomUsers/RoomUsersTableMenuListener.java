@@ -10,37 +10,37 @@ public class RoomUsersTableMenuListener extends GTableMenuListener {
    // $VF: synthetic field
    static Class class$sancho$model$mldonkey$User;
 
-   public RoomUsersTableMenuListener(RoomUsersTableView var1) {
-      super(var1);
+   public RoomUsersTableMenuListener(RoomUsersTableView view) {
+      super(view);
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
+   public void selectionChanged(SelectionChangedEvent event) {
       this.collectSelections(
-         var1,
+         event,
          class$sancho$model$mldonkey$User == null
             ? (class$sancho$model$mldonkey$User = class$("sancho.model.mldonkey.User"))
             : class$sancho$model$mldonkey$User
       );
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager menuManager) {
       if (this.selectedObjects.size() > 0) {
-         User[] var2 = new User[this.selectedObjects.size()];
+         User[] users = new User[this.selectedObjects.size()];
 
-         for (int var3 = 0; var3 < this.selectedObjects.size(); var3++) {
-            var2[var3] = (User)this.selectedObjects.get(var3);
+         for (int i = 0; i < this.selectedObjects.size(); i++) {
+            users[i] = (User)this.selectedObjects.get(i);
          }
 
-         var1.add(new AddUserAsFriendAction(var2));
+         menuManager.add(new AddUserAsFriendAction(users));
       }
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException exception) {
+         throw new NoClassDefFoundError(exception.getMessage());
       }
    }
 }

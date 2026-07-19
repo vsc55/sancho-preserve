@@ -15,15 +15,15 @@ public class CTreeEditor extends CControlEditor {
    ControlListener columnListener;
    Rectangle currentBounds = new Rectangle(0, 0, 0, 0);
 
-   public CTreeEditor(Tree var1) {
-      super(var1);
-      this.tree = var1;
+   public CTreeEditor(Tree tree) {
+      super(tree);
+      this.tree = tree;
       this.columnListener = new ControlListener() {
-         public void controlMoved(ControlEvent var1) {
+         public void controlMoved(ControlEvent event) {
             CTreeEditor.this.resize();
          }
 
-         public void controlResized(ControlEvent var1) {
+         public void controlResized(ControlEvent event) {
             CTreeEditor.this.resize();
          }
       };
@@ -36,8 +36,8 @@ public class CTreeEditor extends CControlEditor {
 
    public void dispose() {
       if (this.column > -1 && this.column < this.tree.getColumnCount()) {
-         TreeColumn var1 = this.tree.getColumn(this.column);
-         var1.removeControlListener(this.columnListener);
+         TreeColumn column = this.tree.getColumn(this.column);
+         column.removeControlListener(this.columnListener);
       }
 
       this.columnListener = null;
@@ -55,61 +55,61 @@ public class CTreeEditor extends CControlEditor {
       return this.item;
    }
 
-   public void setColumn(int var1) {
-      int var2 = this.tree.getColumnCount();
-      if (var2 == 0) {
-         this.column = var1 == 0 ? 0 : -1;
+   public void setColumn(int columnIndex) {
+      int columnCount = this.tree.getColumnCount();
+      if (columnCount == 0) {
+         this.column = columnIndex == 0 ? 0 : -1;
          this.resize();
       } else {
-         if (this.column > -1 && this.column < var2) {
-            TreeColumn var3 = this.tree.getColumn(this.column);
-            var3.removeControlListener(this.columnListener);
+         if (this.column > -1 && this.column < columnCount) {
+            TreeColumn oldColumn = this.tree.getColumn(this.column);
+            oldColumn.removeControlListener(this.columnListener);
             this.column = -1;
          }
 
-         if (var1 >= 0 && var1 < this.tree.getColumnCount()) {
-            this.column = var1;
-            TreeColumn var4 = this.tree.getColumn(this.column);
-            var4.addControlListener(this.columnListener);
+         if (columnIndex >= 0 && columnIndex < this.tree.getColumnCount()) {
+            this.column = columnIndex;
+            TreeColumn column = this.tree.getColumn(this.column);
+            column.addControlListener(this.columnListener);
             this.resize();
          }
       }
    }
 
-   public void setItem(TreeItem var1) {
-      this.item = var1;
+   public void setItem(TreeItem item) {
+      this.item = item;
       if (this.editor != null && !this.editor.isDisposed()) {
-         boolean var2 = this.editor.getVisible();
-         boolean var3 = var1 != null;
-         if (var2 != var3) {
-            this.editor.setVisible(var3);
+         boolean editorVisible = this.editor.getVisible();
+         boolean itemPresent = item != null;
+         if (editorVisible != itemPresent) {
+            this.editor.setVisible(itemPresent);
          }
       }
 
       this.resize();
    }
 
-   public void setEditor(Control var1, TreeItem var2, int var3) {
-      this.setItem(var2);
-      this.setColumn(var3);
-      this.setEditor(var1);
+   public void setEditor(Control control, TreeItem item, int columnIndex) {
+      this.setItem(item);
+      this.setColumn(columnIndex);
+      this.setEditor(control);
    }
 
-   public void setEditor(Control var1, TreeItem var2) {
-      this.setItem(var2);
-      this.setEditor(var1);
+   public void setEditor(Control control, TreeItem item) {
+      this.setItem(item);
+      this.setEditor(control);
    }
 
    void resize() {
       if (!this.tree.isDisposed()) {
          if (this.editor != null && !this.editor.isDisposed()) {
             if (this.item != null && !this.item.isDisposed()) {
-               int var1 = this.tree.getColumnCount();
-               if (var1 != 0 || this.column == 0) {
-                  if (var1 <= 0 || this.column >= 0 && this.column < var1) {
-                     Rectangle var2 = this.computeBounds();
-                     if (!var2.equals(this.currentBounds)) {
-                        this.currentBounds = var2;
+               int columnCount = this.tree.getColumnCount();
+               if (columnCount != 0 || this.column == 0) {
+                  if (columnCount <= 0 || this.column >= 0 && this.column < columnCount) {
+                     Rectangle bounds = this.computeBounds();
+                     if (!bounds.equals(this.currentBounds)) {
+                        this.currentBounds = bounds;
                         this.editor.setBackground(this.item.getBackground(this.column));
                         this.editor.setBounds(this.currentBounds);
                      }

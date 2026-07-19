@@ -6,26 +6,26 @@ import sancho.model.mldonkey.User;
 import sancho.view.viewer.GSorter;
 
 public class RoomUsersTableSorter extends GSorter {
-   public RoomUsersTableSorter(RoomUsersTableView var1) {
-      super(var1);
+   public RoomUsersTableSorter(RoomUsersTableView view) {
+      super(view);
    }
 
-   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
-      User var5 = (User)var2;
-      User var6 = (User)var3;
-      switch (var4) {
+   protected int _compare(Viewer viewer, Object object1, Object object2, int columnId) {
+      User user1 = (User)object1;
+      User user2 = (User)object2;
+      switch (columnId) {
          case 0:
-            return this.compareStrings(var5.getName(), var6.getName());
+            return this.compareStrings(user1.getName(), user2.getName());
          case 1:
-            return this.compareStrings(var5.getTagsString(), var6.getTagsString());
+            return this.compareStrings(user1.getTagsString(), user2.getTagsString());
          case 2:
-            return this.compareAddrs(var5.getAddr(), var6.getAddr());
+            return this.compareAddrs(user1.getAddr(), user2.getAddr());
          case 3:
-            return this.compareInts(var5.getPort(), var6.getPort());
+            return this.compareInts(user1.getPort(), user2.getPort());
          case 4:
-            return this.compareInts(var5.getServerId(), var6.getServerId());
+            return this.compareInts(user1.getServerId(), user2.getServerId());
          default:
-            return this.compareDefault((TableViewer)var1, this.columnIndex, var2, var3);
+            return this.compareDefault((TableViewer)viewer, this.columnIndex, object1, object2);
       }
    }
 }

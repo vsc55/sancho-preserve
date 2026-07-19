@@ -6,9 +6,9 @@ import sancho.view.utility.AbstractTab;
 import sancho.view.viewFrame.ViewFrame;
 
 public class FileCommentsViewFrame extends ViewFrame {
-   public FileCommentsViewFrame(Composite var1, String var2, String var3, AbstractTab var4, File var5) {
-      super(var1, var2, var3, var4);
-      this.gView = new FileCommentsTableView(this, var5);
+   public FileCommentsViewFrame(Composite composite, String labelString, String imageString, AbstractTab tab, File file) {
+      super(composite, labelString, imageString, tab);
+      this.gView = new FileCommentsTableView(this, file);
       this.createViewListener(new FileCommentsViewListener(this));
       this.createViewToolBar();
    }

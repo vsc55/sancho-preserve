@@ -13,46 +13,46 @@ import sancho.view.utility.WidgetFactory;
 import sancho.view.viewFrame.ViewFrame;
 
 public class TransferTab extends AbstractTab {
-   public TransferTab(MainWindow var1, String var2) {
-      super(var1, var2);
+   public TransferTab(MainWindow mainWindow, String name) {
+      super(mainWindow, name);
    }
 
-   protected void createContents(Composite var1) {
-      String var2 = "transferSash";
-      SashForm var3 = WidgetFactory.createSashForm(var1, var2);
-      this.createDownloadsViews(var3);
-      this.createUploadsView(var3);
-      WidgetFactory.loadSashForm(var3, var2);
+   protected void createContents(Composite composite) {
+      String sashName = "transferSash";
+      SashForm sashForm = WidgetFactory.createSashForm(composite, sashName);
+      this.createDownloadsViews(sashForm);
+      this.createUploadsView(sashForm);
+      WidgetFactory.loadSashForm(sashForm, sashName);
    }
 
-   private void createDownloadsViews(SashForm var1) {
-      String var2 = "clientSash";
-      SashForm var3 = WidgetFactory.createSashForm(var1, var2);
-      this.createDownloadsView(var3);
-      this.createClientsView(var3);
-      WidgetFactory.loadSashForm(var3, var2);
-      if (var3.getMaximizedControl() == null) {
-         DownloadTreeView var4 = (DownloadTreeView)((ViewFrame)this.getViewFrameList().get(0)).getGView();
-         var4.updateClientsTable(true);
+   private void createDownloadsViews(SashForm sashForm) {
+      String sashName = "clientSash";
+      SashForm childSashForm = WidgetFactory.createSashForm(sashForm, sashName);
+      this.createDownloadsView(childSashForm);
+      this.createClientsView(childSashForm);
+      WidgetFactory.loadSashForm(childSashForm, sashName);
+      if (childSashForm.getMaximizedControl() == null) {
+         DownloadTreeView downloadTreeView = (DownloadTreeView)((ViewFrame)this.getViewFrameList().get(0)).getGView();
+         downloadTreeView.updateClientsTable(true);
       }
    }
 
-   private void createUploadsView(SashForm var1) {
-      String var2 = "uploadsSash";
-      SashForm var3 = WidgetFactory.createSashForm(var1, var2);
-      this.addViewFrame(new UploadersViewFrame(var3, "l.uploaders", "up_arrow_blue", this));
-      this.addViewFrame(new PendingViewFrame(var3, "l.pending", "up_arrow_blue", this));
-      WidgetFactory.loadSashForm(var3, var2);
+   private void createUploadsView(SashForm sashForm) {
+      String sashName = "uploadsSash";
+      SashForm childSashForm = WidgetFactory.createSashForm(sashForm, sashName);
+      this.addViewFrame(new UploadersViewFrame(childSashForm, "l.uploaders", "up_arrow_blue", this));
+      this.addViewFrame(new PendingViewFrame(childSashForm, "l.pending", "up_arrow_blue", this));
+      WidgetFactory.loadSashForm(childSashForm, sashName);
    }
 
-   private void createDownloadsView(SashForm var1) {
-      this.addViewFrame(new DownloadViewFrame(var1, "l.downloads", "tab.transfers.buttonSmall", this));
+   private void createDownloadsView(SashForm sashForm) {
+      this.addViewFrame(new DownloadViewFrame(sashForm, "l.downloads", "tab.transfers.buttonSmall", this));
    }
 
-   private void createClientsView(SashForm var1) {
-      DownloadTreeView var2 = (DownloadTreeView)((ViewFrame)this.getViewFrameList().get(0)).getGView();
-      ClientViewFrame var3 = new ClientViewFrame(var1, "l.clients", "tab.transfers.buttonSmall", this, var2);
-      var2.setClientTableView((ClientTableView)var3.getGView());
-      this.addViewFrame(var3);
+   private void createClientsView(SashForm sashForm) {
+      DownloadTreeView downloadTreeView = (DownloadTreeView)((ViewFrame)this.getViewFrameList().get(0)).getGView();
+      ClientViewFrame clientViewFrame = new ClientViewFrame(sashForm, "l.clients", "tab.transfers.buttonSmall", this, downloadTreeView);
+      downloadTreeView.setClientTableView((ClientTableView)clientViewFrame.getGView());
+      this.addViewFrame(clientViewFrame);
    }
 }

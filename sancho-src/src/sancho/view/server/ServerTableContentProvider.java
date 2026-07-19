@@ -7,71 +7,71 @@ import sancho.view.utility.SResources;
 import sancho.view.viewer.table.GTableContentProvider;
 
 public class ServerTableContentProvider extends GTableContentProvider {
-   public ServerTableContentProvider(ServerTableView var1) {
-      super(var1);
+   public ServerTableContentProvider(ServerTableView tableView) {
+      super(tableView);
    }
 
-   public Object[] getElements(Object var1) {
-      synchronized (var1) {
-         ServerCollection var3 = (ServerCollection)var1;
-         var3.clearAllLists();
-         Object[] var4 = var3.getServers();
-         this.updateLabel(var3);
-         return var4;
+   public Object[] getElements(Object input) {
+      synchronized (input) {
+         ServerCollection serverCollection = (ServerCollection)input;
+         serverCollection.clearAllLists();
+         Object[] servers = serverCollection.getServers();
+         this.updateLabel(serverCollection);
+         return servers;
       }
    }
 
-   public void inputChanged(Viewer var1, Object var2, Object var3) {
-      super.inputChanged(var1, var2, var3);
-      if (var2 != null) {
-         ((MyObservable)var2).deleteObserver(this);
+   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      super.inputChanged(viewer, oldInput, newInput);
+      if (oldInput != null) {
+         ((MyObservable)oldInput).deleteObserver(this);
       }
 
-      if (var3 != null && this.gView.isActive()) {
-         ((MyObservable)var3).addObserver(this);
-         this.updateLabel((ServerCollection)var3);
+      if (newInput != null && this.gView.isActive()) {
+         ((MyObservable)newInput).addObserver(this);
+         this.updateLabel((ServerCollection)newInput);
       }
    }
 
-   public void setActive(boolean var1) {
-      ServerCollection var2 = (ServerCollection)this.gView.getViewer().getInput();
-      if (var2 != null) {
-         if (var1) {
+   public void setActive(boolean active) {
+      ServerCollection serverCollection = (ServerCollection)this.gView.getViewer().getInput();
+      if (serverCollection != null) {
+         if (active) {
             this.needsRefresh = true;
-            var2.addObserver(this);
+            serverCollection.addObserver(this);
          } else {
-            var2.deleteObserver(this);
+            serverCollection.deleteObserver(this);
          }
       }
 
-      super.setActive(var1);
+      super.setActive(active);
    }
 
-   public void update(final MyObservable var1, Object var2, int var3) {
+   public void update(final MyObservable observable, Object arg, int type) {
       if (this.gView.getViewer() != null && !this.gView.getComposite().isDisposed()) {
          if (this.gView.isActive() && this.gView.isVisible()) {
-            if (var1 instanceof ServerCollection) {
+            if (observable instanceof ServerCollection) {
                this.tableViewer.getTable().getDisplay().asyncExec(new Runnable() {
                   public void run() {
                      if (gView != null && !gView.isDisposed()) {
-                        ServerCollection serverCollection = (ServerCollection)var1;
-                        boolean var2 = false;
+                        ServerCollection serverCollection = (ServerCollection)observable;
+                        boolean changed = false;
                         if (serverCollection.removed()) {
                            tableViewer.remove(serverCollection.getAndClearRemoved());
-                           var2 = true;
+                           changed = true;
                         }
 
                         if (serverCollection.added()) {
                            tableViewer.add(serverCollection.getAndClearAdded());
-                           var2 = true;
+                           changed = true;
                         }
 
                         if (serverCollection.updated()) {
-                           boolean var3 = tableViewer.updateOrRefresh(serverCollection.getAndClearUpdated(), SResources.SA_Z);
-                           var2 = !var3;
+                           boolean updated = tableViewer.updateOrRefresh(serverCollection.getAndClearUpdated(), SResources.SA_Z);
+                           changed = !updated;
                         }
 
-                        if (var2) {
+                        if (changed) {
                            updateLabel(serverCollection);
                         }
                      }
@@ -84,7 +84,7 @@ public class ServerTableContentProvider extends GTableContentProvider {
       }
    }
 
-   protected void updateLabel(ServerCollection var1) {
-      this.gView.getViewFrame().updateCLabelText(var1.getHeaderString());
+   protected void updateLabel(ServerCollection serverCollection) {
+      this.gView.getViewFrame().updateCLabelText(serverCollection.getHeaderString());
    }
 }

@@ -20,8 +20,8 @@ public class PendingTableView extends GTableView {
    public static final int FILENAME = 10;
    public static final int SUI = 11;
 
-   public PendingTableView(ViewFrame var1) {
-      super(var1);
+   public PendingTableView(ViewFrame viewFrame) {
+      super(viewFrame);
       this.preferenceString = "pending";
       this.columnLabels = new String[]{
          "pending.network",
@@ -43,11 +43,11 @@ public class PendingTableView extends GTableView {
       this.tableContentProvider = new PendingTableContentProvider(this);
       this.tableLabelProvider = new PendingTableLabelProvider(this);
       this.tableMenuListener = new PendingTableMenuListener(this);
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
    }
 
-   protected void createContents(Composite var1) {
-      super.createContents(var1);
+   protected void createContents(Composite composite) {
+      super.createContents(composite);
       this.sViewer.addSelectionChangedListener((PendingTableMenuListener)this.tableMenuListener);
    }
 

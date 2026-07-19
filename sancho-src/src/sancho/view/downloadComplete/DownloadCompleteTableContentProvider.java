@@ -4,11 +4,11 @@ import java.util.List;
 import sancho.view.viewer.table.GTableContentProvider;
 
 public class DownloadCompleteTableContentProvider extends GTableContentProvider {
-   public DownloadCompleteTableContentProvider(DownloadCompleteTableView var1) {
-      super(var1);
+   public DownloadCompleteTableContentProvider(DownloadCompleteTableView view) {
+      super(view);
    }
 
-   public Object[] getElements(Object var1) {
-      return ((List)var1).toArray();
+   public Object[] getElements(Object inputElement) {
+      return ((List)inputElement).toArray();
    }
 }

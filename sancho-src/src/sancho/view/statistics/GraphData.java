@@ -24,38 +24,38 @@ public class GraphData implements Runnable {
    private String title;
    private long sumValue;
 
-   public GraphData(Display var1, String var2, String var3) {
-      this.graphName = var3;
-      this.title = var2;
-      this.display = var1;
+   public GraphData(Display display, String title, String graphName) {
+      this.graphName = graphName;
+      this.title = title;
+      this.display = display;
       this.maxList = new TIntArrayList(0);
       this.avgList = new TIntArrayList(0);
       this.sumValue = this.hourlySumValue = 0L;
       this.avgValue = this.maxValue = 0;
       this.hourlyMaxValue = 0;
       this.hourlyAvgValue = 0;
-      var1.timerExec(3600000, this);
+      display.timerExec(3600000, this);
    }
 
-   public synchronized void addPoint(int var1) {
+   public synchronized void addPoint(int value) {
       if (this.iPoints != null) {
          if (this.insertAt > 1599) {
             this.insertAt = 0;
          }
 
-         this.iPoints[this.insertAt++] = var1;
-         if (var1 > this.maxValue) {
-            this.maxValue = var1;
+         this.iPoints[this.insertAt++] = value;
+         if (value > this.maxValue) {
+            this.maxValue = value;
          }
 
-         this.sumValue += (long)var1;
+         this.sumValue += (long)value;
          this.numPoints++;
          this.avgValue = (int)(this.sumValue / (long)this.numPoints);
-         if (var1 > this.hourlyMaxValue) {
-            this.hourlyMaxValue = var1;
+         if (value > this.hourlyMaxValue) {
+            this.hourlyMaxValue = value;
          }
 
-         this.hourlySumValue += (long)var1;
+         this.hourlySumValue += (long)value;
          this.hourlyAmount++;
          this.hourlyAvgValue = (int)(this.hourlySumValue / (long)this.hourlyAmount);
       }
@@ -69,26 +69,26 @@ public class GraphData implements Runnable {
       this.avgList.clear();
    }
 
-   public synchronized int findMax(int var1) {
-      int var2 = 20;
-      int var3 = this.insertAt - 1;
-      if (var1 > this.numPoints) {
-         var1 = this.numPoints;
+   public synchronized int findMax(int count) {
+      int max = 20;
+      int index = this.insertAt - 1;
+      if (count > this.numPoints) {
+         count = this.numPoints;
       }
 
-      for (int var4 = 0; var4 < var1; var4++) {
-         if (var3 < 0) {
-            var3 = 1599;
+      for (int i = 0; i < count; i++) {
+         if (index < 0) {
+            index = 1599;
          }
 
-         if (this.iPoints[var3] > var2) {
-            var2 = this.iPoints[var3];
+         if (this.iPoints[index] > max) {
+            max = this.iPoints[index];
          }
 
-         var3--;
+         index--;
       }
 
-      return var2;
+      return max;
    }
 
    public int getNumPoints() {
@@ -124,16 +124,16 @@ public class GraphData implements Runnable {
    }
 
    public synchronized int getNewestPoint() {
-      int var1 = this.insertAt - 1;
-      if (var1 < 0) {
-         var1 = 1599;
+      int index = this.insertAt - 1;
+      if (index < 0) {
+         index = 1599;
       }
 
-      return this.iPoints[var1];
+      return this.iPoints[index];
    }
 
-   public int getPointAt(int var1) {
-      return this.iPoints[var1];
+   public int getPointAt(int index) {
+      return this.iPoints[index];
    }
 
    public void dispose() {

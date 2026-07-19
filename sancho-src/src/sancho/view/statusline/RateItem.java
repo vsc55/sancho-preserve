@@ -32,11 +32,11 @@ public class RateItem implements IStatusItem {
    private int oldLength;
    private MouseAdapter disconnectMouseAdapter;
 
-   public RateItem(StatusLine var1) {
-      this.statusLine = var1;
-      this.statusLineComposite = var1.getStatusline();
+   public RateItem(StatusLine statusLine) {
+      this.statusLine = statusLine;
+      this.statusLineComposite = statusLine.getStatusline();
       this.disconnectMouseAdapter = new MouseAdapter() {
-         public void mouseDoubleClick(MouseEvent var1) {
+         public void mouseDoubleClick(MouseEvent event) {
             Sancho.getCoreFactory().reconnect();
          }
       };
@@ -45,8 +45,8 @@ public class RateItem implements IStatusItem {
       this.setConnected(true);
    }
 
-   public void setConnected(boolean var1) {
-      this.connected = var1;
+   public void setConnected(boolean connected) {
+      this.connected = connected;
       if (Sancho.hasCollectionFactory()) {
          Sancho.getCore().getClientStats().addObserver(this);
       } else {
@@ -69,9 +69,9 @@ public class RateItem implements IStatusItem {
       this.upCLabel.setMenu(this.popupMenu.createContextMenu(this.upCLabel));
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
-      if (var1 instanceof ClientStats && var1 != null && this.upCLabel != null && !this.upCLabel.isDisposed()) {
-         final MyObservable observable = var1;
+   public void update(MyObservable source, Object value, int id) {
+      if (source instanceof ClientStats && source != null && this.upCLabel != null && !this.upCLabel.isDisposed()) {
+         final MyObservable observable = source;
          this.statusLineComposite.getDisplay().asyncExec(new Runnable() {
             public void run() {
                if (RateItem.this.connected) {
@@ -82,7 +82,7 @@ public class RateItem implements IStatusItem {
       }
    }
 
-   public void updateClientStats(ClientStats var1) {
+   public void updateClientStats(ClientStats stats) {
       if (this.upCLabel != null && !this.upCLabel.isDisposed()) {
          if (this.updateImages) {
             this.downCLabel.setImage(SResources.getImage("rateDownArrow"));
@@ -90,13 +90,13 @@ public class RateItem implements IStatusItem {
             this.downCLabel.removeMouseListener(this.disconnectMouseAdapter);
          }
 
-         this.downCLabel.setText(var1.getTcpDownRateString());
-         this.upCLabel.setText(var1.getTcpUpRateString());
-         this.downCLabel.setToolTipText(var1.getDownloadToolTip());
-         this.upCLabel.setToolTipText(var1.getUploadToolTip());
-         int var2 = this.downCLabel.getText().length() + this.upCLabel.getText().length();
-         if (var2 != this.oldLength || this.updateImages) {
-            this.oldLength = var2;
+         this.downCLabel.setText(stats.getTcpDownRateString());
+         this.upCLabel.setText(stats.getTcpUpRateString());
+         this.downCLabel.setToolTipText(stats.getDownloadToolTip());
+         this.upCLabel.setToolTipText(stats.getUploadToolTip());
+         int totalLength = this.downCLabel.getText().length() + this.upCLabel.getText().length();
+         if (totalLength != this.oldLength || this.updateImages) {
+            this.oldLength = totalLength;
             this.statusLineComposite.getParent().layout();
             this.updateImages = false;
          }
@@ -125,30 +125,30 @@ public class RateItem implements IStatusItem {
       }
 
       public void run() {
-         String var1 = "";
+         String text = "";
          if (RateItem.this.downCLabel != null && !RateItem.this.downCLabel.isDisposed()) {
-            var1 = var1 + RateItem.this.downCLabel.getText();
+            text = text + RateItem.this.downCLabel.getText();
          }
 
          if (RateItem.this.upCLabel != null && !RateItem.this.upCLabel.isDisposed()) {
-            String var2 = RateItem.this.upCLabel.getText();
-            if (!var2.equals("")) {
-               var1 = var1 + " | " + var2;
+            String upText = RateItem.this.upCLabel.getText();
+            if (!upText.equals("")) {
+               text = text + " | " + upText;
             }
          }
 
-         MainWindow.copyToClipboard(var1);
+         MainWindow.copyToClipboard(text);
       }
    }
 
    // Builds the rate label context menu on demand.
    private class RateMenuListener implements IMenuListener {
-      public void menuAboutToShow(IMenuManager var1) {
+      public void menuAboutToShow(IMenuManager menuManager) {
          if (!Sancho.monitorMode) {
-            var1.add(new DNDBoxAction(RateItem.this.statusLine.getMainWindow()));
-            new BandwidthDialog(RateItem.this.downCLabel.getShell(), var1);
-            var1.add(new Separator());
-            var1.add(new CopyLabelsAction());
+            menuManager.add(new DNDBoxAction(RateItem.this.statusLine.getMainWindow()));
+            new BandwidthDialog(RateItem.this.downCLabel.getShell(), menuManager);
+            menuManager.add(new Separator());
+            menuManager.add(new CopyLabelsAction());
          }
       }
    }

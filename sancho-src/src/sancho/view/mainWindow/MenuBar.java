@@ -52,9 +52,9 @@ public class MenuBar implements Runnable {
    private MenuItem menuItem;
    private boolean fullScreen;
 
-   public MenuBar(MainWindow var1) {
-      this.mainWindow = var1;
-      this.shell = var1.getShell();
+   public MenuBar(MainWindow mainWindow) {
+      this.mainWindow = mainWindow;
+      this.shell = mainWindow.getShell();
       this.createContent();
    }
 
@@ -353,14 +353,14 @@ public class MenuBar implements Runnable {
       });
    }
 
-   public MenuItem createMenuItem(Menu var1, String var2, String var3, Listener var4) {
-      this.menuItem = new MenuItem(var1, 8);
-      this.menuItem.setText(var2);
-      if (var3 != null) {
-         this.menuItem.setImage(SResources.getImage(var3));
+   public MenuItem createMenuItem(Menu menu, String text, String imageName, Listener listener) {
+      this.menuItem = new MenuItem(menu, 8);
+      this.menuItem.setText(text);
+      if (imageName != null) {
+         this.menuItem.setImage(SResources.getImage(imageName));
       }
 
-      this.menuItem.addListener(13, var4);
+      this.menuItem.addListener(13, listener);
       return this.menuItem;
    }
 
@@ -412,8 +412,8 @@ public class MenuBar implements Runnable {
          return area;
       }
 
-      protected void buttonPressed(int var1) {
-         super.buttonPressed(var1);
+      protected void buttonPressed(int buttonId) {
+         super.buttonPressed(buttonId);
       }
    }
 

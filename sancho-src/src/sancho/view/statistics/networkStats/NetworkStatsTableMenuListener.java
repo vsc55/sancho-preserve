@@ -14,33 +14,33 @@ public class NetworkStatsTableMenuListener extends GTableMenuListener implements
    // $VF: synthetic field
    static Class class$sancho$model$mldonkey$utility$NetworkStat;
 
-   public NetworkStatsTableMenuListener(NetworkStatsTableView var1) {
-      super(var1);
+   public NetworkStatsTableMenuListener(NetworkStatsTableView tableView) {
+      super(tableView);
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
+   public void selectionChanged(SelectionChangedEvent event) {
       this.collectSelections(
-         var1,
+         event,
          class$sancho$model$mldonkey$utility$NetworkStat == null
             ? (class$sancho$model$mldonkey$utility$NetworkStat = class$("sancho.model.mldonkey.utility.NetworkStat"))
             : class$sancho$model$mldonkey$utility$NetworkStat
       );
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager menuManager) {
       if (this.selectedObjects.size() > 0) {
-         var1.add(new CopyNetworkStatToClipboardAction());
-         var1.add(new CopyNetworkStatToClipboardHTMLAction());
-         this.addSelectAllMenu(var1);
+         menuManager.add(new CopyNetworkStatToClipboardAction());
+         menuManager.add(new CopyNetworkStatToClipboardHTMLAction());
+         this.addSelectAllMenu(menuManager);
       }
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String name) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(name);
+      } catch (ClassNotFoundException exception) {
+         throw new NoClassDefFoundError(exception.getMessage());
       }
    }
 
@@ -51,136 +51,136 @@ public class NetworkStatsTableMenuListener extends GTableMenuListener implements
          this.setImageDescriptor(SResources.getImageDescriptor("copy"));
       }
 
-      public void append(StringBuffer var1, int var2, String var3) {
-         for (int var4 = 0; var4 < var2; var4++) {
-            var1.append(var3);
+      public void append(StringBuffer buffer, int count, String text) {
+         for (int i = 0; i < count; i++) {
+            buffer.append(text);
          }
       }
 
-      public void rj(StringBuffer var1, String var2, int var3) {
-         int var4 = var2.length();
+      public void rj(StringBuffer buffer, String text, int width) {
+         int length = text.length();
 
-         for (int var5 = var4; var5 < var3; var5++) {
-            var1.append(" ");
+         for (int i = length; i < width; i++) {
+            buffer.append(" ");
          }
 
-         var1.append(var2);
-         var1.append(" |");
+         buffer.append(text);
+         buffer.append(" |");
       }
 
-      public void lj(StringBuffer var1, String var2, int var3) {
-         int var4 = var2.length();
-         var1.append(var2);
+      public void lj(StringBuffer buffer, String text, int width) {
+         int length = text.length();
+         buffer.append(text);
 
-         for (int var5 = var4; var5 < var3; var5++) {
-            var1.append(" ");
+         for (int i = length; i < width; i++) {
+            buffer.append(" ");
          }
 
-         var1.append(" |");
+         buffer.append(" |");
       }
 
       public void run() {
-         String var1 = NetworkStatsTableMenuListener.this.gView.getColumnIDs();
-         int[] var2 = new int[var1.length()];
+         String columnIDs = NetworkStatsTableMenuListener.this.gView.getColumnIDs();
+         int[] columnIndices = new int[columnIDs.length()];
 
-         for (int var3 = 0; var3 < var1.length(); var3++) {
-            var2[var3] = var1.charAt(var3) - 'A';
+         for (int i = 0; i < columnIDs.length(); i++) {
+            columnIndices[i] = columnIDs.charAt(i) - 'A';
          }
 
-         String[] var4 = NetworkStatsTableMenuListener.this.gView.getColumnLabels();
-         int[] var5 = new int[var2.length];
+         String[] columnLabels = NetworkStatsTableMenuListener.this.gView.getColumnLabels();
+         int[] columnWidths = new int[columnIndices.length];
 
-         for (int var6 = 0; var6 < var2.length; var6++) {
-            int var7 = var2[var6];
-            String var8 = SResources.getString(var4[var7]);
-            var5[var6] = var8.length();
+         for (int i = 0; i < columnIndices.length; i++) {
+            int columnIndex = columnIndices[i];
+            String label = SResources.getString(columnLabels[columnIndex]);
+            columnWidths[i] = label.length();
          }
 
-         for (int var19 = 0; var19 < NetworkStatsTableMenuListener.this.selectedObjects.size(); var19++) {
-            NetworkStat var20 = (NetworkStat)NetworkStatsTableMenuListener.this.selectedObjects.get(var19);
+         for (int i = 0; i < NetworkStatsTableMenuListener.this.selectedObjects.size(); i++) {
+            NetworkStat stat = (NetworkStat)NetworkStatsTableMenuListener.this.selectedObjects.get(i);
 
-            for (int var9 = 0; var9 < var2.length; var9++) {
-               String var10 = NetworkStatsTableMenuListener.this.gView.getTableLabelProvider().getColumnText(var20, var9);
-               var5[var9] = Math.max(var5[var9], var10.length());
+            for (int j = 0; j < columnIndices.length; j++) {
+               String text = NetworkStatsTableMenuListener.this.gView.getTableLabelProvider().getColumnText(stat, j);
+               columnWidths[j] = Math.max(columnWidths[j], text.length());
             }
          }
 
-         StringBuffer var21 = new StringBuffer(500);
-         String var22 = System.getProperty("line.separator");
-         var21.append(".");
+         StringBuffer buffer = new StringBuffer(500);
+         String separator = System.getProperty("line.separator");
+         buffer.append(".");
 
-         for (int var23 = 0; var23 < var2.length; var23++) {
-            this.append(var21, var5[var23] + 2, "-");
-            var21.append(".");
+         for (int i = 0; i < columnIndices.length; i++) {
+            this.append(buffer, columnWidths[i] + 2, "-");
+            buffer.append(".");
          }
 
-         var21.append(var22);
-         var21.append("|");
+         buffer.append(separator);
+         buffer.append("|");
 
-         for (int var11 = 0; var11 < var2.length; var11++) {
-            int var12 = var2[var11];
-            int var13 = NetworkStatsTableMenuListener.this.gView.getColumnAlignment()[var12];
-            String var14 = SResources.getString(var4[var12]);
-            var21.append(" ");
-            if (var13 == 131072) {
-               this.rj(var21, var14, var5[var11]);
+         for (int i = 0; i < columnIndices.length; i++) {
+            int columnIndex = columnIndices[i];
+            int alignment = NetworkStatsTableMenuListener.this.gView.getColumnAlignment()[columnIndex];
+            String label = SResources.getString(columnLabels[columnIndex]);
+            buffer.append(" ");
+            if (alignment == 131072) {
+               this.rj(buffer, label, columnWidths[i]);
             } else {
-               this.lj(var21, var14, var5[var11]);
+               this.lj(buffer, label, columnWidths[i]);
             }
          }
 
-         var21.append(var22);
-         var21.append("|");
+         buffer.append(separator);
+         buffer.append("|");
 
-         for (int var24 = 0; var24 < var2.length; var24++) {
-            var21.append(" ");
-            this.append(var21, var5[var24], "-");
-            var21.append(" ");
-            var21.append("|");
+         for (int i = 0; i < columnIndices.length; i++) {
+            buffer.append(" ");
+            this.append(buffer, columnWidths[i], "-");
+            buffer.append(" ");
+            buffer.append("|");
          }
 
-         for (int var25 = 0; var25 < NetworkStatsTableMenuListener.this.selectedObjects.size(); var25++) {
-            NetworkStat var26 = (NetworkStat)NetworkStatsTableMenuListener.this.selectedObjects.get(var25);
-            var21.append(var22);
-            var21.append("|");
+         for (int i = 0; i < NetworkStatsTableMenuListener.this.selectedObjects.size(); i++) {
+            NetworkStat stat = (NetworkStat)NetworkStatsTableMenuListener.this.selectedObjects.get(i);
+            buffer.append(separator);
+            buffer.append("|");
 
-            for (int var15 = 0; var15 < var2.length; var15++) {
-               var21.append(" ");
-               int var16 = var2[var15];
-               String var17 = NetworkStatsTableMenuListener.this.gView.getTableLabelProvider().getColumnText(var26, var15);
-               int var18 = NetworkStatsTableMenuListener.this.gView.getColumnAlignment()[var16];
-               if (var18 == 131072) {
-                  this.rj(var21, var17, var5[var15]);
+            for (int j = 0; j < columnIndices.length; j++) {
+               buffer.append(" ");
+               int columnIndex = columnIndices[j];
+               String text = NetworkStatsTableMenuListener.this.gView.getTableLabelProvider().getColumnText(stat, j);
+               int alignment = NetworkStatsTableMenuListener.this.gView.getColumnAlignment()[columnIndex];
+               if (alignment == 131072) {
+                  this.rj(buffer, text, columnWidths[j]);
                } else {
-                  this.lj(var21, var17, var5[var15]);
+                  this.lj(buffer, text, columnWidths[j]);
                }
             }
          }
 
-         var21.append(var22);
-         var21.append("`");
+         buffer.append(separator);
+         buffer.append("`");
 
-         for (int var27 = 0; var27 < var2.length; var27++) {
-            this.append(var21, var5[var27] + 2, "-");
-            var21.append("'");
+         for (int i = 0; i < columnIndices.length; i++) {
+            this.append(buffer, columnWidths[i] + 2, "-");
+            buffer.append("'");
          }
 
          if (NetworkStatsTableMenuListener.this.selectedObjects.size() > 0) {
-            NetworkStat var28 = (NetworkStat)NetworkStatsTableMenuListener.this.selectedObjects.get(0);
-            var21.append(var22);
-            var21.append("  [ ");
-            var21.append(SwissArmy.calcStringOfSecondsFull((long)var28.getUptime()));
-            String var29 = NetworkStatsTableMenuListener.this.gView.getCore().getCoreVersion();
-            if (var29 != null && !var29.equals("")) {
-               var21.append(" / ");
-               var21.append(var29);
+            NetworkStat stat = (NetworkStat)NetworkStatsTableMenuListener.this.selectedObjects.get(0);
+            buffer.append(separator);
+            buffer.append("  [ ");
+            buffer.append(SwissArmy.calcStringOfSecondsFull((long)stat.getUptime()));
+            String coreVersion = NetworkStatsTableMenuListener.this.gView.getCore().getCoreVersion();
+            if (coreVersion != null && !coreVersion.equals("")) {
+               buffer.append(" / ");
+               buffer.append(coreVersion);
             }
 
-            var21.append(" ]");
-            var21.append(var22);
+            buffer.append(" ]");
+            buffer.append(separator);
          }
 
-         MainWindow.copyToClipboard(var21.toString());
+         MainWindow.copyToClipboard(buffer.toString());
       }
    }
 
@@ -191,113 +191,113 @@ public class NetworkStatsTableMenuListener extends GTableMenuListener implements
          this.setImageDescriptor(SResources.getImageDescriptor("copy"));
       }
 
-      public void append(StringBuffer var1, int var2, String var3) {
-         for (int var4 = 0; var4 < var2; var4++) {
-            var1.append(var3);
+      public void append(StringBuffer buffer, int count, String text) {
+         for (int i = 0; i < count; i++) {
+            buffer.append(text);
          }
       }
 
-      public void rj(StringBuffer var1, String var2, int var3) {
-         int var4 = var2.length();
+      public void rj(StringBuffer buffer, String text, int width) {
+         int length = text.length();
 
-         for (int var5 = var4; var5 < var3; var5++) {
-            var1.append(" ");
+         for (int i = length; i < width; i++) {
+            buffer.append(" ");
          }
 
-         var1.append(var2);
-         var1.append(" |");
+         buffer.append(text);
+         buffer.append(" |");
       }
 
-      public void lj(StringBuffer var1, String var2, int var3) {
-         int var4 = var2.length();
-         var1.append(var2);
+      public void lj(StringBuffer buffer, String text, int width) {
+         int length = text.length();
+         buffer.append(text);
 
-         for (int var5 = var4; var5 < var3; var5++) {
-            var1.append(" ");
+         for (int i = length; i < width; i++) {
+            buffer.append(" ");
          }
 
-         var1.append(" |");
+         buffer.append(" |");
       }
 
       public void run() {
-         String var1 = NetworkStatsTableMenuListener.this.gView.getColumnIDs();
-         int[] var2 = new int[var1.length()];
+         String columnIDs = NetworkStatsTableMenuListener.this.gView.getColumnIDs();
+         int[] columnIndices = new int[columnIDs.length()];
 
-         for (int var3 = 0; var3 < var1.length(); var3++) {
-            var2[var3] = var1.charAt(var3) - 'A';
+         for (int i = 0; i < columnIDs.length(); i++) {
+            columnIndices[i] = columnIDs.charAt(i) - 'A';
          }
 
-         String[] var4 = NetworkStatsTableMenuListener.this.gView.getColumnLabels();
-         StringBuffer var5 = new StringBuffer(500);
-         String var6 = System.getProperty("line.separator");
-         var5.append("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td>");
-         var5.append(
+         String[] columnLabels = NetworkStatsTableMenuListener.this.gView.getColumnLabels();
+         StringBuffer buffer = new StringBuffer(500);
+         String separator = System.getProperty("line.separator");
+         buffer.append("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td>");
+         buffer.append(
             "<table style=\"border: 2px solid #000; font-family: Verdana, Helvetica, Arial, Sans-serif; font-size: 10pt;\" border=\"1\" cellspacing=\"0\" cellpadding=\"2\">"
          );
-         var5.append(var6);
-         var5.append("<tr>");
+         buffer.append(separator);
+         buffer.append("<tr>");
 
-         for (int var7 = 0; var7 < var2.length; var7++) {
-            int var8 = var2[var7];
-            int var9 = NetworkStatsTableMenuListener.this.gView.getColumnAlignment()[var8];
-            String var10 = SResources.getString(var4[var8]);
-            var5.append("<th nowrap align=");
-            if (var9 == 131072) {
-               var5.append("\"right\"");
+         for (int i = 0; i < columnIndices.length; i++) {
+            int columnIndex = columnIndices[i];
+            int alignment = NetworkStatsTableMenuListener.this.gView.getColumnAlignment()[columnIndex];
+            String label = SResources.getString(columnLabels[columnIndex]);
+            buffer.append("<th nowrap align=");
+            if (alignment == 131072) {
+               buffer.append("\"right\"");
             } else {
-               var5.append("\"left\"");
+               buffer.append("\"left\"");
             }
 
-            var5.append(">");
-            var5.append(var10);
-            var5.append("</th>");
+            buffer.append(">");
+            buffer.append(label);
+            buffer.append("</th>");
          }
 
-         var5.append("</tr>");
+         buffer.append("</tr>");
 
-         for (int var14 = 0; var14 < NetworkStatsTableMenuListener.this.selectedObjects.size(); var14++) {
-            NetworkStat var15 = (NetworkStat)NetworkStatsTableMenuListener.this.selectedObjects.get(var14);
-            var5.append(var6);
-            var5.append("<tr>");
+         for (int i = 0; i < NetworkStatsTableMenuListener.this.selectedObjects.size(); i++) {
+            NetworkStat stat = (NetworkStat)NetworkStatsTableMenuListener.this.selectedObjects.get(i);
+            buffer.append(separator);
+            buffer.append("<tr>");
 
-            for (int var17 = 0; var17 < var2.length; var17++) {
-               var5.append("<td nowrap");
-               int var11 = var2[var17];
-               String var12 = NetworkStatsTableMenuListener.this.gView.getTableLabelProvider().getColumnText(var15, var17);
-               int var13 = NetworkStatsTableMenuListener.this.gView.getColumnAlignment()[var11];
-               if (var13 == 131072) {
-                  var5.append(" align=right");
+            for (int j = 0; j < columnIndices.length; j++) {
+               buffer.append("<td nowrap");
+               int columnIndex = columnIndices[j];
+               String text = NetworkStatsTableMenuListener.this.gView.getTableLabelProvider().getColumnText(stat, j);
+               int alignment = NetworkStatsTableMenuListener.this.gView.getColumnAlignment()[columnIndex];
+               if (alignment == 131072) {
+                  buffer.append(" align=right");
                }
 
-               var5.append(">");
-               var5.append(var12);
-               var5.append("</td>");
+               buffer.append(">");
+               buffer.append(text);
+               buffer.append("</td>");
             }
 
-            var5.append("</tr>");
+            buffer.append("</tr>");
          }
 
-         var5.append(var6);
-         var5.append("</table>");
+         buffer.append(separator);
+         buffer.append("</table>");
          if (NetworkStatsTableMenuListener.this.selectedObjects.size() > 0) {
-            NetworkStat var16 = (NetworkStat)NetworkStatsTableMenuListener.this.selectedObjects.get(0);
-            var5.append(var6);
-            var5.append(
+            NetworkStat stat = (NetworkStat)NetworkStatsTableMenuListener.this.selectedObjects.get(0);
+            buffer.append(separator);
+            buffer.append(
                "<table width=\"100%\" style=\"font-family: Verdana, Helvetica, Arial, Sans-serif; font-size: 8pt;\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td><center>"
             );
-            var5.append(SwissArmy.calcStringOfSecondsFull((long)var16.getUptime()));
-            String var18 = NetworkStatsTableMenuListener.this.gView.getCore().getCoreVersion();
-            if (var18 != null && !var18.equals("")) {
-               var5.append(" / ");
-               var5.append(var18);
+            buffer.append(SwissArmy.calcStringOfSecondsFull((long)stat.getUptime()));
+            String coreVersion = NetworkStatsTableMenuListener.this.gView.getCore().getCoreVersion();
+            if (coreVersion != null && !coreVersion.equals("")) {
+               buffer.append(" / ");
+               buffer.append(coreVersion);
             }
 
-            var5.append("</center></td></tr></table>");
-            var5.append(var6);
+            buffer.append("</center></td></tr></table>");
+            buffer.append(separator);
          }
 
-         var5.append("</td></tr></table>");
-         MainWindow.copyToClipboard(var5.toString());
+         buffer.append("</td></tr></table>");
+         MainWindow.copyToClipboard(buffer.toString());
       }
    }
 }

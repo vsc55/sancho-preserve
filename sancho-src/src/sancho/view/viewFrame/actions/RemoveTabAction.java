@@ -9,27 +9,27 @@ import sancho.view.viewFrame.TabbedViewFrame;
 public class RemoveTabAction extends Action {
    TabbedViewFrame viewFrame;
 
-   public RemoveTabAction(TabbedViewFrame var1) {
+   public RemoveTabAction(TabbedViewFrame viewFrame) {
       super(SResources.getString("mi.d.removeTab"));
       this.setImageDescriptor(SResources.getImageDescriptor("minus"));
-      this.viewFrame = var1;
+      this.viewFrame = viewFrame;
    }
 
    public void run() {
-      CTabFolder var1 = this.viewFrame.getCTabFolder();
-      if (var1.getItemCount() > 1) {
-         CTabItem var2 = var1.getSelection();
-         int var3 = var1.indexOf(var2) - 1;
-         if (var2 != null && !var2.isDisposed()) {
-            var2.dispose();
+      CTabFolder tabFolder = this.viewFrame.getCTabFolder();
+      if (tabFolder.getItemCount() > 1) {
+         CTabItem tabItem = tabFolder.getSelection();
+         int index = tabFolder.indexOf(tabItem) - 1;
+         if (tabItem != null && !tabItem.isDisposed()) {
+            tabItem.dispose();
          }
 
-         if (var3 < 0) {
-            var3 = 0;
+         if (index < 0) {
+            index = 0;
          }
 
-         var2 = var1.getItems()[var3];
-         this.viewFrame.switchToTab(var2);
+         tabItem = tabFolder.getItems()[index];
+         this.viewFrame.switchToTab(tabItem);
       }
    }
 }

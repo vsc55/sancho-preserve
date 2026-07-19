@@ -50,7 +50,7 @@ public class MLDonkeyPreferencePage extends FieldEditorPreferencePage {
          if (list != null) {
             list.clear();
          }
-      } catch (Exception var2) {
+      } catch (Exception exception) {
          // ignore if the JFace field layout changed
       }
    }
@@ -67,55 +67,55 @@ public class MLDonkeyPreferencePage extends FieldEditorPreferencePage {
    private boolean fChanged = false;
    private Pattern regex = null;
 
-   protected MLDonkeyPreferencePage(String var1, int var2) {
-      super(var1, var2);
+   protected MLDonkeyPreferencePage(String title, int style) {
+      super(title, style);
    }
 
    public void setAllOptions() {
       this.allOptions = true;
    }
 
-   public void addOption(Option var1) {
-      this.options.add(var1);
+   public void addOption(Option option) {
+      this.options.add(option);
    }
 
-   protected void contributeButtons(Composite var1) {
-      var1.setLayoutData(new GridData(768));
-      ((GridLayout)var1.getLayout()).numColumns++;
-      Label var2 = new Label(var1, 0);
-      var2.setLayoutData(new GridData(768));
-      var2.setText(SResources.getString("p.mouseOverHelp"));
+   protected void contributeButtons(Composite composite) {
+      composite.setLayoutData(new GridData(768));
+      ((GridLayout)composite.getLayout()).numColumns++;
+      Label label = new Label(composite, 0);
+      label.setLayoutData(new GridData(768));
+      label.setText(SResources.getString("p.mouseOverHelp"));
    }
 
    public void reFilter() {
       this.filteredOptions.clear();
 
-      for (Object var2o : this.options) { Option var2 = (Option)var2o;
+      for (Object optionObject : this.options) { Option option = (Option)optionObject;
          if (this.fChanged) {
-            if (!var2.getDefaultValue().equals(var2.getValue()) && (this.regex == null || this.regex.matcher(var2.getName()).find())) {
-               this.filteredOptions.add(var2);
+            if (!option.getDefaultValue().equals(option.getValue()) && (this.regex == null || this.regex.matcher(option.getName()).find())) {
+               this.filteredOptions.add(option);
             }
-         } else if (this.regex == null || this.regex.matcher(var2.getName()).find()) {
-            this.filteredOptions.add(var2);
+         } else if (this.regex == null || this.regex.matcher(option.getName()).find()) {
+            this.filteredOptions.add(option);
          }
       }
    }
 
-   public void updateRefine(KeyEvent var1) {
-      Text var2 = (Text)var1.widget;
-      switch (var1.keyCode) {
+   public void updateRefine(KeyEvent event) {
+      Text text = (Text)event.widget;
+      switch (event.keyCode) {
          case 8:
-            if (this.wasEmpty && var2.getText().equals("")) {
+            if (this.wasEmpty && text.getText().equals("")) {
                return;
-            } else if (var2.getText().equals("")) {
+            } else if (text.getText().equals("")) {
                this.wasEmpty = true;
             }
          default:
             this.wasEmpty = false;
 
             try {
-               this.regex = Pattern.compile(var2.getText(), Pattern.CASE_INSENSITIVE);
-            } catch (PatternSyntaxException var7) {
+               this.regex = Pattern.compile(text.getText(), Pattern.CASE_INSENSITIVE);
+            } catch (PatternSyntaxException invalidPattern) {
             }
 
             if (this.regex == null) {
@@ -124,15 +124,15 @@ public class MLDonkeyPreferencePage extends FieldEditorPreferencePage {
                this.group.setRedraw(false);
                this.filteredOptions.clear();
                this.clearEditors();
-               String var3 = var2.getText();
-               Control[] var4 = this.myComp.getChildren();
+               String filterText = text.getText();
+               Control[] children = this.myComp.getChildren();
 
-               for (int var5 = var4.length - 1; var5 >= 0; var5--) {
-                  var4[var5].dispose();
+               for (int i = children.length - 1; i >= 0; i--) {
+                  children[i].dispose();
                }
 
-               boolean var6 = var3 == null || var3.equals("");
-               if (var6) {
+               boolean isEmpty = filterText == null || filterText.equals("");
+               if (isEmpty) {
                   this.regex = null;
                }
 
@@ -153,50 +153,50 @@ public class MLDonkeyPreferencePage extends FieldEditorPreferencePage {
       }
    }
 
-   protected Control createContents(Composite var1) {
+   protected Control createContents(Composite parent) {
       Collections.sort(this.options, new OptionsComparator());
       this.filteredOptions = new ArrayList(this.options.size());
-      Iterator var2 = this.options.iterator();
+      Iterator iterator = this.options.iterator();
 
-      while (var2.hasNext()) {
-         this.filteredOptions.add(var2.next());
+      while (iterator.hasNext()) {
+         this.filteredOptions.add(iterator.next());
       }
 
       if (this.allOptions) {
-         Composite var5 = new Composite(var1, 0);
-         var5.setLayout(WidgetFactory.createGridLayout(3, 5, 5, 5, 5, false));
-         var5.setLayoutData(new GridData(768));
-         Label var6 = new Label(var5, 0);
-         var6.setText(SResources.getString("ti.refine"));
-         Text var7 = new Text(var5, 2052);
-         var7.setLayoutData(new GridData(768));
+         Composite refineComposite = new Composite(parent, 0);
+         refineComposite.setLayout(WidgetFactory.createGridLayout(3, 5, 5, 5, 5, false));
+         refineComposite.setLayoutData(new GridData(768));
+         Label label = new Label(refineComposite, 0);
+         label.setText(SResources.getString("ti.refine"));
+         Text text = new Text(refineComposite, 2052);
+         text.setLayoutData(new GridData(768));
          if (SWT.getPlatform().equals("fox")) {
-            var7.addKeyListener(new KeyAdapter() {
-               public void keyPressed(KeyEvent var1) {
-                  MLDonkeyPreferencePage.this.updateRefine(var1);
+            text.addKeyListener(new KeyAdapter() {
+               public void keyPressed(KeyEvent event) {
+                  MLDonkeyPreferencePage.this.updateRefine(event);
                }
             });
          } else {
-            var7.addKeyListener(new KeyAdapter() {
-               public void keyReleased(KeyEvent var1) {
-                  MLDonkeyPreferencePage.this.updateRefine(var1);
+            text.addKeyListener(new KeyAdapter() {
+               public void keyReleased(KeyEvent event) {
+                  MLDonkeyPreferencePage.this.updateRefine(event);
                }
             });
          }
 
-         Button var8 = new Button(var5, 32);
-         var8.setText(SResources.getString("l.changed"));
-         var8.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent var1) {
-               Button var2 = (Button)var1.widget;
-               MLDonkeyPreferencePage.this.fChanged = var2.getSelection();
+         Button button = new Button(refineComposite, 32);
+         button.setText(SResources.getString("l.changed"));
+         button.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent event) {
+               Button button = (Button)event.widget;
+               MLDonkeyPreferencePage.this.fChanged = button.getSelection();
                MLDonkeyPreferencePage.this.group.setRedraw(false);
                MLDonkeyPreferencePage.this.filteredOptions.clear();
                MLDonkeyPreferencePage.this.clearEditors();
-               Control[] var3 = MLDonkeyPreferencePage.this.myComp.getChildren();
+               Control[] children = MLDonkeyPreferencePage.this.myComp.getChildren();
 
-               for (int var4 = var3.length - 1; var4 >= 0; var4--) {
-                  var3[var4].dispose();
+               for (int i = children.length - 1; i >= 0; i--) {
+                  children[i].dispose();
                }
 
                MLDonkeyPreferencePage.this.reFilter();
@@ -208,136 +208,136 @@ public class MLDonkeyPreferencePage extends FieldEditorPreferencePage {
          });
       }
 
-      Composite var3;
+      Composite contents;
       if (this.empty) {
-         var3 = (Composite)super.createContents(var1);
-         var3.setLayoutData(new GridData(1808));
-         Label var9 = new Label(var3, 0);
-         var9.setText(SResources.getString("p.empty"));
-         GridData var11 = new GridData(1808);
-         var11.verticalAlignment = 2;
-         var11.horizontalAlignment = 2;
-         var9.setLayoutData(var11);
-         var3.layout();
+         contents = (Composite)super.createContents(parent);
+         contents.setLayoutData(new GridData(1808));
+         Label label = new Label(contents, 0);
+         label.setText(SResources.getString("p.empty"));
+         GridData gridData = new GridData(1808);
+         gridData.verticalAlignment = 2;
+         gridData.horizontalAlignment = 2;
+         label.setLayoutData(gridData);
+         contents.layout();
       } else {
-         this.group = new Composite(var1, 2048);
-         GridLayout var10 = WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false);
-         this.group.setLayout(var10);
+         this.group = new Composite(parent, 2048);
+         GridLayout gridLayout = WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false);
+         this.group.setLayout(gridLayout);
          this.group.setLayoutData(new GridData(1808));
          this.sc = new ScrolledComposite(this.group, 768) {
-            public Point computeSize(int var1, int var2, boolean var3) {
+            public Point computeSize(int wHint, int hHint, boolean changed) {
                return new Point(-1, -1);
             }
          };
          this.sc.setLayoutData(new GridData(1808));
          this.sc.setLayout(new FillLayout());
          this.sc.addControlListener(new ControlAdapter() {
-            public void controlResized(ControlEvent var1) {
-               ScrolledComposite var2 = (ScrolledComposite)var1.widget;
-               int var3 = var2.getClientArea().height;
-               if (var3 > 10) {
-                  var3 -= 10;
+            public void controlResized(ControlEvent event) {
+               ScrolledComposite scrolledComposite = (ScrolledComposite)event.widget;
+               int height = scrolledComposite.getClientArea().height;
+               if (height > 10) {
+                  height -= 10;
                }
 
-               ScrollBar var4 = var2.getVerticalBar();
-               if (var4 != null) {
-                  var4.setIncrement(15);
-                  var4.setPageIncrement(var3);
+               ScrollBar scrollBar = scrolledComposite.getVerticalBar();
+               if (scrollBar != null) {
+                  scrollBar.setIncrement(15);
+                  scrollBar.setPageIncrement(height);
                }
             }
          });
-         var3 = (Composite)super.createContents(this.sc);
-         var3.setLayoutData(new GridData(1808));
+         contents = (Composite)super.createContents(this.sc);
+         contents.setLayoutData(new GridData(1808));
          this.sc.setExpandHorizontal(true);
          this.sc.setExpandVertical(true);
-         this.sc.setContent(var3);
-         Point var12 = var3.computeSize(-1, -1);
-         this.sc.setMinSize(var12);
-         var3.layout();
+         this.sc.setContent(contents);
+         Point point = contents.computeSize(-1, -1);
+         this.sc.setMinSize(point);
+         contents.layout();
       }
 
-      this.myComp = var3;
-      return var3;
+      this.myComp = contents;
+      return contents;
    }
 
    protected void createFieldEditors() {
-      Iterator var2 = this.filteredOptions.iterator();
+      Iterator iterator = this.filteredOptions.iterator();
 
-      while (var2.hasNext()) {
-         Composite var1 = this.getFieldEditorParent();
-         Option var3 = (Option)var2.next();
-         String var4 = var3.getName();
-         String var5 = var3.getDescription();
-         EnumTagType var6 = var3.getType();
-         String var7 = var3.getValue();
-         String var8 = var3.getDefaultValue();
-         if (var5.equals("")) {
-            var5 = var3.getName();
+      while (iterator.hasNext()) {
+         Composite parent = this.getFieldEditorParent();
+         Option option = (Option)iterator.next();
+         String name = option.getName();
+         String description = option.getDescription();
+         EnumTagType type = option.getType();
+         String value = option.getValue();
+         String defaultValue = option.getDefaultValue();
+         if (description.equals("")) {
+            description = option.getName();
          }
 
-         if (var8 != null && !var8.equals("")) {
-            var5 = var5 + "\n(" + SResources.getString("b.default") + ": " + var8 + ")";
+         if (defaultValue != null && !defaultValue.equals("")) {
+            description = description + "\n(" + SResources.getString("b.default") + ": " + defaultValue + ")";
          }
 
-         if (var6 == EnumTagType.BOOL || this.isBoolean(var7)) {
-            this.setupEditor(var1, new BooleanFieldEditor(var4, var4, 1, var1), var5);
-         } else if (var6 != EnumTagType.INT && !this.isInteger(var7)) {
-            this.setupEditor(var1, new StringFieldEditor(var4, var4, 20, var1), var5);
+         if (type == EnumTagType.BOOL || this.isBoolean(value)) {
+            this.setupEditor(parent, new BooleanFieldEditor(name, name, 1, parent), description);
+         } else if (type != EnumTagType.INT && !this.isInteger(value)) {
+            this.setupEditor(parent, new StringFieldEditor(name, name, 20, parent), description);
          } else {
-            IntegerFieldEditor var9 = new IntegerFieldEditor(var4, var4, var1) {
-               protected void doFillIntoGrid(Composite var1, int var2) {
-                  this.getLabelControl(var1);
-                  Text var3 = this.getTextControl(var1);
-                  GridData var4 = new GridData();
-                  var4.horizontalSpan = var2 - 1;
+            IntegerFieldEditor editor = new IntegerFieldEditor(name, name, parent) {
+               protected void doFillIntoGrid(Composite parent, int numColumns) {
+                  this.getLabelControl(parent);
+                  Text text = this.getTextControl(parent);
+                  GridData gridData = new GridData();
+                  gridData.horizontalSpan = numColumns - 1;
                   if (extentX < 0) {
-                     GC var5 = new GC(var3);
-                     Point var6 = var5.textExtent("X");
-                     var5.dispose();
-                     extentX = var6.x;
+                     GC gc = new GC(text);
+                     Point point = gc.textExtent("X");
+                     gc.dispose();
+                     extentX = point.x;
                   }
 
-                  var4.widthHint = 20 * extentX;
-                  var3.setLayoutData(var4);
+                  gridData.widthHint = 20 * extentX;
+                  text.setLayoutData(gridData);
                }
             };
-            var9.setValidRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
-            this.setupEditor(var1, var9, var5);
+            editor.setValidRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
+            this.setupEditor(parent, editor, description);
          }
       }
    }
 
-   private boolean isBoolean(String var1) {
-      return var1 != null && (var1.equalsIgnoreCase("true") || var1.equalsIgnoreCase("false"));
+   private boolean isBoolean(String value) {
+      return value != null && (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"));
    }
 
-   private boolean isInteger(String var1) {
+   private boolean isInteger(String value) {
       try {
-         int var2 = Integer.parseInt(var1);
-         return var2 >= Integer.MIN_VALUE && var2 <= Integer.MAX_VALUE;
-      } catch (NumberFormatException var3) {
+         int number = Integer.parseInt(value);
+         return number >= Integer.MIN_VALUE && number <= Integer.MAX_VALUE;
+      } catch (NumberFormatException notANumber) {
          return false;
       }
    }
 
-   public void setEmpty(boolean var1) {
-      this.empty = var1;
+   public void setEmpty(boolean empty) {
+      this.empty = empty;
    }
 
-   private void setupEditor(Composite var1, FieldEditor var2, String var3) {
-      var2.setPage(this);
-      var2.setPreferenceStore(this.getPreferenceStore());
-      var2.getLabelControl(var1).setToolTipText(var3);
-      var2.load();
-      this.addField(var2);
+   private void setupEditor(Composite parent, FieldEditor editor, String toolTip) {
+      editor.setPage(this);
+      editor.setPreferenceStore(this.getPreferenceStore());
+      editor.getLabelControl(parent).setToolTipText(toolTip);
+      editor.load();
+      this.addField(editor);
    }
 
    // Case-insensitive ordering of options by name for the preference list.
    private static class OptionsComparator implements Comparator {
-      public int compare(Object var1, Object var2) {
-         Option var3 = (Option)var1;
-         Option var4 = (Option)var2;
-         return var3.getName().compareToIgnoreCase(var4.getName());
+      public int compare(Object object1, Object object2) {
+         Option option1 = (Option)object1;
+         Option option2 = (Option)object2;
+         return option1.getName().compareToIgnoreCase(option2.getName());
       }
    }
 }

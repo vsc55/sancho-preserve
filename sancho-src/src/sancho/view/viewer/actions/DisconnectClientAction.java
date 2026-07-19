@@ -7,15 +7,15 @@ import sancho.view.utility.SResources;
 public class DisconnectClientAction extends Action {
    Client[] clientArray;
 
-   public DisconnectClientAction(Client[] var1) {
+   public DisconnectClientAction(Client[] clients) {
       super(SResources.getString("mi.disconnectClient"));
       this.setImageDescriptor(SResources.getImageDescriptor("menu-disconnect"));
-      this.clientArray = var1;
+      this.clientArray = clients;
    }
 
    public void run() {
-      for (int var1 = 0; var1 < this.clientArray.length; var1++) {
-         this.clientArray[var1].disconnect();
+      for (int i = 0; i < this.clientArray.length; i++) {
+         this.clientArray[i].disconnect();
       }
    }
 }

@@ -1,101 +1,101 @@
 package sancho.view.utility;
 
 public class Base64 {
-   public static String encode(byte[] var0) {
-      StringBuffer var1 = new StringBuffer();
+   public static String encode(byte[] data) {
+      StringBuffer buffer = new StringBuffer();
 
-      for (int var2 = 0; var2 < var0.length; var2 += 3) {
+      for (int i = 0; i < data.length; i += 3) {
          // int, not byte: as a byte the index overflowed past 127 and crashed
          // (or looped) for inputs longer than 127 bytes, e.g. long HTTP credentials.
-         var1.append(encodeBlock(var0, var2));
+         buffer.append(encodeBlock(data, i));
       }
 
-      return var1.toString();
+      return buffer.toString();
    }
 
-   protected static char[] encodeBlock(byte[] var0, int var1) {
-      int var2 = 0;
-      int var3 = var0.length - var1 - 1;
-      int var4 = var3 >= 2 ? 2 : var3;
+   protected static char[] encodeBlock(byte[] data, int offset) {
+      int bits = 0;
+      int remaining = data.length - offset - 1;
+      int lastIndex = remaining >= 2 ? 2 : remaining;
 
-      for (int var5 = 0; var5 <= var4; var5++) {
-         byte var6 = var0[var1 + var5];
-         int var7 = var6 < 0 ? var6 + 256 : var6;
-         var2 += var7 << 8 * (2 - var5);
+      for (int i = 0; i <= lastIndex; i++) {
+         byte b = data[offset + i];
+         int value = b < 0 ? b + 256 : b;
+         bits += value << 8 * (2 - i);
       }
 
-      char[] var9 = new char[4];
+      char[] chars = new char[4];
 
-      for (int var10 = 0; var10 < 4; var10++) {
-         int var8 = var2 >>> 6 * (3 - var10) & 63;
-         var9[var10] = getChar(var8);
+      for (int j = 0; j < 4; j++) {
+         int index = bits >>> 6 * (3 - j) & 63;
+         chars[j] = getChar(index);
       }
 
-      if (var3 < 1) {
-         var9[2] = '=';
+      if (remaining < 1) {
+         chars[2] = '=';
       }
 
-      if (var3 < 2) {
-         var9[3] = '=';
+      if (remaining < 2) {
+         chars[3] = '=';
       }
 
-      return var9;
+      return chars;
    }
 
-   protected static char getChar(int var0) {
-      if (var0 >= 0 && var0 <= 25) {
-         return (char)(65 + var0);
-      } else if (var0 >= 26 && var0 <= 51) {
-         return (char)(97 + (var0 - 26));
-      } else if (var0 >= 52 && var0 <= 61) {
-         return (char)(48 + (var0 - 52));
-      } else if (var0 == 62) {
+   protected static char getChar(int value) {
+      if (value >= 0 && value <= 25) {
+         return (char)(65 + value);
+      } else if (value >= 26 && value <= 51) {
+         return (char)(97 + (value - 26));
+      } else if (value >= 52 && value <= 61) {
+         return (char)(48 + (value - 52));
+      } else if (value == 62) {
          return '+';
       } else {
-         return (char)(var0 == 63 ? '/' : '?');
+         return (char)(value == 63 ? '/' : '?');
       }
    }
 
-   public static byte[] decode(String var0) {
-      int var1 = 0;
+   public static byte[] decode(String text) {
+      int padding = 0;
 
-      for (int var2 = var0.length() - 1; var0.charAt(var2) == '='; var2--) {
-         var1++;
+      for (int i = text.length() - 1; text.charAt(i) == '='; i--) {
+         padding++;
       }
 
-      int var3 = var0.length() * 6 / 8 - var1;
-      byte[] var4 = new byte[var3];
-      int var5 = 0;
+      int length = text.length() * 6 / 8 - padding;
+      byte[] data = new byte[length];
+      int outIndex = 0;
 
-      for (int var6 = 0; var6 < var0.length(); var6 += 4) {
-         int var7 = (getValue(var0.charAt(var6)) << 18)
-            + (getValue(var0.charAt(var6 + 1)) << 12)
-            + (getValue(var0.charAt(var6 + 2)) << 6)
-            + getValue(var0.charAt(var6 + 3));
+      for (int i = 0; i < text.length(); i += 4) {
+         int bits = (getValue(text.charAt(i)) << 18)
+            + (getValue(text.charAt(i + 1)) << 12)
+            + (getValue(text.charAt(i + 2)) << 6)
+            + getValue(text.charAt(i + 3));
 
-         for (int var8 = 0; var8 < 3 && var5 + var8 < var4.length; var8++) {
-            var4[var5 + var8] = (byte)(var7 >> 8 * (2 - var8) & 0xFF);
+         for (int j = 0; j < 3 && outIndex + j < data.length; j++) {
+            data[outIndex + j] = (byte)(bits >> 8 * (2 - j) & 0xFF);
          }
 
-         var5 += 3;
+         outIndex += 3;
       }
 
-      return var4;
+      return data;
    }
 
-   protected static int getValue(char var0) {
-      if (var0 >= 'A' && var0 <= 'Z') {
-         return var0 - 65;
-      } else if (var0 >= 'a' && var0 <= 'z') {
-         return var0 - 97 + 26;
-      } else if (var0 >= '0' && var0 <= '9') {
-         return var0 - 48 + 52;
-      } else if (var0 == '+') {
+   protected static int getValue(char c) {
+      if (c >= 'A' && c <= 'Z') {
+         return c - 65;
+      } else if (c >= 'a' && c <= 'z') {
+         return c - 97 + 26;
+      } else if (c >= '0' && c <= '9') {
+         return c - 48 + 52;
+      } else if (c == '+') {
          return 62;
-      } else if (var0 == '/') {
+      } else if (c == '/') {
          return 63;
       } else {
-         return var0 == 61 ? 0 : -1;
+         return c == 61 ? 0 : -1;
       }
    }
 }

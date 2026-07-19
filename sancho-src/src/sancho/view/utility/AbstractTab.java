@@ -19,61 +19,61 @@ public abstract class AbstractTab {
    protected ToolButton toolButton;
    protected List viewFrameList;
 
-   public AbstractTab(MainWindow var1, String var2) {
-      this.mainWindow = var1;
-      this.contentComposite = new Composite(var1.getPageContainer(), 0);
+   public AbstractTab(MainWindow mainWindow, String buttonName) {
+      this.mainWindow = mainWindow;
+      this.contentComposite = new Composite(mainWindow.getPageContainer(), 0);
       this.contentComposite.setLayout(new FillLayout());
       this.contentComposite.setLayoutData(new GridData(1808));
-      this.createButton(var2);
+      this.createButton(buttonName);
       this.createContents(this.contentComposite);
    }
 
-   public void addViewFrame(ViewFrame var1) {
+   public void addViewFrame(ViewFrame viewFrame) {
       if (this.viewFrameList == null) {
          this.viewFrameList = new ArrayList();
       }
 
-      this.viewFrameList.add(var1);
+      this.viewFrameList.add(viewFrame);
    }
 
    public void allViewFramesUpdateDisplay() {
       if (this.viewFrameList != null) {
-         for (int var1 = 0; var1 < this.viewFrameList.size(); var1++) {
-            ViewFrame var2 = (ViewFrame)this.viewFrameList.get(var1);
-            var2.updateDisplay();
+         for (int i = 0; i < this.viewFrameList.size(); i++) {
+            ViewFrame viewFrame = (ViewFrame)this.viewFrameList.get(i);
+            viewFrame.updateDisplay();
          }
       }
    }
 
-   public void createButton(String var1) {
+   public void createButton(String buttonName) {
       this.toolButton = new ToolButton(this.mainWindow.getCoolBar().getToolBar(), 8);
       this.toolButton.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             if (!AbstractTab.this.isActive()) {
                AbstractTab.this.setActive();
             }
          }
       });
-      this.toolButton.setText(SResources.getString(var1));
-      this.toolButton.setToolTipText(SResources.getString(var1 + ".tooltip"));
-      this.toolButton.setBigActiveImage(SResources.getImage(var1 + ".buttonActive"));
-      this.toolButton.setBigInactiveImage(SResources.getImage(var1 + ".button"));
-      this.toolButton.setSmallActiveImage(SResources.getImage(var1 + ".buttonSmallActive"));
-      this.toolButton.setSmallInactiveImage(SResources.getImage(var1 + ".buttonSmall"));
+      this.toolButton.setText(SResources.getString(buttonName));
+      this.toolButton.setToolTipText(SResources.getString(buttonName + ".tooltip"));
+      this.toolButton.setBigActiveImage(SResources.getImage(buttonName + ".buttonActive"));
+      this.toolButton.setBigInactiveImage(SResources.getImage(buttonName + ".button"));
+      this.toolButton.setSmallActiveImage(SResources.getImage(buttonName + ".buttonSmallActive"));
+      this.toolButton.setSmallInactiveImage(SResources.getImage(buttonName + ".buttonSmall"));
       this.toolButton.useSmallButtons(this.mainWindow.getCoolBar().isToolbarSmallButtons());
       this.toolButton.setActive(false);
       this.toolButton.resetImage();
       this.mainWindow.getCoolBar().getMainToolButtons().add(this.toolButton);
    }
 
-   protected abstract void createContents(Composite var1);
+   protected abstract void createContents(Composite composite);
 
    public void dispose() {
       this.toolButton.dispose();
 
-      for (int var1 = 0; var1 < this.viewFrameList.size(); var1++) {
-         ViewFrame var2 = (ViewFrame)this.viewFrameList.get(var1);
-         var2.dispose();
+      for (int i = 0; i < this.viewFrameList.size(); i++) {
+         ViewFrame viewFrame = (ViewFrame)this.viewFrameList.get(i);
+         viewFrame.dispose();
       }
 
       this.viewFrameList.clear();
@@ -112,35 +112,35 @@ public abstract class AbstractTab {
       }
 
       if (this.viewFrameList != null) {
-         for (int var1 = 0; var1 < this.viewFrameList.size(); var1++) {
-            ViewFrame var2 = (ViewFrame)this.viewFrameList.get(var1);
-            var2.onConnect();
+         for (int i = 0; i < this.viewFrameList.size(); i++) {
+            ViewFrame viewFrame = (ViewFrame)this.viewFrameList.get(i);
+            viewFrame.onConnect();
          }
       }
    }
 
    public void onDisconnect() {
       if (this.viewFrameList != null) {
-         for (int var1 = 0; var1 < this.viewFrameList.size(); var1++) {
-            ViewFrame var2 = (ViewFrame)this.viewFrameList.get(var1);
-            var2.onDisconnect();
+         for (int i = 0; i < this.viewFrameList.size(); i++) {
+            ViewFrame viewFrame = (ViewFrame)this.viewFrameList.get(i);
+            viewFrame.onDisconnect();
          }
       }
    }
 
-   public void setVisible(boolean var1) {
+   public void setVisible(boolean visible) {
       if (this.viewFrameList != null) {
-         for (int var2 = 0; var2 < this.viewFrameList.size(); var2++) {
-            ViewFrame var3 = (ViewFrame)this.viewFrameList.get(var2);
-            if (var3 != null) {
-               var3.setVisible(var1);
+         for (int i = 0; i < this.viewFrameList.size(); i++) {
+            ViewFrame viewFrame = (ViewFrame)this.viewFrameList.get(i);
+            if (viewFrame != null) {
+               viewFrame.setVisible(visible);
             }
          }
       }
    }
 
-   public void removeViewFrame(ViewFrame var1) {
-      this.viewFrameList.remove(var1);
+   public void removeViewFrame(ViewFrame viewFrame) {
+      this.viewFrameList.remove(viewFrame);
    }
 
    public void setActive() {
@@ -159,12 +159,12 @@ public abstract class AbstractTab {
       this.toggleAllViewFramesActive(false);
    }
 
-   public void toggleAllViewFramesActive(boolean var1) {
+   public void toggleAllViewFramesActive(boolean active) {
       if (this.viewFrameList != null) {
-         for (int var2 = 0; var2 < this.viewFrameList.size(); var2++) {
-            ViewFrame var3 = (ViewFrame)this.viewFrameList.get(var2);
-            if (var3 != null) {
-               var3.setActive(var1);
+         for (int i = 0; i < this.viewFrameList.size(); i++) {
+            ViewFrame viewFrame = (ViewFrame)this.viewFrameList.get(i);
+            if (viewFrame != null) {
+               viewFrame.setActive(active);
             }
          }
       }

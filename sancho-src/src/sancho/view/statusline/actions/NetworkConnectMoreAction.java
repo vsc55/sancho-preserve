@@ -6,7 +6,7 @@ import sancho.model.mldonkey.enums.EnumNetwork;
 import sancho.view.utility.SResources;
 
 public class NetworkConnectMoreAction extends Action {
-   public NetworkConnectMoreAction(EnumNetwork var1) {
+   public NetworkConnectMoreAction(EnumNetwork enumNetwork) {
       super(SResources.getString("sl.n.connect"));
       this.setImageDescriptor(SResources.getImageDescriptor("plus"));
    }

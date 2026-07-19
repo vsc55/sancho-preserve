@@ -18,12 +18,12 @@ public class WebServicesAction extends Action {
    private String ed2k;
    private long size;
 
-   public WebServicesAction(int var1, String var2, String var3, long var4) {
-      this.type = var1;
-      this.md4 = var2;
-      this.ed2k = var3;
-      this.size = var4;
-      switch (var1) {
+   public WebServicesAction(int type, String md4, String ed2k, long size) {
+      this.type = type;
+      this.md4 = md4;
+      this.ed2k = ed2k;
+      this.size = size;
+      switch (type) {
          case 1:
             this.setText(SResources.getString("mi.web.bitzi"));
             this.setImageDescriptor(SResources.getImageDescriptor("bitzi"));
@@ -35,8 +35,8 @@ public class WebServicesAction extends Action {
          case 3:
          case 4:
          default:
-            int var6 = Math.abs(var1);
-            this.setText(PreferenceLoader.loadString("webServiceName" + var6));
+            int serviceNumber = Math.abs(type);
+            this.setText(PreferenceLoader.loadString("webServiceName" + serviceNumber));
             this.setImageDescriptor(SResources.getImageDescriptor("web-link"));
             break;
          case 5:
@@ -53,30 +53,30 @@ public class WebServicesAction extends Action {
       launch(this.type, this.md4, this.ed2k, this.size);
    }
 
-   public static void launch(int var0, String var1, String var2, long var3) {
-      switch (var0) {
+   public static void launch(int type, String md4, String ed2k, long size) {
+      switch (type) {
          case 1:
-            WebLauncher.openLink("http://bitzi.com/lookup/urn:ed2k:" + var1);
+            WebLauncher.openLink("http://bitzi.com/lookup/urn:ed2k:" + md4);
             break;
          case 2:
-            WebLauncher.openLink("http://www.filehash.com/file/" + var1);
+            WebLauncher.openLink("http://www.filehash.com/file/" + md4);
             break;
          case 3:
          case 4:
          default:
-            int var5 = Math.abs(var0);
-            String var6 = PreferenceLoader.loadString("webServiceURL" + var5);
-            var6 = SwissArmy.replaceAll(var6, "%FILEMD4%", var1);
-            var6 = SwissArmy.replaceAll(var6, "%FILEHASH%", var1);
-            var6 = SwissArmy.replaceAll(var6, "%FILEED2K%", var2);
-            var6 = SwissArmy.replaceAll(var6, "%FILESIZE%", String.valueOf(var3));
-            WebLauncher.openLink(var6);
+            int serviceNumber = Math.abs(type);
+            String url = PreferenceLoader.loadString("webServiceURL" + serviceNumber);
+            url = SwissArmy.replaceAll(url, "%FILEMD4%", md4);
+            url = SwissArmy.replaceAll(url, "%FILEHASH%", md4);
+            url = SwissArmy.replaceAll(url, "%FILEED2K%", ed2k);
+            url = SwissArmy.replaceAll(url, "%FILESIZE%", String.valueOf(size));
+            WebLauncher.openLink(url);
             break;
          case 5:
-            WebLauncher.openLink("http://tothbenedek.hu/ed2kstats/ed2k?hash=" + var1);
+            WebLauncher.openLink("http://tothbenedek.hu/ed2kstats/ed2k?hash=" + md4);
             break;
          case 6:
-            WebLauncher.openLink("http://emugle.com/details.php?f=" + var1);
+            WebLauncher.openLink("http://emugle.com/details.php?f=" + md4);
       }
    }
 }

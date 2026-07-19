@@ -8,8 +8,8 @@ import sancho.view.viewer.table.GTableView;
 public class ClientDirectoriesTableView extends GTableView {
    public static final int DIRECTORY = 0;
 
-   public ClientDirectoriesTableView(ClientDirectoriesViewFrame var1) {
-      super(var1);
+   public ClientDirectoriesTableView(ClientDirectoriesViewFrame viewFrame) {
+      super(viewFrame);
       this.preferenceString = "clientDirectories";
       this.columnLabels = new String[]{"clientDirectories.directory"};
       this.columnDefaultWidths = new int[]{120};
@@ -18,27 +18,27 @@ public class ClientDirectoriesTableView extends GTableView {
       this.tableLabelProvider = new ClientDirectoriesTableLabelProvider(this);
       this.gSorter = new ClientDirectoriesTableSorter(this);
       this.tableMenuListener = new ClientDirectoriesTableMenuListener(this);
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
    }
 
    public void setInput() {
    }
 
-   public void setInput(Object var1) {
-      this.sViewer.setInput(var1);
+   public void setInput(Object input) {
+      this.sViewer.setInput(input);
    }
 
    public GTableMenuListener getMenuListener() {
       return this.tableMenuListener;
    }
 
-   public void setFilesView(ClientFilesTableView var1) {
-      ((ClientDirectoriesTableMenuListener)this.tableMenuListener).setFilesView(var1);
-      ((ClientDirectoriesTableContentProvider)this.tableContentProvider).setFilesView(var1);
+   public void setFilesView(ClientFilesTableView view) {
+      ((ClientDirectoriesTableMenuListener)this.tableMenuListener).setFilesView(view);
+      ((ClientDirectoriesTableContentProvider)this.tableContentProvider).setFilesView(view);
    }
 
-   protected void createContents(Composite var1) {
-      super.createContents(var1);
+   protected void createContents(Composite composite) {
+      super.createContents(composite);
       this.sViewer.addSelectionChangedListener((ClientDirectoriesTableMenuListener)this.tableMenuListener);
    }
 }

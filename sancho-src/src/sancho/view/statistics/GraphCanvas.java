@@ -27,44 +27,44 @@ public class GraphCanvas extends Composite implements PaintListener, Runnable, D
    private boolean needNewBuffer;
    private ViewFrame viewFrame;
 
-   public GraphCanvas(Composite var1, String var2, String var3, ViewFrame var4) {
-      super(var1, 262144);
-      this.viewFrame = var4;
-      this.composite = var1;
-      this.graphName = var3;
-      this.graphData = new GraphData(var1.getDisplay(), var2, var3);
-      this.graphPainter = new GraphPainter(var1, this.graphData);
+   public GraphCanvas(Composite parent, String title, String graphName, ViewFrame viewFrame) {
+      super(parent, 262144);
+      this.viewFrame = viewFrame;
+      this.composite = parent;
+      this.graphName = graphName;
+      this.graphData = new GraphData(parent.getDisplay(), title, graphName);
+      this.graphPainter = new GraphPainter(parent, this.graphData);
       this.addPaintListener(this);
       this.addDisposeListener(this);
       this.addControlListener(new ControlAdapter() {
-         public void controlResized(ControlEvent var1) {
+         public void controlResized(ControlEvent event) {
             GraphCanvas.this.needNewBuffer = true;
          }
       });
       this.addMouseListener(new MouseAdapter() {
-         public void mouseDoubleClick(MouseEvent var1) {
+         public void mouseDoubleClick(MouseEvent event) {
             GraphCanvas.this.toggleDisplay();
          }
       });
       this.updateDisplay();
    }
 
-   public void addPoint(float var1) {
-      this.graphData.addPoint((int)(var1 * 100.0F));
+   public void addPoint(float value) {
+      this.graphData.addPoint((int)(value * 100.0F));
    }
 
    public GraphData getGraphData() {
       return this.graphData;
    }
 
-   public void paintControl(PaintEvent var1) {
+   public void paintControl(PaintEvent event) {
       // Also build the buffer when it's still null: the code assumed controlResized
       // (the only place setting needNewBuffer) always fires before the first paint,
       // which modern SWT doesn't guarantee -> paint() would get a null Image and
       // new GC(null) would throw.
       if (this.needNewBuffer || this.imageBuffer == null) {
-         Rectangle var2 = this.composite.getBounds();
-         if (var2.height <= 0 || var2.width <= 0) {
+         Rectangle rect = this.composite.getBounds();
+         if (rect.height <= 0 || rect.width <= 0) {
             return;
          }
 
@@ -75,7 +75,7 @@ public class GraphCanvas extends Composite implements PaintListener, Runnable, D
          this.imageBuffer = new Image(null, this.composite.getBounds());
       }
 
-      this.graphPainter.paint(var1.gc, this.imageBuffer);
+      this.graphPainter.paint(event.gc, this.imageBuffer);
       this.needNewBuffer = false;
    }
 
@@ -103,8 +103,8 @@ public class GraphCanvas extends Composite implements PaintListener, Runnable, D
       }
 
       this.graphPainter.setGraphType(this.graphType);
-      PreferenceStore var1 = PreferenceLoader.getPreferenceStore();
-      var1.setValue("graph" + this.graphName + "Type", this.graphType);
+      PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+      preferenceStore.setValue("graph" + this.graphName + "Type", this.graphType);
    }
 
    public void updateDisplay() {
@@ -115,14 +115,14 @@ public class GraphCanvas extends Composite implements PaintListener, Runnable, D
       this.graphPainter.setReverse(this.graphReverse);
    }
 
-   public void widgetDisposed(DisposeEvent var1) {
+   public void widgetDisposed(DisposeEvent event) {
       if (this.imageBuffer != null && !this.imageBuffer.isDisposed()) {
          this.imageBuffer.dispose();
       }
 
-      PreferenceStore var2 = PreferenceLoader.getPreferenceStore();
-      var2.setValue("graph" + this.graphName + "Type", this.graphType);
-      var2.setValue("graph" + this.graphName + "Reverse", this.graphReverse);
+      PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+      preferenceStore.setValue("graph" + this.graphName + "Type", this.graphType);
+      preferenceStore.setValue("graph" + this.graphName + "Reverse", this.graphReverse);
    }
 
    public void dispose() {

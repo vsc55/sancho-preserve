@@ -25,11 +25,11 @@ public class NetworkStatsTableView extends GTableView {
    public static final int RATIO = 13;
    NetworkStatCollection networkStatCollection;
 
-   public NetworkStatsTableView(ViewFrame var1, Network var2, NetworkStatCollection var3) {
-      super(var1);
-      this.networkStatCollection = var3;
-      String var4 = var2.getName() + " " + var3.getName();
-      this.preferenceString = "networkStats" + Base64.encode(var4.getBytes());
+   public NetworkStatsTableView(ViewFrame viewFrame, Network network, NetworkStatCollection collection) {
+      super(viewFrame);
+      this.networkStatCollection = collection;
+      String name = network.getName() + " " + collection.getName();
+      this.preferenceString = "networkStats" + Base64.encode(name.getBytes());
       this.columnLabels = new String[]{
          "networkStats.name",
          "networkStats.seen",
@@ -52,11 +52,11 @@ public class NetworkStatsTableView extends GTableView {
       this.tableContentProvider = new NetworkStatsTableContentProvider(this);
       this.tableLabelProvider = new NetworkStatsTableLabelProvider(this);
       this.tableMenuListener = new NetworkStatsTableMenuListener(this);
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
    }
 
-   protected void createContents(Composite var1) {
-      super.createContents(var1);
+   protected void createContents(Composite composite) {
+      super.createContents(composite);
       this.sViewer.addSelectionChangedListener((NetworkStatsTableMenuListener)this.tableMenuListener);
       this.addMenuListener();
    }

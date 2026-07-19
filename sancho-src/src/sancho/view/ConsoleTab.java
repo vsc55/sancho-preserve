@@ -12,14 +12,14 @@ import sancho.view.utility.AbstractTab;
 public class ConsoleTab extends AbstractTab implements MyObserver {
    private Console console;
 
-   public ConsoleTab(MainWindow var1, String var2) {
-      super(var1, var2);
+   public ConsoleTab(MainWindow mainWindow, String name) {
+      super(mainWindow, name);
    }
 
-   protected void createContents(Composite var1) {
-      ConsoleViewFrame var2 = new ConsoleViewFrame(var1, "tab.console", "tab.console.buttonSmall", this);
-      this.addViewFrame(var2);
-      this.console = new Console(var2.getChildComposite(), 0);
+   protected void createContents(Composite composite) {
+      ConsoleViewFrame consoleViewFrame = new ConsoleViewFrame(composite, "tab.console", "tab.console.buttonSmall", this);
+      this.addViewFrame(consoleViewFrame);
+      this.console = new Console(consoleViewFrame.getChildComposite(), 0);
    }
 
    public void setInActive() {
@@ -44,18 +44,18 @@ public class ConsoleTab extends AbstractTab implements MyObserver {
       }
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
-      if (var1 instanceof ConsoleMessage) {
-         this.updateConsole((String)var2);
+   public void update(MyObservable observable, Object arg, int id) {
+      if (observable instanceof ConsoleMessage) {
+         this.updateConsole((String)arg);
       }
    }
 
-   public void updateConsole(final String var1) {
+   public void updateConsole(final String text) {
       if (this.getContent() != null && !this.getContent().isDisposed()) {
          this.getContent().getDisplay().asyncExec(new Runnable() {
             public void run() {
                if (Sancho.hasCollectionFactory() && ConsoleTab.this.console != null && !ConsoleTab.this.console.isDisposed()) {
-                  ConsoleTab.this.console.append(var1);
+                  ConsoleTab.this.console.append(text);
                }
             }
          });

@@ -15,59 +15,59 @@ public class Splash {
    public static boolean[] on = new boolean[10];
    public static int[] boxes = new int[]{13, 66, 107, 162, 212, 259, 314, 363, 398, 441, 492};
 
-   public Splash(Display var1) {
-      display = var1;
+   public Splash(Display parentDisplay) {
+      display = parentDisplay;
       if (PreferenceLoader.loadBoolean("splashScreen")) {
          this.createContents(display);
       }
    }
 
-   public void createContents(Display var1) {
-      boolean var2 = VersionInfo.getSWTPlatform().equals("win32");
-      shell = new Shell(var1, 278536 | (var2 ? 4 : 0));
+   public void createContents(Display parentDisplay) {
+      boolean isWin32 = VersionInfo.getSWTPlatform().equals("win32");
+      shell = new Shell(parentDisplay, 278536 | (isWin32 ? 4 : 0));
       shell.setLayout(new FillLayout());
-      Image var3 = SResources.getImage("splashScreen");
-      Rectangle var4 = var1.getPrimaryMonitor().getBounds();
-      Rectangle var5 = var3.getBounds();
-      shell.setBounds(var4.x + (var4.width - var5.width) / 2, var4.y + (var4.height - var5.height) / 2, var5.width, var5.height);
+      Image image = SResources.getImage("splashScreen");
+      Rectangle monitorBounds = parentDisplay.getPrimaryMonitor().getBounds();
+      Rectangle imageBounds = image.getBounds();
+      shell.setBounds(monitorBounds.x + (monitorBounds.width - imageBounds.width) / 2, monitorBounds.y + (monitorBounds.height - imageBounds.height) / 2, imageBounds.width, imageBounds.height);
       shell.open();
       shell.update();
    }
 
-   public static void updateText(String var0) {
-      updateText(var0, "");
+   public static void updateText(String key) {
+      updateText(key, "");
    }
 
-   public static void updateText(String var0, String var1) {
-      updateText(var0, var1, -1);
+   public static void updateText(String key, String suffix) {
+      updateText(key, suffix, -1);
    }
 
-   public static void updateText(String var0, String var1, int var2) {
+   public static void updateText(String key, String suffix, int boxIndex) {
       if (shell != null) {
-         String var3 = SResources.getString(var0) + var1;
-         Image var4 = new Image(shell.getDisplay(), shell.getBounds());
-         GC var5 = new GC(var4);
-         var5.drawImage(SResources.getImage("splashScreen"), 0, 0);
-         var5.setForeground(shell.getDisplay().getSystemColor(1));
-         var5.drawText(var3 + "...", 15, shell.getBounds().height - 25, true);
-         if (var2 >= 0 && var2 < on.length) {
-            on[var2] = true;
+         String text = SResources.getString(key) + suffix;
+         Image bufferImage = new Image(shell.getDisplay(), shell.getBounds());
+         GC gc = new GC(bufferImage);
+         gc.drawImage(SResources.getImage("splashScreen"), 0, 0);
+         gc.setForeground(shell.getDisplay().getSystemColor(1));
+         gc.drawText(text + "...", 15, shell.getBounds().height - 25, true);
+         if (boxIndex >= 0 && boxIndex < on.length) {
+            on[boxIndex] = true;
          }
 
-         Image var6 = SResources.getImage("splashHighlight");
+         Image highlightImage = SResources.getImage("splashHighlight");
 
-         for (int var7 = 0; var7 < on.length; var7++) {
-            if (on[var7]) {
-               int var8 = boxes[var7 + 1] - boxes[var7];
-               var5.drawImage(var6, boxes[var7], 0, var8, 57, boxes[var7], 173, var8, 57);
+         for (int i = 0; i < on.length; i++) {
+            if (on[i]) {
+               int boxWidth = boxes[i + 1] - boxes[i];
+               gc.drawImage(highlightImage, boxes[i], 0, boxWidth, 57, boxes[i], 173, boxWidth, 57);
             }
          }
 
-         GC var9 = new GC(shell);
-         var9.drawImage(var4, 0, 0);
-         var9.dispose();
-         var4.dispose();
-         var5.dispose();
+         GC shellGc = new GC(shell);
+         shellGc.drawImage(bufferImage, 0, 0);
+         shellGc.dispose();
+         bufferImage.dispose();
+         gc.dispose();
          display.readAndDispatch();
       }
    }
@@ -80,9 +80,9 @@ public class Splash {
       }
    }
 
-   public static void setVisible(boolean var0) {
+   public static void setVisible(boolean visible) {
       if (shell != null) {
-         shell.setVisible(var0);
+         shell.setVisible(visible);
       }
    }
 }

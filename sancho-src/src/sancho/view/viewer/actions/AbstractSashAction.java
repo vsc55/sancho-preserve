@@ -6,7 +6,7 @@ import org.eclipse.swt.custom.SashForm;
 public abstract class AbstractSashAction extends Action {
    protected SashForm sashForm;
 
-   public AbstractSashAction(SashForm var1) {
-      this.sashForm = var1;
+   public AbstractSashAction(SashForm sashForm) {
+      this.sashForm = sashForm;
    }
 }

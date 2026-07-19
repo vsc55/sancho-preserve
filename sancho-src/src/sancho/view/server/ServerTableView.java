@@ -27,8 +27,8 @@ public class ServerTableView extends GTableView {
    public static final int HARDLIMIT = 15;
    public static final int PING = 16;
 
-   public ServerTableView(ViewFrame var1) {
-      super(var1);
+   public ServerTableView(ViewFrame viewFrame) {
+      super(viewFrame);
       this.preferenceString = "server";
       this.columnLabels = new String[]{
          "servers.network",
@@ -62,11 +62,11 @@ public class ServerTableView extends GTableView {
       this.tableMenuListener = new ServerTableMenuListener(this);
       this.saveStateFilters = true;
       this.saveNetworkFilters = true;
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
    }
 
-   protected void createContents(Composite var1) {
-      super.createContents(var1);
+   protected void createContents(Composite composite) {
+      super.createContents(composite);
       this.sViewer.addDoubleClickListener((ServerTableMenuListener)this.tableMenuListener);
       this.sViewer.addSelectionChangedListener((ServerTableMenuListener)this.tableMenuListener);
       this.addMenuListener();
@@ -78,7 +78,7 @@ public class ServerTableView extends GTableView {
       }
    }
 
-   public void setServerUsersTableView(ServerUsersTableView var1) {
-      ((ServerTableMenuListener)this.tableMenuListener).setServerUsersTableView(var1);
+   public void setServerUsersTableView(ServerUsersTableView serverUsersTableView) {
+      ((ServerTableMenuListener)this.tableMenuListener).setServerUsersTableView(serverUsersTableView);
    }
 }

@@ -74,39 +74,39 @@ public class ChunkCanvas extends Canvas implements MyObserver, DisposeListener, 
 
    public static void refreshAll() {
       synchronized (chunkList) {
-         for (int var1 = 0; var1 < chunkList.size(); var1++) {
-            ((ChunkCanvas)chunkList.get(var1)).refresh(true);
+         for (int i = 0; i < chunkList.size(); i++) {
+            ((ChunkCanvas)chunkList.get(i)).refresh(true);
          }
       }
    }
 
-   public ChunkCanvas(Composite var1, int var2, Client var3, File var4, Network var5, boolean var6) {
-      super(var1, var2);
-      this.client = var3;
-      this.file = var4;
-      this.network = var5;
-      this.limitLength = var6 || forceLimit;
-      if (var3 != null) {
-         var3.addObserver(this);
-      } else if (var4 != null) {
-         var4.addObserver(this);
+   public ChunkCanvas(Composite composite, int style, Client client, File file, Network network, boolean limitLength) {
+      super(composite, style);
+      this.client = client;
+      this.file = file;
+      this.network = network;
+      this.limitLength = limitLength || forceLimit;
+      if (client != null) {
+         client.addObserver(this);
+      } else if (file != null) {
+         file.addObserver(this);
       }
 
       this.createImage();
       this.addDisposeListener(this);
       this.addPaintListener(this);
-      final Composite parentComposite = var1;
+      final Composite parentComposite = composite;
       this.addMouseListener(new MouseAdapter() {
-         public void mouseDoubleClick(MouseEvent var1) {
-            ChunkColorDialog var2 = new ChunkColorDialog(parentComposite.getShell());
-            if (var2.open() == 0) {
+         public void mouseDoubleClick(MouseEvent event) {
+            ChunkColorDialog dialog = new ChunkColorDialog(parentComposite.getShell());
+            if (dialog.open() == 0) {
                ChunkCanvas.refreshAll();
             }
          }
       });
       this.addControlListener(new ControlAdapter() {
-         public void controlResized(ControlEvent var1) {
-            ChunkCanvas.this.resizeImage(var1, false);
+         public void controlResized(ControlEvent event) {
+            ChunkCanvas.this.resizeImage(event, false);
          }
       });
       synchronized (chunkList) {
@@ -117,76 +117,76 @@ public class ChunkCanvas extends Canvas implements MyObserver, DisposeListener, 
    private void createClientImage() {
       this.avail = this.client.getFileAvailability(this.file.getId());
       this.chunks = this.file.getChunks();
-      int var1 = 0;
+      int length = 0;
       if (this.avail != null) {
-         var1 = this.avail.length();
+         length = this.avail.length();
       }
 
-      if (var1 != 0 && this.chunks.length() == var1) {
-         Display var2 = this.getDisplay();
-         Color var3 = var2.getSystemColor(2);
-         Object var4 = null;
-         int var5 = 1;
-         if (this.limitLength && var1 > MAX_LENGTH) {
-            var5 = var1 / MAX_LENGTH;
-            var1 = MAX_LENGTH;
+      if (length != 0 && this.chunks.length() == length) {
+         Display display = this.getDisplay();
+         Color black = display.getSystemColor(2);
+         Object color = null;
+         int step = 1;
+         if (this.limitLength && length > MAX_LENGTH) {
+            step = length / MAX_LENGTH;
+            length = MAX_LENGTH;
          }
 
-         Image var6 = new Image(var2, var1, 18);
-         GC var7 = new GC(var6);
-         int var8 = 0;
-         int var9 = 0;
-         Color var10 = null;
-         int var11 = 0;
+         Image image = new Image(display, length, 18);
+         GC gc = new GC(image);
+         int charIndex = 0;
+         int i = 0;
+         Color runColor = null;
+         int runStart = 0;
 
-         for (int var12 = 0; var9 < var1; var9++) {
-            if (this.chunks.charAt(var8) == '2') {
-               var4 = clientCColor2;
+         for (int runLength = 0; i < length; i++) {
+            if (this.chunks.charAt(charIndex) == '2') {
+               color = clientCColor2;
             } else {
-               char var13 = this.avail.charAt(var8);
-               if (var13 == '0') {
-                  var4 = clientAColor0;
-               } else if (var13 == '1') {
-                  var4 = clientAColor1;
-               } else if (var13 == '2') {
-                  var4 = clientAColor2;
+               char availChar = this.avail.charAt(charIndex);
+               if (availChar == '0') {
+                  color = clientAColor0;
+               } else if (availChar == '1') {
+                  color = clientAColor1;
+               } else if (availChar == '2') {
+                  color = clientAColor2;
                } else {
-                  var4 = clientAColor1;
+                  color = clientAColor1;
                }
             }
 
-            if (var9 == 0) {
-               var10 = (Color)var4;
+            if (i == 0) {
+               runColor = (Color)color;
             } else {
-               var12++;
+               runLength++;
             }
 
-            if (!var10.equals(var4)) {
-               this.drawGradient(var7, var3, var10, var11, var12);
-               var10 = (Color)var4;
-               var11 = var9;
-               var12 = 0;
+            if (!runColor.equals(color)) {
+               this.drawGradient(gc, black, runColor, runStart, runLength);
+               runColor = (Color)color;
+               runStart = i;
+               runLength = 0;
             }
 
-            var8 += var5;
+            charIndex += step;
          }
 
-         if (var11 < var9) {
-            int var15 = var9 - var11;
-            this.drawGradient(var7, var3, var10, var11, var15);
+         if (runStart < i) {
+            int runLength = i - runStart;
+            this.drawGradient(gc, black, runColor, runStart, runLength);
          }
 
-         this.imageData = this.mirrorImageData(var6.getImageData());
-         var7.dispose();
-         var6.dispose();
+         this.imageData = this.mirrorImageData(image.getImageData());
+         gc.dispose();
+         image.dispose();
          if (this.resizedImageData == null) {
             this.resizedImageData = this.imageData;
          }
 
          this.resizeImage(null, true);
       } else {
-         if (var1 != 0) {
-            Sancho.pDebug("CCI [" + this.client.getId() + "]" + var1 + "!=" + this.chunks.length());
+         if (length != 0) {
+            Sancho.pDebug("CCI [" + this.client.getId() + "]" + length + "!=" + this.chunks.length());
          }
       }
    }
@@ -203,118 +203,118 @@ public class ChunkCanvas extends Canvas implements MyObserver, DisposeListener, 
          this.avail = this.file.getAvail();
       }
 
-      int var1 = 0;
+      int length = 0;
       if (this.avail != null) {
-         var1 = this.avail.length();
+         length = this.avail.length();
       }
 
-      if (var1 != 0 && var1 == this.chunks.length()) {
-         char var3 = 0;
+      if (length != 0 && length == this.chunks.length()) {
+         char maxAvail = 0;
 
-         for (int var4 = 0; var4 < var1; var4++) {
-            char var2 = this.avail.charAt(var4);
-            if (var2 > var3) {
-               var3 = var2;
+         for (int i = 0; i < length; i++) {
+            char availChar = this.avail.charAt(i);
+            if (availChar > maxAvail) {
+               maxAvail = availChar;
             }
          }
 
-         int var5 = 1;
-         if (this.limitLength && var1 > MAX_LENGTH) {
-            var5 = var1 / MAX_LENGTH;
-            var1 = MAX_LENGTH;
+         int step = 1;
+         if (this.limitLength && length > MAX_LENGTH) {
+            step = length / MAX_LENGTH;
+            length = MAX_LENGTH;
          }
 
-         Display var6 = this.getDisplay();
-         Color var7 = var6.getSystemColor(2);
-         Color var8 = null;
-         Image var9 = new Image(var6, var1, 18);
-         GC var10 = new GC(var9);
-         ArrayList var11 = new ArrayList();
-         Color var12 = null;
-         int var13 = 0;
-         int var14 = 0;
-         int var15 = 0;
+         Display display = this.getDisplay();
+         Color black = display.getSystemColor(2);
+         Color color = null;
+         Image image = new Image(display, length, 18);
+         GC gc = new GC(image);
+         ArrayList colors = new ArrayList();
+         Color runColor = null;
+         int charIndex = 0;
+         int i = 0;
+         int runStart = 0;
 
-         for (int var16 = 0; var14 < var1; var14++) {
-            if (this.chunks.charAt(var13) == '2') {
-               var8 = fileCColor2;
-            } else if (this.chunks.charAt(var13) == '3') {
-               var8 = fileCColor3;
+         for (int runLength = 0; i < length; i++) {
+            if (this.chunks.charAt(charIndex) == '2') {
+               color = fileCColor2;
+            } else if (this.chunks.charAt(charIndex) == '3') {
+               color = fileCColor3;
             } else {
-               char var19 = this.avail.charAt(var13);
-               if (var19 == 0) {
-                  var8 = fileAColor0;
+               char availChar = this.avail.charAt(charIndex);
+               if (availChar == 0) {
+                  color = fileAColor0;
                } else {
-                  int var17 = (int)((float)var19 / (float)var3 * 10.0F);
-                  var17 = 10 - var17;
-                  var17 = -var17 * 10;
-                  Color var18 = WidgetFactory.changeColor(fileIRGB, var17);
-                  if (!var18.equals(var8)) {
-                     var11.add(var18);
-                     var8 = var18;
+                  int shade = (int)((float)availChar / (float)maxAvail * 10.0F);
+                  shade = 10 - shade;
+                  shade = -shade * 10;
+                  Color shadeColor = WidgetFactory.changeColor(fileIRGB, shade);
+                  if (!shadeColor.equals(color)) {
+                     colors.add(shadeColor);
+                     color = shadeColor;
                   } else {
-                     var18.dispose();
+                     shadeColor.dispose();
                   }
                }
             }
 
-            if (var14 == 0) {
-               var12 = var8;
+            if (i == 0) {
+               runColor = color;
             } else {
-               var16++;
+               runLength++;
             }
 
-            if (!var12.equals(var8)) {
-               this.drawGradient(var10, var7, var12, var15, var16);
-               var12 = var8;
-               var15 = var14;
-               var16 = 0;
+            if (!runColor.equals(color)) {
+               this.drawGradient(gc, black, runColor, runStart, runLength);
+               runColor = color;
+               runStart = i;
+               runLength = 0;
             }
 
-            var13 += var5;
+            charIndex += step;
          }
 
-         if (var15 < var14) {
-            int var24 = var14 - var15;
-            this.drawGradient(var10, var7, var12, var15, var24);
+         if (runStart < i) {
+            int runLength = i - runStart;
+            this.drawGradient(gc, black, runColor, runStart, runLength);
          }
 
-         for (int var27 = 0; var27 < var11.size(); var27++) {
-            Color var28 = (Color)var11.get(var27);
-            if (var28 != null && !var28.isDisposed()) {
-               var28.dispose();
+         for (int j = 0; j < colors.size(); j++) {
+            Color allocatedColor = (Color)colors.get(j);
+            if (allocatedColor != null && !allocatedColor.isDisposed()) {
+               allocatedColor.dispose();
             }
          }
 
-         this.imageData = this.mirrorImageData(var9.getImageData());
-         var10.dispose();
-         var9.dispose();
-         var9 = new Image(var6, this.imageData);
-         var10 = new GC(var9);
-         var13 = 0;
-         var14 = 0;
-         var10.setLineWidth(1);
-         var10.setForeground(fileCColor1);
+         this.imageData = this.mirrorImageData(image.getImageData());
+         gc.dispose();
+         image.dispose();
+         image = new Image(display, this.imageData);
+         gc = new GC(image);
+         charIndex = 0;
+         i = 0;
+         gc.setLineWidth(1);
+         gc.setForeground(fileCColor1);
 
-         for (int var29 = var9.getBounds().height; var14 < var1; var14++) {
-            if (this.chunks.charAt(var13) == '1') {
-               var10.drawRectangle(var14, var29 - 2, 0, 2);
+         for (int height = image.getBounds().height; i < length; i++) {
+            if (this.chunks.charAt(charIndex) == '1') {
+               gc.drawRectangle(i, height - 2, 0, 2);
             }
 
-            var13 += var5;
+            charIndex += step;
          }
 
-         this.imageData = var9.getImageData();
-         var10.dispose();
-         var9.dispose();
+         this.imageData = image.getImageData();
+         gc.dispose();
+         image.dispose();
          if (this.resizedImageData == null) {
             this.resizedImageData = this.imageData;
          }
 
          this.resizeImage(null, true);
       } else {
-         if (var1 != 0) {
-            Sancho.pDebug("CFI: " + var1 + "!=" + this.chunks.length());
+         if (length != 0) {
+            Sancho.pDebug("CFI: " + length + "!=" + this.chunks.length());
          }
       }
    }
@@ -327,113 +327,113 @@ public class ChunkCanvas extends Canvas implements MyObserver, DisposeListener, 
       }
    }
 
-   private void createProgressBar(int var1, GC var2) {
-      int var3 = (int)((double)this.file.getPercent() / 100.0 * (double)(var1 - 1));
-      var2.setBackground(progressColor2);
-      var2.setForeground(progressColor1);
-      var2.fillGradientRectangle(0, 0, var3, 4, false);
+   private void createProgressBar(int width, GC gc) {
+      int progressWidth = (int)((double)this.file.getPercent() / 100.0 * (double)(width - 1));
+      gc.setBackground(progressColor2);
+      gc.setForeground(progressColor1);
+      gc.fillGradientRectangle(0, 0, progressWidth, 4, false);
    }
 
-   private ImageData mirrorImageData(ImageData var1) {
-      int var2 = var1.height;
-      int var3 = 0;
-      int var4 = (var2 - 1) * var1.bytesPerLine;
+   private ImageData mirrorImageData(ImageData imageData) {
+      int height = imageData.height;
+      int topOffset = 0;
+      int bottomOffset = (height - 1) * imageData.bytesPerLine;
 
-      for (int var5 = 0; var5 < var2 / 2; var5++) {
-         System.arraycopy(var1.data, var3, var1.data, var4, var1.bytesPerLine);
-         var3 += var1.bytesPerLine;
-         var4 -= var1.bytesPerLine;
+      for (int i = 0; i < height / 2; i++) {
+         System.arraycopy(imageData.data, topOffset, imageData.data, bottomOffset, imageData.bytesPerLine);
+         topOffset += imageData.bytesPerLine;
+         bottomOffset -= imageData.bytesPerLine;
       }
 
-      return var1;
+      return imageData;
    }
 
-   private void drawGradient(GC var1, Color var2, Color var3, int var4, int var5) {
-      var1.setBackground(var3);
-      var1.setForeground(var2);
-      var1.fillGradientRectangle(var4, 0, var5, 9, true);
+   private void drawGradient(GC gc, Color foreground, Color background, int x, int width) {
+      gc.setBackground(background);
+      gc.setForeground(foreground);
+      gc.fillGradientRectangle(x, 0, width, 9, true);
    }
 
    private boolean hasChanged() {
-      boolean var1 = false;
+      boolean changed = false;
       if (this.client == null) {
-         boolean var2 = this.chunks.hashCode() != this.file.getChunks().hashCode();
-         boolean var3 = this.avail.hashCode() != this.file.getAvail().hashCode();
-         var1 = var2 || var3;
+         boolean chunksChanged = this.chunks.hashCode() != this.file.getChunks().hashCode();
+         boolean availChanged = this.avail.hashCode() != this.file.getAvail().hashCode();
+         changed = chunksChanged || availChanged;
       } else {
-         String var4 = this.client.getFileAvailability(this.file.getId());
-         if (this.avail == null && var4 != null) {
-            var1 = true;
-         } else if (this.avail != null && var4 != null) {
-            var1 = var4.hashCode() != this.avail.hashCode();
+         String availability = this.client.getFileAvailability(this.file.getId());
+         if (this.avail == null && availability != null) {
+            changed = true;
+         } else if (this.avail != null && availability != null) {
+            changed = availability.hashCode() != this.avail.hashCode();
          }
       }
 
-      return var1;
+      return changed;
    }
 
-   public synchronized void paintControl(PaintEvent var1) {
+   public synchronized void paintControl(PaintEvent event) {
       if (this.resizedImageData != null) {
-         Image var2 = new Image(this.getDisplay(), this.resizedImageData);
-         GC var3 = new GC(var2);
+         Image image = new Image(this.getDisplay(), this.resizedImageData);
+         GC gc = new GC(image);
          if (this.client == null) {
-            this.createProgressBar(this.resizedImageData.width, var3);
+            this.createProgressBar(this.resizedImageData.width, gc);
          }
 
-         this.roundCorners(this.resizedImageData.width, this.resizedImageData.height, var3);
-         var3.dispose();
-         boolean var4 = var1.x + var1.width <= var2.getBounds().width && var1.y + var1.height <= var2.getBounds().height;
+         this.roundCorners(this.resizedImageData.width, this.resizedImageData.height, gc);
+         gc.dispose();
+         boolean inBounds = event.x + event.width <= image.getBounds().width && event.y + event.height <= image.getBounds().height;
 
          try {
-            if (var4) {
-               var1.gc.drawImage(var2, var1.x, var1.y, var1.width, var1.height, var1.x, var1.y, var1.width, var1.height);
+            if (inBounds) {
+               event.gc.drawImage(image, event.x, event.y, event.width, event.height, event.x, event.y, event.width, event.height);
             }
-         } catch (Exception var11) {
-            Sancho.pDebug("e.width: " + var1.width + " e.height: " + var1.height + " bw: " + var2.getBounds().width + " bh: " + var2.getBounds().height);
-            var11.printStackTrace();
+         } catch (Exception exception) {
+            Sancho.pDebug("e.width: " + event.width + " e.height: " + event.height + " bw: " + image.getBounds().width + " bh: " + image.getBounds().height);
+            exception.printStackTrace();
          }
 
-         var2.dispose();
+         image.dispose();
       } else if (this.rectangle != null) {
-         Image var12 = new Image(this.getDisplay(), this.rectangle);
-         GC var13 = new GC(var12);
-         int var14 = this.rectangle.height / 2;
-         int var5 = var14;
+         Image image = new Image(this.getDisplay(), this.rectangle);
+         GC gc = new GC(image);
+         int halfHeight = this.rectangle.height / 2;
+         int bottomHalf = halfHeight;
          if (this.rectangle.height % 2 != 0) {
-            var5 = var14 + 1;
+            bottomHalf = halfHeight + 1;
          }
 
-         Color var6 = this.getDisplay().getSystemColor(2);
-         Color var7 = new Color(this.getDisplay(), 62, 62, 62);
-         var13.setBackground(var7);
-         var13.setForeground(var6);
-         var13.fillGradientRectangle(0, 0, this.rectangle.width, var14, true);
-         var13.setBackground(var6);
-         var13.setForeground(var7);
-         var13.fillGradientRectangle(0, var14, this.rectangle.width, var5, true);
-         this.roundCorners(this.rectangle.width, this.rectangle.height, var13);
-         boolean var8 = var1.x + var1.width <= var12.getBounds().width && var1.y + var1.height <= var12.getBounds().height;
+         Color black = this.getDisplay().getSystemColor(2);
+         Color grey = new Color(this.getDisplay(), 62, 62, 62);
+         gc.setBackground(grey);
+         gc.setForeground(black);
+         gc.fillGradientRectangle(0, 0, this.rectangle.width, halfHeight, true);
+         gc.setBackground(black);
+         gc.setForeground(grey);
+         gc.fillGradientRectangle(0, halfHeight, this.rectangle.width, bottomHalf, true);
+         this.roundCorners(this.rectangle.width, this.rectangle.height, gc);
+         boolean inBounds = event.x + event.width <= image.getBounds().width && event.y + event.height <= image.getBounds().height;
 
          try {
-            if (var8) {
-               var1.gc.drawImage(var12, var1.x, var1.y, var1.width, var1.height, var1.x, var1.y, var1.width, var1.height);
+            if (inBounds) {
+               event.gc.drawImage(image, event.x, event.y, event.width, event.height, event.x, event.y, event.width, event.height);
             }
-         } catch (Exception var10) {
-            Sancho.pDebug("e.width: " + var1.width + " e.height: " + var1.height + " bw: " + var12.getBounds().width + " bh: " + var12.getBounds().height);
-            var10.printStackTrace();
+         } catch (Exception exception) {
+            Sancho.pDebug("e.width: " + event.width + " e.height: " + event.height + " bw: " + image.getBounds().width + " bh: " + image.getBounds().height);
+            exception.printStackTrace();
          }
 
-         var7.dispose();
-         var13.dispose();
-         var12.dispose();
+         grey.dispose();
+         gc.dispose();
+         image.dispose();
       } else {
-         var1.gc.setBackground(this.getBackground());
-         var1.gc.fillRectangle(var1.x, var1.y, var1.width, var1.height);
+         event.gc.setBackground(this.getBackground());
+         event.gc.fillRectangle(event.x, event.y, event.width, event.height);
       }
    }
 
-   private void refresh(boolean var1) {
-      if (var1 || this.hasChanged()) {
+   private void refresh(boolean force) {
+      if (force || this.hasChanged()) {
          this.createImage();
          this.redraw();
       }
@@ -443,14 +443,14 @@ public class ChunkCanvas extends Canvas implements MyObserver, DisposeListener, 
       this.refresh(false);
    }
 
-   protected synchronized void resizeImage(ControlEvent var1, boolean var2) {
+   protected synchronized void resizeImage(ControlEvent event, boolean force) {
       if (this.imageData != null) {
-         int var3 = this.getClientArea().width;
-         int var4 = this.getClientArea().height;
-         int var5 = this.resizedImageData.width;
-         int var6 = this.resizedImageData.height;
-         if (var3 > 0 && var4 > 0 && (var2 || var3 != var5 || var4 != var6)) {
-            this.resizedImageData = this.imageData.scaledTo(var3, var4);
+         int width = this.getClientArea().width;
+         int height = this.getClientArea().height;
+         int currentWidth = this.resizedImageData.width;
+         int currentHeight = this.resizedImageData.height;
+         if (width > 0 && height > 0 && (force || width != currentWidth || height != currentHeight)) {
+            this.resizedImageData = this.imageData.scaledTo(width, height);
             this.redraw();
          }
       } else {
@@ -458,13 +458,13 @@ public class ChunkCanvas extends Canvas implements MyObserver, DisposeListener, 
       }
    }
 
-   private void roundCorners(int var1, int var2, GC var3) {
-      var3.setForeground(this.getBackground());
-      byte var4 = 0;
-      var3.drawPoint(0, var4);
-      var3.drawPoint(0, var2 - 1 - var4);
-      var3.drawPoint(var1 - 1, var4);
-      var3.drawPoint(var1 - 1, var2 - var4 - 1);
+   private void roundCorners(int width, int height, GC gc) {
+      gc.setForeground(this.getBackground());
+      byte offset = 0;
+      gc.drawPoint(0, offset);
+      gc.drawPoint(0, height - 1 - offset);
+      gc.drawPoint(width - 1, offset);
+      gc.drawPoint(width - 1, height - offset - 1);
    }
 
    public void run() {
@@ -473,22 +473,22 @@ public class ChunkCanvas extends Canvas implements MyObserver, DisposeListener, 
       }
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
+   public void update(MyObservable observable, Object arg, int id) {
       if (!this.isDisposed()) {
-         boolean var4 = false;
-         if (var1 instanceof Client && var2 == null) {
-            var4 = var3 == 16;
-         } else if (var1 instanceof File) {
-            var4 = ((File)var1).hasChangedBit(1024);
+         boolean changed = false;
+         if (observable instanceof Client && arg == null) {
+            changed = id == 16;
+         } else if (observable instanceof File) {
+            changed = ((File)observable).hasChangedBit(1024);
          }
 
-         if (var4) {
+         if (changed) {
             this.getDisplay().syncExec(this);
          }
       }
    }
 
-   public synchronized void widgetDisposed(DisposeEvent var1) {
+   public synchronized void widgetDisposed(DisposeEvent event) {
       if (this.file != null) {
          this.file.deleteObserver(this);
       }

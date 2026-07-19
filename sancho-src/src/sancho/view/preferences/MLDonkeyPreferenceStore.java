@@ -7,66 +7,66 @@ import sancho.model.mldonkey.OptionCollection;
 public class MLDonkeyPreferenceStore extends PreferenceStore {
    private OptionCollection optionCollection;
 
-   public boolean contains(String var1) {
-      return this.optionCollection.containsKey(var1);
+   public boolean contains(String name) {
+      return this.optionCollection.containsKey(name);
    }
 
-   public Option getOption(String var1) {
-      return (Option)this.optionCollection.get(var1);
+   public Option getOption(String name) {
+      return (Option)this.optionCollection.get(name);
    }
 
-   public boolean getBoolean(String var1) {
-      return this.contains(var1) ? Boolean.valueOf(this.getOption(var1).getValue()) : false;
+   public boolean getBoolean(String name) {
+      return this.contains(name) ? Boolean.valueOf(this.getOption(name).getValue()) : false;
    }
 
-   public boolean getDefaultBoolean(String var1) {
-      return this.contains(var1) ? Boolean.valueOf(this.getOption(var1).getDefaultValue()) : false;
+   public boolean getDefaultBoolean(String name) {
+      return this.contains(name) ? Boolean.valueOf(this.getOption(name).getDefaultValue()) : false;
    }
 
-   public int getDefaultInt(String var1) {
+   public int getDefaultInt(String name) {
       try {
-         return this.contains(var1) ? Integer.parseInt(this.getOption(var1).getDefaultValue()) : 0;
-      } catch (Exception var3) {
+         return this.contains(name) ? Integer.parseInt(this.getOption(name).getDefaultValue()) : 0;
+      } catch (Exception exception) {
          return 0;
       }
    }
 
-   public String getDefaultString(String var1) {
-      return this.contains(var1) ? this.getOption(var1).getDefaultValue() : "";
+   public String getDefaultString(String name) {
+      return this.contains(name) ? this.getOption(name).getDefaultValue() : "";
    }
 
-   public int getInt(String var1) {
+   public int getInt(String name) {
       try {
-         return this.contains(var1) ? Integer.parseInt(this.getOption(var1).getValue()) : 0;
-      } catch (Exception var3) {
+         return this.contains(name) ? Integer.parseInt(this.getOption(name).getValue()) : 0;
+      } catch (Exception exception) {
          return 0;
       }
    }
 
-   public String getString(String var1) {
-      return this.contains(var1) ? this.getOption(var1).getValue() : "";
+   public String getString(String name) {
+      return this.contains(name) ? this.getOption(name).getValue() : "";
    }
 
-   public void setInput(OptionCollection var1) {
-      this.optionCollection = var1;
+   public void setInput(OptionCollection optionCollection) {
+      this.optionCollection = optionCollection;
    }
 
-   public void setToDefault(String var1) {
-      this.setValue(var1, this.getDefaultString(var1));
+   public void setToDefault(String name) {
+      this.setValue(name, this.getDefaultString(name));
    }
 
-   public void setValue(String var1, boolean var2) {
-      this.setValue(var1, var2 ? "true" : "false");
+   public void setValue(String name, boolean value) {
+      this.setValue(name, value ? "true" : "false");
    }
 
-   public void setValue(String var1, int var2) {
-      this.setValue(var1, String.valueOf(var2));
+   public void setValue(String name, int value) {
+      this.setValue(name, String.valueOf(value));
    }
 
-   public void setValue(String var1, String var2) {
-      String var3 = this.getString(var1);
-      if (var3 == null || !var3.equals(var2)) {
-         this.getOption(var1).setValue(var2);
+   public void setValue(String name, String value) {
+      String currentValue = this.getString(name);
+      if (currentValue == null || !currentValue.equals(value)) {
+         this.getOption(name).setValue(value);
       }
    }
 }

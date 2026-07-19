@@ -5,24 +5,24 @@ import sancho.model.mldonkey.Room;
 import sancho.view.viewer.GSorter;
 
 public class RoomsTableSorter extends GSorter {
-   public RoomsTableSorter(RoomsTableView var1) {
-      super(var1);
+   public RoomsTableSorter(RoomsTableView view) {
+      super(view);
    }
 
-   protected int _compare(Viewer var1, Object var2, Object var3, int var4) {
-      Room var5 = (Room)var2;
-      Room var6 = (Room)var3;
-      switch (var4) {
+   protected int _compare(Viewer viewer, Object element1, Object element2, int columnId) {
+      Room room1 = (Room)element1;
+      Room room2 = (Room)element2;
+      switch (columnId) {
          case 0:
-            return this.compareStrings(var5.getName(), var6.getName());
+            return this.compareStrings(room1.getName(), room2.getName());
          case 1:
-            return this.compareInts(var5.getNumUsers(), var6.getNumUsers());
+            return this.compareInts(room1.getNumUsers(), room2.getNumUsers());
          case 2:
-            return this.compareStrings(var5.getRoomState().getName(), var6.getRoomState().getName());
+            return this.compareStrings(room1.getRoomState().getName(), room2.getRoomState().getName());
          case 3:
-            return this.compareStrings(var5.getNetworkName(), var6.getNetworkName());
+            return this.compareStrings(room1.getNetworkName(), room2.getNetworkName());
          case 4:
-            return this.compareInts(var5.getId(), var6.getId());
+            return this.compareInts(room1.getId(), room2.getId());
          default:
             return 0;
       }

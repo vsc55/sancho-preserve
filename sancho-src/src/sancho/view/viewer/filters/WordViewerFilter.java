@@ -9,14 +9,14 @@ public class WordViewerFilter extends ViewerFilter {
    public static final int PROFANITY_FILTER_TYPE = 1;
    public static final int PORNOGRAPHY_FILTER_TYPE = 2;
 
-   public WordViewerFilter(int var1) {
-      this.wordFilterType = var1;
+   public WordViewerFilter(int wordFilterType) {
+      this.wordFilterType = wordFilterType;
    }
 
-   public boolean select(Viewer var1, Object var2, Object var3) {
-      if (var3 instanceof Result) {
-         Result var4 = (Result)var3;
-         if (this.wordFilterType == 1 && var4.containsProfanity() || this.wordFilterType == 2 && var4.containsPornography()) {
+   public boolean select(Viewer viewer, Object parentElement, Object element) {
+      if (element instanceof Result) {
+         Result result = (Result)element;
+         if (this.wordFilterType == 1 && result.containsProfanity() || this.wordFilterType == 2 && result.containsPornography()) {
             return false;
          }
       }

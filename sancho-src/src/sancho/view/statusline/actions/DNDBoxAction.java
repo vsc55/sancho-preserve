@@ -7,10 +7,10 @@ import sancho.view.utility.SResources;
 public class DNDBoxAction extends Action {
    MainWindow mainWindow;
 
-   public DNDBoxAction(MainWindow var1) {
+   public DNDBoxAction(MainWindow mainWindow) {
       super(SResources.getString("l.toggleDNDBox"));
       this.setImageDescriptor(SResources.getImageDescriptor("rotate"));
-      this.mainWindow = var1;
+      this.mainWindow = mainWindow;
    }
 
    public void run() {

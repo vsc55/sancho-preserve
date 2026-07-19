@@ -9,8 +9,8 @@ public class ExclusionStateFilterAction extends AbstractFilterAction {
    // $VF: synthetic field
    static Class class$sancho$view$viewer$filters$ExclusionStateViewerFilter;
 
-   public ExclusionStateFilterAction(String var1, GView var2, AbstractEnum var3) {
-      super(var1, 2, var2, var3);
+   public ExclusionStateFilterAction(String name, GView gView, AbstractEnum abstractEnum) {
+      super(name, 2, gView, abstractEnum);
       this.filterClass = class$sancho$view$viewer$filters$ExclusionStateViewerFilter == null
          ? (class$sancho$view$viewer$filters$ExclusionStateViewerFilter = class$("sancho.view.viewer.filters.ExclusionStateViewerFilter"))
          : class$sancho$view$viewer$filters$ExclusionStateViewerFilter;
@@ -29,11 +29,11 @@ public class ExclusionStateFilterAction extends AbstractFilterAction {
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException classNotFoundException) {
+         throw new NoClassDefFoundError(classNotFoundException.getMessage());
       }
    }
 }

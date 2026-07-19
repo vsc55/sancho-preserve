@@ -7,10 +7,10 @@ import sancho.view.utility.SResources;
 public class PreferencesAction extends Action {
    MainWindow mainWindow;
 
-   public PreferencesAction(MainWindow var1) {
+   public PreferencesAction(MainWindow mainWindow) {
       super(SResources.getString("menu.tools.preferences"));
       this.setImageDescriptor(SResources.getImageDescriptor("preferences"));
-      this.mainWindow = var1;
+      this.mainWindow = mainWindow;
    }
 
    public void run() {

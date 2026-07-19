@@ -20,41 +20,41 @@ public class HeaderBarMouseAdapter extends MouseAdapter {
    private CLabel cLabel;
    private MenuManager menuManager;
 
-   public HeaderBarMouseAdapter(CLabel var1, MenuManager var2) {
-      this.cLabel = var1;
-      this.menuManager = var2;
+   public HeaderBarMouseAdapter(CLabel cLabel, MenuManager menuManager) {
+      this.cLabel = cLabel;
+      this.menuManager = menuManager;
    }
 
-   private boolean overImage(int var1) {
-      return var1 < this.cLabel.getImage().getBounds().width;
+   private boolean overImage(int x) {
+      return x < this.cLabel.getImage().getBounds().width;
    }
 
-   private void addCopyItem(Menu var1) {
-      var1.addMenuListener(new MenuAdapter() {
+   private void addCopyItem(Menu menu) {
+      menu.addMenuListener(new MenuAdapter() {
          Font oldFont = HeaderBarMouseAdapter.this.cLabel.getFont();
          Font boldFont;
 
-         public void menuShown(MenuEvent var1) {
-            Menu var2 = (Menu)var1.widget;
-            FontData[] var3 = this.oldFont.getFontData();
+         public void menuShown(MenuEvent event) {
+            Menu menu = (Menu)event.widget;
+            FontData[] fontData = this.oldFont.getFontData();
 
-            for (int var4 = 0; var4 < var3.length; var4++) {
-               var3[var4].setStyle(1);
+            for (int i = 0; i < fontData.length; i++) {
+               fontData[i].setStyle(1);
             }
 
-            this.boldFont = new Font(null, var3);
+            this.boldFont = new Font(null, fontData);
             HeaderBarMouseAdapter.this.cLabel.setFont(this.boldFont);
-            new MenuItem(var2, 2);
-            HeaderBarMouseAdapter.this.addMenuItem(var2, "mi.copy", "copy", new SelectionAdapter() {
-               public void widgetSelected(SelectionEvent var1) {
+            new MenuItem(menu, 2);
+            HeaderBarMouseAdapter.this.addMenuItem(menu, "mi.copy", "copy", new SelectionAdapter() {
+               public void widgetSelected(SelectionEvent event) {
                   MainWindow.copyToClipboard(HeaderBarMouseAdapter.this.cLabel.getText());
                }
             });
          }
 
-         public void menuHidden(MenuEvent var1) {
-            Menu var2 = (Menu)var1.widget;
-            var2.removeMenuListener(this);
+         public void menuHidden(MenuEvent event) {
+            Menu menu = (Menu)event.widget;
+            menu.removeMenuListener(this);
             HeaderBarMouseAdapter.this.cLabel.setFont(this.oldFont);
             if (this.boldFont != null && !this.boldFont.isDisposed()) {
                this.boldFont.dispose();
@@ -63,35 +63,35 @@ public class HeaderBarMouseAdapter extends MouseAdapter {
       });
    }
 
-   private void showMenu(Point var1, boolean var2) {
-      Menu var3 = this.menuManager.createContextMenu(this.cLabel);
-      if (var2) {
-         this.addCopyItem(var3);
+   private void showMenu(Point point, boolean addCopy) {
+      Menu menu = this.menuManager.createContextMenu(this.cLabel);
+      if (addCopy) {
+         this.addCopyItem(menu);
       }
 
-      var3.setLocation(var1);
-      var3.setVisible(true);
+      menu.setLocation(point);
+      menu.setVisible(true);
    }
 
-   public void addMenuItem(Menu var1, String var2, String var3, SelectionAdapter var4) {
-      MenuItem var5 = new MenuItem(var1, 0);
-      var5.setText(SResources.getString(var2));
-      var5.setImage(SResources.getImage(var3));
-      var5.addSelectionListener(var4);
+   public void addMenuItem(Menu menu, String textKey, String imageKey, SelectionAdapter listener) {
+      MenuItem menuItem = new MenuItem(menu, 0);
+      menuItem.setText(SResources.getString(textKey));
+      menuItem.setImage(SResources.getImage(imageKey));
+      menuItem.addSelectionListener(listener);
    }
 
-   public void mouseDown(MouseEvent var1) {
-      boolean var2 = false;
-      if (var1.button == 1 && this.overImage(var1.x) || var1.button == 3) {
-         Point var3;
-         if (var1.button == 1) {
-            var3 = new Point(0, this.cLabel.getBounds().height);
+   public void mouseDown(MouseEvent event) {
+      boolean addCopy = false;
+      if (event.button == 1 && this.overImage(event.x) || event.button == 3) {
+         Point point;
+         if (event.button == 1) {
+            point = new Point(0, this.cLabel.getBounds().height);
          } else {
-            var3 = new Point(var1.x, var1.y);
-            var2 = true;
+            point = new Point(event.x, event.y);
+            addCopy = true;
          }
 
-         this.showMenu(((CLabel)var1.widget).toDisplay(var3), var2);
+         this.showMenu(((CLabel)event.widget).toDisplay(point), addCopy);
       }
    }
 

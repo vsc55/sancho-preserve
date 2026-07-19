@@ -18,9 +18,9 @@ public class Minimizer implements MyObserver {
       return this.isRestoring;
    }
 
-   public Minimizer(MainWindow var1, String var2) {
-      this.shell = var1.getShell();
-      this.titleBarText = var2;
+   public Minimizer(MainWindow mainWindow, String titleBarText) {
+      this.shell = mainWindow.getShell();
+      this.titleBarText = titleBarText;
    }
 
    public void setTitleBarText() {
@@ -35,11 +35,11 @@ public class Minimizer implements MyObserver {
       return true;
    }
 
-   public void setConnected(boolean var1) {
+   public void setConnected(boolean connected) {
       this.setTitleBarText();
    }
 
-   public boolean minimize(boolean var1) {
+   public boolean minimize(boolean force) {
       if (Sancho.hasCollectionFactory()) {
          Sancho.getCore().getClientStats().addObserver(this);
       }
@@ -62,14 +62,14 @@ public class Minimizer implements MyObserver {
       this.setTitleBarText();
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
-      if (var1 instanceof ClientStats) {
-         final ClientStats var4 = (ClientStats)var1;
+   public void update(MyObservable observable, Object arg, int id) {
+      if (observable instanceof ClientStats) {
+         final ClientStats clientStats = (ClientStats)observable;
          if (this.shell != null && !this.shell.isDisposed()) {
             this.shell.getDisplay().asyncExec(new Runnable() {
                public void run() {
                   if (Minimizer.this.shell != null && !Minimizer.this.shell.isDisposed() && Minimizer.this.shell.getMinimized()) {
-                     Minimizer.this.setTitleBar(var4);
+                     Minimizer.this.setTitleBar(clientStats);
                   }
                }
             });
@@ -77,19 +77,19 @@ public class Minimizer implements MyObserver {
       }
    }
 
-   public void setTitleBar(ClientStats var1) {
-      StringBuffer var2 = new StringBuffer(32);
-      var2.append("(");
-      var2.append("D:");
-      var2.append(var1.getTcpDownRateStringS());
-      var2.append(")");
-      var2.append("(");
-      var2.append("U:");
-      var2.append(var1.getTcpUpRateStringS());
-      var2.append(")");
-      var2.append("(");
-      var2.append(Sancho.getCoreFactory().getDescription());
-      var2.append(")");
-      this.shell.setText(var2.toString());
+   public void setTitleBar(ClientStats clientStats) {
+      StringBuffer buffer = new StringBuffer(32);
+      buffer.append("(");
+      buffer.append("D:");
+      buffer.append(clientStats.getTcpDownRateStringS());
+      buffer.append(")");
+      buffer.append("(");
+      buffer.append("U:");
+      buffer.append(clientStats.getTcpUpRateStringS());
+      buffer.append(")");
+      buffer.append("(");
+      buffer.append(Sancho.getCoreFactory().getDescription());
+      buffer.append(")");
+      this.shell.setText(buffer.toString());
    }
 }

@@ -39,52 +39,52 @@ public class HostPage extends WizardPage {
    }
 
    public void addAsNew() {
-      HostObject var1 = new HostObject();
-      this.saveCurrent(var1);
-      this.hostArray.add(var1);
+      HostObject hostObject = new HostObject();
+      this.saveCurrent(hostObject);
+      this.hostArray.add(hostObject);
       this.fillList();
       this.list.setSelection(this.list.getItemCount() - 1);
       this.resetInfo();
    }
 
-   public Label addLabel(Composite var1, String var2) {
-      Label var3 = new Label(var1, 0);
-      var3.setText(var2);
-      var3.setLayoutData(new GridData());
-      return var3;
+   public Label addLabel(Composite composite, String text) {
+      Label label = new Label(composite, 0);
+      label.setText(text);
+      label.setLayoutData(new GridData());
+      return label;
    }
 
-   public void createControl(Composite var1) {
-      Composite var2 = new Composite(var1, 0);
-      var2.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 0, 0, false));
+   public void createControl(Composite parent) {
+      Composite composite = new Composite(parent, 0);
+      composite.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 0, 0, false));
       this.loadHosts();
-      this.createMyControl(var2);
+      this.createMyControl(composite);
       this.fillList();
       this.list.setSelection(0);
       this.resetInfo();
-      this.setControl(var2);
+      this.setControl(composite);
    }
 
-   public Combo createCore(Composite var1, String var2, String var3) {
-      this.addLabel(var1, var2);
-      Combo var4 = new Combo(var1, 2056);
-      var4.add("mldonkey");
-      var4.select(0);
-      var4.setLayoutData(new GridData(768));
-      this.addLabel(var1, var3);
-      return var4;
+   public Combo createCore(Composite composite, String labelText, String hintText) {
+      this.addLabel(composite, labelText);
+      Combo combo = new Combo(composite, 2056);
+      combo.add("mldonkey");
+      combo.select(0);
+      combo.setLayoutData(new GridData(768));
+      this.addLabel(composite, hintText);
+      return combo;
    }
 
-   protected void createMyControl(Composite var1) {
-      Group var3 = new Group(var1, 16);
-      var3.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
-      GridData var4 = new GridData(768);
-      var4.horizontalSpan = 2;
-      var3.setLayoutData(var4);
-      Label var5 = new Label(var3, 0);
-      var5.setText(SResources.getString("hm.message"));
-      var5.setLayoutData(new GridData(768));
-      this.group = new Group(var1, 16);
+   protected void createMyControl(Composite parent) {
+      Group messageGroup = new Group(parent, 16);
+      messageGroup.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
+      GridData gridData = new GridData(768);
+      gridData.horizontalSpan = 2;
+      messageGroup.setLayoutData(gridData);
+      Label label = new Label(messageGroup, 0);
+      label.setText(SResources.getString("hm.message"));
+      label.setLayoutData(new GridData(768));
+      this.group = new Group(parent, 16);
       this.group.setText(SResources.getString("hm.hostSettings"));
       this.group.setLayout(WidgetFactory.createGridLayout(3, 5, 5, 5, 2, false));
       this.group.setLayoutData(new GridData(768));
@@ -99,55 +99,55 @@ public class HostPage extends WizardPage {
          this.group, SResources.getString("hm.description"), SResources.getString("l.default") + " = " + SResources.getString("l.empty")
       );
       this.core = this.createCore(this.group, SResources.getString("hm.protocol"), SResources.getString("l.default") + " = mldonkey");
-      Composite var6 = new Composite(var1, 0);
-      var6.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
-      var6.setLayoutData(new GridData(768));
-      this.list = new org.eclipse.swt.widgets.List(var6, 2816);
-      GridData var2 = new GridData(1808);
-      var2.heightHint = 60;
-      var2.widthHint = 120;
-      var2.horizontalSpan = 2;
-      this.list.setLayoutData(var2);
+      Composite listComposite = new Composite(parent, 0);
+      listComposite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
+      listComposite.setLayoutData(new GridData(768));
+      this.list = new org.eclipse.swt.widgets.List(listComposite, 2816);
+      GridData listGridData = new GridData(1808);
+      listGridData.heightHint = 60;
+      listGridData.widthHint = 120;
+      listGridData.horizontalSpan = 2;
+      this.list.setLayoutData(listGridData);
       this.list.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             resetInfo();
          }
       });
-      Button var7 = new Button(var6, 8);
-      var7.setLayoutData(new GridData(256));
-      var7.setText(SResources.getString("b.addAsNewEntry"));
-      var7.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      Button addButton = new Button(listComposite, 8);
+      addButton.setLayoutData(new GridData(256));
+      addButton.setText(SResources.getString("b.addAsNewEntry"));
+      addButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             addAsNew();
          }
       });
-      Button var8 = new Button(var6, 8);
-      var8.setLayoutData(new GridData(256));
-      var8.setText(SResources.getString("b.deleteEntry"));
-      var8.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      Button deleteButton = new Button(listComposite, 8);
+      deleteButton.setLayoutData(new GridData(256));
+      deleteButton.setText(SResources.getString("b.deleteEntry"));
+      deleteButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             if (list.getSelectionIndex() != 0) {
                removeCurrent();
             }
          }
       });
-      Button var9 = new Button(var6, 8);
-      var4 = new GridData(768);
-      var4.horizontalSpan = 2;
-      var9.setLayoutData(var4);
-      var9.setText(SResources.getString("b.saveAsCurrent"));
-      var9.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      Button saveButton = new Button(listComposite, 8);
+      gridData = new GridData(768);
+      gridData.horizontalSpan = 2;
+      saveButton.setLayoutData(gridData);
+      saveButton.setText(SResources.getString("b.saveAsCurrent"));
+      saveButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             saveAsCurrent();
          }
       });
-      Button var10 = new Button(var6, 8);
-      var4 = new GridData(768);
-      var4.horizontalSpan = 2;
-      var10.setLayoutData(var4);
-      var10.setText(SResources.getString("b.makeDefault"));
-      var10.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      Button defaultButton = new Button(listComposite, 8);
+      gridData = new GridData(768);
+      gridData.horizontalSpan = 2;
+      defaultButton.setLayoutData(gridData);
+      defaultButton.setText(SResources.getString("b.makeDefault"));
+      defaultButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             if (list.getSelectionIndex() != 0) {
                makeDefault();
             }
@@ -155,184 +155,184 @@ public class HostPage extends WizardPage {
       });
    }
 
-   public BSpinner createPort(Composite var1, String var2, String var3) {
-      this.addLabel(var1, var2);
-      BSpinner var4 = new BSpinner(var1, 2048);
-      var4.setMaximum(65536);
-      var4.setLayoutData(new GridData(768));
-      this.addLabel(var1, var3);
-      return var4;
+   public BSpinner createPort(Composite composite, String labelText, String hintText) {
+      this.addLabel(composite, labelText);
+      BSpinner spinner = new BSpinner(composite, 2048);
+      spinner.setMaximum(65536);
+      spinner.setLayoutData(new GridData(768));
+      this.addLabel(composite, hintText);
+      return spinner;
    }
 
-   public SpinnerLabel createPort2(Composite var1, String var2, String var3) {
-      SpinnerLabel var4 = new SpinnerLabel();
-      var4.addLabel(this.addLabel(var1, var2));
-      BSpinner var5 = new BSpinner(var1, 2048);
-      var5.setMaximum(65536);
-      var5.setLayoutData(new GridData(768));
-      var4.addSpinner(var5);
-      this.addLabel(var1, var3);
-      return var4;
+   public SpinnerLabel createPort2(Composite composite, String labelText, String hintText) {
+      SpinnerLabel spinnerLabel = new SpinnerLabel();
+      spinnerLabel.addLabel(this.addLabel(composite, labelText));
+      BSpinner spinner = new BSpinner(composite, 2048);
+      spinner.setMaximum(65536);
+      spinner.setLayoutData(new GridData(768));
+      spinnerLabel.addSpinner(spinner);
+      this.addLabel(composite, hintText);
+      return spinnerLabel;
    }
 
-   public Button createCheck(Composite var1, String var2, String var3) {
-      this.addLabel(var1, "");
-      Composite var4 = new Composite(var1, 0);
-      GridData var5 = new GridData(768);
-      var5.horizontalSpan = 2;
-      var4.setLayoutData(var5);
-      var4.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 5, 0, false));
-      Button var6 = new Button(var4, 32);
-      this.addLabel(var4, var2);
-      return var6;
+   public Button createCheck(Composite composite, String labelText, String hintText) {
+      this.addLabel(composite, "");
+      Composite checkComposite = new Composite(composite, 0);
+      GridData gridData = new GridData(768);
+      gridData.horizontalSpan = 2;
+      checkComposite.setLayoutData(gridData);
+      checkComposite.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 5, 0, false));
+      Button button = new Button(checkComposite, 32);
+      this.addLabel(checkComposite, labelText);
+      return button;
    }
 
-   public Text createText(Composite var1, String var2, String var3) {
-      return this.createText(var1, var2, var3, false);
+   public Text createText(Composite composite, String labelText, String hintText) {
+      return this.createText(composite, labelText, hintText, false);
    }
 
-   public Text createText(Composite var1, String var2, String var3, boolean var4) {
-      this.addLabel(var1, var2);
-      Text var5 = new Text(var1, 2052 | (var4 ? 4194304 : 0));
-      var5.setLayoutData(new GridData(768));
-      this.addLabel(var1, var3);
-      return var5;
+   public Text createText(Composite composite, String labelText, String hintText, boolean isPassword) {
+      this.addLabel(composite, labelText);
+      Text text = new Text(composite, 2052 | (isPassword ? 4194304 : 0));
+      text.setLayoutData(new GridData(768));
+      this.addLabel(composite, hintText);
+      return text;
    }
 
-   public TextLabel createText2(Composite var1, String var2, String var3) {
-      return this.createText2(var1, var2, var3, false);
+   public TextLabel createText2(Composite composite, String labelText, String hintText) {
+      return this.createText2(composite, labelText, hintText, false);
    }
 
-   public TextLabel createText2(Composite var1, String var2, String var3, boolean var4) {
-      TextLabel var5 = new TextLabel();
-      var5.addLabel(this.addLabel(var1, var2));
-      Text var6 = new Text(var1, 2052 | (var4 ? 4194304 : 0));
-      var6.setLayoutData(new GridData(768));
-      this.addLabel(var1, var3);
-      var5.addText(var6);
-      return var5;
+   public TextLabel createText2(Composite composite, String labelText, String hintText, boolean isPassword) {
+      TextLabel textLabel = new TextLabel();
+      textLabel.addLabel(this.addLabel(composite, labelText));
+      Text text = new Text(composite, 2052 | (isPassword ? 4194304 : 0));
+      text.setLayoutData(new GridData(768));
+      this.addLabel(composite, hintText);
+      textLabel.addText(text);
+      return textLabel;
    }
 
    public void fillList() {
       this.list.removeAll();
 
-      for (int var1 = 0; var1 < this.hostArray.size(); var1++) {
-         HostObject var2 = (HostObject)this.hostArray.get(var1);
-         String var3 = var2.description.equals("") ? var2.hostname + ":" + var2.port : var2.description;
-         this.list.add(var1 == 0 ? SResources.getString("l.default") + "(" + var3 + ")" : var3);
+      for (int i = 0; i < this.hostArray.size(); i++) {
+         HostObject hostObject = (HostObject)this.hostArray.get(i);
+         String label = hostObject.description.equals("") ? hostObject.hostname + ":" + hostObject.port : hostObject.description;
+         this.list.add(i == 0 ? SResources.getString("l.default") + "(" + label + ")" : label);
       }
    }
 
-   public void loadHost(HostObject var1, int var2) {
-      var1.hostname = PreferenceLoader.loadString("hm_" + var2 + "_hostname");
-      var1.username = PreferenceLoader.loadString("hm_" + var2 + "_username");
-      var1.password = PreferenceLoader.loadString("hm_" + var2 + "_password");
-      var1.port = PreferenceLoader.loadInt("hm_" + var2 + "_port");
-      var1.description = PreferenceLoader.loadString("hm_" + var2 + "_description");
-      var1.coreProtocol = PreferenceLoader.loadInt("hm_" + var2 + "_coreProtocol");
-      var1.ask_pass = PreferenceLoader.loadBoolean("hm_" + var2 + "_ask_pass");
+   public void loadHost(HostObject hostObject, int index) {
+      hostObject.hostname = PreferenceLoader.loadString("hm_" + index + "_hostname");
+      hostObject.username = PreferenceLoader.loadString("hm_" + index + "_username");
+      hostObject.password = PreferenceLoader.loadString("hm_" + index + "_password");
+      hostObject.port = PreferenceLoader.loadInt("hm_" + index + "_port");
+      hostObject.description = PreferenceLoader.loadString("hm_" + index + "_description");
+      hostObject.coreProtocol = PreferenceLoader.loadInt("hm_" + index + "_coreProtocol");
+      hostObject.ask_pass = PreferenceLoader.loadBoolean("hm_" + index + "_ask_pass");
    }
 
    public void loadHosts() {
-      for (int var1 = 0; var1 <= 0 || PreferenceLoader.contains("hm_" + var1 + "_hostname"); var1++) {
-         HostObject var2 = new HostObject();
-         this.loadHost(var2, var1);
-         this.hostArray.add(var2);
+      for (int index = 0; index <= 0 || PreferenceLoader.contains("hm_" + index + "_hostname"); index++) {
+         HostObject hostObject = new HostObject();
+         this.loadHost(hostObject, index);
+         this.hostArray.add(hostObject);
       }
 
       this.initialNumHosts = this.hostArray.size();
    }
 
    public void makeDefault() {
-      HostObject var1 = (HostObject)this.hostArray.get(this.list.getSelectionIndex());
+      HostObject hostObject = (HostObject)this.hostArray.get(this.list.getSelectionIndex());
       this.hostArray.remove(this.list.getSelectionIndex());
-      this.hostArray.add(0, var1);
+      this.hostArray.add(0, hostObject);
       this.fillList();
       this.list.setSelection(0);
       this.resetInfo();
    }
 
    public void removeCurrent() {
-      int var1 = this.list.getSelectionIndex();
-      this.hostArray.remove(var1);
+      int index = this.list.getSelectionIndex();
+      this.hostArray.remove(index);
       this.fillList();
-      int var2 = this.list.getItemCount() > var1 ? var1 : var1 - 1;
-      this.list.setSelection(var2);
+      int selection = this.list.getItemCount() > index ? index : index - 1;
+      this.list.setSelection(selection);
       this.resetInfo();
    }
 
    public void resetInfo() {
       this.hm_num = this.list.getSelectionIndex();
-      HostObject var1 = (HostObject)this.hostArray.get(this.hm_num);
-      this.resetInfo(var1);
+      HostObject hostObject = (HostObject)this.hostArray.get(this.hm_num);
+      this.resetInfo(hostObject);
    }
 
-   public void resetInfo(HostObject var1) {
-      this.host.setText(var1.hostname);
-      this.port.setSelection(var1.port);
-      this.user.setText(var1.username);
-      this.pass.setText(var1.password);
-      this.desc.setText(var1.description);
-      this.core.select(var1.coreProtocol);
-      this.ask_pass.setSelection(var1.ask_pass);
-      String var2 = var1.description.equals("") ? var1.hostname + ":" + var1.port : var1.description;
-      this.group.setText(SResources.getString("hm.hostSettings") + var2);
+   public void resetInfo(HostObject hostObject) {
+      this.host.setText(hostObject.hostname);
+      this.port.setSelection(hostObject.port);
+      this.user.setText(hostObject.username);
+      this.pass.setText(hostObject.password);
+      this.desc.setText(hostObject.description);
+      this.core.select(hostObject.coreProtocol);
+      this.ask_pass.setSelection(hostObject.ask_pass);
+      String label = hostObject.description.equals("") ? hostObject.hostname + ":" + hostObject.port : hostObject.description;
+      this.group.setText(SResources.getString("hm.hostSettings") + label);
    }
 
    public void saveAsCurrent() {
-      int var1 = this.list.getSelectionIndex();
-      HostObject var2 = (HostObject)this.hostArray.get(this.list.getSelectionIndex());
-      this.saveCurrent(var2);
+      int index = this.list.getSelectionIndex();
+      HostObject hostObject = (HostObject)this.hostArray.get(this.list.getSelectionIndex());
+      this.saveCurrent(hostObject);
       this.fillList();
-      this.list.setSelection(var1);
+      this.list.setSelection(index);
       this.resetInfo();
    }
 
-   public void saveCurrent(HostObject var1) {
-      var1.hostname = this.host.getText();
-      var1.password = this.pass.getText();
-      var1.username = this.user.getText();
-      var1.port = this.port.getSelection();
-      var1.description = this.desc.getText();
-      var1.coreProtocol = this.core.getSelectionIndex();
-      var1.ask_pass = this.ask_pass.getSelection();
+   public void saveCurrent(HostObject hostObject) {
+      hostObject.hostname = this.host.getText();
+      hostObject.password = this.pass.getText();
+      hostObject.username = this.user.getText();
+      hostObject.port = this.port.getSelection();
+      hostObject.description = this.desc.getText();
+      hostObject.coreProtocol = this.core.getSelectionIndex();
+      hostObject.ask_pass = this.ask_pass.getSelection();
    }
 
    public void saveData() {
       this.saveAsCurrent();
-      PreferenceStore var1 = PreferenceLoader.getPreferenceStore();
-      int var2 = Math.max(this.initialNumHosts, this.hostArray.size());
+      PreferenceStore store = PreferenceLoader.getPreferenceStore();
+      int count = Math.max(this.initialNumHosts, this.hostArray.size());
 
-      for (int var3 = 0; var3 < var2; var3++) {
-         if (var3 < this.hostArray.size()) {
-            HostObject var4 = (HostObject)this.hostArray.get(var3);
-            this.setValue(var1, var3, var4);
+      for (int i = 0; i < count; i++) {
+         if (i < this.hostArray.size()) {
+            HostObject hostObject = (HostObject)this.hostArray.get(i);
+            this.setValue(store, i, hostObject);
          } else {
-            this.setToDefault(var1, var3);
+            this.setToDefault(store, i);
          }
       }
 
       PreferenceLoader.saveStore();
    }
 
-   public void setToDefault(PreferenceStore var1, int var2) {
-      var1.setToDefault("hm_" + var2 + "_hostname");
-      var1.setToDefault("hm_" + var2 + "_port");
-      var1.setToDefault("hm_" + var2 + "_username");
-      var1.setToDefault("hm_" + var2 + "_password");
-      var1.setToDefault("hm_" + var2 + "_description");
-      var1.setToDefault("hm_" + var2 + "_coreProtocol");
-      var1.setToDefault("hm_" + var2 + "_ask_pass");
+   public void setToDefault(PreferenceStore store, int index) {
+      store.setToDefault("hm_" + index + "_hostname");
+      store.setToDefault("hm_" + index + "_port");
+      store.setToDefault("hm_" + index + "_username");
+      store.setToDefault("hm_" + index + "_password");
+      store.setToDefault("hm_" + index + "_description");
+      store.setToDefault("hm_" + index + "_coreProtocol");
+      store.setToDefault("hm_" + index + "_ask_pass");
    }
 
-   public void setValue(PreferenceStore var1, int var2, HostObject var3) {
-      var1.setValue("hm_" + var2 + "_hostname", var3.hostname);
-      var1.setValue("hm_" + var2 + "_port", var3.port);
-      var1.setValue("hm_" + var2 + "_username", var3.username);
-      var1.setValue("hm_" + var2 + "_password", var3.password);
-      var1.setValue("hm_" + var2 + "_description", var3.description);
-      var1.setValue("hm_" + var2 + "_coreProtocol", var3.coreProtocol);
-      var1.setValue("hm_" + var2 + "_ask_pass", var3.ask_pass);
+   public void setValue(PreferenceStore store, int index, HostObject hostObject) {
+      store.setValue("hm_" + index + "_hostname", hostObject.hostname);
+      store.setValue("hm_" + index + "_port", hostObject.port);
+      store.setValue("hm_" + index + "_username", hostObject.username);
+      store.setValue("hm_" + index + "_password", hostObject.password);
+      store.setValue("hm_" + index + "_description", hostObject.description);
+      store.setValue("hm_" + index + "_coreProtocol", hostObject.coreProtocol);
+      store.setValue("hm_" + index + "_ask_pass", hostObject.ask_pass);
    }
 
    public int getNum() {
@@ -344,25 +344,25 @@ public class HostPage extends WizardPage {
       BSpinner spinner;
       Label label;
 
-      public void addSpinner(BSpinner var1) {
-         this.spinner = var1;
+      public void addSpinner(BSpinner spinner) {
+         this.spinner = spinner;
       }
 
-      public void addLabel(Label var1) {
-         this.label = var1;
+      public void addLabel(Label label) {
+         this.label = label;
       }
 
-      public void setSelection(int var1) {
-         this.spinner.setSelection(var1);
+      public void setSelection(int selection) {
+         this.spinner.setSelection(selection);
       }
 
       public int getSelection() {
          return this.spinner.getSelection();
       }
 
-      public void setEnabled(boolean var1) {
-         this.spinner.setEnabled(var1);
-         this.label.setEnabled(var1);
+      public void setEnabled(boolean enabled) {
+         this.spinner.setEnabled(enabled);
+         this.label.setEnabled(enabled);
       }
    }
 
@@ -371,29 +371,29 @@ public class HostPage extends WizardPage {
       Text text;
       Label label;
 
-      public void setText(String var1) {
-         this.text.setText(var1);
+      public void setText(String text) {
+         this.text.setText(text);
       }
 
-      public void addText(Text var1) {
-         this.text = var1;
+      public void addText(Text text) {
+         this.text = text;
       }
 
-      public void addLabel(Label var1) {
-         this.label = var1;
+      public void addLabel(Label label) {
+         this.label = label;
       }
 
       public String getText() {
          return this.text.getText();
       }
 
-      public void setEchoChar(char var1) {
-         this.text.setEchoChar(var1);
+      public void setEchoChar(char echoChar) {
+         this.text.setEchoChar(echoChar);
       }
 
-      public void setEnabled(boolean var1) {
-         this.text.setEnabled(var1);
-         this.label.setEnabled(var1);
+      public void setEnabled(boolean enabled) {
+         this.text.setEnabled(enabled);
+         this.label.setEnabled(enabled);
       }
    }
 }

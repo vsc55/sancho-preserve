@@ -7,15 +7,15 @@ import sancho.view.viewFrame.SashViewListener;
 import sancho.view.viewer.actions.ColumnSelectorAction;
 
 public class NetworkStatsViewListener extends SashViewListener {
-   public NetworkStatsViewListener(SashViewFrame var1) {
-      super(var1);
+   public NetworkStatsViewListener(SashViewFrame viewFrame) {
+      super(viewFrame);
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
-      var1.add(new ColumnSelectorAction(this.gView));
-      var1.add(new Separator());
-      this.createDynamicColumnSubMenu(var1);
-      this.createSortByColumnSubMenu(var1);
-      this.createSashActions(var1, "tab.statistics");
+   public void menuAboutToShow(IMenuManager menuManager) {
+      menuManager.add(new ColumnSelectorAction(this.gView));
+      menuManager.add(new Separator());
+      this.createDynamicColumnSubMenu(menuManager);
+      this.createSortByColumnSubMenu(menuManager);
+      this.createSashActions(menuManager, "tab.statistics");
    }
 }

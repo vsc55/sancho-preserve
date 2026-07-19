@@ -6,35 +6,35 @@ import org.eclipse.swt.widgets.Spinner;
 public class BSpinner {
    Spinner spinner;
 
-   public BSpinner(Composite var1, int var2) {
-      this.spinner = new Spinner(var1, var2);
+   public BSpinner(Composite parent, int style) {
+      this.spinner = new Spinner(parent, style);
    }
 
-   public void setToolTipText(String var1) {
-      this.spinner.setToolTipText(var1);
+   public void setToolTipText(String text) {
+      this.spinner.setToolTipText(text);
    }
 
-   public void setEnabled(boolean var1) {
-      this.spinner.setEnabled(var1);
+   public void setEnabled(boolean enabled) {
+      this.spinner.setEnabled(enabled);
    }
 
-   public void setMinimum(int var1) {
-      this.spinner.setMinimum(var1);
+   public void setMinimum(int minimum) {
+      this.spinner.setMinimum(minimum);
    }
 
-   public void setMaximum(int var1) {
-      this.spinner.setMaximum(var1);
+   public void setMaximum(int maximum) {
+      this.spinner.setMaximum(maximum);
    }
 
    public int getSelection() {
       return this.spinner.getSelection();
    }
 
-   public void setSelection(int var1) {
-      this.spinner.setSelection(var1);
+   public void setSelection(int selection) {
+      this.spinner.setSelection(selection);
    }
 
-   public void setLayoutData(Object var1) {
-      this.spinner.setLayoutData(var1);
+   public void setLayoutData(Object layoutData) {
+      this.spinner.setLayoutData(layoutData);
    }
 }

@@ -31,18 +31,18 @@ public class CToolBar implements DisposeListener {
    private MainWindow mainWindow;
    private boolean toolbarSmallButtons;
 
-   public CToolBar(MainWindow var1, boolean var2) {
-      this.toolbarSmallButtons = var2;
+   public CToolBar(MainWindow mainWindow, boolean smallButtons) {
+      this.toolbarSmallButtons = smallButtons;
       this.coolbarLocked = true;
-      this.mainWindow = var1;
+      this.mainWindow = mainWindow;
       this.mainToolButtons = new ArrayList();
-      this.createContent(var1.getMainComposite());
+      this.createContent(mainWindow.getMainComposite());
    }
 
-   private void createContent(Composite var1) {
-      this.composite = new Composite(var1, 0);
-      GridLayout var2 = WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false);
-      this.composite.setLayout(var2);
+   private void createContent(Composite parent) {
+      this.composite = new Composite(parent, 0);
+      GridLayout gridLayout = WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false);
+      this.composite.setLayout(gridLayout);
       this.composite.setLayoutData(new GridData(768));
       this.createCoolBar();
       this.createToolBars();
@@ -56,43 +56,43 @@ public class CToolBar implements DisposeListener {
    }
 
    public void createCoolItems() {
-      for (int var1 = 0; var1 < this.coolbar.getItems().length; var1++) {
-         this.coolbar.getItems()[var1].dispose();
+      for (int i = 0; i < this.coolbar.getItems().length; i++) {
+         this.coolbar.getItems()[i].dispose();
       }
 
-      for (int var2 = 0; var2 < 1; var2++) {
+      for (int i = 0; i < 1; i++) {
          new CoolItem(this.coolbar, 0);
       }
 
-      CoolItem[] var3 = this.coolbar.getItems();
-      CoolItem var4 = var3[0];
-      var4.setControl(this.mainTools);
+      CoolItem[] items = this.coolbar.getItems();
+      CoolItem item = items[0];
+      item.setControl(this.mainTools);
    }
 
-   public MenuItem createMenuItem(Menu var1, int var2, boolean var3, String var4, SelectionAdapter var5) {
-      MenuItem var6 = new MenuItem(var1, var2);
-      var6.setText(SResources.getString(var4));
-      if (var3) {
-         var6.setSelection(var3);
+   public MenuItem createMenuItem(Menu menu, int style, boolean selected, String textKey, SelectionAdapter listener) {
+      MenuItem menuItem = new MenuItem(menu, style);
+      menuItem.setText(SResources.getString(textKey));
+      if (selected) {
+         menuItem.setSelection(selected);
       }
 
-      var6.addSelectionListener(var5);
-      return var6;
+      menuItem.addSelectionListener(listener);
+      return menuItem;
    }
 
    private Menu createToolBarRMMenu() {
-      Menu var1 = new Menu(this.mainWindow.getShell(), 8);
-      this.createMenuItem(var1, 32, this.toolbarSmallButtons, "mi.cb.small", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      Menu menu = new Menu(this.mainWindow.getShell(), 8);
+      this.createMenuItem(menu, 32, this.toolbarSmallButtons, "mi.cb.small", new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             CToolBar.this.toggleSmallButtons();
          }
       });
-      this.createMenuItem(var1, 0, false, "mi.cb.tabSelector", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      this.createMenuItem(menu, 0, false, "mi.cb.tabSelector", new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             CToolBar.this.mainWindow.configureTabs();
          }
       });
-      return var1;
+      return menu;
    }
 
    public void createToolBars() {
@@ -118,13 +118,13 @@ public class CToolBar implements DisposeListener {
    }
 
    public void layoutCoolBar() {
-      for (int var1 = 0; var1 < this.coolbar.getItemCount(); var1++) {
-         CoolItem var2 = this.coolbar.getItem(var1);
-         ToolBar var3 = (ToolBar)var2.getControl();
-         Point var4 = var3.computeSize(-1, -1);
-         var4 = var2.computeSize(var4.x, var4.y);
-         var2.setSize(var4);
-         var2.setMinimumSize(var4);
+      for (int i = 0; i < this.coolbar.getItemCount(); i++) {
+         CoolItem coolItem = this.coolbar.getItem(i);
+         ToolBar toolBar = (ToolBar)coolItem.getControl();
+         Point point = toolBar.computeSize(-1, -1);
+         point = coolItem.computeSize(point.x, point.y);
+         coolItem.setSize(point);
+         coolItem.setMinimumSize(point);
       }
 
       this.coolbar.getParent().layout();
@@ -138,12 +138,12 @@ public class CToolBar implements DisposeListener {
    }
 
    public void savePreferences() {
-      PreferenceStore var1 = PreferenceLoader.getPreferenceStore();
-      var1.setValue("toolbarSmallButtons", this.isToolbarSmallButtons());
+      PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+      preferenceStore.setValue("toolbarSmallButtons", this.isToolbarSmallButtons());
    }
 
-   public void setToolbarSmallButtons(boolean var1) {
-      this.toolbarSmallButtons = var1;
+   public void setToolbarSmallButtons(boolean smallButtons) {
+      this.toolbarSmallButtons = smallButtons;
    }
 
    private void toggleSmallButtons() {
@@ -153,16 +153,16 @@ public class CToolBar implements DisposeListener {
       this.createToolBars();
       this.createCoolItems();
 
-      for (Object var2o : this.mainToolButtons) { ToolButton var2 = (ToolButton)var2o;
-         var2.useSmallButtons(this.toolbarSmallButtons);
-         var2.resetItem(this.mainTools);
+      for (Object buttonObject : this.mainToolButtons) { ToolButton button = (ToolButton)buttonObject;
+         button.useSmallButtons(this.toolbarSmallButtons);
+         button.resetItem(this.mainTools);
       }
 
       this.layoutCoolBar();
       this.composite.getParent().layout();
    }
 
-   public void widgetDisposed(DisposeEvent var1) {
+   public void widgetDisposed(DisposeEvent disposeEvent) {
       this.savePreferences();
    }
 }

@@ -5,12 +5,12 @@ import sancho.view.viewFrame.ViewFrame;
 import sancho.view.viewFrame.ViewListener;
 
 public class FileCommentsViewListener extends ViewListener {
-   public FileCommentsViewListener(ViewFrame var1) {
-      super(var1);
+   public FileCommentsViewListener(ViewFrame viewFrame) {
+      super(viewFrame);
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
-      this.createDynamicColumnSubMenu(var1);
-      this.createSortByColumnSubMenu(var1);
+   public void menuAboutToShow(IMenuManager menuManager) {
+      this.createDynamicColumnSubMenu(menuManager);
+      this.createSortByColumnSubMenu(menuManager);
    }
 }

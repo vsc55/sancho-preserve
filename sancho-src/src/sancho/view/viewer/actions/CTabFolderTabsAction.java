@@ -9,10 +9,10 @@ public class CTabFolderTabsAction extends Action {
    String prefString;
    CTabFolder cTabFolder;
 
-   public CTabFolderTabsAction(CTabFolder var1, String var2) {
+   public CTabFolderTabsAction(CTabFolder cTabFolder, String prefString) {
       super(SResources.getString("mi.tabsOnTop"), 2);
-      this.cTabFolder = var1;
-      this.prefString = var2;
+      this.cTabFolder = cTabFolder;
+      this.prefString = prefString;
    }
 
    public boolean isChecked() {

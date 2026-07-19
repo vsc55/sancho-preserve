@@ -29,8 +29,8 @@ import sancho.view.viewFrame.TabbedViewFrame;
 public class UploadViewFrame extends TabbedViewFrame {
    ShareDialog shareDialog;
 
-   public UploadViewFrame(Composite var1, String var2, String var3, AbstractTab var4) {
-      super(var1, var2, var3, var4, "uploads");
+   public UploadViewFrame(Composite parent, String name, String text, AbstractTab tab) {
+      super(parent, name, text, tab, "uploads");
       this.gView = new UploadTableView(this);
       this.createViewListener(new UploadViewListener(this));
       this.createViewToolBar();
@@ -40,7 +40,7 @@ public class UploadViewFrame extends TabbedViewFrame {
    public void createViewToolBar() {
       super.createViewToolBar();
       this.addToolItem("ti.u.unshare", "minus", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             UploadViewFrame.this.shareDialog = UploadViewFrame.this.new ShareDialog(
                UploadViewFrame.this.gView.getShell(), SResources.getString("l.unshareDirectory"), false
             );
@@ -52,7 +52,7 @@ public class UploadViewFrame extends TabbedViewFrame {
          }
       });
       this.addToolItem("ti.u.share", "plus", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             UploadViewFrame.this.shareDialog = UploadViewFrame.this.new ShareDialog(
                UploadViewFrame.this.gView.getShell(), SResources.getString("l.shareDirectory"), true
             );
@@ -64,7 +64,7 @@ public class UploadViewFrame extends TabbedViewFrame {
          }
       });
       this.addToolItem("ti.u.reshare", "rotate", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             if (Sancho.hasCollectionFactory()) {
                UploadViewFrame.this.getCore().getSharedFileCollection().reshare();
             }
@@ -74,15 +74,15 @@ public class UploadViewFrame extends TabbedViewFrame {
       this.addRefine();
    }
 
-   public void sendShareCommand(boolean var1) {
+   public void sendShareCommand(boolean share) {
       if (this.shareDialog != null && !this.shareDialog.getDirectory().equals("") && Sancho.hasCollectionFactory()) {
-         String var2 = var1 ? "share " + this.shareDialog.getPriority() : "unshare";
-         var2 = var2 + " \"" + this.shareDialog.getDirectory() + "\"";
-         if (var1) {
-            var2 = var2 + " " + this.shareDialog.getStrategy();
+         String command = share ? "share " + this.shareDialog.getPriority() : "unshare";
+         command = command + " \"" + this.shareDialog.getDirectory() + "\"";
+         if (share) {
+            command = command + " " + this.shareDialog.getStrategy();
          }
 
-         Sancho.send((short)29, var2);
+         Sancho.send((short)29, command);
       }
    }
 
@@ -98,73 +98,73 @@ public class UploadViewFrame extends TabbedViewFrame {
       public int ADD_ID;
       private String strategy;
 
-      public ShareDialog(Shell var2, String var3, boolean var4) {
-         super(var2);
+      public ShareDialog(Shell shell, String title, boolean share) {
+         super(shell);
          this.ADD_ID = 999;
-         this.share = var4;
-         this.title = var3;
+         this.share = share;
+         this.title = title;
       }
 
-      protected void configureShell(Shell var1) {
-         super.configureShell(var1);
-         var1.setImage(VersionInfo.getProgramIcon());
-         var1.setText(this.title);
+      protected void configureShell(Shell shell) {
+         super.configureShell(shell);
+         shell.setImage(VersionInfo.getProgramIcon());
+         shell.setText(this.title);
       }
 
-      protected void createButtonsForButtonBar(Composite var1) {
-         this.createButton(var1, this.ADD_ID, SResources.getString("b.okNoClose"), false);
-         super.createButtonsForButtonBar(var1);
+      protected void createButtonsForButtonBar(Composite parent) {
+         this.createButton(parent, this.ADD_ID, SResources.getString("b.okNoClose"), false);
+         super.createButtonsForButtonBar(parent);
       }
 
-      protected Control createDialogArea(Composite var1) {
-         Composite var2 = (Composite)super.createDialogArea(var1);
-         var2.setLayout(WidgetFactory.createGridLayout(2, 10, 10, 10, 10, false));
-         this.dirText = new Text(var2, 2048);
+      protected Control createDialogArea(Composite parent) {
+         Composite composite = (Composite)super.createDialogArea(parent);
+         composite.setLayout(WidgetFactory.createGridLayout(2, 10, 10, 10, 10, false));
+         this.dirText = new Text(composite, 2048);
          this.dirText.setLayoutData(new GridData(768));
          this.activateDropTarget(this.dirText);
-         Button var3 = new Button(var2, 0);
-         var3.setText(SResources.getString("b.browse"));
-         var3.setLayoutData(new GridData(128));
-         var3.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent var1) {
-               Button var2 = (Button)var1.widget;
-               DirectoryDialog var3 = new DirectoryDialog(var2.getShell(), 0);
-               String var4;
-               if ((var4 = var3.open()) != null) {
-                  ShareDialog.this.dirText.setText(var4);
+         Button button = new Button(composite, 0);
+         button.setText(SResources.getString("b.browse"));
+         button.setLayoutData(new GridData(128));
+         button.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent event) {
+               Button button = (Button)event.widget;
+               DirectoryDialog directoryDialog = new DirectoryDialog(button.getShell(), 0);
+               String path;
+               if ((path = directoryDialog.open()) != null) {
+                  ShareDialog.this.dirText.setText(path);
                }
             }
          });
          if (this.share) {
-            GridData var4 = new GridData(768);
-            var4.horizontalSpan = 2;
-            Composite var5 = new Composite(var2, 0);
-            var5.setLayout(WidgetFactory.createGridLayout(4, 0, 0, 10, 0, false));
-            var5.setLayoutData(var4);
-            Label var6 = new Label(var5, 0);
-            var6.setText(SResources.getString("m.d.priority"));
-            this.spinner = new BSpinner(var5, 2048);
+            GridData gridData = new GridData(768);
+            gridData.horizontalSpan = 2;
+            Composite subComposite = new Composite(composite, 0);
+            subComposite.setLayout(WidgetFactory.createGridLayout(4, 0, 0, 10, 0, false));
+            subComposite.setLayoutData(gridData);
+            Label label = new Label(subComposite, 0);
+            label.setText(SResources.getString("m.d.priority"));
+            this.spinner = new BSpinner(subComposite, 2048);
             this.spinner.setMaximum(999);
             this.spinner.setMinimum(0);
-            var6 = new Label(var5, 0);
-            var6.setText(SResources.getString("m.d.strategy"));
-            this.stratCombo = new Combo(var5, 8);
+            label = new Label(subComposite, 0);
+            label.setText(SResources.getString("m.d.strategy"));
+            this.stratCombo = new Combo(subComposite, 8);
             this.stratCombo.setItems(new String[]{"only_directory", "directories", "all_files", "mp3s", "avis", "incoming_files", "incoming_directories"});
             this.stratCombo.select(0);
          }
 
-         return var2;
+         return composite;
       }
 
-      protected void buttonPressed(int var1) {
+      protected void buttonPressed(int buttonId) {
          if (this.share) {
             this.priority = this.spinner.getSelection();
             this.strategy = this.stratCombo.getText();
          }
 
          this.directory = this.dirText.getText();
-         super.buttonPressed(var1);
-         if (var1 == this.ADD_ID) {
+         super.buttonPressed(buttonId);
+         if (buttonId == this.ADD_ID) {
             UploadViewFrame.this.sendShareCommand(this.share);
             this.dirText.setText("");
          }
@@ -188,42 +188,42 @@ public class UploadViewFrame extends TabbedViewFrame {
          final FileTransfer fileTransfer = FileTransfer.getInstance();
          dropTarget.setTransfer(new Transfer[]{fileTransfer, textTransfer});
          dropTarget.addDropListener(new DropTargetAdapter() {
-            public void dragEnter(DropTargetEvent var1) {
-               if (var1.detail == 16) {
-                  if ((var1.operations & 1) != 0) {
-                     var1.detail = 1;
+            public void dragEnter(DropTargetEvent event) {
+               if (event.detail == 16) {
+                  if ((event.operations & 1) != 0) {
+                     event.detail = 1;
                   } else {
-                     var1.detail = 0;
+                     event.detail = 0;
                   }
                }
 
-               for (int var2 = 0; var2 < var1.dataTypes.length; var2++) {
-                  if (fileTransfer.isSupportedType(var1.dataTypes[var2])) {
-                     var1.currentDataType = var1.dataTypes[var2];
-                     if (var1.detail != 1) {
-                        var1.detail = 0;
+               for (int i = 0; i < event.dataTypes.length; i++) {
+                  if (fileTransfer.isSupportedType(event.dataTypes[i])) {
+                     event.currentDataType = event.dataTypes[i];
+                     if (event.detail != 1) {
+                        event.detail = 0;
                      }
                      break;
                   }
                }
             }
 
-            public void drop(DropTargetEvent var1) {
-               if (textTransfer.isSupportedType(var1.currentDataType)) {
-                  text.append((String)var1.data);
+            public void drop(DropTargetEvent event) {
+               if (textTransfer.isSupportedType(event.currentDataType)) {
+                  text.append((String)event.data);
                }
 
-               if (fileTransfer.isSupportedType(var1.currentDataType)) {
-                  String[] var2 = (String[])var1.data;
-                  if (var2.length > 1) {
-                     for (int var3 = 0; var3 < var2.length; var3++) {
-                        text.setText(var2[var3]);
-                        ShareDialog.this.directory = var2[var3];
+               if (fileTransfer.isSupportedType(event.currentDataType)) {
+                  String[] files = (String[])event.data;
+                  if (files.length > 1) {
+                     for (int i = 0; i < files.length; i++) {
+                        text.setText(files[i]);
+                        ShareDialog.this.directory = files[i];
                         UploadViewFrame.this.sendShareCommand(ShareDialog.this.share);
                         text.setText("");
                      }
-                  } else if (var2.length == 1) {
-                     text.append(var2[0]);
+                  } else if (files.length == 1) {
+                     text.append(files[0]);
                   }
                }
             }

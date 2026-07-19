@@ -9,21 +9,21 @@ import sancho.model.mldonkey.Server;
 import sancho.view.viewer.GView;
 
 public class NetworkViewerFilter extends AbstractViewerFilter {
-   public NetworkViewerFilter(GView var1) {
-      super(var1);
+   public NetworkViewerFilter(GView gView) {
+      super(gView);
    }
 
-   public boolean select(Viewer var1, Object var2, Object var3) {
-      if (var3 instanceof Server) {
-         return this.isFiltered(((Server)var3).getEnumNetwork());
-      } else if (var3 instanceof Result) {
-         return this.isFiltered(((Result)var3).getEnumNetwork());
-      } else if (var3 instanceof File) {
-         return this.isFiltered(((File)var3).getEnumNetwork());
-      } else if (var3 instanceof Client) {
-         return this.isFiltered(((Client)var3).getEnumNetwork());
+   public boolean select(Viewer viewer, Object parentElement, Object element) {
+      if (element instanceof Server) {
+         return this.isFiltered(((Server)element).getEnumNetwork());
+      } else if (element instanceof Result) {
+         return this.isFiltered(((Result)element).getEnumNetwork());
+      } else if (element instanceof File) {
+         return this.isFiltered(((File)element).getEnumNetwork());
+      } else if (element instanceof Client) {
+         return this.isFiltered(((Client)element).getEnumNetwork());
       } else {
-         return var3 instanceof Room ? this.isFiltered(((Room)var3).getEnumNetwork()) : true;
+         return element instanceof Room ? this.isFiltered(((Room)element).getEnumNetwork()) : true;
       }
    }
 }

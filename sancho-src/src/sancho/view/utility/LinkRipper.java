@@ -64,169 +64,169 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
    Text urlText;
    String URLtoRip;
 
-   public LinkRipper(Shell var1, MainWindow var2) {
-      super(var1);
-      this.mainWindow = var2;
+   public LinkRipper(Shell shell, MainWindow mainWindow) {
+      super(shell);
+      this.mainWindow = mainWindow;
    }
 
-   private void activateDropTarget(Text var1) {
-      byte var2 = 23;
-      DropTarget var3 = new DropTarget(var1, var2);
-      final UniformResourceLocator var4 = UniformResourceLocator.getInstance();
-      TextTransfer var5 = TextTransfer.getInstance();
-      var3.setTransfer(new Transfer[]{var4, var5});
-      final Text linkEntryText = var1;
-      var3.addDropListener(new DropTargetAdapter() {
-         public void dragEnter(DropTargetEvent var1) {
+   private void activateDropTarget(Text text) {
+      byte operations = 23;
+      DropTarget dropTarget = new DropTarget(text, operations);
+      final UniformResourceLocator urlTransfer = UniformResourceLocator.getInstance();
+      TextTransfer textTransfer = TextTransfer.getInstance();
+      dropTarget.setTransfer(new Transfer[]{urlTransfer, textTransfer});
+      final Text linkEntryText = text;
+      dropTarget.addDropListener(new DropTargetAdapter() {
+         public void dragEnter(DropTargetEvent event) {
             // Request DROP_LINK only if the source offers it, else COPY, else NONE — forcing
             // detail=4 made SWT reject a COPY-only drag so the drop was never delivered.
-            boolean var2 = false;
+            boolean supported = false;
 
-            for (int var3 = 0; var3 < var1.dataTypes.length; var3++) {
-               if (var4.isSupportedType(var1.dataTypes[var3])) {
-                  var2 = true;
+            for (int i = 0; i < event.dataTypes.length; i++) {
+               if (urlTransfer.isSupportedType(event.dataTypes[i])) {
+                  supported = true;
                   break;
                }
             }
 
-            if (var2 && (var1.operations & 4) != 0) {
-               var1.detail = 4;
-            } else if ((var1.operations & 1) != 0) {
-               var1.detail = 1;
+            if (supported && (event.operations & 4) != 0) {
+               event.detail = 4;
+            } else if ((event.operations & 1) != 0) {
+               event.detail = 1;
             } else {
-               var1.detail = 0;
+               event.detail = 0;
             }
          }
 
-         public void drop(DropTargetEvent var1) {
-            if (var1.data != null) {
-               linkEntryText.append((String)var1.data);
+         public void drop(DropTargetEvent event) {
+            if (event.data != null) {
+               linkEntryText.append((String)event.data);
             }
          }
       });
    }
 
-   public void addMenuItem(Menu var1, String var2, String var3, SelectionAdapter var4) {
-      MenuItem var5 = new MenuItem(var1, 8);
-      var5.setText(SResources.getString(var2));
-      var5.setImage(SResources.getImage(var3));
-      var5.addSelectionListener(var4);
+   public void addMenuItem(Menu menu, String textKey, String imageKey, SelectionAdapter listener) {
+      MenuItem menuItem = new MenuItem(menu, 8);
+      menuItem.setText(SResources.getString(textKey));
+      menuItem.setImage(SResources.getImage(imageKey));
+      menuItem.addSelectionListener(listener);
    }
 
-   public void addToClipBoard(String var1) {
-      MainWindow.copyToClipboard(var1);
+   public void addToClipBoard(String text) {
+      MainWindow.copyToClipboard(text);
    }
 
    public boolean close() {
-      PreferenceStore var1 = PreferenceLoader.getPreferenceStore();
-      PreferenceConverter.setValue(var1, "linkRipperWindowBounds", this.getShell().getBounds());
+      PreferenceStore store = PreferenceLoader.getPreferenceStore();
+      PreferenceConverter.setValue(store, "linkRipperWindowBounds", this.getShell().getBounds());
       this.mainWindow.closeLinkRipper();
       return super.close();
    }
 
-   protected void configureShell(Shell var1) {
-      super.configureShell(var1);
-      var1.setImage(SResources.getImage("web-link"));
-      var1.setText(VersionInfo.getName() + " " + SResources.getString("l.linkRipper"));
+   protected void configureShell(Shell shell) {
+      super.configureShell(shell);
+      shell.setImage(SResources.getImage("web-link"));
+      shell.setText(VersionInfo.getName() + " " + SResources.getString("l.linkRipper"));
    }
 
    protected void constrainShellSize() {
       super.constrainShellSize();
-      Shell var1 = this.getShell();
+      Shell shell = this.getShell();
       if (PreferenceLoader.contains("linkRipperWindowBounds")) {
-         var1.setBounds(PreferenceLoader.loadRectangle("linkRipperWindowBounds"));
+         shell.setBounds(PreferenceLoader.loadRectangle("linkRipperWindowBounds"));
       } else {
-         var1.setSize(500, 300);
-         Point var2 = var1.getLocation();
-         this.getShell().setLocation(var2.x - 200, var2.y);
+         shell.setSize(500, 300);
+         Point location = shell.getLocation();
+         this.getShell().setLocation(location.x - 200, location.y);
       }
    }
 
-   protected Control createButtonBar(Composite var1) {
-      Composite var2 = new Composite(var1, 0);
-      var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
-      var2.setLayoutData(new GridData(768));
-      Button var3 = new Button(var2, 0);
-      var3.setLayoutData(new GridData(768));
-      var3.setText(SResources.getString("b.downloadAll"));
-      var3.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+   protected Control createButtonBar(Composite parent) {
+      Composite composite = new Composite(parent, 0);
+      composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
+      composite.setLayoutData(new GridData(768));
+      Button downloadAllButton = new Button(composite, 0);
+      downloadAllButton.setLayoutData(new GridData(768));
+      downloadAllButton.setText(SResources.getString("b.downloadAll"));
+      downloadAllButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             downloadAll();
          }
       });
-      Button var4 = new Button(var2, 0);
-      var4.setLayoutData(new GridData(128));
-      var4.setText(SResources.getString("b.close"));
-      var4.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      Button closeButton = new Button(composite, 0);
+      closeButton.setLayoutData(new GridData(128));
+      closeButton.setText(SResources.getString("b.close"));
+      closeButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             close();
          }
       });
-      return var2;
+      return composite;
    }
 
-   protected Control createDialogArea(Composite var1) {
-      Composite var2 = (Composite)super.createDialogArea(var1);
-      Composite var3 = new Composite(var2, 0);
-      var3.setLayoutData(new GridData(768));
-      var3.setLayout(WidgetFactory.createGridLayout(3, 0, 0, 5, 5, false));
-      Label var4 = new Label(var3, 0);
-      var4.setText(SResources.getString("rip.url"));
-      var4.setLayoutData(new GridData(32));
-      this.urlText = new Text(var3, 2052);
+   protected Control createDialogArea(Composite parent) {
+      Composite composite = (Composite)super.createDialogArea(parent);
+      Composite topComposite = new Composite(composite, 0);
+      topComposite.setLayoutData(new GridData(768));
+      topComposite.setLayout(WidgetFactory.createGridLayout(3, 0, 0, 5, 5, false));
+      Label label = new Label(topComposite, 0);
+      label.setText(SResources.getString("rip.url"));
+      label.setLayoutData(new GridData(32));
+      this.urlText = new Text(topComposite, 2052);
       if (PreferenceLoader.loadBoolean("dragAndDrop")) {
          this.activateDropTarget(this.urlText);
       }
 
       this.urlText.setLayoutData(new GridData(768));
-      Button var5 = new Button(var3, 0);
-      var5.setLayoutData(new GridData(128));
-      var5.setText(SResources.getString("rip.rip"));
-      this.urlGroup = new Group(var2, 0);
+      Button ripButton = new Button(topComposite, 0);
+      ripButton.setLayoutData(new GridData(128));
+      ripButton.setText(SResources.getString("rip.rip"));
+      this.urlGroup = new Group(composite, 0);
       this.urlGroup.setLayoutData(new GridData(1808));
       this.urlGroup.setLayout(WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false));
       this.urlGroup.setText(SResources.getString("rip.waiting"));
       this.urlList = new List(this.urlGroup, 2818);
       this.createMenu();
       this.urlList.addListener(3, new Listener() {
-         public void handleEvent(Event var1) {
-            if (var1.button == 3) {
-               Menu var2 = popupMenu.createContextMenu(urlList);
-               var2.setLocation(urlList.getDisplay().getCursorLocation());
-               var2.setVisible(true);
+         public void handleEvent(Event event) {
+            if (event.button == 3) {
+               Menu menu = popupMenu.createContextMenu(urlList);
+               menu.setLocation(urlList.getDisplay().getCursorLocation());
+               menu.setVisible(true);
             }
          }
       });
       this.urlList.setLayoutData(new GridData(1808));
       this.urlList.addMouseListener(new MouseAdapter() {
-         public void mouseDoubleClick(MouseEvent var1) {
-            String[] var2 = urlList.getSelection();
-            String var3 = "";
-            if (var2.length > 0) {
-               var3 = var2[0];
+         public void mouseDoubleClick(MouseEvent event) {
+            String[] selection = urlList.getSelection();
+            String first = "";
+            if (selection.length > 0) {
+               first = selection[0];
             }
 
-            if (urlList.getSelectionCount() == 1 && var3.toLowerCase().startsWith("ftp") && var3.endsWith("/")) {
-               urlText.setText(var3);
+            if (urlList.getSelectionCount() == 1 && first.toLowerCase().startsWith("ftp") && first.endsWith("/")) {
+               urlText.setText(first);
                ripLinks();
             } else {
                downloadSelected();
             }
          }
       });
-      var5.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      ripButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             ripLinks();
          }
       });
       this.urlText.addKeyListener(new KeyAdapter() {
-         public void keyPressed(KeyEvent var1) {
-            if (var1.character == '\r' || var1.character == 16777296) {
+         public void keyPressed(KeyEvent event) {
+            if (event.character == '\r' || event.character == 16777296) {
                ripLinks();
             }
          }
       });
-      return var2;
+      return composite;
    }
 
    private void createMenu() {
@@ -236,8 +236,8 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
    }
 
    public void downloadAll() {
-      for (int var1 = 0; var1 < this.urlList.getItems().length; var1++) {
-         SwissArmy.sendLink(Sancho.getCore(), this.urlList.getItems()[var1]);
+      for (int i = 0; i < this.urlList.getItems().length; i++) {
+         SwissArmy.sendLink(Sancho.getCore(), this.urlList.getItems()[i]);
       }
 
       this.mainWindow.getStatusline().setText(SResources.getString("sl.linksSent") + this.urlList.getItemCount());
@@ -245,38 +245,38 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
 
    public void downloadSelected() {
       if (this.urlList.getSelectionCount() > 0) {
-         String[] var1 = this.urlList.getSelection();
+         String[] selection = this.urlList.getSelection();
 
-         for (int var2 = 0; var2 < var1.length; var2++) {
-            SwissArmy.sendLink(Sancho.getCore(), var1[var2]);
+         for (int i = 0; i < selection.length; i++) {
+            SwissArmy.sendLink(Sancho.getCore(), selection[i]);
          }
 
-         this.mainWindow.getStatusline().setText(SResources.getString("sl.linksSent") + var1.length);
+         this.mainWindow.getStatusline().setText(SResources.getString("sl.linksSent") + selection.length);
       }
    }
 
-   protected String getRawPage(String var1) {
-      URL var2;
+   protected String getRawPage(String urlString) {
+      URL url;
       try {
-         var2 = new URL(var1);
-      } catch (MalformedURLException var6) {
-         Sancho.pDebug("LinkRipper: " + var6);
+         url = new URL(urlString);
+      } catch (MalformedURLException malformedUrl) {
+         Sancho.pDebug("LinkRipper: " + malformedUrl);
          return null;
       }
 
       try {
-         BufferedReader var3 = new BufferedReader(new InputStreamReader(var2.openStream()));
-         StringBuffer var4 = new StringBuffer();
+         BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+         StringBuffer buffer = new StringBuffer();
 
-         String var5;
-         while ((var5 = var3.readLine()) != null) {
-            var4.append(var5);
+         String line;
+         while ((line = reader.readLine()) != null) {
+            buffer.append(line);
          }
 
-         var3.close();
-         return var4.toString();
-      } catch (IOException var7) {
-         Sancho.pDebug("LinkRipper: " + var7);
+         reader.close();
+         return buffer.toString();
+      } catch (IOException ioException) {
+         Sancho.pDebug("LinkRipper: " + ioException);
          return null;
       }
    }
@@ -285,14 +285,14 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
       return 2160 | (SWT.getPlatform().equals("fox") ? 0 : 0);
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
-      var1.add(new DownloadSelectedAction());
-      var1.add(new DownloadAllAction());
-      var1.add(new Separator());
-      var1.add(new CopyAction());
-      var1.add(new CopyAllAction());
-      var1.add(new Separator());
-      var1.add(new ToggleShowAllAction());
+   public void menuAboutToShow(IMenuManager menuManager) {
+      menuManager.add(new DownloadSelectedAction());
+      menuManager.add(new DownloadAllAction());
+      menuManager.add(new Separator());
+      menuManager.add(new CopyAction());
+      menuManager.add(new CopyAllAction());
+      menuManager.add(new Separator());
+      menuManager.add(new ToggleShowAllAction());
    }
 
    public void ripLinks() {
@@ -320,17 +320,17 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
             this.URLtoRip = this.URLtoRip + "/";
          }
 
-         String var11 = this.getRawPage(this.URLtoRip);
+         String rawPage = this.getRawPage(this.URLtoRip);
          if (snRE.matcher(this.URLtoRip).find()) {
-            Matcher var12 = var11 != null ? frameRE.matcher(var11) : null;
-            if (var12 != null && var12.find()) {
-               String var14 = var11.substring(var12.start(1), var12.end(1));
-               var14 = var14 + "list_news.html";
-               var11 = this.getRawPage(var14);
+            Matcher frameMatcher = rawPage != null ? frameRE.matcher(rawPage) : null;
+            if (frameMatcher != null && frameMatcher.find()) {
+               String frameSrc = rawPage.substring(frameMatcher.start(1), frameMatcher.end(1));
+               frameSrc = frameSrc + "list_news.html";
+               rawPage = this.getRawPage(frameSrc);
             }
          }
 
-         if (var11 == null) {
+         if (rawPage == null) {
             if (this.urlGroup != null && !this.urlGroup.isDisposed()) {
                this.urlGroup.getDisplay().syncExec(new Runnable() {
                   public void run() {
@@ -340,14 +340,14 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
                this.ripping = false;
             }
          } else {
-            final String[] var13 = SwissArmy.parseLinks(var11);
+            final String[] links = SwissArmy.parseLinks(rawPage);
             if (this.urlGroup != null && !this.urlGroup.isDisposed()) {
                this.urlGroup.getDisplay().syncExec(new Runnable() {
                   public void run() {
-                     urlGroup.setText(SResources.getString("l.foundLinks") + "(" + var13.length + "):");
+                     urlGroup.setText(SResources.getString("l.foundLinks") + "(" + links.length + "):");
 
-                     for (int var1 = 0; var1 < var13.length; var1++) {
-                        urlList.add(var13[var1]);
+                     for (int i = 0; i < links.length; i++) {
+                        urlList.add(links[i]);
                      }
                   }
                });
@@ -360,52 +360,52 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
          }
 
          try {
-            InputStream var1 = new URL(this.URLtoRip).openStream();
-            BufferedReader var2 = new BufferedReader(new InputStreamReader(var1));
-            ArrayList var3 = new ArrayList();
-            String var4 = "";
+            InputStream inputStream = new URL(this.URLtoRip).openStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            ArrayList linkList = new ArrayList();
+            String line = "";
 
-            while ((var4 = var2.readLine()) != null) {
-               StringTokenizer var5 = new StringTokenizer(var4);
-               int var6 = var5.countTokens();
-               if (var6 > 8) {
-                  StringBuffer var7 = new StringBuffer(this.URLtoRip);
+            while ((line = reader.readLine()) != null) {
+               StringTokenizer tokenizer = new StringTokenizer(line);
+               int tokenCount = tokenizer.countTokens();
+               if (tokenCount > 8) {
+                  StringBuffer buffer = new StringBuffer(this.URLtoRip);
 
-                  for (int var8 = 0; var8 < 8; var8++) {
-                     var5.nextToken();
+                  for (int i = 0; i < 8; i++) {
+                     tokenizer.nextToken();
                   }
 
-                  for (int var9 = 8; var9 < var6; var9++) {
-                     var7.append(var5.nextToken());
-                     if (var9 != var6 - 1) {
-                        var7.append(" ");
+                  for (int j = 8; j < tokenCount; j++) {
+                     buffer.append(tokenizer.nextToken());
+                     if (j != tokenCount - 1) {
+                        buffer.append(" ");
                      }
                   }
 
-                  if (var4.startsWith("d")) {
-                     var7.append("/");
+                  if (line.startsWith("d")) {
+                     buffer.append("/");
                   }
 
-                  var3.add(var7.toString());
+                  linkList.add(buffer.toString());
                }
             }
 
-            final String[] var17 = new String[var3.size()];
-            var3.toArray(var17);
+            final String[] linkArray = new String[linkList.size()];
+            linkList.toArray(linkArray);
             if (this.urlGroup == null || this.urlGroup.isDisposed()) {
                return;
             }
 
             this.urlGroup.getDisplay().syncExec(new Runnable() {
                public void run() {
-                  urlGroup.setText(SResources.getString("l.foundLinks") + "(" + var17.length + "):");
+                  urlGroup.setText(SResources.getString("l.foundLinks") + "(" + linkArray.length + "):");
 
-                  for (int var1 = 0; var1 < var17.length; var1++) {
-                     urlList.add(var17[var1]);
+                  for (int i = 0; i < linkArray.length; i++) {
+                     urlList.add(linkArray[i]);
                   }
                }
             });
-         } catch (Exception var10) {
+         } catch (Exception exception) {
             this.urlGroup.getDisplay().syncExec(new Runnable() {
                public void run() {
                   urlGroup.setText(SResources.getString("rip.error"));
@@ -417,14 +417,14 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
       }
    }
 
-   public void setCurrentLinks(String[] var1) {
+   public void setCurrentLinks(String[] rawLinks) {
       this.urlList.removeAll();
-      if (var1 != null) {
-         String[] var2 = SwissArmy.parseLinks(var1);
-         this.urlGroup.setText(SResources.getString("rip.found") + "(" + var2.length + "):");
+      if (rawLinks != null) {
+         String[] links = SwissArmy.parseLinks(rawLinks);
+         this.urlGroup.setText(SResources.getString("rip.found") + "(" + links.length + "):");
 
-         for (int var3 = 0; var3 < var2.length; var3++) {
-            this.urlList.add(var2[var3]);
+         for (int i = 0; i < links.length; i++) {
+            this.urlList.add(links[i]);
          }
       }
    }
@@ -433,9 +433,9 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
       this.getShell().setFocus();
    }
 
-   public void setInputURL(String var1) {
-      if (var1 != null) {
-         this.urlText.setText(var1);
+   public void setInputURL(String url) {
+      if (url != null) {
+         this.urlText.setText(url);
       }
    }
 
@@ -444,7 +444,7 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
          snRE = Pattern.compile("http://.+?suprnova.org");
          frameRE = Pattern.compile("src='(.+?)'");
          endSlashRE = Pattern.compile("http://.+/");
-      } catch (Exception var1) {
+      } catch (Exception exception) {
       }
    }
 
@@ -456,14 +456,14 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
       }
 
       public void run() {
-         String var1 = "";
+         String text = "";
 
-         for (int var2 = 0; var2 < urlList.getSelection().length; var2++) {
-            var1 = var1 + urlList.getSelection()[var2] + "\n";
+         for (int i = 0; i < urlList.getSelection().length; i++) {
+            text = text + urlList.getSelection()[i] + "\n";
          }
 
-         if (!var1.equals("")) {
-            addToClipBoard(var1);
+         if (!text.equals("")) {
+            addToClipBoard(text);
          }
       }
    }
@@ -476,14 +476,14 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
       }
 
       public void run() {
-         String var1 = "";
+         String text = "";
 
-         for (int var2 = 0; var2 < urlList.getItems().length; var2++) {
-            var1 = var1 + urlList.getItems()[var2] + "\n";
+         for (int i = 0; i < urlList.getItems().length; i++) {
+            text = text + urlList.getItems()[i] + "\n";
          }
 
-         if (!var1.equals("")) {
-            addToClipBoard(var1);
+         if (!text.equals("")) {
+            addToClipBoard(text);
          }
       }
    }

@@ -19,8 +19,8 @@ public class DownloadCompleteTableView extends GTableView {
    public static final int DATE = 3;
    List itemList = new ArrayList();
 
-   public DownloadCompleteTableView(ViewFrame var1) {
-      super(var1);
+   public DownloadCompleteTableView(ViewFrame viewFrame) {
+      super(viewFrame);
       this.preferenceString = "downloadComplete";
       this.columnLabels = new String[]{"downloadComplete.name", "downloadComplete.size", "downloadComplete.hash", "downloadComplete.date"};
       this.columnAlignment = new int[]{16384, 131072, 16384, 131072};
@@ -29,12 +29,12 @@ public class DownloadCompleteTableView extends GTableView {
       this.tableContentProvider = new DownloadCompleteTableContentProvider(this);
       this.tableLabelProvider = new DownloadCompleteTableLabelProvider(this);
       this.tableMenuListener = new DownloadCompleteTableMenuListener(this);
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
    }
 
-   protected void createContents(Composite var1) {
+   protected void createContents(Composite composite) {
       this.parseList();
-      super.createContents(var1);
+      super.createContents(composite);
       this.sViewer.addSelectionChangedListener((DownloadCompleteTableMenuListener)this.tableMenuListener);
       this.addMenuListener();
       this.updateHeader();
@@ -50,19 +50,19 @@ public class DownloadCompleteTableView extends GTableView {
 
    protected void parseList() {
       try {
-         BufferedReader var1 = new BufferedReader(new FileReader(VersionInfo.getDownloadLogFile()));
+         BufferedReader reader = new BufferedReader(new FileReader(VersionInfo.getDownloadLogFile()));
 
-         String var2;
-         while ((var2 = var1.readLine()) != null) {
-            DownloadCompleteItem var3 = new DownloadCompleteItem();
-            if (var3.parseLine(var2)) {
-               this.itemList.add(var3);
+         String line;
+         while ((line = reader.readLine()) != null) {
+            DownloadCompleteItem item = new DownloadCompleteItem();
+            if (item.parseLine(line)) {
+               this.itemList.add(item);
             }
          }
 
-         var1.close();
-      } catch (FileNotFoundException var4) {
-      } catch (IOException var5) {
+         reader.close();
+      } catch (FileNotFoundException fileNotFoundException) {
+      } catch (IOException ioException) {
       }
    }
 }

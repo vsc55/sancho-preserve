@@ -21,8 +21,8 @@ public class FriendsTableView extends GTableView {
    public static final int KIND = 9;
    public static final int HAS_FILES = 10;
 
-   public FriendsTableView(ViewFrame var1) {
-      super(var1);
+   public FriendsTableView(ViewFrame viewFrame) {
+      super(viewFrame);
       this.preferenceString = "friends";
       this.columnLabels = new String[]{
          "friends.name",
@@ -54,17 +54,17 @@ public class FriendsTableView extends GTableView {
       this.tableContentProvider = new FriendsTableContentProvider(this);
       this.tableLabelProvider = new FriendsTableLabelProvider(this);
       this.tableMenuListener = new FriendsTableMenuListener(this);
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
    }
 
-   protected void createContents(Composite var1) {
-      super.createContents(var1);
+   protected void createContents(Composite composite) {
+      super.createContents(composite);
       this.sViewer.addSelectionChangedListener((FriendsTableMenuListener)this.tableMenuListener);
       this.addMenuListener();
    }
 
-   public void setDirectoryView(ClientDirectoriesTableView var1) {
-      ((FriendsTableMenuListener)this.tableMenuListener).setDirectoriesView(var1);
+   public void setDirectoryView(ClientDirectoriesTableView view) {
+      ((FriendsTableMenuListener)this.tableMenuListener).setDirectoriesView(view);
    }
 
    public void setInput() {

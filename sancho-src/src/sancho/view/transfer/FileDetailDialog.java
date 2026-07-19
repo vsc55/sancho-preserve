@@ -61,284 +61,284 @@ public class FileDetailDialog extends AbstractDetailDialog {
    private FileCommentsViewFrame fileCommentsViewFrame;
    private boolean openComments;
 
-   public FileDetailDialog(Shell var1, File var2) {
-      this(var1, var2, false);
+   public FileDetailDialog(Shell shell, File file) {
+      this(shell, file, false);
    }
 
-   public FileDetailDialog(Shell var1, File var2, boolean var3) {
-      super(var1);
-      this.file = var2;
-      this.openComments = var3;
+   public FileDetailDialog(Shell shell, File file, boolean openComments) {
+      super(shell);
+      this.file = file;
+      this.openComments = openComments;
    }
 
-   protected void configureShell(Shell var1) {
-      super.configureShell(var1);
-      var1.setText(SResources.getString("l.file") + " " + this.file.getId() + " " + SResources.getString("l.details").toLowerCase());
+   protected void configureShell(Shell shell) {
+      super.configureShell(shell);
+      shell.setText(SResources.getString("l.file") + " " + this.file.getId() + " " + SResources.getString("l.details").toLowerCase());
    }
 
-   protected Control createDialogArea(Composite var1) {
-      Composite var2 = (Composite)super.createDialogArea(var1);
-      boolean var4 = this.file.getSubFileNames() != null;
-      boolean var5 = var4 || this.file.hasFileComments();
-      CTabFolder var6 = null;
-      Composite var3;
-      if (var5) {
-         var6 = WidgetFactory.createCTabFolder(var2);
-         var6.setLayoutData(new GridData(1808));
-         CTabItem var7 = new CTabItem(var6, 0);
-         var6.setSelection(var7);
-         var6.setBorderVisible(false);
-         var7.setText(SResources.getString("l.general"));
-         var3 = new Composite(var6, 0);
-         var7.setControl(var3);
+   protected Control createDialogArea(Composite parent) {
+      Composite composite = (Composite)super.createDialogArea(parent);
+      boolean hasSubFiles = this.file.getSubFileNames() != null;
+      boolean hasTabs = hasSubFiles || this.file.hasFileComments();
+      CTabFolder tabFolder = null;
+      Composite generalComposite;
+      if (hasTabs) {
+         tabFolder = WidgetFactory.createCTabFolder(composite);
+         tabFolder.setLayoutData(new GridData(1808));
+         CTabItem generalTab = new CTabItem(tabFolder, 0);
+         tabFolder.setSelection(generalTab);
+         tabFolder.setBorderVisible(false);
+         generalTab.setText(SResources.getString("l.general"));
+         generalComposite = new Composite(tabFolder, 0);
+         generalTab.setControl(generalComposite);
       } else {
-         var3 = new Composite(var2, 0);
+         generalComposite = new Composite(composite, 0);
       }
 
-      var3.setLayout(WidgetFactory.createGridLayout(1, 0, 5, 0, 5, false));
-      this.createFileGeneralGroup(var3);
-      this.createFileTransferGroup(var3);
-      this.createChunkGroup(var3, SResources.getString("dd.f.chunksInformation"), null);
+      generalComposite.setLayout(WidgetFactory.createGridLayout(1, 0, 5, 0, 5, false));
+      this.createFileGeneralGroup(generalComposite);
+      this.createFileTransferGroup(generalComposite);
+      this.createChunkGroup(generalComposite, SResources.getString("dd.f.chunksInformation"), null);
       if (this.file.hasAvails()) {
-         Network[] var10 = this.file.getAllAvailNetworks();
-         if (var10.length > 1) {
-            for (int var8 = 0; var8 < var10.length; var8++) {
-               Network var9 = var10[var8];
-               if (var9.isEnabled()) {
-                  this.createChunkGroup(var3, var9.getName(), var9);
+         Network[] networks = this.file.getAllAvailNetworks();
+         if (networks.length > 1) {
+            for (int i = 0; i < networks.length; i++) {
+               Network network = networks[i];
+               if (network.isEnabled()) {
+                  this.createChunkGroup(generalComposite, network.getName(), network);
                }
             }
          }
       }
 
-      this.createRenameGroup(var3);
+      this.createRenameGroup(generalComposite);
       if (this.file.getEnumNetwork() == EnumNetwork.FILETP) {
-         this.createMirrorGroup(var3);
+         this.createMirrorGroup(generalComposite);
       }
 
-      Label var11 = new Label(var3, 258);
-      var11.setLayoutData(new GridData(768));
+      Label separator = new Label(generalComposite, 258);
+      separator.setLayoutData(new GridData(768));
       this.updateLabels();
       this.file.addObserver(this);
-      if (var5) {
+      if (hasTabs) {
          if (this.file.hasFileComments()) {
-            CTabItem var12 = new CTabItem(var6, 0);
-            Composite var14 = new Composite(var6, 0) {
-               public Point computeSize(int var1, int var2, boolean var3) {
+            CTabItem commentsTab = new CTabItem(tabFolder, 0);
+            Composite commentsComposite = new Composite(tabFolder, 0) {
+               public Point computeSize(int wHint, int hHint, boolean changed) {
                   return new Point(-1, -1);
                }
             };
-            var14.setLayout(new FillLayout());
-            this.fileCommentsViewFrame = new FileCommentsViewFrame(var14, "l.fileComments", "tab.transfers.buttonSmall", null, this.file);
-            var12.setControl(var14);
-            var12.setText(SResources.getString("l.fileComments"));
+            commentsComposite.setLayout(new FillLayout());
+            this.fileCommentsViewFrame = new FileCommentsViewFrame(commentsComposite, "l.fileComments", "tab.transfers.buttonSmall", null, this.file);
+            commentsTab.setControl(commentsComposite);
+            commentsTab.setText(SResources.getString("l.fileComments"));
             if (this.openComments) {
-               var6.setSelection(var12);
+               tabFolder.setSelection(commentsTab);
             }
          }
 
-         if (var4) {
-            CTabItem var13 = new CTabItem(var6, 0);
-            Composite var15 = new Composite(var6, 0) {
-               public Point computeSize(int var1, int var2, boolean var3) {
+         if (hasSubFiles) {
+            CTabItem subFilesTab = new CTabItem(tabFolder, 0);
+            Composite subFilesComposite = new Composite(tabFolder, 0) {
+               public Point computeSize(int wHint, int hHint, boolean changed) {
                   return new Point(-1, -1);
                }
             };
-            var15.setLayout(new FillLayout());
-            new SubfilesViewFrame(var15, "l.subFiles", "tab.transfers.buttonSmall", null, this.file);
-            var13.setControl(var15);
-            var13.setText(SResources.getString("l.subFiles"));
+            subFilesComposite.setLayout(new FillLayout());
+            new SubfilesViewFrame(subFilesComposite, "l.subFiles", "tab.transfers.buttonSmall", null, this.file);
+            subFilesTab.setControl(subFilesComposite);
+            subFilesTab.setText(SResources.getString("l.subFiles"));
          }
       }
 
-      return var2;
+      return composite;
    }
 
    private void renameFile() {
-      String var1 = "";
+      String newName = "";
       if (!this.renameText.getText().equals("") && !this.renameText.getText().equals(this.file.getName())) {
-         var1 = this.renameText.getText();
+         newName = this.renameText.getText();
       } else if (this.renameList.getSelection().length > 0 && !this.renameList.getSelection()[0].equals(this.file.getName())) {
-         var1 = this.renameList.getSelection()[0];
+         newName = this.renameList.getSelection()[0];
       }
 
-      if (!var1.equals("")) {
-         this.file.rename(var1);
+      if (!newName.equals("")) {
+         this.file.rename(newName);
       }
    }
 
-   private void createFileGeneralGroup(Composite var1) {
-      Group var2 = new Group(var1, 64);
-      var2.setText(SResources.getString("dd.f.fileInformation"));
-      var2.setLayout(WidgetFactory.createGridLayout(4, 5, 0, 0, 0, false));
-      var2.setLayoutData(new GridData(768));
-      this.clFileName = this.createLine(var2, "dd.f.fileName", true);
-      this.clHash = this.createLine(var2, "dd.f.hash", true);
-      this.clSize = this.createLine(var2, "dd.f.size", false);
-      this.clAge = this.createLine(var2, "dd.f.age", false);
-      this.clUser = this.createLine(var2, "dd.f.user", false);
-      this.clGroup = this.createLine(var2, "dd.f.group", false);
-      this.clMagic = this.createLine(var2, "dd.f.magic", true);
-      this.clComment = this.createLine(var2, "dd.f.comment", true);
+   private void createFileGeneralGroup(Composite composite) {
+      Group group = new Group(composite, 64);
+      group.setText(SResources.getString("dd.f.fileInformation"));
+      group.setLayout(WidgetFactory.createGridLayout(4, 5, 0, 0, 0, false));
+      group.setLayoutData(new GridData(768));
+      this.clFileName = this.createLine(group, "dd.f.fileName", true);
+      this.clHash = this.createLine(group, "dd.f.hash", true);
+      this.clSize = this.createLine(group, "dd.f.size", false);
+      this.clAge = this.createLine(group, "dd.f.age", false);
+      this.clUser = this.createLine(group, "dd.f.user", false);
+      this.clGroup = this.createLine(group, "dd.f.group", false);
+      this.clMagic = this.createLine(group, "dd.f.magic", true);
+      this.clComment = this.createLine(group, "dd.f.comment", true);
    }
 
-   private void createFileTransferGroup(Composite var1) {
-      Group var2 = new Group(var1, 64);
-      var2.setText(SResources.getString("dd.f.transferInformation"));
-      var2.setLayout(WidgetFactory.createGridLayout(4, 5, 0, 0, 0, false));
-      var2.setLayoutData(new GridData(768));
-      this.clSources = this.createLine(var2, "dd.f.sources", false);
-      this.clChunks = this.createLine(var2, "dd.f.chunks", false);
-      this.clTransferred = this.createLine(var2, "dd.f.transferred", false);
-      this.clRelativeAvail = this.createLine(var2, "dd.f.availability", false);
-      this.clRemaining = this.createLine(var2, "dd.f.remaining", false);
-      this.clPriority = this.createLine(var2, "dd.f.priority", false);
-      this.clRate = this.createLine(var2, "dd.f.rate", false);
-      this.clETA = this.createLine(var2, "dd.f.eta", false);
-      this.clLast = this.createLine(var2, "dd.f.last", false);
+   private void createFileTransferGroup(Composite composite) {
+      Group group = new Group(composite, 64);
+      group.setText(SResources.getString("dd.f.transferInformation"));
+      group.setLayout(WidgetFactory.createGridLayout(4, 5, 0, 0, 0, false));
+      group.setLayoutData(new GridData(768));
+      this.clSources = this.createLine(group, "dd.f.sources", false);
+      this.clChunks = this.createLine(group, "dd.f.chunks", false);
+      this.clTransferred = this.createLine(group, "dd.f.transferred", false);
+      this.clRelativeAvail = this.createLine(group, "dd.f.availability", false);
+      this.clRemaining = this.createLine(group, "dd.f.remaining", false);
+      this.clPriority = this.createLine(group, "dd.f.priority", false);
+      this.clRate = this.createLine(group, "dd.f.rate", false);
+      this.clETA = this.createLine(group, "dd.f.eta", false);
+      this.clLast = this.createLine(group, "dd.f.last", false);
       if (SWT.getPlatform().equals("win32") && this.file.getChunkAges().length < 1000) {
-         this.createChunkAgesGroup(var2);
+         this.createChunkAgesGroup(group);
       }
    }
 
-   private void createChunkGroup(Composite var1, String var2, Network var3) {
-      super.createChunkGroup(var1, var2, null, this.file, var3);
+   private void createChunkGroup(Composite composite, String title, Network network) {
+      super.createChunkGroup(composite, title, null, this.file, network);
    }
 
-   private void createChunkAgesGroup(Composite var1) {
-      Label var2 = new Label(var1, 0);
-      var2.setText(SResources.getString("dd.f.chunkAges"));
-      GridData var3 = new GridData();
-      var3.widthHint = 100;
-      var2.setLayoutData(var3);
-      Combo var4 = new Combo(var1, 8);
-      GridData var5 = new GridData(768);
-      var5.widthHint = 1;
-      var4.setLayoutData(var5);
-      int[] var6 = this.file.getChunkAges();
+   private void createChunkAgesGroup(Composite composite) {
+      Label label = new Label(composite, 0);
+      label.setText(SResources.getString("dd.f.chunkAges"));
+      GridData labelGridData = new GridData();
+      labelGridData.widthHint = 100;
+      label.setLayoutData(labelGridData);
+      Combo combo = new Combo(composite, 8);
+      GridData comboGridData = new GridData(768);
+      comboGridData.widthHint = 1;
+      combo.setLayoutData(comboGridData);
+      int[] ages = this.file.getChunkAges();
 
-      for (int var7 = 0; var7 < var6.length; var7++) {
-         var4.add(var7 + 1 + ": " + (var6[var7] > 75000000 ? "-" : SwissArmy.calcStringOfSeconds((long)var6[var7])));
+      for (int i = 0; i < ages.length; i++) {
+         combo.add(i + 1 + ": " + (ages[i] > 75000000 ? "-" : SwissArmy.calcStringOfSeconds((long)ages[i])));
       }
 
-      if (var6.length > 0) {
-         var4.select(0);
-      }
-   }
-
-   public void addComment(String var1) {
-      if (var1 != null) {
-         this.file.setComment(var1);
+      if (ages.length > 0) {
+         combo.select(0);
       }
    }
 
-   private void createMirrorGroup(Composite var1) {
-      Label var2 = new Label(var1, 258);
-      var2.setLayoutData(new GridData(768));
-      Composite var3 = new Composite(var1, 0);
-      var3.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 4, 0, false));
-      var3.setLayoutData(new GridData(768));
-      Text var4 = new Text(var3, 2048);
-      var4.setFont(PreferenceLoader.loadFont("consoleFontData"));
-      GridData var5 = new GridData(768);
-      var5.widthHint = 1;
-      var4.setLayoutData(var5);
-      var4.addKeyListener(new KeyAdapter() {
-         public void keyPressed(KeyEvent var1) {
-            if (var1.character == '\r') {
-               FileDetailDialog.this.addMirror(var4.getText());
-               var4.setText("");
+   public void addComment(String comment) {
+      if (comment != null) {
+         this.file.setComment(comment);
+      }
+   }
+
+   private void createMirrorGroup(Composite composite) {
+      Label separator = new Label(composite, 258);
+      separator.setLayoutData(new GridData(768));
+      Composite mirrorComposite = new Composite(composite, 0);
+      mirrorComposite.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 4, 0, false));
+      mirrorComposite.setLayoutData(new GridData(768));
+      Text mirrorText = new Text(mirrorComposite, 2048);
+      mirrorText.setFont(PreferenceLoader.loadFont("consoleFontData"));
+      GridData gridData = new GridData(768);
+      gridData.widthHint = 1;
+      mirrorText.setLayoutData(gridData);
+      mirrorText.addKeyListener(new KeyAdapter() {
+         public void keyPressed(KeyEvent event) {
+            if (event.character == '\r') {
+               FileDetailDialog.this.addMirror(mirrorText.getText());
+               mirrorText.setText("");
             }
          }
       });
-      Button var6 = new Button(var3, 0);
-      var6.setText(SResources.getString("dd.f.addMirror"));
-      var6.setLayoutData(new GridData(128));
-      var6.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            FileDetailDialog.this.addMirror(var4.getText());
-            var4.setText("");
+      Button addButton = new Button(mirrorComposite, 0);
+      addButton.setText(SResources.getString("dd.f.addMirror"));
+      addButton.setLayoutData(new GridData(128));
+      addButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
+            FileDetailDialog.this.addMirror(mirrorText.getText());
+            mirrorText.setText("");
          }
       });
    }
 
-   public void addMirror(String var1) {
-      if (var1 != null && var1.length() > 3) {
-         Sancho.send((short)29, "mirror " + this.file.getId() + " " + var1);
+   public void addMirror(String mirror) {
+      if (mirror != null && mirror.length() > 3) {
+         Sancho.send((short)29, "mirror " + this.file.getId() + " " + mirror);
       }
    }
 
-   private void createRenameGroup(Composite var1) {
-      Group var2 = new Group(var1, 64);
-      var2.setText(SResources.getString("dd.f.alternativeFilenames"));
-      var2.setLayout(WidgetFactory.createGridLayout(1, 1, 1, 0, 0, false));
-      var2.setLayoutData(new GridData(768));
+   private void createRenameGroup(Composite composite) {
+      Group group = new Group(composite, 64);
+      group.setText(SResources.getString("dd.f.alternativeFilenames"));
+      group.setLayout(WidgetFactory.createGridLayout(1, 1, 1, 0, 0, false));
+      group.setLayoutData(new GridData(768));
       Arrays.sort(this.file.getNames(), String.CASE_INSENSITIVE_ORDER);
-      this.renameList = new List(var2, 2820);
+      this.renameList = new List(group, 2820);
 
-      for (int var3 = 0; var3 < this.file.getNames().length; var3++) {
-         this.renameList.add(this.file.getNames()[var3]);
+      for (int i = 0; i < this.file.getNames().length; i++) {
+         this.renameList.add(this.file.getNames()[i]);
       }
 
-      GridData var4 = new GridData(768);
-      var4.heightHint = 80;
-      var4.widthHint = 1;
-      this.renameList.setLayoutData(var4);
+      GridData listGridData = new GridData(768);
+      listGridData.heightHint = 80;
+      listGridData.widthHint = 1;
+      this.renameList.setLayoutData(listGridData);
       this.renameList.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            String var2 = FileDetailDialog.this.renameList.getSelection()[0];
-            FileDetailDialog.this.renameText.setText(var2);
+         public void widgetSelected(SelectionEvent event) {
+            String name = FileDetailDialog.this.renameList.getSelection()[0];
+            FileDetailDialog.this.renameText.setText(name);
          }
       });
-      Composite var5 = new Composite(var1, 0);
-      var5.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 4, 0, false));
-      var5.setLayoutData(new GridData(768));
-      this.renameText = new Text(var5, 2048);
+      Composite renameComposite = new Composite(composite, 0);
+      renameComposite.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 4, 0, false));
+      renameComposite.setLayoutData(new GridData(768));
+      this.renameText = new Text(renameComposite, 2048);
       this.renameText.setText(this.file.getName());
       this.renameText.setFont(PreferenceLoader.loadFont("consoleFontData"));
-      GridData var6 = new GridData(768);
-      var6.widthHint = 1;
-      this.renameText.setLayoutData(var6);
+      GridData textGridData = new GridData(768);
+      textGridData.widthHint = 1;
+      this.renameText.setLayoutData(textGridData);
       this.renameText.addKeyListener(new KeyAdapter() {
-         public void keyPressed(KeyEvent var1) {
-            if (var1.character == '\r') {
+         public void keyPressed(KeyEvent event) {
+            if (event.character == '\r') {
                FileDetailDialog.this.renameFile();
                FileDetailDialog.this.renameText.setText("");
             }
          }
       });
-      Button var7 = new Button(var5, 0);
-      var7.setText(SResources.getString("dd.f.renameFile"));
-      var7.setLayoutData(new GridData(128));
-      var7.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      Button renameButton = new Button(renameComposite, 0);
+      renameButton.setText(SResources.getString("dd.f.renameFile"));
+      renameButton.setLayoutData(new GridData(128));
+      renameButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             FileDetailDialog.this.renameFile();
          }
       });
    }
 
-   protected Control createButtonBar(Composite var1) {
-      Composite var2 = new Composite(var1, 0);
-      var2.setLayoutData(new GridData(768));
-      var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 0, 0, false));
-      Composite var3 = new Composite(var2, 0);
-      GridData var4 = new GridData(768);
-      var4.heightHint = 5;
-      var3.setLayoutData(var4);
-      Composite var5 = new Composite(var2, 0);
-      var5.setLayoutData(new GridData(128));
-      var5.setLayout(WidgetFactory.createRowLayout(false, false, false, 256, 0, 0, 0, 0, 5));
+   protected Control createButtonBar(Composite parent) {
+      Composite composite = new Composite(parent, 0);
+      composite.setLayoutData(new GridData(768));
+      composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 0, 0, false));
+      Composite spacer = new Composite(composite, 0);
+      GridData spacerGridData = new GridData(768);
+      spacerGridData.heightHint = 5;
+      spacer.setLayoutData(spacerGridData);
+      Composite buttonComposite = new Composite(composite, 0);
+      buttonComposite.setLayoutData(new GridData(128));
+      buttonComposite.setLayout(WidgetFactory.createRowLayout(false, false, false, 256, 0, 0, 0, 0, 5));
       if (this.file.getFileStateEnum() == EnumFileState.PAUSED
          || this.file.getFileStateEnum() == EnumFileState.DOWNLOADING
          || this.file.getFileStateEnum() == EnumFileState.QUEUED) {
-         this.fileCancelButton = new Button(var5, 0);
+         this.fileCancelButton = new Button(buttonComposite, 0);
          this.fileCancelButton.setLayoutData(new RowData());
          this.fileCancelButton.setText(SResources.getString("dd.f.cancelFile"));
          this.fileCancelButton.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent var1) {
-               MessageBox var2 = new MessageBox(FileDetailDialog.this.fileCancelButton.getShell(), 196);
-               var2.setMessage(SResources.getString("dd.f.reallyCancel"));
-               if (var2.open() == 64) {
+            public void widgetSelected(SelectionEvent event) {
+               MessageBox messageBox = new MessageBox(FileDetailDialog.this.fileCancelButton.getShell(), 196);
+               messageBox.setMessage(SResources.getString("dd.f.reallyCancel"));
+               if (messageBox.open() == 64) {
                   FileDetailDialog.this.file.setState(EnumFileState.CANCELLED);
                   FileDetailDialog.this.fileCancelButton.setEnabled(false);
                   FileDetailDialog.this.fileActionButton.setEnabled(false);
@@ -347,7 +347,7 @@ public class FileDetailDialog extends AbstractDetailDialog {
          });
       }
 
-      this.fileActionButton = new Button(var5, 0);
+      this.fileActionButton = new Button(buttonComposite, 0);
       this.fileActionButton.setLayoutData(new RowData());
       if (this.file.getFileStateEnum() == EnumFileState.PAUSED || this.file.getFileStateEnum() == EnumFileState.QUEUED) {
          this.fileActionButton.setText(SResources.getString("dd.f.resumeFile"));
@@ -362,7 +362,7 @@ public class FileDetailDialog extends AbstractDetailDialog {
       }
 
       this.fileActionButton.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             if (FileDetailDialog.this.file.getFileStateEnum() == EnumFileState.PAUSED) {
                FileDetailDialog.this.file.setState(EnumFileState.DOWNLOADING);
                FileDetailDialog.this.fileActionButton.setText(SResources.getString("dd.f.pauseFile"));
@@ -381,16 +381,16 @@ public class FileDetailDialog extends AbstractDetailDialog {
             }
          }
       });
-      Button var6 = new Button(var5, 0);
-      var6.setFocus();
-      var6.setLayoutData(new RowData());
-      var6.setText(SResources.getString("b.close"));
-      var6.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      Button closeButton = new Button(buttonComposite, 0);
+      closeButton.setFocus();
+      closeButton.setLayoutData(new RowData());
+      closeButton.setText(SResources.getString("b.close"));
+      closeButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             FileDetailDialog.this.close();
          }
       });
-      return var2;
+      return composite;
    }
 
    public void updateLabels() {
@@ -418,7 +418,7 @@ public class FileDetailDialog extends AbstractDetailDialog {
       this.updateLabel(this.clETA, this.file.getEtaString());
    }
 
-   public void updateViews(int var1) {
+   public void updateViews(int id) {
       if (this.fileCommentsViewFrame != null) {
          this.fileCommentsViewFrame.getGView().refresh();
       }

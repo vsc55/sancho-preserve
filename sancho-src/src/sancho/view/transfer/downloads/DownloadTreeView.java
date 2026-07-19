@@ -49,8 +49,8 @@ public class DownloadTreeView extends GTreeView implements ICellModifier {
    private CustomTreeViewer treeViewer;
    private GView clientView;
 
-   public DownloadTreeView(ViewFrame var1) {
-      super(var1);
+   public DownloadTreeView(ViewFrame viewFrame) {
+      super(viewFrame);
       this.preferenceString = "download";
       this.columnLabels = new String[]{
          "download.id",
@@ -114,24 +114,24 @@ public class DownloadTreeView extends GTreeView implements ICellModifier {
       this.tableLabelProvider = new DownloadTreeLabelProvider(this);
       this.tableMenuListener = new DownloadTreeMenuListener(this);
       this.saveExclusionStateFilters = true;
-      StringBuffer var2 = new StringBuffer();
-      StringBuffer var3 = new StringBuffer();
-      var2.append(PreferenceLoader.loadString(this.preferenceString + "TableColumns"));
-      if (var2.indexOf("O") == -1) {
-         var3.append(PreferenceLoader.loadString(this.preferenceString + "TableColumnsOff"));
-         if (var3.indexOf("O") == -1) {
-            var3.append("O");
+      StringBuffer columns = new StringBuffer();
+      StringBuffer columnsOff = new StringBuffer();
+      columns.append(PreferenceLoader.loadString(this.preferenceString + "TableColumns"));
+      if (columns.indexOf("O") == -1) {
+         columnsOff.append(PreferenceLoader.loadString(this.preferenceString + "TableColumnsOff"));
+         if (columnsOff.indexOf("O") == -1) {
+            columnsOff.append("O");
          }
 
-         PreferenceLoader.getPreferenceStore().setValue(this.preferenceString + "TableColumnsOff", var3.toString());
+         PreferenceLoader.getPreferenceStore().setValue(this.preferenceString + "TableColumnsOff", columnsOff.toString());
       }
 
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
       ((DownloadTreeLabelProvider)this.tableLabelProvider).setUpOwnerDraw();
    }
 
-   public boolean canModify(Object var1, String var2) {
-      return var1 instanceof File;
+   public boolean canModify(Object element, String property) {
+      return element instanceof File;
    }
 
    public boolean clientsDisplayed() {
@@ -143,9 +143,9 @@ public class DownloadTreeView extends GTreeView implements ICellModifier {
       this.treeViewer = this.getTreeViewer();
       this.treeViewer.setColumnProperties(this.columnLabels);
       if (this.cellEditors != null) {
-         for (int var1 = 0; var1 < this.cellEditors.length; var1++) {
-            if (this.cellEditors[var1] != null) {
-               this.cellEditors[var1].dispose();
+         for (int i = 0; i < this.cellEditors.length; i++) {
+            if (this.cellEditors[i] != null) {
+               this.cellEditors[i].dispose();
             }
          }
 
@@ -158,34 +158,34 @@ public class DownloadTreeView extends GTreeView implements ICellModifier {
       }
    }
 
-   public void createContents(Composite var1) {
-      super.createContents(var1);
+   public void createContents(Composite parent) {
+      super.createContents(parent);
       this.addMenuListener();
       this.treeViewer.addDoubleClickListener((DownloadTreeMenuListener)this.tableMenuListener);
       this.treeViewer.addSelectionChangedListener((DownloadTreeMenuListener)this.tableMenuListener);
    }
 
-   public Object getValue(Object var1, String var2) {
-      File var3 = (File)var1;
-      return var3.getName();
+   public Object getValue(Object element, String property) {
+      File file = (File)element;
+      return file.getName();
    }
 
    public ViewFrame getViewFrame() {
       return this.viewFrame;
    }
 
-   public void modify(Object var1, String var2, Object var3) {
-      TreeItem var4 = (TreeItem)var1;
-      File var5 = (File)var4.getData();
-      String var6 = ((String)var3).trim();
-      if (var6.length() > 0) {
-         var5.rename(var6);
+   public void modify(Object element, String property, Object value) {
+      TreeItem item = (TreeItem)element;
+      File file = (File)item.getData();
+      String newName = ((String)value).trim();
+      if (newName.length() > 0) {
+         file.rename(newName);
       }
    }
 
-   public void setClientTableView(ClientTableView var1) {
-      this.clientView = var1;
-      ((DownloadTreeMenuListener)this.tableMenuListener).setClientView(var1);
+   public void setClientTableView(ClientTableView clientTableView) {
+      this.clientView = clientTableView;
+      ((DownloadTreeMenuListener)this.tableMenuListener).setClientView(clientTableView);
    }
 
    public void setInput() {
@@ -207,9 +207,9 @@ public class DownloadTreeView extends GTreeView implements ICellModifier {
    }
 
    public void setChunkGraphs() {
-      boolean var1 = PreferenceLoader.loadBoolean("displayChunkGraphs");
+      boolean displayChunkGraphs = PreferenceLoader.loadBoolean("displayChunkGraphs");
       this.treeViewer.setChunksColumn(this.columnIDs.indexOf("J"));
-      this.treeViewer.setEditors(var1);
+      this.treeViewer.setEditors(displayChunkGraphs);
       ChunkCanvas.loadColors();
       ChunkImageData.loadColors();
       this.treeViewer.clearAll();
@@ -218,9 +218,9 @@ public class DownloadTreeView extends GTreeView implements ICellModifier {
 
    public void toggleClientsTable() {
       if (this.clientView != null) {
-         DownloadViewFrame var1 = (DownloadViewFrame)this.viewFrame;
-         boolean var2 = WidgetFactory.toggleMaximizedSashFormControl(var1.getParentSashForm(false), var1.getViewForm());
-         this.updateClientsTable(!var2);
+         DownloadViewFrame downloadViewFrame = (DownloadViewFrame)this.viewFrame;
+         boolean maximized = WidgetFactory.toggleMaximizedSashFormControl(downloadViewFrame.getParentSashForm(false), downloadViewFrame.getViewForm());
+         this.updateClientsTable(!maximized);
       }
    }
 
@@ -228,8 +228,8 @@ public class DownloadTreeView extends GTreeView implements ICellModifier {
       super.unsetInput();
    }
 
-   public void updateClientsTable(boolean var1) {
-      ((DownloadTreeMenuListener)this.tableMenuListener).updateClientsTable(var1);
+   public void updateClientsTable(boolean show) {
+      ((DownloadTreeMenuListener)this.tableMenuListener).updateClientsTable(show);
    }
 
    public void updateDisplay() {

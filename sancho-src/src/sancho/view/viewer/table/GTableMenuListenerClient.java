@@ -22,51 +22,51 @@ import sancho.view.viewer.actions.GetClientFilesAction;
 import sancho.view.viewer.actions.TransferAction;
 
 public abstract class GTableMenuListenerClient extends GTableMenuListener {
-   public GTableMenuListenerClient(GView var1) {
-      super(var1);
+   public GTableMenuListenerClient(GView gView) {
+      super(gView);
    }
 
-   protected void sendToStatusline(String var1) {
+   protected void sendToStatusline(String text) {
    }
 
-   public void addPreview(IMenuManager var1, IPreview[] var2, int[] var3) {
-      if (var2 != null && var2.length != 0) {
-         String[] var4 = SResources.getPreviewApps(var2[0].getName());
-         Program var5 = var2[0].getOSPreviewApp();
-         if (var5 != null || var4 != null && var4.length > 1) {
-            MyMenuManager var8 = new MyMenuManager(SResources.getString("m.d.preview"));
-            var8.setImageString("preview");
-            var8.add(new PreviewAction(var2, var3));
-            var8.add(new Separator());
-            if (var5 != null) {
-               var8.add(new PreviewProgramAction(var2[0], var5, var3[0]));
-               var8.add(new Separator());
+   public void addPreview(IMenuManager menuManager, IPreview[] previews, int[] subFiles) {
+      if (previews != null && previews.length != 0) {
+         String[] previewApps = SResources.getPreviewApps(previews[0].getName());
+         Program program = previews[0].getOSPreviewApp();
+         if (program != null || previewApps != null && previewApps.length > 1) {
+            MyMenuManager menu = new MyMenuManager(SResources.getString("m.d.preview"));
+            menu.setImageString("preview");
+            menu.add(new PreviewAction(previews, subFiles));
+            menu.add(new Separator());
+            if (program != null) {
+               menu.add(new PreviewProgramAction(previews[0], program, subFiles[0]));
+               menu.add(new Separator());
             }
 
-            if (var4 != null && var4.length > 1) {
-               for (int var7 = 0; var7 < var4.length; var7++) {
-                  var8.add(new PreviewAppAction(var2[0], var4[var7], var3[0]));
+            if (previewApps != null && previewApps.length > 1) {
+               for (int i = 0; i < previewApps.length; i++) {
+                  menu.add(new PreviewAppAction(previews[0], previewApps[i], subFiles[0]));
                }
             }
 
-            var8.add(new Separator());
-            var8.add(new TransferAction(this.gView.getShell(), var2, var3));
-            var1.add(var8);
+            menu.add(new Separator());
+            menu.add(new TransferAction(this.gView.getShell(), previews, subFiles));
+            menuManager.add(menu);
          } else {
-            MyMenuManager var6 = new MyMenuManager(SResources.getString("m.d.preview"));
-            var6.setImageString("preview");
-            var6.add(new PreviewAction(var2, var3));
-            var6.add(new Separator());
-            var6.add(new TransferAction(this.gView.getShell(), var2, var3));
-            var1.add(var6);
+            MyMenuManager menu = new MyMenuManager(SResources.getString("m.d.preview"));
+            menu.setImageString("preview");
+            menu.add(new PreviewAction(previews, subFiles));
+            menu.add(new Separator());
+            menu.add(new TransferAction(this.gView.getShell(), previews, subFiles));
+            menuManager.add(menu);
          }
       }
    }
 
    private void disconnectSelectedClients() {
-      for (int var1 = 0; var1 < this.selectedObjects.size(); var1++) {
-         Client var2 = (Client)this.selectedObjects.get(var1);
-         var2.disconnect();
+      for (int i = 0; i < this.selectedObjects.size(); i++) {
+         Client client = (Client)this.selectedObjects.get(i);
+         client.disconnect();
       }
    }
 
@@ -75,57 +75,57 @@ public abstract class GTableMenuListenerClient extends GTableMenuListener {
    }
 
    protected Client[] createClientArray() {
-      Client[] var1 = new Client[this.selectedObjects.size()];
+      Client[] clients = new Client[this.selectedObjects.size()];
 
-      for (int var2 = 0; var2 < this.selectedObjects.size(); var2++) {
-         Client var3 = (Client)this.selectedObjects.get(var2);
-         var1[var2] = var3;
+      for (int i = 0; i < this.selectedObjects.size(); i++) {
+         Client client = (Client)this.selectedObjects.get(i);
+         clients[i] = client;
       }
 
-      return var1;
+      return clients;
    }
 
-   public void addClientActions(Shell var1, File var2, IMenuManager var3, Client[] var4) {
-      ArrayList var5 = new ArrayList();
-      ArrayList var6 = new ArrayList();
+   public void addClientActions(Shell shell, File file, IMenuManager menuManager, Client[] clients) {
+      ArrayList connectedClients = new ArrayList();
+      ArrayList disconnectedClients = new ArrayList();
 
-      for (int var7 = 0; var7 < var4.length; var7++) {
-         Client var8 = var4[var7];
-         if (var8.isConnected()) {
-            var5.add(var8);
+      for (int i = 0; i < clients.length; i++) {
+         Client client = clients[i];
+         if (client.isConnected()) {
+            connectedClients.add(client);
          } else {
-            var6.add(var8);
+            disconnectedClients.add(client);
          }
       }
 
-      Client[] var12 = new Client[var5.size()];
+      Client[] connected = new Client[connectedClients.size()];
 
-      for (int var9 = 0; var9 < var5.size(); var9++) {
-         var12[var9] = (Client)var5.get(var9);
+      for (int j = 0; j < connectedClients.size(); j++) {
+         connected[j] = (Client)connectedClients.get(j);
       }
 
-      Client[] var10 = new Client[var6.size()];
+      Client[] disconnected = new Client[disconnectedClients.size()];
 
-      for (int var11 = 0; var11 < var6.size(); var11++) {
-         var10[var11] = (Client)var6.get(var11);
+      for (int k = 0; k < disconnectedClients.size(); k++) {
+         disconnected[k] = (Client)disconnectedClients.get(k);
       }
 
-      var3.add(new ClientDetailAction(var1, var2, var4[0]));
+      menuManager.add(new ClientDetailAction(shell, file, clients[0]));
       if (!(this instanceof FriendsTableMenuListener)) {
-         var3.add(new AddClientAsFriendAction(var4));
+         menuManager.add(new AddClientAsFriendAction(clients));
       }
 
-      var3.add(new GetClientFilesAction(var4));
-      if (var4[0].hasFiles()) {
-         var3.add(new ClientFilesDialogAction(var1, var4[0]));
+      menuManager.add(new GetClientFilesAction(clients));
+      if (clients[0].hasFiles()) {
+         menuManager.add(new ClientFilesDialogAction(shell, clients[0]));
       }
 
-      if (var12.length > 0) {
-         var3.add(new DisconnectClientAction(var4));
+      if (connected.length > 0) {
+         menuManager.add(new DisconnectClientAction(clients));
       }
 
-      if (var10.length > 0) {
-         var3.add(new ConnectClientAction(var4));
+      if (disconnected.length > 0) {
+         menuManager.add(new ConnectClientAction(clients));
       }
    }
 
@@ -134,17 +134,17 @@ public abstract class GTableMenuListenerClient extends GTableMenuListener {
       int[] subFileArray;
       IPreview[] iPreviewArray;
 
-      public PreviewAction(IPreview[] var2, int[] var3) {
+      public PreviewAction(IPreview[] previews, int[] subFiles) {
          super(SResources.getString("m.d.preview"));
          this.setImageDescriptor(SResources.getImageDescriptor("preview"));
-         this.iPreviewArray = var2;
-         this.subFileArray = var3;
+         this.iPreviewArray = previews;
+         this.subFileArray = subFiles;
       }
 
       public void run() {
-         for (int var1 = 0; var1 < this.iPreviewArray.length; var1++) {
-            for (int var2 = 0; var2 < this.subFileArray.length; var2++) {
-               sendToStatusline(this.iPreviewArray[var1].preview(this.subFileArray[var2]));
+         for (int i = 0; i < this.iPreviewArray.length; i++) {
+            for (int j = 0; j < this.subFileArray.length; j++) {
+               sendToStatusline(this.iPreviewArray[i].preview(this.subFileArray[j]));
             }
          }
       }
@@ -156,12 +156,12 @@ public abstract class GTableMenuListenerClient extends GTableMenuListener {
       String app;
       int subFileNum;
 
-      public PreviewAppAction(IPreview var2, String var3, int var4) {
-         super(new java.io.File(var3).getName());
+      public PreviewAppAction(IPreview iPreview, String app, int subFileNum) {
+         super(new java.io.File(app).getName());
          this.setImageDescriptor(SResources.getImageDescriptor("preview"));
-         this.iPreview = var2;
-         this.app = var3;
-         this.subFileNum = var4;
+         this.iPreview = iPreview;
+         this.app = app;
+         this.subFileNum = subFileNum;
       }
 
       public void run() {
@@ -175,12 +175,12 @@ public abstract class GTableMenuListenerClient extends GTableMenuListener {
       Program program;
       int subFileNum;
 
-      public PreviewProgramAction(IPreview var2, Program var3, int var4) {
-         super(var3.getName());
-         this.setImageDescriptor(var2.getFileTypeImageDescriptor());
-         this.iPreview = var2;
-         this.program = var3;
-         this.subFileNum = var4;
+      public PreviewProgramAction(IPreview iPreview, Program program, int subFileNum) {
+         super(program.getName());
+         this.setImageDescriptor(iPreview.getFileTypeImageDescriptor());
+         this.iPreview = iPreview;
+         this.program = program;
+         this.subFileNum = subFileNum;
       }
 
       public void run() {

@@ -14,27 +14,27 @@ import sancho.view.utility.SResources;
 public class SearchTab_Advanced extends ASearchTab2 {
    Combo fileType;
 
-   public SearchTab_Advanced(ResultViewFrame var1, SearchTab var2) {
-      super(var1, var2);
+   public SearchTab_Advanced(ResultViewFrame viewFrame, SearchTab searchTab) {
+      super(viewFrame, searchTab);
    }
 
-   public Control createTab(CTabFolder var1) {
-      Composite var2 = this.createMainComposite(var1);
-      this.searchCombo = this.createSavedSearchCombo(var2, "s.searchFor", "advancedSearchFor");
-      this.createNetworkCombo(var2);
-      this.fileType = this.createFileType(var2);
-      this.searchTypeCombo = this.createSearchTypeCombo(var2);
-      String[] var3 = new String[]{"", "exe", "bin", "img", "gif", "jpg"};
-      this.formatCombo = this.createCombo(var2, 0, "s.format", var3);
-      this.createSeparator(var2);
-      var3 = new String[]{"", "3", "5", "10", "25", "50"};
-      this.minAvailCombo = this.createCombo(var2, 0, "s.minAvail", var3);
-      this.minCombo = this.createMinMaxCombo(var2, 0, "s.minSize");
-      this.maxCombo = this.createMinMaxCombo(var2, 0, "s.maxSize");
-      var3 = new String[]{"", "50", "100", "200", "400"};
-      this.resultCombo = this.createIntegerCombo(var2, 0, "s.maxResults", var3);
-      var2.setData(this);
-      return var2;
+   public Control createTab(CTabFolder tabFolder) {
+      Composite composite = this.createMainComposite(tabFolder);
+      this.searchCombo = this.createSavedSearchCombo(composite, "s.searchFor", "advancedSearchFor");
+      this.createNetworkCombo(composite);
+      this.fileType = this.createFileType(composite);
+      this.searchTypeCombo = this.createSearchTypeCombo(composite);
+      String[] values = new String[]{"", "exe", "bin", "img", "gif", "jpg"};
+      this.formatCombo = this.createCombo(composite, 0, "s.format", values);
+      this.createSeparator(composite);
+      values = new String[]{"", "3", "5", "10", "25", "50"};
+      this.minAvailCombo = this.createCombo(composite, 0, "s.minAvail", values);
+      this.minCombo = this.createMinMaxCombo(composite, 0, "s.minSize");
+      this.maxCombo = this.createMinMaxCombo(composite, 0, "s.maxSize");
+      values = new String[]{"", "50", "100", "200", "400"};
+      this.resultCombo = this.createIntegerCombo(composite, 0, "s.maxResults", values);
+      composite.setData(this);
+      return composite;
    }
 
    public String getText() {
@@ -42,25 +42,25 @@ public class SearchTab_Advanced extends ASearchTab2 {
    }
 
    public void performSearch() {
-      String var1 = this.searchCombo.getText();
-      this.searchCombo.add(var1, 0);
-      if (!var1.equals("") && Sancho.hasCollectionFactory()) {
-         SearchQuery var2 = this.viewFrame.getCore().getCollectionFactory().getSearchQuery();
-         var2.setSearchString(var1);
-         this.parseFileType(this.fileType, var2);
-         this.parseSearchType(this.searchTypeCombo, var2);
-         this.addMinSizeToQuery(var2, this.minCombo);
-         this.addMaxSizeToQuery(var2, this.maxCombo);
-         this.addMaxResultsToQuery(var2, this.resultCombo);
+      String searchText = this.searchCombo.getText();
+      this.searchCombo.add(searchText, 0);
+      if (!searchText.equals("") && Sancho.hasCollectionFactory()) {
+         SearchQuery query = this.viewFrame.getCore().getCollectionFactory().getSearchQuery();
+         query.setSearchString(searchText);
+         this.parseFileType(this.fileType, query);
+         this.parseSearchType(this.searchTypeCombo, query);
+         this.addMinSizeToQuery(query, this.minCombo);
+         this.addMaxSizeToQuery(query, this.maxCombo);
+         this.addMaxResultsToQuery(query, this.resultCombo);
          if (!this.formatCombo.getText().equals("")) {
-            var2.setFormat(this.formatCombo.getText());
+            query.setFormat(this.formatCombo.getText());
          }
 
-         this.addNetwork(var2);
-         var2.send();
-         int var3 = var2.getSearchId();
-         this.viewFrame.getCore().getResultCollection().setMinAvail(var3, this.parseMinAvail());
-         new ResultTab(this.viewFrame, this.searchTab.getCTabFolder(), this.searchTab, var3, var1);
+         this.addNetwork(query);
+         query.send();
+         int searchId = query.getSearchId();
+         this.viewFrame.getCore().getResultCollection().setMinAvail(searchId, this.parseMinAvail());
+         new ResultTab(this.viewFrame, this.searchTab.getCTabFolder(), this.searchTab, searchId, searchText);
          this.searchCombo.setText("");
       }
    }

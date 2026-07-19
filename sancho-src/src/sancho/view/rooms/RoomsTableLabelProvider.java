@@ -5,34 +5,34 @@ import sancho.model.mldonkey.Room;
 import sancho.view.viewer.table.GTableLabelProvider;
 
 public class RoomsTableLabelProvider extends GTableLabelProvider {
-   public RoomsTableLabelProvider(RoomsTableView var1) {
-      super(var1);
+   public RoomsTableLabelProvider(RoomsTableView view) {
+      super(view);
    }
 
-   public Image getColumnImage(Object var1, int var2) {
-      Room var3 = (Room)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public Image getColumnImage(Object element, int columnIndex) {
+      Room room = (Room)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
          case 3:
-            return var3.getNetworkImage();
+            return room.getNetworkImage();
          default:
             return null;
       }
    }
 
-   public String getColumnText(Object var1, int var2) {
-      Room var3 = (Room)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      Room room = (Room)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getName();
+            return room.getName();
          case 1:
-            return String.valueOf(var3.getNumUsers()).intern();
+            return String.valueOf(room.getNumUsers()).intern();
          case 2:
-            return var3.getRoomState().getName();
+            return room.getRoomState().getName();
          case 3:
-            return var3.getNetworkName();
+            return room.getNetworkName();
          case 4:
-            return String.valueOf(var3.getId()).intern();
+            return String.valueOf(room.getId()).intern();
          default:
             return "?";
       }

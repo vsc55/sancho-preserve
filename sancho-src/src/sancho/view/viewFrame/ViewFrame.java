@@ -48,24 +48,24 @@ public class ViewFrame {
    protected MyViewForm viewForm;
    protected boolean visible;
 
-   public ViewFrame(Composite var1, String var2, String var3, AbstractTab var4) {
-      this(var1, var2, var3, var4, false);
+   public ViewFrame(Composite parent, String prefString, String imageString, AbstractTab tab) {
+      this(parent, prefString, imageString, tab, false);
    }
 
-   public ViewFrame(Composite var1, final String var2, final String var3, AbstractTab var4, boolean var5) {
-      this.parent = var1;
-      this.aTab = var4;
-      this.prefString = var2;
-      this.viewForm = WidgetFactory.createViewForm(this.parent, var5);
+   public ViewFrame(Composite parent, final String prefString, final String imageString, AbstractTab tab, boolean flag) {
+      this.parent = parent;
+      this.aTab = tab;
+      this.prefString = prefString;
+      this.viewForm = WidgetFactory.createViewForm(this.parent, flag);
       this.childComposite = new Composite(this.viewForm, 0);
       this.childComposite.setLayout(new FillLayout());
-      this.cLabel = WidgetFactory.createCLabel(this.viewForm, var2, var3);
+      this.cLabel = WidgetFactory.createCLabel(this.viewForm, prefString, imageString);
       this.viewForm.setContent(this.childComposite);
       this.viewForm.setTopLeft(this.cLabel);
       this.cLabel.addMouseTrackListener(new MouseTrackListener() {
          private Image newImage;
 
-         public void mouseHover(MouseEvent var1) {
+         public void mouseHover(MouseEvent event) {
          }
 
          public void disposeImage() {
@@ -75,29 +75,29 @@ public class ViewFrame {
             }
          }
 
-         public void mouseEnter(MouseEvent var1) {
+         public void mouseEnter(MouseEvent event) {
             this.disposeImage();
-            this.newImage = SResources.createActiveImage(SResources.getImageDescriptor(var3));
+            this.newImage = SResources.createActiveImage(SResources.getImageDescriptor(imageString));
             ViewFrame.this.cLabel.setImage(this.newImage);
          }
 
-         public void mouseExit(MouseEvent var1) {
-            ViewFrame.this.cLabel.setImage(SResources.getImage(var3));
+         public void mouseExit(MouseEvent event) {
+            ViewFrame.this.cLabel.setImage(SResources.getImage(imageString));
             this.disposeImage();
          }
       });
    }
 
-   public void addPopupMenu(ToolBar var1) {
-      MenuManager var2 = new MenuManager();
-      var2.setRemoveAllWhenShown(true);
-      var2.addMenuListener(new RefineMenuListener());
-      var1.setMenu(var2.createContextMenu(var1));
+   public void addPopupMenu(ToolBar toolBar) {
+      MenuManager menuManager = new MenuManager();
+      menuManager.setRemoveAllWhenShown(true);
+      menuManager.addMenuListener(new RefineMenuListener());
+      toolBar.setMenu(menuManager.createContextMenu(toolBar));
    }
 
-   public void setRefineText(String var1) {
+   public void setRefineText(String text) {
       if (this.refineText != null) {
-         this.refineText.setText(var1);
+         this.refineText.setText(text);
       }
    }
 
@@ -106,7 +106,7 @@ public class ViewFrame {
       this.clearRefineToolItem.setImage(SResources.getImage("refine"));
       this.clearRefineToolItem.setToolTipText(SResources.getString("ti.clearRefine"));
       this.clearRefineToolItem.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             if (ViewFrame.this.refineText != null) {
                ViewFrame.this.refineText.add(ViewFrame.this.refineText.getText(), 0);
                ViewFrame.this.refineText.setText("");
@@ -118,40 +118,40 @@ public class ViewFrame {
          }
       });
       this.addPopupMenu(this.toolBar);
-      ToolItem var1 = new ToolItem(this.toolBar, 2);
+      ToolItem toolItem = new ToolItem(this.toolBar, 2);
       this.refineText = new NoDuplicatesCombo(this.toolBar, 2048);
       this.refineText.setItems(PreferenceLoader.loadStringArray(this.prefString + ".refineSArray"));
       this.refineText.addDisposeListener(new DisposeListener() {
-         public void widgetDisposed(DisposeEvent var1) {
-            NoDuplicatesCombo var2 = (NoDuplicatesCombo)var1.widget;
-            String[] var3 = var2.getItems();
+         public void widgetDisposed(DisposeEvent event) {
+            NoDuplicatesCombo combo = (NoDuplicatesCombo)event.widget;
+            String[] items = combo.getItems();
 
-            for (int var4 = 0; var4 < var3.length; var4++) {
-               if (var3[var4].length() > 1000) {
-                  var3[var4] = var3[var4].substring(0, 1000);
+            for (int i = 0; i < items.length; i++) {
+               if (items[i].length() > 1000) {
+                  items[i] = items[i].substring(0, 1000);
                }
             }
 
-            PreferenceLoader.setValue(ViewFrame.this.prefString + ".refineSArray", var3, 25);
+            PreferenceLoader.setValue(ViewFrame.this.prefString + ".refineSArray", items, 25);
          }
       });
       this.refineText.setToolTipText(SResources.getString("ti.refine"));
       this.refineText.setSize(75, -1);
       if (SWT.getPlatform().equals("fox")) {
-         var1.setControl(this.refineText);
+         toolItem.setControl(this.refineText);
       }
 
-      var1.setWidth(75);
+      toolItem.setWidth(75);
       this.refineText.pack();
       if (!SWT.getPlatform().equals("fox")) {
-         var1.setControl(this.refineText);
+         toolItem.setControl(this.refineText);
       }
 
       this.refineText.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            NoDuplicatesCombo var2 = (NoDuplicatesCombo)var1.widget;
-            if (var2.getSelectionIndex() > -1) {
-               ViewFrame.this.refineText.setText(var2.getItem(var2.getSelectionIndex()));
+         public void widgetSelected(SelectionEvent event) {
+            NoDuplicatesCombo combo = (NoDuplicatesCombo)event.widget;
+            if (combo.getSelectionIndex() > -1) {
+               ViewFrame.this.refineText.setText(combo.getItem(combo.getSelectionIndex()));
             }
 
             if (ViewFrame.this.getGView() != null) {
@@ -162,14 +162,14 @@ public class ViewFrame {
       if (SWT.getPlatform().equals("fox")) {
          this.refineText.setSize(75, this.refineText.getSize().y);
          this.refineText.addKeyListener(new KeyAdapter() {
-            public void keyPressed(KeyEvent var1) {
-               ViewFrame.this.updateRefine(var1);
+            public void keyPressed(KeyEvent event) {
+               ViewFrame.this.updateRefine(event);
             }
          });
       } else {
          this.refineText.addKeyListener(new KeyAdapter() {
-            public void keyReleased(KeyEvent var1) {
-               ViewFrame.this.updateRefine(var1);
+            public void keyReleased(KeyEvent event) {
+               ViewFrame.this.updateRefine(event);
             }
          });
       }
@@ -180,29 +180,29 @@ public class ViewFrame {
       }
    }
 
-   public ToolItem addToolItem(String var1, String var2, SelectionListener var3) {
-      ToolItem var4 = new ToolItem(this.toolBar, 0);
-      var4.setToolTipText(SResources.getString(var1));
-      var4.setImage(SResources.getImage(var2));
-      var4.addSelectionListener(var3);
-      return var4;
+   public ToolItem addToolItem(String tooltip, String imageString, SelectionListener listener) {
+      ToolItem toolItem = new ToolItem(this.toolBar, 0);
+      toolItem.setToolTipText(SResources.getString(tooltip));
+      toolItem.setImage(SResources.getImage(imageString));
+      toolItem.addSelectionListener(listener);
+      return toolItem;
    }
 
    public void addToolSeparator() {
       new ToolItem(this.toolBar, 2);
    }
 
-   public void createViewListener(ViewListener var1) {
-      this.setupViewListener(var1);
+   public void createViewListener(ViewListener viewListener) {
+      this.setupViewListener(viewListener);
       this.cLabel.addMouseListener(new HeaderBarMouseAdapter(this.cLabel, this.menuManager));
    }
 
    public void createViewToolBar() {
-      Composite var1 = new Composite(this.viewForm, 0);
-      var1.setLayout(WidgetFactory.createGridLayout(1, 1, 1, 0, 0, false));
-      this.toolBar = new ToolBar(var1, 8519680);
+      Composite composite = new Composite(this.viewForm, 0);
+      composite.setLayout(WidgetFactory.createGridLayout(1, 1, 1, 0, 0, false));
+      this.toolBar = new ToolBar(composite, 8519680);
       this.toolBar.setBackground(this.toolBar.getDisplay().getSystemColor(22));
-      this.viewForm.setTopRight(var1);
+      this.viewForm.setTopRight(composite);
    }
 
    public Composite getChildComposite() {
@@ -267,58 +267,58 @@ public class ViewFrame {
       }
    }
 
-   public void setActive(boolean var1) {
-      this.active = var1;
+   public void setActive(boolean active) {
+      this.active = active;
       if (this.gView != null) {
-         this.gView.setActive(var1);
+         this.gView.setActive(active);
       }
    }
 
-   protected void setupViewListener(ViewListener var1) {
+   protected void setupViewListener(ViewListener viewListener) {
       this.menuManager = new MenuManager("");
       this.menuManager.setRemoveAllWhenShown(true);
-      this.menuManager.addMenuListener(var1);
+      this.menuManager.addMenuListener(viewListener);
       this.cLabel.addDisposeListener(new DisposeListener() {
-         public void widgetDisposed(DisposeEvent var1) {
+         public void widgetDisposed(DisposeEvent event) {
             ViewFrame.this.menuManager.dispose();
          }
       });
    }
 
-   public void setVisible(boolean var1) {
-      this.visible = var1;
+   public void setVisible(boolean visible) {
+      this.visible = visible;
       if (this.gView != null) {
-         this.gView.setVisible(var1);
+         this.gView.setVisible(visible);
       }
    }
 
-   public void updateCLabelText(String var1) {
-      if (this.cLabel != null && !this.cLabel.isDisposed() && !this.cLabel.getText().equals(var1)) {
-         this.cLabel.setText(var1);
+   public void updateCLabelText(String text) {
+      if (this.cLabel != null && !this.cLabel.isDisposed() && !this.cLabel.getText().equals(text)) {
+         this.cLabel.setText(text);
       }
    }
 
-   public void updateCLabelTextInGuiThread(final String var1) {
+   public void updateCLabelTextInGuiThread(final String text) {
       if (this.cLabel != null && !this.cLabel.isDisposed()) {
          this.cLabel.getDisplay().asyncExec(new Runnable() {
             public void run() {
-               ViewFrame.this.updateCLabelText(var1);
+               ViewFrame.this.updateCLabelText(text);
             }
          });
       }
    }
 
-   public void updateCLabelToolTip(String var1) {
+   public void updateCLabelToolTip(String text) {
       if (this.cLabel != null && !this.cLabel.isDisposed()) {
-         this.cLabel.setToolTipText(var1);
+         this.cLabel.setToolTipText(text);
       }
    }
 
-   public void updateCLabelToolTipInGuiThread(final String var1) {
+   public void updateCLabelToolTipInGuiThread(final String text) {
       if (this.cLabel != null && !this.cLabel.isDisposed()) {
          this.cLabel.getDisplay().asyncExec(new Runnable() {
             public void run() {
-               ViewFrame.this.updateCLabelToolTip(var1);
+               ViewFrame.this.updateCLabelToolTip(text);
             }
          });
       }
@@ -332,10 +332,10 @@ public class ViewFrame {
       }
 
       if (this.menuManager != null) {
-         IContributionItem[] var1 = this.menuManager.getItems();
+         IContributionItem[] items = this.menuManager.getItems();
 
-         for (int var2 = 0; var2 < var1.length; var2++) {
-            var1[var2].dispose();
+         for (int i = 0; i < items.length; i++) {
+            items[i].dispose();
          }
 
          this.menuManager.removeAll();
@@ -344,10 +344,10 @@ public class ViewFrame {
       }
 
       if (this.toolBar != null) {
-         ToolItem[] var3 = this.toolBar.getItems();
+         ToolItem[] toolItems = this.toolBar.getItems();
 
-         for (int var5 = 0; var5 < var3.length; var5++) {
-            var3[var5].dispose();
+         for (int i = 0; i < toolItems.length; i++) {
+            toolItems[i].dispose();
          }
 
          this.toolBar.dispose();
@@ -355,9 +355,9 @@ public class ViewFrame {
       }
 
       if (this.gView != null) {
-         Composite var4 = this.gView.getComposite();
-         if (var4 != null && !var4.isDisposed()) {
-            var4.dispose();
+         Composite composite = this.gView.getComposite();
+         if (composite != null && !composite.isDisposed()) {
+            composite.dispose();
          }
       }
    }
@@ -369,8 +369,8 @@ public class ViewFrame {
       }
    }
 
-   public void updateRefine(KeyEvent var1) {
-      switch (var1.keyCode) {
+   public void updateRefine(KeyEvent event) {
+      switch (event.keyCode) {
          default:
             if (this.getGView() != null) {
                this.getGView().setRefineString(this.refineText.getText());
@@ -388,9 +388,9 @@ public class ViewFrame {
 
    // Menu listener that populates the refine tool-bar popup with the filter-toggle actions.
    private static class RefineMenuListener implements IMenuListener {
-      public void menuAboutToShow(IMenuManager var1) {
-         var1.add(new ToggleRefineAction("mi.refineFilterNegation", "refineFilterNegation"));
-         var1.add(new ToggleRefineAction("mi.refineFilterAlternates", "refineFilterAlternates"));
+      public void menuAboutToShow(IMenuManager menuManager) {
+         menuManager.add(new ToggleRefineAction("mi.refineFilterNegation", "refineFilterNegation"));
+         menuManager.add(new ToggleRefineAction("mi.refineFilterAlternates", "refineFilterAlternates"));
       }
    }
 
@@ -398,9 +398,9 @@ public class ViewFrame {
    private static class ToggleRefineAction extends Action {
       String prefString;
 
-      public ToggleRefineAction(String var1, String var2) {
-         super(SResources.getString(var1), 2);
-         this.prefString = var2;
+      public ToggleRefineAction(String text, String prefString) {
+         super(SResources.getString(text), 2);
+         this.prefString = prefString;
       }
 
       public boolean isChecked() {

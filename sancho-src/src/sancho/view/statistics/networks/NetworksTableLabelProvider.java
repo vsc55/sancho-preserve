@@ -9,21 +9,21 @@ import sancho.view.viewer.table.GTableLabelProvider;
 public class NetworksTableLabelProvider extends GTableLabelProvider {
    private Color enabledColor;
 
-   public NetworksTableLabelProvider(NetworksTableView var1) {
-      super(var1);
+   public NetworksTableLabelProvider(NetworksTableView view) {
+      super(view);
    }
 
-   public Image getColumnImage(Object var1, int var2) {
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public Image getColumnImage(Object element, int columnIndex) {
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          default:
             return null;
       }
    }
 
-   public Color getForeground(Object var1, int var2) {
-      if (var1 instanceof Network) {
-         Network var3 = (Network)var1;
-         if (var3.isEnabled()) {
+   public Color getForeground(Object element, int columnIndex) {
+      if (element instanceof Network) {
+         Network network = (Network)element;
+         if (network.isEnabled()) {
             return this.enabledColor;
          }
       }
@@ -31,15 +31,15 @@ public class NetworksTableLabelProvider extends GTableLabelProvider {
       return null;
    }
 
-   public String getColumnText(Object var1, int var2) {
-      Network var3 = (Network)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      Network network = (Network)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getName();
+            return network.getName();
          case 1:
-            return var3.getUploadedString();
+            return network.getUploadedString();
          case 2:
-            return var3.getDownloadedString();
+            return network.getDownloadedString();
          default:
             return "";
       }

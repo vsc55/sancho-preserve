@@ -10,11 +10,11 @@ public class ClientFilesDialogAction extends Action {
    Shell shell;
    Client client;
 
-   public ClientFilesDialogAction(Shell var1, Client var2) {
+   public ClientFilesDialogAction(Shell shell, Client client) {
       super(SResources.getString("mi.viewClientFiles"));
       this.setImageDescriptor(SResources.getImageDescriptor("search_small"));
-      this.shell = var1;
-      this.client = var2;
+      this.shell = shell;
+      this.client = client;
    }
 
    public void run() {

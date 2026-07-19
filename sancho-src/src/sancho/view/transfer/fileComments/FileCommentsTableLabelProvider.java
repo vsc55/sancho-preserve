@@ -6,33 +6,33 @@ import sancho.view.utility.SResources;
 import sancho.view.viewer.table.GTableLabelProvider;
 
 public class FileCommentsTableLabelProvider extends GTableLabelProvider {
-   public FileCommentsTableLabelProvider(FileCommentsTableView var1) {
-      super(var1);
+   public FileCommentsTableLabelProvider(FileCommentsTableView view) {
+      super(view);
    }
 
-   public Image getColumnImage(Object var1, int var2) {
-      FileComment var3 = (FileComment)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public Image getColumnImage(Object element, int columnIndex) {
+      FileComment comment = (FileComment)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
             return SResources.getImage("client");
          case 1:
-            return var3.getAddr().getImage();
+            return comment.getAddr().getImage();
          default:
             return null;
       }
    }
 
-   public String getColumnText(Object var1, int var2) {
-      FileComment var3 = (FileComment)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      FileComment comment = (FileComment)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getName();
+            return comment.getName();
          case 1:
-            return var3.getAddr().toString();
+            return comment.getAddr().toString();
          case 2:
-            return var3.getRatingString();
+            return comment.getRatingString();
          case 3:
-            return var3.getComment();
+            return comment.getComment();
          default:
             return "";
       }

@@ -13,8 +13,8 @@ public class UploadTableView extends GTableView {
    public static final int SIZE = 4;
    public static final int MAGIC = 5;
 
-   public UploadTableView(ViewFrame var1) {
-      super(var1);
+   public UploadTableView(ViewFrame viewFrame) {
+      super(viewFrame);
       this.preferenceString = "upload";
       this.columnLabels = new String[]{"upload.network", "upload.uploaded", "upload.requests", "upload.name", "upload.size", "upload.magic"};
       this.columnDefaultWidths = new int[]{100, 100, 100, 250, 100, 250};
@@ -23,11 +23,11 @@ public class UploadTableView extends GTableView {
       this.tableContentProvider = new UploadTableContentProvider(this);
       this.tableLabelProvider = new UploadTableLabelProvider(this);
       this.tableMenuListener = new UploadTableMenuListener(this);
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
    }
 
-   protected void createContents(Composite var1) {
-      super.createContents(var1);
+   protected void createContents(Composite composite) {
+      super.createContents(composite);
       this.sViewer.addSelectionChangedListener((UploadTableMenuListener)this.tableMenuListener);
    }
 

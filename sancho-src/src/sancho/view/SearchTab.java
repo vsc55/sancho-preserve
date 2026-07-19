@@ -33,74 +33,74 @@ public class SearchTab extends AbstractTab {
    private CTabFolder searchCTabFolder;
    private ASearchTab[] searchTabs;
 
-   public SearchTab(MainWindow var1, String var2) {
-      super(var1, var2);
+   public SearchTab(MainWindow mainWindow, String name) {
+      super(mainWindow, name);
    }
 
-   protected Button createButton(Composite var1, String var2, SelectionAdapter var3) {
-      Button var4 = new Button(this.composite, 8);
-      var4.setText(SResources.getString(var2));
-      var4.addSelectionListener(var3);
-      return var4;
+   protected Button createButton(Composite parent, String name, SelectionAdapter selectionAdapter) {
+      Button button = new Button(this.composite, 8);
+      button.setText(SResources.getString(name));
+      button.addSelectionListener(selectionAdapter);
+      return button;
    }
 
-   protected void createContents(Composite var1) {
-      String var2 = "searchSash";
-      SashForm var3 = WidgetFactory.createSashForm(var1, var2);
-      this.createViewFrames(var3);
-      WidgetFactory.loadSashForm(var3, var2);
+   protected void createContents(Composite parent) {
+      String sashName = "searchSash";
+      SashForm sashForm = WidgetFactory.createSashForm(parent, sashName);
+      this.createViewFrames(sashForm);
+      WidgetFactory.loadSashForm(sashForm, sashName);
    }
 
    public void onConnect() {
       super.onConnect();
 
-      for (int var1 = 0; var1 < this.searchTabs.length; var1++) {
-         this.searchTabs[var1].onConnect();
+      for (int i = 0; i < this.searchTabs.length; i++) {
+         this.searchTabs[i].onConnect();
       }
    }
 
    public void dispose() {
       if (this.searchTabs != null) {
-         for (int var1 = 0; var1 < this.searchTabs.length; var1++) {
-            this.searchTabs[var1].dispose();
+         for (int i = 0; i < this.searchTabs.length; i++) {
+            this.searchTabs[i].dispose();
          }
       }
 
       super.dispose();
    }
 
-   public void autoSearch(String var1) {
-      this.searchTabs[0].autoSearch(var1);
+   public void autoSearch(String text) {
+      this.searchTabs[0].autoSearch(text);
    }
 
-   private void createLeftSash(Composite var1) {
-      var1.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
-      this.searchCTabFolder = WidgetFactory.createCTabFolder(var1);
+   private void createLeftSash(Composite parent) {
+      parent.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
+      this.searchCTabFolder = WidgetFactory.createCTabFolder(parent);
       this.searchCTabFolder.setLayoutData(new GridData(768));
       this.searchTabs = new ASearchTab[]{
          new SearchTab_Simple(this.resultViewFrame, this), new SearchTab_Advanced(this.resultViewFrame, this), new SearchTab_Audio(this.resultViewFrame, this)
       };
 
-      for (int var4 = 0; var4 < this.searchTabs.length; var4++) {
-         CTabItem var3 = new CTabItem(this.searchCTabFolder, 0);
-         var3.setText(this.searchTabs[var4].getText());
-         Control var2 = this.searchTabs[var4].createTab(this.searchCTabFolder);
-         if (var4 == 0) {
-            var3.setControl(var2);
+      for (int i = 0; i < this.searchTabs.length; i++) {
+         CTabItem tabItem = new CTabItem(this.searchCTabFolder, 0);
+         tabItem.setText(this.searchTabs[i].getText());
+         Control control = this.searchTabs[i].createTab(this.searchCTabFolder);
+         if (i == 0) {
+            tabItem.setControl(control);
          }
 
-         var3.setData("myControl", var2);
-         var3.setData(this.searchTabs[var4]);
+         tabItem.setData("myControl", control);
+         tabItem.setData(this.searchTabs[i]);
       }
 
       this.searchCTabFolder.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            CTabItem var2 = (CTabItem)var1.item;
-            var2.setControl((Control)var2.getData("myControl"));
+         public void widgetSelected(SelectionEvent event) {
+            CTabItem tabItem = (CTabItem)event.item;
+            tabItem.setControl((Control)tabItem.getData("myControl"));
 
-            for (int var3 = 0; var3 < SearchTab.this.searchCTabFolder.getItems().length; var3++) {
-               if (SearchTab.this.searchCTabFolder.getItems()[var3] != var2) {
-                  SearchTab.this.searchCTabFolder.getItems()[var3].setControl(null);
+            for (int i = 0; i < SearchTab.this.searchCTabFolder.getItems().length; i++) {
+               if (SearchTab.this.searchCTabFolder.getItems()[i] != tabItem) {
+                  SearchTab.this.searchCTabFolder.getItems()[i].setControl(null);
                }
             }
 
@@ -108,65 +108,65 @@ public class SearchTab extends AbstractTab {
          }
       });
       this.searchCTabFolder.setSelection(0);
-      Composite var5 = new Composite(var1, 0);
-      var5.setLayout(WidgetFactory.createGridLayout(1, 2, 0, 0, 0, false));
-      var5.setLayoutData(new GridData(768));
-      Label var6 = new Label(var5, 258);
-      var6.setLayoutData(new GridData(768));
-      Composite var7 = new Composite(var5, 0);
-      var7.setLayout(WidgetFactory.createGridLayout(1, 7, 5, 0, 0, false));
-      var7.setLayoutData(new GridData(768));
-      this.createSearchButton(var7);
+      Composite composite = new Composite(parent, 0);
+      composite.setLayout(WidgetFactory.createGridLayout(1, 2, 0, 0, 0, false));
+      composite.setLayoutData(new GridData(768));
+      Label label = new Label(composite, 258);
+      label.setLayoutData(new GridData(768));
+      Composite composite2 = new Composite(composite, 0);
+      composite2.setLayout(WidgetFactory.createGridLayout(1, 7, 5, 0, 0, false));
+      composite2.setLayoutData(new GridData(768));
+      this.createSearchButton(composite2);
    }
 
-   private void createRightSash(CTabFolder var1) {
-      this.resultsCTabFolder = var1;
+   private void createRightSash(CTabFolder tabFolder) {
+      this.resultsCTabFolder = tabFolder;
       this.resultsCTabFolder.setData(this);
       this.resultsCTabFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
-         public void close(CTabFolderEvent var1) {
-            CTabItem var2 = (CTabItem)var1.item;
-            Control var3 = var2.getControl();
-            if (var3 != null && !var3.isDisposed()) {
-               var3.dispose();
+         public void close(CTabFolderEvent event) {
+            CTabItem tabItem = (CTabItem)event.item;
+            Control control = tabItem.getControl();
+            if (control != null && !control.isDisposed()) {
+               control.dispose();
             }
          }
       });
       this.resultsCTabFolder.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            CTabItem var2 = (CTabItem)var1.item;
-            GView var3 = (GView)var2.getData("gView");
-            if (var3 == null) {
+         public void widgetSelected(SelectionEvent event) {
+            CTabItem tabItem = (CTabItem)event.item;
+            GView view = (GView)tabItem.getData("gView");
+            if (view == null) {
                SearchTab.this.resultViewFrame.updateCLabelText(SResources.getString("t.search.results"));
             } else {
-               ResultTableContentProvider var4 = (ResultTableContentProvider)var3.getContentProvider();
-               var4.updateHeaderLabel();
+               ResultTableContentProvider contentProvider = (ResultTableContentProvider)view.getContentProvider();
+               contentProvider.updateHeaderLabel();
             }
          }
       });
    }
 
-   private void createSearchButton(Composite var1) {
-      this.composite = new Composite(var1, 0);
-      GridData var2 = new GridData(768);
-      var2.heightHint = 40;
-      var2.horizontalSpan = 2;
-      this.composite.setLayoutData(var2);
+   private void createSearchButton(Composite parent) {
+      this.composite = new Composite(parent, 0);
+      GridData gridData = new GridData(768);
+      gridData.heightHint = 40;
+      gridData.horizontalSpan = 2;
+      this.composite.setLayoutData(gridData);
       this.composite.setLayout(new FillLayout());
       this.searchButton = this.createButton(this.composite, "s.search", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             SearchTab.this.getSearch().performSearch();
          }
       });
    }
 
-   protected void createViewFrames(SashForm var1) {
-      SearchViewFrame var2 = new SearchViewFrame(var1, "tab.search", "tab.search.buttonSmall", this);
-      this.addViewFrame(var2);
-      this.resultViewFrame = new ResultViewFrame(var1, "t.search.results", "tab.search.buttonSmall", this);
+   protected void createViewFrames(SashForm sashForm) {
+      SearchViewFrame searchViewFrame = new SearchViewFrame(sashForm, "tab.search", "tab.search.buttonSmall", this);
+      this.addViewFrame(searchViewFrame);
+      this.resultViewFrame = new ResultViewFrame(sashForm, "t.search.results", "tab.search.buttonSmall", this);
       this.addViewFrame(this.resultViewFrame);
-      this.createLeftSash(var2.getChildComposite());
+      this.createLeftSash(searchViewFrame.getChildComposite());
       this.createRightSash(this.resultViewFrame.getCTabFolder());
-      var2.setSearchTabs(this.searchTabs);
+      searchViewFrame.setSearchTabs(this.searchTabs);
    }
 
    public CTabFolder getCTabFolder() {
@@ -174,8 +174,8 @@ public class SearchTab extends AbstractTab {
    }
 
    private ASearchTab getSearch() {
-      CTabItem var1 = this.searchCTabFolder.getSelection();
-      return (ASearchTab)var1.getData();
+      CTabItem tabItem = this.searchCTabFolder.getSelection();
+      return (ASearchTab)tabItem.getData();
    }
 
    public boolean isButtonEnabled() {
@@ -187,9 +187,9 @@ public class SearchTab extends AbstractTab {
       this.getSearch().setFocus();
    }
 
-   public void setButtonEnabled(boolean var1) {
+   public void setButtonEnabled(boolean enabled) {
       if (this.searchButton != null && !this.searchButton.isDisposed()) {
-         this.searchButton.setEnabled(var1);
+         this.searchButton.setEnabled(enabled);
       }
    }
 }

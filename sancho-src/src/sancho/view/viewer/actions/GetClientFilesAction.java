@@ -7,16 +7,16 @@ import sancho.view.utility.SResources;
 public class GetClientFilesAction extends Action {
    Client[] clientArray;
 
-   public GetClientFilesAction(Client[] var1) {
+   public GetClientFilesAction(Client[] clients) {
       super(SResources.getString("mi.getClientFiles"));
       this.setImageDescriptor(SResources.getImageDescriptor("rotate"));
-      this.clientArray = var1;
+      this.clientArray = clients;
    }
 
    public void run() {
-      for (int var1 = 0; var1 < this.clientArray.length; var1++) {
-         if (this.clientArray[var1] != null) {
-            this.clientArray[var1].requestClientFiles();
+      for (int i = 0; i < this.clientArray.length; i++) {
+         if (this.clientArray[i] != null) {
+            this.clientArray[i].requestClientFiles();
          }
       }
    }

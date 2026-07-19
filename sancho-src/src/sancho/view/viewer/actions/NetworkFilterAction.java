@@ -9,8 +9,8 @@ public class NetworkFilterAction extends AbstractFilterAction {
    // $VF: synthetic field
    static Class class$sancho$view$viewer$filters$NetworkViewerFilter;
 
-   public NetworkFilterAction(GView var1, Network var2) {
-      super(var2.getName(), 2, var1, var2.getEnumNetwork());
+   public NetworkFilterAction(GView gView, Network network) {
+      super(network.getName(), 2, gView, network.getEnumNetwork());
       this.filterClass = class$sancho$view$viewer$filters$NetworkViewerFilter == null
          ? (class$sancho$view$viewer$filters$NetworkViewerFilter = class$("sancho.view.viewer.filters.NetworkViewerFilter"))
          : class$sancho$view$viewer$filters$NetworkViewerFilter;
@@ -21,11 +21,11 @@ public class NetworkFilterAction extends AbstractFilterAction {
    }
 
    // $VF: synthetic method
-   static Class class$(String var0) {
+   static Class class$(String className) {
       try {
-         return Class.forName(var0);
-      } catch (ClassNotFoundException var2) {
-         throw new NoClassDefFoundError(var2.getMessage());
+         return Class.forName(className);
+      } catch (ClassNotFoundException classNotFound) {
+         throw new NoClassDefFoundError(classNotFound.getMessage());
       }
    }
 }

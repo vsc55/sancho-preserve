@@ -8,23 +8,23 @@ import sancho.view.viewFrame.TabbedViewFrame;
 public class AddTabAction extends Action {
    TabbedViewFrame viewFrame;
 
-   public AddTabAction(TabbedViewFrame var1) {
+   public AddTabAction(TabbedViewFrame viewFrame) {
       super(SResources.getString("mi.d.addTab"));
       this.setImageDescriptor(SResources.getImageDescriptor("plus"));
-      this.viewFrame = var1;
+      this.viewFrame = viewFrame;
    }
 
    public void run() {
-      InputDialog var1 = new InputDialog(
+      InputDialog dialog = new InputDialog(
          this.viewFrame.getCTabFolder().getShell(),
          SResources.getString("ti.d.tabName"),
          SResources.getString("ti.d.tabName"),
          SResources.getString("My new tab!"),
          null
       );
-      if (var1.open() != 1) {
-         String var2 = var1.getValue();
-         this.viewFrame.createItem(var2);
+      if (dialog.open() != 1) {
+         String name = dialog.getValue();
+         this.viewFrame.createItem(name);
       }
    }
 }

@@ -9,17 +9,17 @@ import sancho.view.utility.SResources;
 public class NetworkDisableAction extends Action {
    EnumNetwork enumNetwork;
 
-   public NetworkDisableAction(EnumNetwork var1) {
+   public NetworkDisableAction(EnumNetwork enumNetwork) {
       super(SResources.getString("sl.n.disable"));
       this.setImageDescriptor(SResources.getImageDescriptor("menu-disconnect"));
-      this.enumNetwork = var1;
+      this.enumNetwork = enumNetwork;
    }
 
    public void run() {
       if (Sancho.hasCollectionFactory()) {
-         Network var1 = Sancho.getCore().getNetworkCollection().getByEnum(this.enumNetwork);
-         if (var1 != null) {
-            var1.toggleEnabled();
+         Network network = Sancho.getCore().getNetworkCollection().getByEnum(this.enumNetwork);
+         if (network != null) {
+            network.toggleEnabled();
          }
       }
    }

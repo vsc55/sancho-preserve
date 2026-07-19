@@ -4,29 +4,29 @@ import org.eclipse.swt.graphics.Image;
 import sancho.view.viewer.table.GTableLabelProvider;
 
 public class SubfilesTableLabelProvider extends GTableLabelProvider {
-   public SubfilesTableLabelProvider(SubfilesTableView var1) {
-      super(var1);
+   public SubfilesTableLabelProvider(SubfilesTableView view) {
+      super(view);
    }
 
-   public Image getColumnImage(Object var1, int var2) {
-      SubfileItem var3 = (SubfileItem)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public Image getColumnImage(Object element, int columnIndex) {
+      SubfileItem subfile = (SubfileItem)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getFileTypeImage();
+            return subfile.getFileTypeImage();
          default:
             return null;
       }
    }
 
-   public String getColumnText(Object var1, int var2) {
-      SubfileItem var3 = (SubfileItem)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      SubfileItem subfile = (SubfileItem)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getName();
+            return subfile.getName();
          case 1:
-            return var3.getSizeString();
+            return subfile.getSizeString();
          case 2:
-            return var3.getMagic();
+            return subfile.getMagic();
          default:
             return "";
       }

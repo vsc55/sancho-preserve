@@ -65,47 +65,47 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
    public static final int FDBLCLICK_PREVIEW = 1;
    public static final int FDBLCLICK_PREVIEW_OS = 2;
 
-   public DownloadTreeMenuListener(DownloadTreeView var1) {
-      super(var1);
+   public DownloadTreeMenuListener(DownloadTreeView view) {
+      super(view);
    }
 
-   public void setClientView(GView var1) {
-      this.clientView = var1;
+   public void setClientView(GView clientView) {
+      this.clientView = clientView;
    }
 
-   protected void sendToStatusline(String var1) {
-      if (var1 != null) {
-         this.gView.getViewFrame().getATab().getMainWindow().getStatusline().setText(var1);
+   protected void sendToStatusline(String text) {
+      if (text != null) {
+         this.gView.getViewFrame().getATab().getMainWindow().getStatusline().setText(text);
       }
    }
 
-   public void doubleClick(DoubleClickEvent var1) {
-      IStructuredSelection var2 = (IStructuredSelection)var1.getSelection();
-      Object var3 = var2.getFirstElement();
-      CustomTreeViewer var4 = (CustomTreeViewer)this.gView.getViewer();
-      if (var3 instanceof File) {
-         File var5 = (File)var3;
+   public void doubleClick(DoubleClickEvent event) {
+      IStructuredSelection selection = (IStructuredSelection)event.getSelection();
+      Object element = selection.getFirstElement();
+      CustomTreeViewer viewer = (CustomTreeViewer)this.gView.getViewer();
+      if (element instanceof File) {
+         File file = (File)element;
          switch (PreferenceLoader.loadInt("dlFileDoubleClick")) {
             case 2:
-               Program var6 = this.selectedFile.getOSPreviewApp();
-               if (var6 != null) {
-                  this.sendToStatusline(var5.preview(var6, -1));
+               Program program = this.selectedFile.getOSPreviewApp();
+               if (program != null) {
+                  this.sendToStatusline(file.preview(program, -1));
                   break;
                }
             case 1:
-               this.sendToStatusline(var5.preview(-1));
+               this.sendToStatusline(file.preview(-1));
                break;
             default:
-               if (var4.getExpandedState(var5)) {
-                  var4.collapseToLevel(var5, -1);
+               if (viewer.getExpandedState(file)) {
+                  viewer.collapseToLevel(file, -1);
                } else {
-                  var4.expandToLevel(var5, -1);
+                  viewer.expandToLevel(file, -1);
                }
          }
-      } else if (var3 instanceof FileClient && Sancho.hasCollectionFactory()) {
-         FileClient var7 = (FileClient)var3;
-         ClientDetailDialog var8 = new ClientDetailDialog(this.gView.getShell(), var7.getFile(), var7.getClient());
-         var8.open();
+      } else if (element instanceof FileClient && Sancho.hasCollectionFactory()) {
+         FileClient fileClient = (FileClient)element;
+         ClientDetailDialog dialog = new ClientDetailDialog(this.gView.getShell(), fileClient.getFile(), fileClient.getClient());
+         dialog.open();
       }
    }
 
@@ -126,58 +126,58 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
    }
 
    public void activateDragAndDrop() {
-      byte var1 = 23;
-      DragSource var2 = new DragSource(this.gView.getComposite(), var1);
-      var2.setTransfer(new Transfer[]{TextTransfer.getInstance()});
-      var2.addDragListener(new DragSourceAdapter() {
-         public void dragStart(DragSourceEvent var1) {
+      byte operations = 23;
+      DragSource dragSource = new DragSource(this.gView.getComposite(), operations);
+      dragSource.setTransfer(new Transfer[]{TextTransfer.getInstance()});
+      dragSource.addDragListener(new DragSourceAdapter() {
+         public void dragStart(DragSourceEvent event) {
             if (selectedFile == null) {
-               var1.doit = false;
+               event.doit = false;
             } else {
-               var1.doit = true;
+               event.doit = true;
                myDrag = true;
             }
          }
 
-         public void dragSetData(DragSourceEvent var1) {
-            var1.data = selectedFile.getED2K();
+         public void dragSetData(DragSourceEvent event) {
+            event.data = selectedFile.getED2K();
          }
 
-         public void dragFinished(DragSourceEvent var1) {
+         public void dragFinished(DragSourceEvent event) {
             myDrag = false;
          }
       });
-      DropTarget var3 = new DropTarget(this.gView.getComposite(), var1);
-      UniformResourceLocator var4 = UniformResourceLocator.getInstance();
-      TextTransfer var5 = TextTransfer.getInstance();
-      FileTransfer var6 = FileTransfer.getInstance();
-      var3.setTransfer(new Transfer[]{var4, var5, var6});
-      var3.addDropListener(new DropTargetAdapter() {
-         public void dragEnter(DropTargetEvent var1) {
-            if (var1.detail == 16) {
-               if ((var1.operations & 4) != 0) {
-                  var1.detail = 4;
-               } else if ((var1.operations & 1) != 0) {
-                  var1.detail = 1;
-               } else if ((var1.operations & 2) != 0) {
-                  var1.detail = 2;
+      DropTarget dropTarget = new DropTarget(this.gView.getComposite(), operations);
+      UniformResourceLocator urlTransfer = UniformResourceLocator.getInstance();
+      TextTransfer textTransfer = TextTransfer.getInstance();
+      FileTransfer fileTransfer = FileTransfer.getInstance();
+      dropTarget.setTransfer(new Transfer[]{urlTransfer, textTransfer, fileTransfer});
+      dropTarget.addDropListener(new DropTargetAdapter() {
+         public void dragEnter(DropTargetEvent event) {
+            if (event.detail == 16) {
+               if ((event.operations & 4) != 0) {
+                  event.detail = 4;
+               } else if ((event.operations & 1) != 0) {
+                  event.detail = 1;
+               } else if ((event.operations & 2) != 0) {
+                  event.detail = 2;
                } else {
-                  var1.detail = 0;
+                  event.detail = 0;
                }
             }
          }
 
-         public void drop(DropTargetEvent var1) {
-            if (var1.data != null && !myDrag) {
-               if (var5.isSupportedType(var1.currentDataType) || var4.isSupportedType(var1.currentDataType)) {
-                  SwissArmy.sendLink(gView.getCore(), (String)var1.data);
+         public void drop(DropTargetEvent event) {
+            if (event.data != null && !myDrag) {
+               if (textTransfer.isSupportedType(event.currentDataType) || urlTransfer.isSupportedType(event.currentDataType)) {
+                  SwissArmy.sendLink(gView.getCore(), (String)event.data);
                }
 
-               if (var6.isSupportedType(var1.currentDataType)) {
-                  String[] var2 = (String[])var1.data;
+               if (fileTransfer.isSupportedType(event.currentDataType)) {
+                  String[] links = (String[])event.data;
 
-                  for (int var3 = 0; var3 < var2.length; var3++) {
-                     SwissArmy.sendLink(gView.getCore(), var2[var3]);
+                  for (int i = 0; i < links.length; i++) {
+                     SwissArmy.sendLink(gView.getCore(), links[i]);
                   }
                }
             }
@@ -185,16 +185,16 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
       });
    }
 
-   public void selectionChanged(SelectionChangedEvent var1) {
-      IStructuredSelection var2 = (IStructuredSelection)var1.getSelection();
+   public void selectionChanged(SelectionChangedEvent event) {
+      IStructuredSelection selection = (IStructuredSelection)event.getSelection();
       this.selectedClients.clear();
       this.selectedObjects.clear();
 
-      for (Object var4 : var2) {
-         if (var4 instanceof File) {
-            this.selectedObjects.add(var4);
-         } else if (var4 instanceof FileClient) {
-            this.selectedClients.add(var4);
+      for (Object element : selection) {
+         if (element instanceof File) {
+            this.selectedObjects.add(element);
+         } else if (element instanceof FileClient) {
+            this.selectedClients.add(element);
          }
       }
 
@@ -208,142 +208,142 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
       }
    }
 
-   public void updateClientsTable(boolean var1) {
-      if (var1) {
-         if (this.clientTableVisible != var1 && this.selectedFile != null) {
+   public void updateClientsTable(boolean visible) {
+      if (visible) {
+         if (this.clientTableVisible != visible && this.selectedFile != null) {
             this.clientView.getViewer().setInput(this.selectedFile);
          }
       } else {
          this.clientView.getViewer().setInput(null);
       }
 
-      this.clientTableVisible = var1;
+      this.clientTableVisible = visible;
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
+   public void menuAboutToShow(IMenuManager menu) {
       if (this.selectedFile != null && this.selectedFileListContains(EnumFileState.DOWNLOADED)) {
-         var1.add(new CommitAction());
+         menu.add(new CommitAction());
       }
 
       if (this.selectedFile != null && this.selectedFile.getFileStateEnum() == EnumFileState.DOWNLOADED) {
-         MyMenuManager var2 = new MyMenuManager(SResources.getString("m.d.commitAs"));
-         var2.setImageString("commit");
-         var2.add(new CommitAction(true));
-         int var3 = PreferenceLoader.loadInt("maxMenuItems");
+         MyMenuManager commitAsMenu = new MyMenuManager(SResources.getString("m.d.commitAs"));
+         commitAsMenu.setImageString("commit");
+         commitAsMenu.add(new CommitAction(true));
+         int maxItems = PreferenceLoader.loadInt("maxMenuItems");
 
-         for (int var4 = 0; var4 < this.selectedFile.getNames().length && var4 < var3; var4++) {
-            var2.add(new CommitAction(this.selectedFile.getNames()[var4]));
+         for (int i = 0; i < this.selectedFile.getNames().length && i < maxItems; i++) {
+            commitAsMenu.add(new CommitAction(this.selectedFile.getNames()[i]));
          }
 
-         var1.add(var2);
+         menu.add(commitAsMenu);
       }
 
       if (this.selectedFile != null) {
-         var1.add(new FileDetailAction());
+         menu.add(new FileDetailAction());
          if (this.selectedFile.hasFileComments()) {
-            var1.add(new FileCommentsAction());
+            menu.add(new FileCommentsAction());
          }
       }
 
       if (this.selectedFile != null && this.selectedFile.getEnumNetwork() == EnumNetwork.FILETP) {
-         var1.add(new AddMirrorAction(this.selectedFile));
+         menu.add(new AddMirrorAction(this.selectedFile));
       }
 
       if (this.selectedFile != null && (this.selectedFileListContains(EnumFileState.DOWNLOADING) || this.selectedFileListContains(EnumFileState.QUEUED))) {
-         var1.add(new PauseAction());
+         menu.add(new PauseAction());
       }
 
       if (this.selectedFile != null && this.selectedFileListContains(EnumFileState.PAUSED)) {
-         var1.add(new ResumeAction());
+         menu.add(new ResumeAction());
       }
 
       if (this.selectedFile != null && this.selectedFileListContainsOtherThan(EnumFileState.DOWNLOADED)) {
-         var1.add(new CancelAction());
+         menu.add(new CancelAction());
       }
 
       if (this.selectedFile != null && this.selectedFileListContainsOtherThan(EnumFileState.DOWNLOADED)) {
-         MyMenuManager var6 = new MyMenuManager(SResources.getString("m.d.priority"));
-         var6.setImageString("priority");
-         var6.add(new PriorityAction(EnumPriority.VERY_HIGH));
-         var6.add(new PriorityAction(EnumPriority.HIGH));
-         var6.add(new PriorityAction(EnumPriority.NORMAL));
-         var6.add(new PriorityAction(EnumPriority.LOW));
-         var6.add(new PriorityAction(EnumPriority.VERY_LOW));
-         var6.add(new Separator());
-         var6.add(new CustomPriorityAction(false));
-         var6.add(new CustomPriorityAction(true));
-         var1.add(var6);
+         MyMenuManager priorityMenu = new MyMenuManager(SResources.getString("m.d.priority"));
+         priorityMenu.setImageString("priority");
+         priorityMenu.add(new PriorityAction(EnumPriority.VERY_HIGH));
+         priorityMenu.add(new PriorityAction(EnumPriority.HIGH));
+         priorityMenu.add(new PriorityAction(EnumPriority.NORMAL));
+         priorityMenu.add(new PriorityAction(EnumPriority.LOW));
+         priorityMenu.add(new PriorityAction(EnumPriority.VERY_LOW));
+         priorityMenu.add(new Separator());
+         priorityMenu.add(new CustomPriorityAction(false));
+         priorityMenu.add(new CustomPriorityAction(true));
+         menu.add(priorityMenu);
       }
 
       if (this.selectedFile != null && (this.selectedFile.getDownloaded() > 0L || this.selectedFile.getFileStateEnum() == EnumFileState.DOWNLOADED)) {
-         File[] var7 = new File[]{this.selectedFile};
-         int[] var11 = new int[]{-1};
-         this.addPreview(var1, var7, var11);
+         File[] files = new File[]{this.selectedFile};
+         int[] indices = new int[]{-1};
+         this.addPreview(menu, files, indices);
       }
 
       if (this.selectedFile != null && this.selectedFileListContainsOtherThan(EnumFileState.DOWNLOADED)) {
-         MyMenuManager var8 = new MyMenuManager(SResources.getString("m.d.rename"));
-         var8.setImageString("rename");
-         var8.add(new RenameAction(true));
-         int var12 = PreferenceLoader.loadInt("maxMenuItems");
+         MyMenuManager renameMenu = new MyMenuManager(SResources.getString("m.d.rename"));
+         renameMenu.setImageString("rename");
+         renameMenu.add(new RenameAction(true));
+         int maxItems = PreferenceLoader.loadInt("maxMenuItems");
 
-         for (int var14 = 0; var14 < this.selectedFile.getNames().length && var14 < var12; var14++) {
-            var8.add(new RenameAction(this.selectedFile.getNames()[var14]));
+         for (int i = 0; i < this.selectedFile.getNames().length && i < maxItems; i++) {
+            renameMenu.add(new RenameAction(this.selectedFile.getNames()[i]));
          }
 
-         var1.add(var8);
+         menu.add(renameMenu);
       }
 
       if (this.selectedFile != null) {
          if (this.selectedFile.getFormat().getFormat() == EnumFormat.MP3) {
-            var1.add(new EditMP3TagsAction());
+            menu.add(new EditMP3TagsAction());
          }
 
-         var1.add(new ConnectAllAction());
-         var1.add(new VerifyChunksAction());
-         var1.add(new RequestFileInfoAction());
+         menu.add(new ConnectAllAction());
+         menu.add(new VerifyChunksAction());
+         menu.add(new RequestFileInfoAction());
       }
 
       if (this.selectedClients.size() > 0) {
-         FileClient var9 = (FileClient)this.selectedClients.get(0);
-         Client[] var13 = new Client[this.selectedClients.size()];
+         FileClient firstFileClient = (FileClient)this.selectedClients.get(0);
+         Client[] clients = new Client[this.selectedClients.size()];
 
-         for (int var15 = 0; var15 < this.selectedClients.size(); var15++) {
-            FileClient var5 = (FileClient)this.selectedClients.get(var15);
-            var13[var15] = var5.getClient();
+         for (int i = 0; i < this.selectedClients.size(); i++) {
+            FileClient fileClient = (FileClient)this.selectedClients.get(i);
+            clients[i] = fileClient.getClient();
          }
 
-         this.addClientActions(this.gView.getShell(), var9.getFile(), var1, var13);
+         this.addClientActions(this.gView.getShell(), firstFileClient.getFile(), menu, clients);
       }
 
       if (this.selectedFile != null) {
-         var1.add(new SearchSimilarAction());
+         menu.add(new SearchSimilarAction());
       }
 
       if (this.selectedFile != null) {
-         this.addClipboardMenu(var1);
+         this.addClipboardMenu(menu);
       }
 
       if (this.selectedFile != null && this.gView.getCore().getProtocol() > 40) {
-         MyMenuManager var10 = new MyMenuManager(SResources.getString("m.d.userGroup"));
-         var10.setImageString("user");
-         var10.add(new ChownAction());
-         var10.add(new ChgrpAction());
-         var1.add(var10);
+         MyMenuManager userGroupMenu = new MyMenuManager(SResources.getString("m.d.userGroup"));
+         userGroupMenu.setImageString("user");
+         userGroupMenu.add(new ChownAction());
+         userGroupMenu.add(new ChgrpAction());
+         menu.add(userGroupMenu);
       }
 
       if (this.selectedFile != null) {
-         this.addWebServicesMenu(var1, this.selectedFile.getHash(), this.selectedFile.getED2K(), this.selectedFile.getSize());
+         this.addWebServicesMenu(menu, this.selectedFile.getHash(), this.selectedFile.getED2K(), this.selectedFile.getSize());
       }
 
       if (this.selectedFile != null || this.selectedClients.size() > 0) {
-         this.addSelectAllMenu(var1);
+         this.addSelectAllMenu(menu);
       }
    }
 
-   private boolean selectedFileListContains(EnumFileState var1) {
-      for (int var2 = 0; var2 < this.selectedObjects.size(); var2++) {
-         if (((File)this.selectedObjects.get(var2)).getFileStateEnum() == var1) {
+   private boolean selectedFileListContains(EnumFileState state) {
+      for (int i = 0; i < this.selectedObjects.size(); i++) {
+         if (((File)this.selectedObjects.get(i)).getFileStateEnum() == state) {
             return true;
          }
       }
@@ -351,9 +351,9 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
       return false;
    }
 
-   private boolean selectedFileListContainsOtherThan(EnumFileState var1) {
-      for (int var2 = 0; var2 < this.selectedObjects.size(); var2++) {
-         if (((File)this.selectedObjects.get(var2)).getFileStateEnum() != var1) {
+   private boolean selectedFileListContainsOtherThan(EnumFileState state) {
+      for (int i = 0; i < this.selectedObjects.size(); i++) {
+         if (((File)this.selectedObjects.get(i)).getFileStateEnum() != state) {
             return true;
          }
       }
@@ -362,14 +362,14 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
    }
 
    private void cancelSelectedFiles() {
-      MessageBox var1 = new MessageBox(this.gView.getShell(), 196);
-      var1.setMessage(SResources.getString("m.d.reallyCancel") + (this.selectedObjects.size() > 1 ? " (" + this.selectedObjects.size() + " selected)" : ""));
-      int var2 = var1.open();
-      if (var2 == 64) {
-         for (int var3 = 0; var3 < this.selectedObjects.size(); var3++) {
-            File var4 = (File)this.selectedObjects.get(var3);
-            if (var4.getFileStateEnum() != EnumFileState.DOWNLOADED) {
-               var4.setState(EnumFileState.CANCELLED);
+      MessageBox messageBox = new MessageBox(this.gView.getShell(), 196);
+      messageBox.setMessage(SResources.getString("m.d.reallyCancel") + (this.selectedObjects.size() > 1 ? " (" + this.selectedObjects.size() + " selected)" : ""));
+      int result = messageBox.open();
+      if (result == 64) {
+         for (int i = 0; i < this.selectedObjects.size(); i++) {
+            File file = (File)this.selectedObjects.get(i);
+            if (file.getFileStateEnum() != EnumFileState.DOWNLOADED) {
+               file.setState(EnumFileState.CANCELLED);
             }
          }
 
@@ -378,16 +378,16 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
    }
 
    private void renameSelectedFiles() {
-      for (int var1 = 0; var1 < this.selectedObjects.size(); var1++) {
-         File var2 = (File)this.selectedObjects.get(var1);
-         InputDialog var3 = new InputDialog(this.gView.getShell(), SResources.getString("m.d.rename"), SResources.getString("m.d.rename"), var2.getName(), null);
-         if (var3.open() != 0) {
+      for (int i = 0; i < this.selectedObjects.size(); i++) {
+         File file = (File)this.selectedObjects.get(i);
+         InputDialog dialog = new InputDialog(this.gView.getShell(), SResources.getString("m.d.rename"), SResources.getString("m.d.rename"), file.getName(), null);
+         if (dialog.open() != 0) {
             break;
          }
 
-         String var4 = var3.getValue();
-         if (!var4.equals("") && var2 != null) {
-            var2.rename(var4);
+         String newName = dialog.getValue();
+         if (!newName.equals("") && file != null) {
+            file.rename(newName);
          }
       }
    }
@@ -408,24 +408,24 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
    private class AddMirrorAction extends Action {
       File file;
 
-      public AddMirrorAction(File var2) {
+      public AddMirrorAction(File file) {
          super(SResources.getString("dd.f.addMirror"));
          this.setImageDescriptor(SResources.getImageDescriptor("plus"));
-         this.file = var2;
+         this.file = file;
       }
 
       public void run() {
-         InputDialog var1 = new InputDialog(
+         InputDialog dialog = new InputDialog(
             gView.getShell(),
             SResources.getString("dd.f.addMirror"),
             SResources.getString("dd.f.addMirrorInfo"),
             "",
             null
          );
-         var1.open();
-         String var2 = var1.getValue();
-         if (var2 != null) {
-            Sancho.send((short)29, "mirror " + this.file.getId() + " " + var2);
+         dialog.open();
+         String value = dialog.getValue();
+         if (value != null) {
+            Sancho.send((short)29, "mirror " + this.file.getId() + " " + value);
          }
       }
    }
@@ -450,13 +450,13 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
       }
 
       public void run() {
-         InputDialog var1 = new InputDialog(gView.getShell(), "chgrp", "chgrp", "", null);
-         var1.open();
-         String var2 = var1.getValue();
+         InputDialog dialog = new InputDialog(gView.getShell(), "chgrp", "chgrp", "", null);
+         dialog.open();
+         String group = dialog.getValue();
 
-         for (int var3 = 0; var3 < selectedObjects.size(); var3++) {
-            File var4 = (File)selectedObjects.get(var3);
-            var4.chgrp(var2);
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            File file = (File)selectedObjects.get(i);
+            file.chgrp(group);
          }
       }
    }
@@ -469,13 +469,13 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
       }
 
       public void run() {
-         InputDialog var1 = new InputDialog(gView.getShell(), "chown", "chown", "", null);
-         var1.open();
-         String var2 = var1.getValue();
+         InputDialog dialog = new InputDialog(gView.getShell(), "chown", "chown", "", null);
+         dialog.open();
+         String owner = dialog.getValue();
 
-         for (int var3 = 0; var3 < selectedObjects.size(); var3++) {
-            File var4 = (File)selectedObjects.get(var3);
-            var4.chown(var2);
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            File file = (File)selectedObjects.get(i);
+            file.chown(owner);
          }
       }
    }
@@ -491,26 +491,26 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
          this.setImageDescriptor(SResources.getImageDescriptor("commit"));
       }
 
-      public CommitAction(String var2) {
-         super(var2);
+      public CommitAction(String name) {
+         super(name);
          this.manualInput = false;
          this.setImageDescriptor(SResources.getImageDescriptor("commit"));
-         this.commitAs = var2;
+         this.commitAs = name;
       }
 
-      public CommitAction(boolean var2) {
+      public CommitAction(boolean manualInput) {
          super(SResources.getString("m.d.commitInput"));
          this.manualInput = false;
          this.setImageDescriptor(SResources.getImageDescriptor("commit_question"));
-         this.manualInput = var2;
+         this.manualInput = manualInput;
       }
 
       public void run() {
          if (this.commitAs == null && !this.manualInput) {
-            for (int var3 = 0; var3 < selectedObjects.size(); var3++) {
-               File var4 = (File)selectedObjects.get(var3);
-               if (var4.getFileStateEnum() == EnumFileState.DOWNLOADED) {
-                  var4.saveFileAs(var4.getName());
+            for (int i = 0; i < selectedObjects.size(); i++) {
+               File file = (File)selectedObjects.get(i);
+               if (file.getFileStateEnum() == EnumFileState.DOWNLOADED) {
+                  file.saveFileAs(file.getName());
                }
             }
          } else if (this.manualInput) {
@@ -518,17 +518,17 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
                return;
             }
 
-            InputDialog var1 = new InputDialog(
+            InputDialog dialog = new InputDialog(
                gView.getShell(),
                SResources.getString("m.d.commitAs"),
                SResources.getString("m.d.commitAs"),
                selectedFile.getName(),
                null
             );
-            if (var1.open() == 0) {
-               String var2 = var1.getValue();
-               if (!var2.equals("") && selectedFile != null) {
-                  selectedFile.saveFileAs(var2);
+            if (dialog.open() == 0) {
+               String value = dialog.getValue();
+               if (!value.equals("") && selectedFile != null) {
+                  selectedFile.saveFileAs(value);
                }
             }
          } else if (selectedFile != null) {
@@ -545,8 +545,8 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
       }
 
       public void run() {
-         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
-            ((File)selectedObjects.get(var1)).connectAll();
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            ((File)selectedObjects.get(i)).connectAll();
          }
       }
    }
@@ -555,10 +555,10 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
    private class CustomPriorityAction extends Action {
       private boolean relative;
 
-      public CustomPriorityAction(boolean var2) {
+      public CustomPriorityAction(boolean relative) {
          super("", 2);
-         this.relative = var2;
-         if (var2) {
+         this.relative = relative;
+         if (relative) {
             this.setText(SResources.getString("m.d.priorityRelative"));
          } else {
             this.setText(SResources.getString("m.d.priorityAbsolute"));
@@ -566,24 +566,24 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
       }
 
       public void run() {
-         String var1 = SResources.getString("m.d.priority")
+         String title = SResources.getString("m.d.priority")
             + " ("
             + (this.relative ? SResources.getString("m.d.priorityRelative") : SResources.getString("m.d.priorityAbsolute"))
             + ")";
-         PriorityInputDialog var2 = new PriorityInputDialog(
-            gView.getShell(), var1, this.relative ? 0 : selectedFile.getPriority()
+         PriorityInputDialog dialog = new PriorityInputDialog(
+            gView.getShell(), title, this.relative ? 0 : selectedFile.getPriority()
          );
-         if (var2.open() == 0) {
-            int var3 = var2.getIntValue();
-            int var4 = var2.getIncIntValue();
+         if (dialog.open() == 0) {
+            int value = dialog.getIntValue();
+            int increment = dialog.getIncIntValue();
 
-            for (int var5 = 0; var5 < selectedObjects.size(); var5++) {
-               File var6 = (File)selectedObjects.get(var5);
-               if (var6.getFileStateEnum() != EnumFileState.DOWNLOADED) {
-                  var6.sendPriority(this.relative, var3);
-                  int var7 = var3 += var4;
-                  if (var7 <= 255 && var7 >= -255) {
-                     var3 = var7;
+            for (int i = 0; i < selectedObjects.size(); i++) {
+               File file = (File)selectedObjects.get(i);
+               if (file.getFileStateEnum() != EnumFileState.DOWNLOADED) {
+                  file.sendPriority(this.relative, value);
+                  int newValue = value += increment;
+                  if (newValue <= 255 && newValue >= -255) {
+                     value = newValue;
                   }
                }
             }
@@ -645,10 +645,10 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
       }
 
       public void run() {
-         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
-            File var2 = (File)selectedObjects.get(var1);
-            if (var2.getFileStateEnum() != EnumFileState.PAUSED) {
-               var2.setState(EnumFileState.PAUSED);
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            File file = (File)selectedObjects.get(i);
+            if (file.getFileStateEnum() != EnumFileState.PAUSED) {
+               file.setState(EnumFileState.PAUSED);
             }
          }
       }
@@ -658,16 +658,16 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
    private class PriorityAction extends Action {
       private EnumPriority enumPriority;
 
-      public PriorityAction(EnumPriority var2) {
-         super(var2.getName().toLowerCase(), 2);
-         this.enumPriority = var2;
+      public PriorityAction(EnumPriority priority) {
+         super(priority.getName().toLowerCase(), 2);
+         this.enumPriority = priority;
       }
 
       public void run() {
-         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
-            File var2 = (File)selectedObjects.get(var1);
-            if (var2.getFileStateEnum() != EnumFileState.DOWNLOADED) {
-               var2.sendPriority(this.enumPriority);
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            File file = (File)selectedObjects.get(i);
+            if (file.getFileStateEnum() != EnumFileState.DOWNLOADED) {
+               file.sendPriority(this.enumPriority);
             }
          }
       }
@@ -687,21 +687,21 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
       CSpinner spinner2;
       Button okButton;
 
-      public PriorityInputDialog(Shell var1, String var2, int var3) {
-         super(var1);
-         this.initialValue = var3;
-         this.title = var2;
+      public PriorityInputDialog(Shell shell, String title, int initialValue) {
+         super(shell);
+         this.initialValue = initialValue;
+         this.title = title;
       }
 
-      protected void configureShell(Shell var1) {
-         super.configureShell(var1);
-         var1.setImage(VersionInfo.getProgramIcon());
-         var1.setText(this.title);
+      protected void configureShell(Shell shell) {
+         super.configureShell(shell);
+         shell.setImage(VersionInfo.getProgramIcon());
+         shell.setText(this.title);
       }
 
-      protected void createButtonsForButtonBar(Composite var1) {
-         this.okButton = this.createButton(var1, 0, SResources.getString("b.ok"), true);
-         this.createButton(var1, 1, SResources.getString("b.cancel"), false);
+      protected void createButtonsForButtonBar(Composite parent) {
+         this.okButton = this.createButton(parent, 0, SResources.getString("b.ok"), true);
+         this.createButton(parent, 1, SResources.getString("b.cancel"), false);
          this.spinner.setFocus();
       }
 
@@ -709,80 +709,80 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
          return this.okButton;
       }
 
-      protected Control createDialogArea(Composite var1) {
-         Composite var2 = (Composite)super.createDialogArea(var1);
-         var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 10, 5, false));
-         Scale var3 = new Scale(var2, 256);
-         GridData var4 = new GridData(768);
-         var4.widthHint = 300;
-         var3.setLayoutData(var4);
-         var3.setMinimum(0);
-         var3.setMaximum(200);
-         var3.setIncrement(1);
-         var3.setPageIncrement(5);
+      protected Control createDialogArea(Composite parent) {
+         Composite composite = (Composite)super.createDialogArea(parent);
+         composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 10, 5, false));
+         Scale scale = new Scale(composite, 256);
+         GridData gridData = new GridData(768);
+         gridData.widthHint = 300;
+         scale.setLayoutData(gridData);
+         scale.setMinimum(0);
+         scale.setMaximum(200);
+         scale.setIncrement(1);
+         scale.setPageIncrement(5);
          if (this.initialValue < -100) {
-            var3.setSelection(0);
+            scale.setSelection(0);
          } else if (this.initialValue > 100) {
-            var3.setSelection(200);
+            scale.setSelection(200);
          } else {
-            var3.setSelection(this.initialValue + 100);
+            scale.setSelection(this.initialValue + 100);
          }
 
-         var3.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent var1) {
-               int var2 = var3.getSelection() - 100;
-               spinner.setSelection(var2);
+         scale.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent event) {
+               int value = scale.getSelection() - 100;
+               spinner.setSelection(value);
             }
          });
-         this.spinner = new CSpinner(var2, 2048);
+         this.spinner = new CSpinner(composite, 2048);
          this.spinner.setMinimum(-200);
          this.spinner.setMaximum(200);
          this.spinner.setSelection(this.initialValue);
          this.spinner.addListener(31, new Listener() {
-            public void handleEvent(Event var1) {
-               if (var1.detail != 2 && var1.detail == 4) {
+            public void handleEvent(Event event) {
+               if (event.detail != 2 && event.detail == 4) {
                   onClose();
                   close();
                }
             }
          });
-         Composite var5 = new Composite(var2, 0);
-         var5.setLayout(WidgetFactory.createGridLayout(1, 25, 5, 10, 5, false));
-         var4 = new GridData(768);
-         var4.horizontalSpan = 2;
-         var5.setLayoutData(var4);
-         var5.setLayoutData(var4);
-         Group var6 = new Group(var5, 0);
-         var6.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 10, 5, false));
-         var4 = new GridData(768);
-         var6.setLayoutData(var4);
-         var6.setText(SResources.getString("m.d.priorityOptInc"));
-         Scale var7 = new Scale(var6, 256);
-         var7.setLayoutData(new GridData(768));
-         var7.setMinimum(0);
-         var7.setMaximum(40);
-         var7.setIncrement(1);
-         var7.setPageIncrement(5);
-         var7.setSelection(20);
-         var7.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent var1) {
-               int var2 = var7.getSelection() - 20;
-               spinner2.setSelection(var2);
+         Composite optionsComposite = new Composite(composite, 0);
+         optionsComposite.setLayout(WidgetFactory.createGridLayout(1, 25, 5, 10, 5, false));
+         gridData = new GridData(768);
+         gridData.horizontalSpan = 2;
+         optionsComposite.setLayoutData(gridData);
+         optionsComposite.setLayoutData(gridData);
+         Group group = new Group(optionsComposite, 0);
+         group.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 10, 5, false));
+         gridData = new GridData(768);
+         group.setLayoutData(gridData);
+         group.setText(SResources.getString("m.d.priorityOptInc"));
+         Scale incScale = new Scale(group, 256);
+         incScale.setLayoutData(new GridData(768));
+         incScale.setMinimum(0);
+         incScale.setMaximum(40);
+         incScale.setIncrement(1);
+         incScale.setPageIncrement(5);
+         incScale.setSelection(20);
+         incScale.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent event) {
+               int value = incScale.getSelection() - 20;
+               spinner2.setSelection(value);
             }
          });
-         this.spinner2 = new CSpinner(var6, 2048);
+         this.spinner2 = new CSpinner(group, 2048);
          this.spinner2.setMinimum(-20);
          this.spinner2.setMaximum(20);
          this.spinner2.setSelection(0);
          this.spinner2.addListener(31, new Listener() {
-            public void handleEvent(Event var1) {
-               if (var1.detail != 2 && var1.detail == 4) {
+            public void handleEvent(Event event) {
+               if (event.detail != 2 && event.detail == 4) {
                   onClose();
                   close();
                }
             }
          });
-         return var2;
+         return composite;
       }
 
       protected void onClose() {
@@ -790,9 +790,9 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
          this.incValue = this.spinner2.getSelection();
       }
 
-      protected void buttonPressed(int var1) {
+      protected void buttonPressed(int buttonId) {
          this.onClose();
-         super.buttonPressed(var1);
+         super.buttonPressed(buttonId);
       }
 
       public int getIntValue() {
@@ -809,18 +809,18 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
       private String renameAs;
       private boolean manualInput;
 
-      public RenameAction(String var2) {
-         super(var2);
+      public RenameAction(String name) {
+         super(name);
          this.manualInput = false;
          this.setImageDescriptor(selectedFile.getFileTypeImageDescriptor());
-         this.renameAs = var2;
+         this.renameAs = name;
       }
 
-      public RenameAction(boolean var2) {
+      public RenameAction(boolean manualInput) {
          super(SResources.getString("m.d.commitInput"));
          this.manualInput = false;
          this.setImageDescriptor(SResources.getImageDescriptor("commit_question"));
-         this.manualInput = var2;
+         this.manualInput = manualInput;
       }
 
       public void run() {
@@ -840,9 +840,9 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
       }
 
       public void run() {
-         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
-            File var2 = (File)selectedObjects.get(var1);
-            var2.requestFileInfo();
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            File file = (File)selectedObjects.get(i);
+            file.requestFileInfo();
          }
       }
    }
@@ -855,10 +855,10 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
       }
 
       public void run() {
-         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
-            File var2 = (File)selectedObjects.get(var1);
-            if (var2.getFileStateEnum() == EnumFileState.PAUSED) {
-               var2.setState(EnumFileState.DOWNLOADING);
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            File file = (File)selectedObjects.get(i);
+            if (file.getFileStateEnum() == EnumFileState.PAUSED) {
+               file.setState(EnumFileState.DOWNLOADING);
             }
          }
       }
@@ -872,21 +872,21 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
       }
 
       public void run() {
-         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
-            File var2 = (File)selectedObjects.get(var1);
-            String var3 = var2.getName();
-            String var4 = var2.getExtension();
-            if (var3.length() > var4.length() + 1) {
-               int var5 = var3.length() - var4.length() - 1;
-               var3 = var3.substring(0, var5);
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            File file = (File)selectedObjects.get(i);
+            String name = file.getName();
+            String extension = file.getExtension();
+            if (name.length() > extension.length() + 1) {
+               int endIndex = name.length() - extension.length() - 1;
+               name = name.substring(0, endIndex);
             }
 
-            var3 = SwissArmy.replaceAll(var3, "\\_", " ");
-            var3 = SwissArmy.replaceAll(var3, "\\.", " ");
-            var3 = SwissArmy.replaceAll(var3, "\\-", " ");
-            var3 = SwissArmy.replaceAll(var3, "\\?", " ");
-            var3 = SwissArmy.replaceAll(var3, "\\!", " ");
-            gView.getViewFrame().getATab().getMainWindow().autoSearch(var3);
+            name = SwissArmy.replaceAll(name, "\\_", " ");
+            name = SwissArmy.replaceAll(name, "\\.", " ");
+            name = SwissArmy.replaceAll(name, "\\-", " ");
+            name = SwissArmy.replaceAll(name, "\\?", " ");
+            name = SwissArmy.replaceAll(name, "\\!", " ");
+            gView.getViewFrame().getATab().getMainWindow().autoSearch(name);
          }
       }
    }
@@ -899,8 +899,8 @@ public class DownloadTreeMenuListener extends GTableMenuListenerClient implement
       }
 
       public void run() {
-         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
-            ((File)selectedObjects.get(var1)).verifyChunks();
+         for (int i = 0; i < selectedObjects.size(); i++) {
+            ((File)selectedObjects.get(i)).verifyChunks();
          }
       }
    }

@@ -19,8 +19,8 @@ public class ResultViewFrame extends CTabFolderViewFrame {
    ToolItem extendSearchToolItem;
    ToolItem closeAllTabsToolItem;
 
-   public ResultViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
-      super(var1, var2, var3, var4);
+   public ResultViewFrame(SashForm sashForm, String name, String text, AbstractTab tab) {
+      super(sashForm, name, text, tab);
       this.createViewListener(new ResultViewListener(this));
       this.createViewToolBar();
    }
@@ -33,10 +33,10 @@ public class ResultViewFrame extends CTabFolderViewFrame {
    }
 
    protected CTabFolder createCTabFolder() {
-      boolean var1 = PreferenceLoader.loadBoolean("resultsCTabFolderTabsOnTop");
-      CTabFolder var2 = WidgetFactory.createCTabFolder(this.childComposite, 64 | (var1 ? 128 : 1024));
-      WidgetFactory.addCTabFolderMenu(var2, "resultsCTabFolder");
-      return var2;
+      boolean tabsOnTop = PreferenceLoader.loadBoolean("resultsCTabFolderTabsOnTop");
+      CTabFolder cTabFolder = WidgetFactory.createCTabFolder(this.childComposite, 64 | (tabsOnTop ? 128 : 1024));
+      WidgetFactory.addCTabFolderMenu(cTabFolder, "resultsCTabFolder");
+      return cTabFolder;
    }
 
    public void createViewToolBar() {
@@ -53,17 +53,17 @@ public class ResultViewFrame extends CTabFolderViewFrame {
       this.closeAllTabsToolItem.setToolTipText(SResources.getString("ti.f.closeAllTabs"));
       this.closeAllTabsToolItem.setEnabled(false);
       this.closeAllTabsToolItem.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            CTabItem[] var2 = ResultViewFrame.this.cTabFolder.getItems();
+         public void widgetSelected(SelectionEvent event) {
+            CTabItem[] items = ResultViewFrame.this.cTabFolder.getItems();
 
-            for (int var3 = 0; var3 < var2.length; var3++) {
-               CTabItem var4 = var2[var3];
-               Control var5 = var4.getControl();
-               if (var5 != null && !var5.isDisposed()) {
-                  var5.dispose();
+            for (int i = 0; i < items.length; i++) {
+               CTabItem item = items[i];
+               Control control = item.getControl();
+               if (control != null && !control.isDisposed()) {
+                  control.dispose();
                }
 
-               var4.dispose();
+               item.dispose();
             }
          }
       });
@@ -74,7 +74,7 @@ public class ResultViewFrame extends CTabFolderViewFrame {
       this.extendSearchToolItem.setImage(SResources.getImage("plus"));
       this.extendSearchToolItem.setToolTipText(SResources.getString("ti.extendSearch"));
       this.extendSearchToolItem.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             Sancho.send((short)4);
          }
       });
@@ -89,16 +89,16 @@ public class ResultViewFrame extends CTabFolderViewFrame {
       this.pauseContinueToolItem = new ToolItem(this.toolBar, 0);
       this.togglePauseContinue(false);
       this.pauseContinueToolItem.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            CTabItem var2 = ResultViewFrame.this.cTabFolder.getSelection();
-            if (var2 != null) {
-               ResultTab var3 = (ResultTab)var2.getData();
-               if (var3 != null) {
-                  if (var3.isPaused()) {
+         public void widgetSelected(SelectionEvent event) {
+            CTabItem cTabItem = ResultViewFrame.this.cTabFolder.getSelection();
+            if (cTabItem != null) {
+               ResultTab resultTab = (ResultTab)cTabItem.getData();
+               if (resultTab != null) {
+                  if (resultTab.isPaused()) {
                      ResultViewFrame.this.togglePauseContinue(false);
-                     var3.unPause();
+                     resultTab.unPause();
                   } else {
-                     var3.pause();
+                     resultTab.pause();
                      ResultViewFrame.this.togglePauseContinue(true);
                   }
                }
@@ -111,24 +111,24 @@ public class ResultViewFrame extends CTabFolderViewFrame {
       }
    }
 
-   public void togglePauseContinue(boolean var1) {
-      this.pauseContinueToolItem.setImage(SResources.getImage(var1 ? "forward" : "pause"));
-      this.pauseContinueToolItem.setToolTipText(SResources.getString(var1 ? "ti.continueSearch" : "ti.pauseSearch"));
+   public void togglePauseContinue(boolean paused) {
+      this.pauseContinueToolItem.setImage(SResources.getImage(paused ? "forward" : "pause"));
+      this.pauseContinueToolItem.setToolTipText(SResources.getString(paused ? "ti.continueSearch" : "ti.pauseSearch"));
    }
 
    public void updatePauseContinue() {
       if (this.getGView() != null) {
-         CTabItem var1 = this.cTabFolder.getSelection();
-         if (var1 == null) {
+         CTabItem cTabItem = this.cTabFolder.getSelection();
+         if (cTabItem == null) {
             return;
          }
 
-         ResultTab var2 = (ResultTab)var1.getData();
-         if (var2 == null) {
+         ResultTab resultTab = (ResultTab)cTabItem.getData();
+         if (resultTab == null) {
             return;
          }
 
-         this.togglePauseContinue(var2.isPaused());
+         this.togglePauseContinue(resultTab.isPaused());
          this.pauseContinueToolItem.setEnabled(true);
       } else {
          this.togglePauseContinue(false);

@@ -20,25 +20,25 @@ public class LinkEntryItem {
    protected boolean linkEntryToggle = false;
    protected StatusConsole statusConsole;
 
-   public LinkEntryItem(StatusLine var1, StatusConsole var2) {
-      this.statusLine = var1;
-      this.statusConsole = var2;
-      this.linkEntryComposite = var1.getLinkEntryComposite();
-      this.composite = var1.getStatusline();
+   public LinkEntryItem(StatusLine statusLine, StatusConsole statusConsole) {
+      this.statusLine = statusLine;
+      this.statusConsole = statusConsole;
+      this.linkEntryComposite = statusLine.getLinkEntryComposite();
+      this.composite = statusLine.getStatusline();
       this.createContents();
    }
 
    public void createContents() {
-      Composite var1 = new Composite(this.composite, 0);
-      var1.setLayoutData(new GridData(1104));
-      var1.setLayout(new FillLayout());
-      final ToolBar var2 = new ToolBar(var1, 8388608);
-      ToolItem var3 = new ToolItem(var2, 8388608);
-      var3.setImage(SResources.getImage("http-add"));
-      var3.setToolTipText(SResources.getString("sl.httpAdd"));
-      var3.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
-            InputDialog dialog = new InputDialog(var2.getShell(), SResources.getString("sl.http.title"), SResources.getString("sl.http.linkTo"), "", null);
+      Composite composite = new Composite(this.composite, 0);
+      composite.setLayoutData(new GridData(1104));
+      composite.setLayout(new FillLayout());
+      final ToolBar toolBar = new ToolBar(composite, 8388608);
+      ToolItem httpAddItem = new ToolItem(toolBar, 8388608);
+      httpAddItem.setImage(SResources.getImage("http-add"));
+      httpAddItem.setToolTipText(SResources.getString("sl.httpAdd"));
+      httpAddItem.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
+            InputDialog dialog = new InputDialog(toolBar.getShell(), SResources.getString("sl.http.title"), SResources.getString("sl.http.linkTo"), "", null);
             dialog.open();
             String result = dialog.getValue();
             if (result != null) {
@@ -46,11 +46,11 @@ public class LinkEntryItem {
             }
          }
       });
-      ToolItem var4 = new ToolItem(var2, 0);
-      var4.setImage(SResources.getImage("web-link-12"));
-      var4.setToolTipText(SResources.getString("sl.rip"));
-      var4.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      ToolItem ripItem = new ToolItem(toolBar, 0);
+      ripItem.setImage(SResources.getImage("web-link-12"));
+      ripItem.setToolTipText(SResources.getString("sl.rip"));
+      ripItem.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             LinkRipper linkRipper = LinkEntryItem.this.statusLine.getMainWindow().getLinkRipper();
             if (linkRipper != null) {
                linkRipper.setFocus();
@@ -61,17 +61,17 @@ public class LinkEntryItem {
             }
          }
       });
-      final ToolItem var5 = new ToolItem(var2, 32);
-      var5.setImage(SResources.getImage("up_arrow_green"));
-      var5.setToolTipText(SResources.getString("sl.linkEntry"));
-      var5.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      final ToolItem linkToolItem = new ToolItem(toolBar, 32);
+      linkToolItem.setImage(SResources.getImage("up_arrow_green"));
+      linkToolItem.setToolTipText(SResources.getString("sl.linkEntry"));
+      linkToolItem.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             GridData gridData = new GridData(768);
             if (LinkEntryItem.this.linkEntryToggle) {
-               var5.setSelection(false);
+               linkToolItem.setSelection(false);
                gridData.heightHint = 0;
             } else {
-               var5.setSelection(true);
+               linkToolItem.setSelection(true);
                gridData.heightHint = 75;
             }
 
@@ -80,21 +80,21 @@ public class LinkEntryItem {
             LinkEntryItem.this.statusLine.getMainWindow().getMainComposite().layout();
          }
       });
-      final ToolItem var6 = new ToolItem(var2, 32);
-      var6.setImage(SResources.getImage("console-12"));
-      var6.setToolTipText(SResources.getString("tab.console.tooltip"));
+      final ToolItem consoleItem = new ToolItem(toolBar, 32);
+      consoleItem.setImage(SResources.getImage("console-12"));
+      consoleItem.setToolTipText(SResources.getString("tab.console.tooltip"));
       if (this.statusConsole.isVisible()) {
-         var6.setSelection(true);
+         consoleItem.setSelection(true);
       }
 
-      var6.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      consoleItem.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             LinkEntryItem.this.statusConsole.toggleVisible();
-            var6.setSelection(LinkEntryItem.this.statusConsole.isVisible());
+            consoleItem.setSelection(LinkEntryItem.this.statusConsole.isVisible());
          }
       });
    }
 
-   public void setupLinkRipper(LinkRipper var1) {
+   public void setupLinkRipper(LinkRipper linkRipper) {
    }
 }

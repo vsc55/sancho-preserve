@@ -4,29 +4,29 @@ import sancho.model.mldonkey.Result;
 import sancho.view.viewer.table.GTableLabelProvider;
 
 public class ClientFilesTableLabelProvider extends GTableLabelProvider {
-   public ClientFilesTableLabelProvider(ClientFilesTableView var1) {
-      super(var1);
+   public ClientFilesTableLabelProvider(ClientFilesTableView view) {
+      super(view);
    }
 
-   public String getColumnText(Object var1, int var2) {
-      Result var3 = (Result)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      Result result = (Result)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getName();
+            return result.getName();
          case 1:
-            return var3.getSizeString();
+            return result.getSizeString();
          case 2:
-            return var3.getFormat();
+            return result.getFormat();
          case 3:
-            return var3.getType();
+            return result.getType();
          case 4:
-            return var3.getCodecTag();
+            return result.getCodecTag();
          case 5:
-            return var3.getBitrateTagString();
+            return result.getBitrateTagString();
          case 6:
-            return var3.getLengthTag();
+            return result.getLengthTag();
          case 7:
-            return var3.getMD4().toUpperCase();
+            return result.getMD4().toUpperCase();
          default:
             return "";
       }

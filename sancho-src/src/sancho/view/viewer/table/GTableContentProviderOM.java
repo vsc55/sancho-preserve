@@ -8,73 +8,73 @@ import sancho.view.viewer.GView;
 public abstract class GTableContentProviderOM extends GTableContentProvider {
    protected boolean updateOnUpdate;
 
-   public GTableContentProviderOM(GView var1) {
-      super(var1);
+   public GTableContentProviderOM(GView gView) {
+      super(gView);
    }
 
-   public Object[] getElements(Object var1) {
-      if (var1 instanceof ObjectMap) {
-         synchronized (var1) {
-            ObjectMap var3 = (ObjectMap)var1;
-            var3.clearAllLists();
-            return var3.getKeyArray();
+   public Object[] getElements(Object input) {
+      if (input instanceof ObjectMap) {
+         synchronized (input) {
+            ObjectMap objectMap = (ObjectMap)input;
+            objectMap.clearAllLists();
+            return objectMap.getKeyArray();
          }
       } else {
          return GTableContentProvider.EMPTY_ARRAY;
       }
    }
 
-   public void setActive(boolean var1) {
-      if (var1 && this.needsRefresh) {
-         Object var2 = this.gView.getViewer().getInput();
-         if (var2 != null && var2 instanceof ObjectMap) {
-            this.updateHeaderLabel(((ObjectMap)var2).size());
+   public void setActive(boolean active) {
+      if (active && this.needsRefresh) {
+         Object input = this.gView.getViewer().getInput();
+         if (input != null && input instanceof ObjectMap) {
+            this.updateHeaderLabel(((ObjectMap)input).size());
          }
       }
 
-      super.setActive(var1);
+      super.setActive(active);
    }
 
-   public void setVisible(boolean var1) {
-      if (var1 && this.needsRefresh) {
-         Object var2 = this.gView.getViewer().getInput();
-         if (var2 != null && var2 instanceof ObjectMap) {
-            this.updateHeaderLabel(((ObjectMap)var2).size());
+   public void setVisible(boolean visible) {
+      if (visible && this.needsRefresh) {
+         Object input = this.gView.getViewer().getInput();
+         if (input != null && input instanceof ObjectMap) {
+            this.updateHeaderLabel(((ObjectMap)input).size());
          }
       }
 
-      super.setVisible(var1);
+      super.setVisible(visible);
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
-      this.onUpdate((ObjectMap)var1, var2, var3);
+   public void update(MyObservable observable, Object arg, int type) {
+      this.onUpdate((ObjectMap)observable, arg, type);
    }
 
-   public void onUpdate(ObjectMap var1, Object var2, int var3) {
+   public void onUpdate(ObjectMap objectMap, Object arg, int type) {
       if (this.gView != null && !this.gView.isDisposed()) {
          if (this.gView.isActive() && this.gView.isVisible()) {
             this.gView.getComposite().getDisplay().asyncExec(new Runnable() {
                public void run() {
                   if (GTableContentProviderOM.this.gView != null && !GTableContentProviderOM.this.gView.isDisposed()) {
-                     switch (var3) {
+                     switch (type) {
                         case 0:
-                           if (var1.added()) {
-                              GTableContentProviderOM.this.tableViewer.add(var1.getAndClearAdded());
-                              GTableContentProviderOM.this.updateHeaderLabel(var1.size());
+                           if (objectMap.added()) {
+                              GTableContentProviderOM.this.tableViewer.add(objectMap.getAndClearAdded());
+                              GTableContentProviderOM.this.updateHeaderLabel(objectMap.size());
                            }
                            break;
                         case 1:
-                           if (var1.updated()) {
-                              GTableContentProviderOM.this.tableViewer.update(var1.getAndClearUpdated(), SResources.SA_Z);
+                           if (objectMap.updated()) {
+                              GTableContentProviderOM.this.tableViewer.update(objectMap.getAndClearUpdated(), SResources.SA_Z);
                               if (GTableContentProviderOM.this.updateOnUpdate) {
-                                 GTableContentProviderOM.this.updateHeaderLabel(var1.size());
+                                 GTableContentProviderOM.this.updateHeaderLabel(objectMap.size());
                               }
                            }
                            break;
                         case 2:
-                           if (var1.removed()) {
-                              GTableContentProviderOM.this.tableViewer.remove(var1.getAndClearRemoved());
-                              GTableContentProviderOM.this.updateHeaderLabel(var1.size());
+                           if (objectMap.removed()) {
+                              GTableContentProviderOM.this.tableViewer.remove(objectMap.getAndClearRemoved());
+                              GTableContentProviderOM.this.updateHeaderLabel(objectMap.size());
                            }
                      }
                   }
@@ -86,5 +86,5 @@ public abstract class GTableContentProviderOM extends GTableContentProvider {
       }
    }
 
-   protected abstract void updateHeaderLabel(int var1);
+   protected abstract void updateHeaderLabel(int count);
 }

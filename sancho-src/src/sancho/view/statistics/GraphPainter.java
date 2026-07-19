@@ -25,192 +25,192 @@ public class GraphPainter {
    private Color textColor;
    private int updateDelay;
 
-   public GraphPainter(Composite var1, GraphData var2) {
-      this.parent = var1;
-      this.graph = var2;
-      this.graphName = var2.getGraphName();
+   public GraphPainter(Composite parent, GraphData graph) {
+      this.parent = parent;
+      this.graph = graph;
+      this.graphName = graph.getGraphName();
       this.updateDisplay();
    }
 
-   private void drawBarGraph(GC var1, int var2, float var3, float var4) {
-      int var5 = this.graph.getInsertAt() - 1;
-      int var6 = 1600 > this.graph.getNumPoints() ? this.graph.getNumPoints() : 1600;
-      var1.setForeground(this.graphColor1);
-      int var8 = 1;
-      byte var9 = 1;
+   private void drawBarGraph(GC gc, int width, float baseY, float scale) {
+      int pointIndex = this.graph.getInsertAt() - 1;
+      int remaining = 1600 > this.graph.getNumPoints() ? this.graph.getNumPoints() : 1600;
+      gc.setForeground(this.graphColor1);
+      int startX = 1;
+      byte step = 1;
       if (this.reverse) {
-         var8 = var2 - 2;
-         var9 = -1;
+         startX = width - 2;
+         step = -1;
       }
 
-      for (int var10 = var8; 0 <= var10 && var10 < var2 && var6 > 0; var6--) {
-         if (var5 < 0) {
-            var5 = 1599;
+      for (int x = startX; 0 <= x && x < width && remaining > 0; remaining--) {
+         if (pointIndex < 0) {
+            pointIndex = 1599;
          }
 
-         float var7 = (float)(this.graph.getPointAt(var5) / 10);
-         var7 = var3 - var7 * var4;
-         var1.drawLine(var10, (int)var3 + 1, var10, (int)var7);
-         var5--;
-         var10 += var9;
+         float value = (float)(this.graph.getPointAt(pointIndex) / 10);
+         value = baseY - value * scale;
+         gc.drawLine(x, (int)baseY + 1, x, (int)value);
+         pointIndex--;
+         x += step;
       }
    }
 
-   private void drawGradiantGraph(GC var1, int var2, float var3, float var4) {
-      int var5 = this.graph.getInsertAt() - 1;
-      int var6 = 1600 > this.graph.getNumPoints() ? this.graph.getNumPoints() : 1600;
-      var1.setBackground(this.graphColor1);
-      var1.setForeground(this.graphColor2);
-      int var8 = 1;
-      byte var9 = 1;
+   private void drawGradiantGraph(GC gc, int width, float baseY, float scale) {
+      int pointIndex = this.graph.getInsertAt() - 1;
+      int remaining = 1600 > this.graph.getNumPoints() ? this.graph.getNumPoints() : 1600;
+      gc.setBackground(this.graphColor1);
+      gc.setForeground(this.graphColor2);
+      int startX = 1;
+      byte step = 1;
       if (this.reverse) {
-         var8 = var2 - 2;
-         var9 = -1;
+         startX = width - 2;
+         step = -1;
       }
 
-      for (int var10 = var8; 0 <= var10 && var10 < var2 && var6 > 0; var6--) {
-         if (var5 < 0) {
-            var5 = 1599;
+      for (int x = startX; 0 <= x && x < width && remaining > 0; remaining--) {
+         if (pointIndex < 0) {
+            pointIndex = 1599;
          }
 
-         float var7 = (float)(this.graph.getPointAt(var5) / 10);
-         var7 = var3 - var7 * var4;
-         var1.fillGradientRectangle(var10, (int)var3 + 1, 1, (int)(var7 - var3), true);
-         var5--;
-         var10 += var9;
+         float value = (float)(this.graph.getPointAt(pointIndex) / 10);
+         value = baseY - value * scale;
+         gc.fillGradientRectangle(x, (int)baseY + 1, 1, (int)(value - baseY), true);
+         pointIndex--;
+         x += step;
       }
    }
 
-   private void drawLineGraph(GC var1, int var2, float var3, float var4) {
-      int var5 = this.graph.getInsertAt() - 1;
-      int var6 = 1600 > this.graph.getNumPoints() ? this.graph.getNumPoints() : 1600;
-      float var8 = -1.0F;
-      var1.setForeground(this.graphColor1);
-      var1.setLineWidth(3);
-      int var9 = 1;
-      byte var10 = 1;
-      byte var11 = -1;
+   private void drawLineGraph(GC gc, int width, float baseY, float scale) {
+      int pointIndex = this.graph.getInsertAt() - 1;
+      int remaining = 1600 > this.graph.getNumPoints() ? this.graph.getNumPoints() : 1600;
+      float prevY = -1.0F;
+      gc.setForeground(this.graphColor1);
+      gc.setLineWidth(3);
+      int startX = 1;
+      byte step = 1;
+      byte prevStep = -1;
       if (this.reverse) {
-         var9 = var2 - 2;
-         var10 = -1;
-         var11 = 1;
+         startX = width - 2;
+         step = -1;
+         prevStep = 1;
       }
 
-      for (int var12 = var9; 0 <= var12 && var12 < var2 && var6 > 0; var6--) {
-         if (var5 < 0) {
-            var5 = 1599;
+      for (int x = startX; 0 <= x && x < width && remaining > 0; remaining--) {
+         if (pointIndex < 0) {
+            pointIndex = 1599;
          }
 
-         float var7 = (float)(this.graph.getPointAt(var5) / 10);
-         var7 = var3 - var7 * var4;
-         if (var8 == -1.0F) {
-            var8 = var7;
+         float value = (float)(this.graph.getPointAt(pointIndex) / 10);
+         value = baseY - value * scale;
+         if (prevY == -1.0F) {
+            prevY = value;
          }
 
-         var1.drawLine(var12 + var11, (int)var8, var12, (int)var7);
-         var8 = var7;
-         var5--;
-         var12 += var10;
+         gc.drawLine(x + prevStep, (int)prevY, x, (int)value);
+         prevY = value;
+         pointIndex--;
+         x += step;
       }
 
-      var1.setLineWidth(1);
+      gc.setLineWidth(1);
    }
 
-   public void paint(GC var1, Image var2) {
-      GC var3 = new GC(var2);
-      var3.setBackground(this.backgroundColor);
-      var3.setForeground(this.backgroundColor);
-      int var4 = var2.getBounds().width;
-      int var5 = var2.getBounds().height;
-      var3.fillRectangle(0, 0, var4, var5);
-      int var6 = var3.getFontMetrics().getHeight() + 2;
-      int var7 = var5 - var6;
-      int var8 = var4 - 1;
-      float var9 = 0.0F;
-      float var10 = (float)(this.graph.findMax(var4) / 10);
-      var9 = ((float)var7 - 10.0F) / var10;
+   public void paint(GC gc, Image image) {
+      GC imageGc = new GC(image);
+      imageGc.setBackground(this.backgroundColor);
+      imageGc.setForeground(this.backgroundColor);
+      int width = image.getBounds().width;
+      int height = image.getBounds().height;
+      imageGc.fillRectangle(0, 0, width, height);
+      int lineHeight = imageGc.getFontMetrics().getHeight() + 2;
+      int baseY = height - lineHeight;
+      int maxX = width - 1;
+      float scale = 0.0F;
+      float maxValue = (float)(this.graph.findMax(width) / 10);
+      scale = ((float)baseY - 10.0F) / maxValue;
       switch (this.graphType) {
          case 1:
-            this.drawBarGraph(var3, var4, (float)var7, var9);
+            this.drawBarGraph(imageGc, width, (float)baseY, scale);
             break;
          case 2:
-            this.drawLineGraph(var3, var4, (float)var7, var9);
+            this.drawLineGraph(imageGc, width, (float)baseY, scale);
             break;
          default:
-            this.drawGradiantGraph(var3, var4, (float)var7, var9);
+            this.drawGradiantGraph(imageGc, width, (float)baseY, scale);
       }
 
-      var3.setForeground(this.gridColor);
-      int var11 = 0;
-      int var12 = 0;
-      int var13 = 1 + var8;
-      int var14 = 20;
+      imageGc.setForeground(this.gridColor);
+      int gridIndex = 0;
+      int startX = 0;
+      int endX = 1 + maxX;
+      int stepX = 20;
       if (this.reverse) {
-         var12 = var4 - 1;
-         var14 = -var14;
-         var13 = 0;
+         startX = width - 1;
+         stepX = -stepX;
+         endX = 0;
       }
 
-      int var15 = this.parent.getClientArea().height;
-      int var16 = var3.getFontMetrics().getHeight();
-      int var17 = var15 - var16;
-      int var18 = this.updateDelay > 0 ? this.updateDelay : 1;
+      int clientHeight = this.parent.getClientArea().height;
+      int fontHeight = imageGc.getFontMetrics().getHeight();
+      int textY = clientHeight - fontHeight;
+      int delay = this.updateDelay > 0 ? this.updateDelay : 1;
 
-      for (int var19 = var12; this.reverse ? var19 > var13 : var19 < var13; var19 += var14) {
-         var3.drawLine(var19, 0, var19, var7 + 1);
-         if (var11 > 0 && var11 % 3 == 0) {
-            var3.drawText(SwissArmy.calcTimeOfSeconds((long)(var18 * var11 * 20)), var19 - 5, var17, true);
+      for (int x = startX; this.reverse ? x > endX : x < endX; x += stepX) {
+         imageGc.drawLine(x, 0, x, baseY + 1);
+         if (gridIndex > 0 && gridIndex % 3 == 0) {
+            imageGc.drawText(SwissArmy.calcTimeOfSeconds((long)(delay * gridIndex * 20)), x - 5, textY, true);
          }
 
-         var11++;
+         gridIndex++;
       }
 
-      int var20 = 1 + var8;
+      int rightX = 1 + maxX;
 
-      for (int var21 = var7 + 1; var21 > 0; var21 -= 20) {
-         var3.drawLine(1, var21, var20, var21);
+      for (int y = baseY + 1; y > 0; y -= 20) {
+         imageGc.drawLine(1, y, rightX, y);
       }
 
-      double var22 = (double)this.graph.getNewestPoint() / 100.0;
-      String var24 = var22 + " KB/s";
-      int var25 = (int)((float)var7 - (float)(this.graph.getNewestPoint() / 10) * var9);
-      int var26 = var25;
-      int var27 = var25 - 6;
-      if (var27 + var6 >= var7) {
-         var27 = var7 - var6 - 3;
-         var26 = var25 - 6;
+      double newestRate = (double)this.graph.getNewestPoint() / 100.0;
+      String label = newestRate + " KB/s";
+      int pointY = (int)((float)baseY - (float)(this.graph.getNewestPoint() / 10) * scale);
+      int lineY = pointY;
+      int labelY = pointY - 6;
+      if (labelY + lineHeight >= baseY) {
+         labelY = baseY - lineHeight - 3;
+         lineY = pointY - 6;
       }
 
-      int var28 = var3.textExtent(var24).x + 20;
-      int var29 = var3.textExtent(var24).y + 5;
-      int var30 = 11;
-      int var31 = var30 + 10;
-      int var32 = var30;
-      int var33 = 1;
+      int labelWidth = imageGc.textExtent(label).x + 20;
+      int labelHeight = imageGc.textExtent(label).y + 5;
+      int labelX = 11;
+      int textX = labelX + 10;
+      int lineStartX = labelX;
+      int lineEndX = 1;
       if (this.reverse) {
-         var30 = var4 - var28 - 10;
-         var31 = var30 + 10;
-         var33 = var4 - 1;
-         var32 = var30 + var28;
+         labelX = width - labelWidth - 10;
+         textX = labelX + 10;
+         lineEndX = width - 1;
+         lineStartX = labelX + labelWidth;
       }
 
-      var3.setForeground(this.labelTextColor);
-      var3.setBackground(this.labelBackgroundColor);
-      var3.fillRoundRectangle(var30, var27, var28, var29, 18, 18);
-      var3.drawRoundRectangle(var30, var27, var28, var29, 18, 18);
-      var3.drawText(var24, var31, var27 + 2);
-      var3.setForeground(this.labelLineColor);
-      var3.drawLine(var32, var26, var33, var25);
-      var1.drawImage(var2, 0, 0);
-      var3.dispose();
+      imageGc.setForeground(this.labelTextColor);
+      imageGc.setBackground(this.labelBackgroundColor);
+      imageGc.fillRoundRectangle(labelX, labelY, labelWidth, labelHeight, 18, 18);
+      imageGc.drawRoundRectangle(labelX, labelY, labelWidth, labelHeight, 18, 18);
+      imageGc.drawText(label, textX, labelY + 2);
+      imageGc.setForeground(this.labelLineColor);
+      imageGc.drawLine(lineStartX, lineY, lineEndX, pointY);
+      gc.drawImage(image, 0, 0);
+      imageGc.dispose();
    }
 
-   public void setGraphType(int var1) {
-      this.graphType = var1;
+   public void setGraphType(int type) {
+      this.graphType = type;
    }
 
-   public void setReverse(boolean var1) {
-      this.reverse = var1;
+   public void setReverse(boolean reverse) {
+      this.reverse = reverse;
    }
 
    public void updateDisplay() {

@@ -10,13 +10,13 @@ public class MaximizeSashMouseAdapter extends HeaderBarMouseAdapter {
    private SashForm sashForm;
    private Control control;
 
-   public MaximizeSashMouseAdapter(CLabel var1, MenuManager var2, SashForm var3, Control var4) {
-      super(var1, var2);
-      this.sashForm = var3;
-      this.control = var4;
+   public MaximizeSashMouseAdapter(CLabel cLabel, MenuManager menuManager, SashForm sashForm, Control control) {
+      super(cLabel, menuManager);
+      this.sashForm = sashForm;
+      this.control = control;
    }
 
-   public void mouseDoubleClick(MouseEvent var1) {
+   public void mouseDoubleClick(MouseEvent event) {
       WidgetFactory.toggleMaximizedSashFormControl(this.sashForm, this.control);
    }
 }

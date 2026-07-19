@@ -13,10 +13,10 @@ import sancho.view.viewer.GView;
 public class CTabFolderViewFrame extends SashViewFrame {
    protected CTabFolder cTabFolder = this.createCTabFolder();
 
-   public CTabFolderViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
-      super(var1, var2, var3, var4);
+   public CTabFolderViewFrame(SashForm sashForm, String prefString, String imageString, AbstractTab tab) {
+      super(sashForm, prefString, imageString, tab);
       this.cTabFolder.addSelectionListener(new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+         public void widgetSelected(SelectionEvent event) {
             CTabFolderViewFrame.this.onCTabFolderSelection();
          }
       });
@@ -26,8 +26,8 @@ public class CTabFolderViewFrame extends SashViewFrame {
       return WidgetFactory.createCTabFolder(this.childComposite, 0);
    }
 
-   public void createViewListener(CTabFolderViewListener var1) {
-      this.setupViewListener(var1);
+   public void createViewListener(CTabFolderViewListener viewListener) {
+      this.setupViewListener(viewListener);
       this.cLabel.addMouseListener(new MaximizeSashMouseAdapter(this.cLabel, this.menuManager, this.getParentSashForm(), this.getControl()));
    }
 
@@ -52,12 +52,12 @@ public class CTabFolderViewFrame extends SashViewFrame {
    public void updateDisplay() {
       super.updateDisplay();
 
-      for (int var1 = 0; var1 < this.cTabFolder.getItems().length; var1++) {
-         CTabItem var2 = this.cTabFolder.getItems()[var1];
-         if (var2.getData("gView") != null) {
-            GView var3 = (GView)var2.getData("gView");
-            if (var3 != null) {
-               var3.updateDisplay();
+      for (int i = 0; i < this.cTabFolder.getItems().length; i++) {
+         CTabItem tabItem = this.cTabFolder.getItems()[i];
+         if (tabItem.getData("gView") != null) {
+            GView gView = (GView)tabItem.getData("gView");
+            if (gView != null) {
+               gView.updateDisplay();
             }
          }
       }
@@ -87,11 +87,11 @@ public class CTabFolderViewFrame extends SashViewFrame {
    }
 
    public void onDisconnect() {
-      for (int var1 = 0; var1 < this.cTabFolder.getItems().length; var1++) {
-         CTabItem var2 = this.cTabFolder.getItems()[var1];
-         if (var2.getData("gView") != null) {
-            GView var3 = (GView)var2.getData("gView");
-            var3.unsetInput();
+      for (int i = 0; i < this.cTabFolder.getItems().length; i++) {
+         CTabItem tabItem = this.cTabFolder.getItems()[i];
+         if (tabItem.getData("gView") != null) {
+            GView gView = (GView)tabItem.getData("gView");
+            gView.unsetInput();
          }
       }
 
@@ -99,11 +99,11 @@ public class CTabFolderViewFrame extends SashViewFrame {
    }
 
    public void onConnect() {
-      for (int var1 = 0; var1 < this.cTabFolder.getItems().length; var1++) {
-         CTabItem var2 = this.cTabFolder.getItems()[var1];
-         if (var2.getData("gView") != null) {
-            GView var3 = (GView)var2.getData("gView");
-            var3.setInput();
+      for (int i = 0; i < this.cTabFolder.getItems().length; i++) {
+         CTabItem tabItem = this.cTabFolder.getItems()[i];
+         if (tabItem.getData("gView") != null) {
+            GView gView = (GView)tabItem.getData("gView");
+            gView.setInput();
          }
       }
    }

@@ -30,11 +30,11 @@ import sancho.view.utility.WidgetFactory;
 public class CPreferencePage extends PreferencePage {
    protected List editorList = new ArrayList();
 
-   public CPreferencePage(String var1) {
-      super(var1);
+   public CPreferencePage(String title) {
+      super(title);
    }
 
-   protected Control createContents(Composite var1) {
+   protected Control createContents(Composite parent) {
       return null;
    }
 
@@ -53,138 +53,138 @@ public class CPreferencePage extends PreferencePage {
       }
    }
 
-   protected void contributeButtons(Composite var1) {
-      var1.setLayoutData(new GridData(768));
-      ((GridLayout)var1.getLayout()).numColumns++;
-      Label var2 = new Label(var1, 0);
-      var2.setLayoutData(new GridData(768));
-      var2.setText(SResources.getString("p.restart"));
+   protected void contributeButtons(Composite buttonBar) {
+      buttonBar.setLayoutData(new GridData(768));
+      ((GridLayout)buttonBar.getLayout()).numColumns++;
+      Label label = new Label(buttonBar, 0);
+      label.setLayoutData(new GridData(768));
+      label.setText(SResources.getString("p.restart"));
    }
 
-   protected void setupEditor(FieldEditor var1, Composite var2) {
-      this.editorList.add(var1);
-      if (var1.getNumberOfControls() < 3) {
-         var1.fillIntoGrid(var2, 3);
+   protected void setupEditor(FieldEditor editor, Composite parent) {
+      this.editorList.add(editor);
+      if (editor.getNumberOfControls() < 3) {
+         editor.fillIntoGrid(parent, 3);
       }
 
-      var1.setPage(this);
-      var1.setPreferenceStore(this.getPreferenceStore());
-      var1.load();
+      editor.setPage(this);
+      editor.setPreferenceStore(this.getPreferenceStore());
+      editor.load();
    }
 
-   protected void setupColorEditor(String var1, String var2, Composite var3) {
-      this.setupEditor(new ColorFieldEditor(var1, SResources.getString(var2), var3), var3);
+   protected void setupColorEditor(String name, String labelKey, Composite parent) {
+      this.setupEditor(new ColorFieldEditor(name, SResources.getString(labelKey), parent), parent);
    }
 
-   protected void setupFontEditor(String var1, String var2, Composite var3) {
-      this.setupEditor(new FontFieldEditor(var1, SResources.getString(var2), var3), var3);
+   protected void setupFontEditor(String name, String labelKey, Composite parent) {
+      this.setupEditor(new FontFieldEditor(name, SResources.getString(labelKey), parent), parent);
    }
 
-   protected void setupBooleanEditor(String var1, String var2, Composite var3) {
-      this.setupEditor(new BooleanFieldEditor(var1, SResources.getString(var2), var3), var3);
+   protected void setupBooleanEditor(String name, String labelKey, Composite parent) {
+      this.setupEditor(new BooleanFieldEditor(name, SResources.getString(labelKey), parent), parent);
    }
 
-   protected void setupIntegerEditor(String var1, String var2, int var3, int var4, Composite var5) {
-      IntegerFieldEditor var6 = new IntegerFieldEditor(var1, SResources.getString(var2), var5);
-      var6.setValidRange(var3, var4);
-      this.setupEditor(var6, var5);
+   protected void setupIntegerEditor(String name, String labelKey, int min, int max, Composite parent) {
+      IntegerFieldEditor editor = new IntegerFieldEditor(name, SResources.getString(labelKey), parent);
+      editor.setValidRange(min, max);
+      this.setupEditor(editor, parent);
    }
 
-   protected void setupStringEditor(String var1, String var2, char var3, Composite var4) {
-      this.setupStringEditor(var1, "", var2, var3, var4);
+   protected void setupStringEditor(String name, String labelKey, char echoChar, Composite parent) {
+      this.setupStringEditor(name, "", labelKey, echoChar, parent);
    }
 
-   protected void setupStringEditor(String var1, String var2, String var3, char var4, Composite var5) {
-      StringFieldEditor var6 = new StringFieldEditor(var1, var2 + SResources.getString(var3), var5);
-      if (var4 != '0') {
-         var6.getTextControl(var5).setEchoChar(var4);
+   protected void setupStringEditor(String name, String prefix, String labelKey, char echoChar, Composite parent) {
+      StringFieldEditor editor = new StringFieldEditor(name, prefix + SResources.getString(labelKey), parent);
+      if (echoChar != '0') {
+         editor.getTextControl(parent).setEchoChar(echoChar);
       }
 
-      this.setupEditor(var6, var5);
+      this.setupEditor(editor, parent);
    }
 
-   protected void setupDirectoryEditor(String var1, String var2, Composite var3) {
-      this.setupEditor(new GCJDirectoryFieldEditor(var1, SResources.getString(var2), var3), var3);
+   protected void setupDirectoryEditor(String name, String labelKey, Composite parent) {
+      this.setupEditor(new GCJDirectoryFieldEditor(name, SResources.getString(labelKey), parent), parent);
    }
 
-   protected void setupFileEditor(String var1, String var2, String[] var3, Composite var4) {
-      GCJFileFieldEditor var5 = new GCJFileFieldEditor(var1, SResources.getString(var2), false, var4, true);
-      var5.setFileExtensions(var3);
-      this.setupEditor(var5, var4);
+   protected void setupFileEditor(String name, String labelKey, String[] extensions, Composite parent) {
+      GCJFileFieldEditor editor = new GCJFileFieldEditor(name, SResources.getString(labelKey), false, parent, true);
+      editor.setFileExtensions(extensions);
+      this.setupEditor(editor, parent);
    }
 
-   protected void createSeparator(Composite var1) {
-      Label var2 = new Label(var1, 258);
-      GridData var3 = new GridData(768);
-      var3.horizontalSpan = 3;
-      var2.setLayoutData(var3);
+   protected void createSeparator(Composite parent) {
+      Label label = new Label(parent, 258);
+      GridData gridData = new GridData(768);
+      gridData.horizontalSpan = 3;
+      label.setLayoutData(gridData);
    }
 
-   protected void createInformationLabel(Composite var1, String var2) {
-      Label var3 = new Label(var1, 0);
-      GridData var4 = new GridData(768);
-      var4.horizontalSpan = 3;
-      var3.setLayoutData(var4);
-      var3.setText(SResources.getString(var2));
+   protected void createInformationLabel(Composite parent, String labelKey) {
+      Label label = new Label(parent, 0);
+      GridData gridData = new GridData(768);
+      gridData.horizontalSpan = 3;
+      label.setLayoutData(gridData);
+      label.setText(SResources.getString(labelKey));
    }
 
-   protected void setCompositeLayout(Composite var1) {
-      var1.setLayout(WidgetFactory.createGridLayout(3, 5, 5, 5, 5, false));
-      Point var2 = var1.computeSize(-1, -1);
-      ((ScrolledComposite)var1.getParent()).setMinSize(var2);
-      var1.layout();
+   protected void setCompositeLayout(Composite composite) {
+      composite.setLayout(WidgetFactory.createGridLayout(3, 5, 5, 5, 5, false));
+      Point size = composite.computeSize(-1, -1);
+      ((ScrolledComposite)composite.getParent()).setMinSize(size);
+      composite.layout();
    }
 
-   protected Composite createNewTab(TabFolder var1, String var2) {
-      return this.createNewTab(var1, var2, null);
+   protected Composite createNewTab(TabFolder tabFolder, String labelKey) {
+      return this.createNewTab(tabFolder, labelKey, null);
    }
 
-   protected Composite createNewTab(TabFolder var1, String var2, String var3) {
-      TabItem var4 = new TabItem(var1, 0);
-      Composite var5 = new Composite(var1, 0);
-      var5.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
-      var5.setLayoutData(new GridData(1808));
-      ScrolledComposite var6 = new ScrolledComposite(var5, 768) {
-         public Point computeSize(int var1, int var2, boolean var3) {
+   protected Composite createNewTab(TabFolder tabFolder, String labelKey, String imageKey) {
+      TabItem item = new TabItem(tabFolder, 0);
+      Composite composite = new Composite(tabFolder, 0);
+      composite.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
+      composite.setLayoutData(new GridData(1808));
+      ScrolledComposite scrolledComposite = new ScrolledComposite(composite, 768) {
+         public Point computeSize(int wHint, int hHint, boolean changed) {
             return new Point(-1, -1);
          }
       };
-      var6.setLayoutData(new GridData(1808));
-      var6.setLayout(new FillLayout());
-      var6.addControlListener(new ControlAdapter() {
-         public void controlResized(ControlEvent var1) {
-            ScrolledComposite var2 = (ScrolledComposite)var1.widget;
-            int var3 = var2.getClientArea().height;
-            if (var3 > 10) {
-               var3 -= 10;
+      scrolledComposite.setLayoutData(new GridData(1808));
+      scrolledComposite.setLayout(new FillLayout());
+      scrolledComposite.addControlListener(new ControlAdapter() {
+         public void controlResized(ControlEvent event) {
+            ScrolledComposite resizedComposite = (ScrolledComposite)event.widget;
+            int height = resizedComposite.getClientArea().height;
+            if (height > 10) {
+               height -= 10;
             }
 
-            ScrollBar var4 = var2.getVerticalBar();
-            if (var4 != null) {
-               var4.setIncrement(15);
-               var4.setPageIncrement(var3);
+            ScrollBar scrollBar = resizedComposite.getVerticalBar();
+            if (scrollBar != null) {
+               scrollBar.setIncrement(15);
+               scrollBar.setPageIncrement(height);
             }
          }
       });
-      Composite var7 = new Composite(var6, 0);
-      var6.setExpandHorizontal(true);
-      var6.setExpandVertical(true);
-      var6.setContent(var7);
-      var4.setControl(var5);
-      var4.setText(SResources.getString(var2));
-      if (var3 != null) {
-         var4.setImage(SResources.getImage(var3));
+      Composite content = new Composite(scrolledComposite, 0);
+      scrolledComposite.setExpandHorizontal(true);
+      scrolledComposite.setExpandVertical(true);
+      scrolledComposite.setContent(content);
+      item.setControl(composite);
+      item.setText(SResources.getString(labelKey));
+      if (imageKey != null) {
+         item.setImage(SResources.getImage(imageKey));
       }
 
-      return var7;
+      return content;
    }
 
    protected void performDefaults() {
       if (this.editorList != null) {
-         Iterator var1 = this.editorList.iterator();
+         Iterator iterator = this.editorList.iterator();
 
-         while (var1.hasNext()) {
-            ((FieldEditor)var1.next()).loadDefault();
+         while (iterator.hasNext()) {
+            ((FieldEditor)iterator.next()).loadDefault();
          }
       }
 
@@ -193,10 +193,10 @@ public class CPreferencePage extends PreferencePage {
 
    public boolean performOk() {
       if (this.editorList != null) {
-         Iterator var1 = this.editorList.iterator();
+         Iterator iterator = this.editorList.iterator();
 
-         while (var1.hasNext()) {
-            ((FieldEditor)var1.next()).store();
+         while (iterator.hasNext()) {
+            ((FieldEditor)iterator.next()).store();
          }
       }
 

@@ -10,21 +10,21 @@ import sancho.view.viewer.actions.ColumnSelectorAction;
 import sancho.view.viewer.actions.RemoveAllFiltersAction;
 
 public class UploadersViewListener extends SashViewListener {
-   public UploadersViewListener(SashViewFrame var1) {
-      super(var1);
+   public UploadersViewListener(SashViewFrame viewFrame) {
+      super(viewFrame);
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
-      var1.add(new ColumnSelectorAction(this.gView));
-      var1.add(new Separator());
-      this.createDynamicColumnSubMenu(var1);
-      this.createSortByColumnSubMenu(var1);
-      MyMenuManager var2 = new MyMenuManager(SResources.getString("mi.show"));
-      var2.setImageString("target");
-      var2.add(new RemoveAllFiltersAction(this.gView));
-      var2.add(new Separator());
-      this.createEnabledNetworkFilterSubMenu(var2);
-      var1.add(var2);
-      this.createSashActions(var1, "l.pending");
+   public void menuAboutToShow(IMenuManager menuManager) {
+      menuManager.add(new ColumnSelectorAction(this.gView));
+      menuManager.add(new Separator());
+      this.createDynamicColumnSubMenu(menuManager);
+      this.createSortByColumnSubMenu(menuManager);
+      MyMenuManager subMenuManager = new MyMenuManager(SResources.getString("mi.show"));
+      subMenuManager.setImageString("target");
+      subMenuManager.add(new RemoveAllFiltersAction(this.gView));
+      subMenuManager.add(new Separator());
+      this.createEnabledNetworkFilterSubMenu(subMenuManager);
+      menuManager.add(subMenuManager);
+      this.createSashActions(menuManager, "l.pending");
    }
 }

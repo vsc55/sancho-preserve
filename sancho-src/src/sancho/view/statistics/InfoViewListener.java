@@ -5,11 +5,11 @@ import sancho.view.viewFrame.SashViewFrame;
 import sancho.view.viewFrame.SashViewListener;
 
 public class InfoViewListener extends SashViewListener {
-   public InfoViewListener(SashViewFrame var1) {
-      super(var1);
+   public InfoViewListener(SashViewFrame sashViewFrame) {
+      super(sashViewFrame);
    }
 
-   public void menuAboutToShow(IMenuManager var1) {
-      this.createSashActions(var1, "tab.statistics.tooltip");
+   public void menuAboutToShow(IMenuManager menuManager) {
+      this.createSashActions(menuManager, "tab.statistics.tooltip");
    }
 }

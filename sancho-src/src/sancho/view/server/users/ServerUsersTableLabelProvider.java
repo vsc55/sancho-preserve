@@ -4,21 +4,21 @@ import sancho.model.mldonkey.User;
 import sancho.view.viewer.table.GTableLabelProvider;
 
 public class ServerUsersTableLabelProvider extends GTableLabelProvider {
-   public ServerUsersTableLabelProvider(ServerUsersTableView var1) {
-      super(var1);
+   public ServerUsersTableLabelProvider(ServerUsersTableView view) {
+      super(view);
    }
 
-   public String getColumnText(Object var1, int var2) {
-      User var3 = (User)var1;
-      switch (this.cViewer.getColumnIDs()[var2]) {
+   public String getColumnText(Object element, int columnIndex) {
+      User user = (User)element;
+      switch (this.cViewer.getColumnIDs()[columnIndex]) {
          case 0:
-            return var3.getName();
+            return user.getName();
          case 1:
-            return var3.getTagsString();
+            return user.getTagsString();
          case 2:
-            return var3.getAddr().toString();
+            return user.getAddr().toString();
          case 3:
-            return String.valueOf(var3.getPort()).intern();
+            return String.valueOf(user.getPort()).intern();
          default:
             return "??";
       }

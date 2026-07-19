@@ -48,31 +48,31 @@ public class Console {
    protected boolean usingHand;
    protected boolean underlineURLs;
 
-   public Console(Composite var1, int var2) {
-      this.createContents(var1, var2);
+   public Console(Composite parent, int style) {
+      this.createContents(parent, style);
       this.handCursor = new Cursor(this.infoDisplay.getDisplay(), 21);
       // Shows the hand cursor while the pointer hovers over an underlined URL.
       this.infoDisplay.addMouseMoveListener(new MouseMoveListener() {
-         public void mouseMove(MouseEvent var1) {
-            StyledText var2 = (StyledText)var1.widget;
+         public void mouseMove(MouseEvent event) {
+            StyledText styledText = (StyledText)event.widget;
 
             try {
-               int var3 = var2.getOffsetAtLocation(new Point(var1.x, var1.y));
-               StyleRange var4 = var2.getStyleRangeAtOffset(var3);
-               if (var4 == null || !var4.underline) {
+               int offset = styledText.getOffsetAtLocation(new Point(event.x, event.y));
+               StyleRange styleRange = styledText.getStyleRangeAtOffset(offset);
+               if (styleRange == null || !styleRange.underline) {
                   disableHand();
                } else if (!usingHand) {
-                  var2.setCursor(handCursor);
+                  styledText.setCursor(handCursor);
                   usingHand = true;
                }
-            } catch (IllegalArgumentException var5) {
+            } catch (IllegalArgumentException illegalArgument) {
                disableHand();
             }
          }
       });
       // Clears the hand cursor once the pointer leaves the display.
       this.infoDisplay.addMouseTrackListener(new MouseTrackAdapter() {
-         public void mouseExit(MouseEvent var1) {
+         public void mouseExit(MouseEvent event) {
             disableHand();
          }
       });
@@ -81,42 +81,42 @@ public class Console {
          int x;
          int y;
 
-         public void mouseDown(MouseEvent var1) {
-            this.x = var1.x;
-            this.y = var1.y;
+         public void mouseDown(MouseEvent event) {
+            this.x = event.x;
+            this.y = event.y;
          }
 
-         public void mouseUp(MouseEvent var1) {
-            if (var1.x == this.x) {
-               if (var1.y == this.y) {
-                  if (var1.button == 1) {
-                     StyledText var2 = (StyledText)var1.widget;
-                     int var3 = -1;
+         public void mouseUp(MouseEvent event) {
+            if (event.x == this.x) {
+               if (event.y == this.y) {
+                  if (event.button == 1) {
+                     StyledText styledText = (StyledText)event.widget;
+                     int offset = -1;
 
                      try {
-                        var3 = var2.getOffsetAtLocation(new Point(var1.x, var1.y));
-                        int var4 = var2.getLineAtOffset(var3);
-                        String var5 = var2.getContent().getLine(var4);
-                        int var6 = var2.getOffsetAtLine(var4);
-                        StyleRange[] var7 = var2.getStyleRanges(var6, var5.length());
-                        if (var7 != null) {
-                           for (int var8 = 0; var8 < var7.length; var8++) {
-                              if (var7[var8].underline) {
-                                 int var9 = var7[var8].start;
-                                 int var10 = var9 + var7[var8].length;
-                                 if (var3 >= var9 && var3 <= var10) {
-                                    String var11 = var2.getTextRange(var9, var7[var8].length);
-                                    if (!var11.toLowerCase().startsWith("http://")) {
-                                       var11 = "http://" + var11;
+                        offset = styledText.getOffsetAtLocation(new Point(event.x, event.y));
+                        int line = styledText.getLineAtOffset(offset);
+                        String lineText = styledText.getContent().getLine(line);
+                        int lineOffset = styledText.getOffsetAtLine(line);
+                        StyleRange[] styleRanges = styledText.getStyleRanges(lineOffset, lineText.length());
+                        if (styleRanges != null) {
+                           for (int i = 0; i < styleRanges.length; i++) {
+                              if (styleRanges[i].underline) {
+                                 int start = styleRanges[i].start;
+                                 int end = start + styleRanges[i].length;
+                                 if (offset >= start && offset <= end) {
+                                    String url = styledText.getTextRange(start, styleRanges[i].length);
+                                    if (!url.toLowerCase().startsWith("http://")) {
+                                       url = "http://" + url;
                                     }
 
-                                    WebLauncher.openLink(var11);
+                                    WebLauncher.openLink(url);
                                  }
                               }
                            }
                         }
-                     } catch (IllegalArgumentException var12) {
-                     } catch (Exception var13) {
+                     } catch (IllegalArgumentException illegalArgument) {
+                     } catch (Exception exception) {
                      }
                   }
                }
@@ -132,156 +132,156 @@ public class Console {
       }
    }
 
-   public void addMenuItem(Menu var1, String var2, String var3, SelectionAdapter var4) {
-      MenuItem var5 = new MenuItem(var1, 8);
-      var5.setText(SResources.getString(var2));
-      var5.setImage(SResources.getImage(var3));
-      var5.addSelectionListener(var4);
+   public void addMenuItem(Menu menu, String labelKey, String imageKey, SelectionAdapter listener) {
+      MenuItem menuItem = new MenuItem(menu, 8);
+      menuItem.setText(SResources.getString(labelKey));
+      menuItem.setImage(SResources.getImage(imageKey));
+      menuItem.addSelectionListener(listener);
    }
 
-   public void append(String var1) {
-      int var2;
-      if ((var2 = this.infoDisplay.getLineCount()) > this.MAX_LINES) {
-         this.infoDisplay.replaceTextRange(0, this.infoDisplay.getOffsetAtLine(var2 - this.MAX_LINES + 5), "");
+   public void append(String text) {
+      int lineCount;
+      if ((lineCount = this.infoDisplay.getLineCount()) > this.MAX_LINES) {
+         this.infoDisplay.replaceTextRange(0, this.infoDisplay.getOffsetAtLine(lineCount - this.MAX_LINES + 5), "");
       }
 
       this.infoDisplay.setCaretOffset(this.infoDisplay.getText().length());
-      this.infoDisplay.append(var1);
+      this.infoDisplay.append(text);
       if (this.underlineURLs) {
-         int var3 = this.infoDisplay.getCharCount();
-         var3 -= var1.length();
-         Matcher var4 = regex.matcher(var1);
-         while (var4.find()) {
-            String var6 = var4.group();
-            int var7 = var4.start();
-            int var8 = var4.end();
-            if (var6.startsWith("\"")) {
-                  var7++;
+         int base = this.infoDisplay.getCharCount();
+         base -= text.length();
+         Matcher matcher = regex.matcher(text);
+         while (matcher.find()) {
+            String match = matcher.group();
+            int start = matcher.start();
+            int end = matcher.end();
+            if (match.startsWith("\"")) {
+                  start++;
                }
 
-               if (var6.endsWith("\"")) {
-                  var8--;
-               } else if (var6.endsWith(".")) {
-                  var8--;
-               } else if (var6.endsWith(",")) {
-                  var8--;
-               } else if (var6.endsWith("?")) {
-                  var8--;
+               if (match.endsWith("\"")) {
+                  end--;
+               } else if (match.endsWith(".")) {
+                  end--;
+               } else if (match.endsWith(",")) {
+                  end--;
+               } else if (match.endsWith("?")) {
+                  end--;
                }
 
-               int var9 = var8 - var7;
-               if (var9 > 1) {
-                  StyleRange var10 = new StyleRange();
-                  var10.start = var3 + var7;
-                  var10.length = var9;
-                  var10.underline = true;
-                  this.infoDisplay.setStyleRange(var10);
+               int length = end - start;
+               if (length > 1) {
+                  StyleRange styleRange = new StyleRange();
+                  styleRange.start = base + start;
+                  styleRange.length = length;
+                  styleRange.underline = true;
+                  this.infoDisplay.setStyleRange(styleRange);
                }
             }
       }
 
-      this.infoDisplay.setCaretOffset(this.infoDisplay.getCaretOffset() + var1.length() + 1);
+      this.infoDisplay.setCaretOffset(this.infoDisplay.getCaretOffset() + text.length() + 1);
       this.infoDisplay.showSelection();
    }
 
-   protected void updateForeground(int var1, int var2, Color var3) {
-      StyleRange[] var4 = this.infoDisplay.getStyleRanges(var1, var2);
-      if (var4 == null) {
-         StyleRange var5 = new StyleRange();
-         var5.start = var1;
-         var5.length = var2;
-         var5.foreground = var3;
-         this.infoDisplay.setStyleRange(var5);
+   protected void updateForeground(int start, int length, Color color) {
+      StyleRange[] existing = this.infoDisplay.getStyleRanges(start, length);
+      if (existing == null) {
+         StyleRange styleRange = new StyleRange();
+         styleRange.start = start;
+         styleRange.length = length;
+         styleRange.foreground = color;
+         this.infoDisplay.setStyleRange(styleRange);
       } else {
-         int var9 = var1;
+         int cursor = start;
 
-         for (int var6 = 0; var6 < var4.length; var6++) {
-            int var7 = var4[var6].start;
-            if (var9 < var7) {
-               StyleRange var8 = new StyleRange();
-               var8.start = var9;
-               var8.length = var7 - var9;
-               var8.foreground = var3;
-               this.infoDisplay.setStyleRange(var8);
+         for (int i = 0; i < existing.length; i++) {
+            int rangeStart = existing[i].start;
+            if (cursor < rangeStart) {
+               StyleRange gapRange = new StyleRange();
+               gapRange.start = cursor;
+               gapRange.length = rangeStart - cursor;
+               gapRange.foreground = color;
+               this.infoDisplay.setStyleRange(gapRange);
             }
 
-            var9 = var7 + var4[var6].length;
-            var4[var6].foreground = var3;
-            this.infoDisplay.setStyleRange(var4[var6]);
+            cursor = rangeStart + existing[i].length;
+            existing[i].foreground = color;
+            this.infoDisplay.setStyleRange(existing[i]);
          }
 
-         if (var9 < var1 + var2) {
-            StyleRange var10 = new StyleRange();
-            var10.start = var9;
-            var10.length = var1 + var2 - var9;
-            var10.foreground = var3;
-            this.infoDisplay.setStyleRange(var10);
+         if (cursor < start + length) {
+            StyleRange tailRange = new StyleRange();
+            tailRange.start = cursor;
+            tailRange.length = start + length - cursor;
+            tailRange.foreground = color;
+            this.infoDisplay.setStyleRange(tailRange);
          }
       }
    }
 
    public void appendInput() {
       this.prefixAppend();
-      String var1 = this.input.getText();
-      this.appendNewLine(var1);
-      int var2 = this.infoDisplay.getCharCount() - var1.length() - this.getLineDelimiter().length();
-      this.updateForeground(var2, var1.length(), this.highlightColor);
+      String text = this.input.getText();
+      this.appendNewLine(text);
+      int offset = this.infoDisplay.getCharCount() - text.length() - this.getLineDelimiter().length();
+      this.updateForeground(offset, text.length(), this.highlightColor);
    }
 
-   public void appendNewLine(String var1) {
+   public void appendNewLine(String text) {
       if (!this.infoDisplay.isDisposed()) {
-         this.append(var1 + this.infoDisplay.getLineDelimiter());
+         this.append(text + this.infoDisplay.getLineDelimiter());
       }
    }
 
-   protected void createContents(Composite var1, int var2) {
-      this.composite = new Composite(var1, 0);
+   protected void createContents(Composite parent, int style) {
+      this.composite = new Composite(parent, 0);
       this.composite.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
-      this.infoDisplay = new StyledText(this.composite, var2 | 2 | 256 | 512 | 8);
+      this.infoDisplay = new StyledText(this.composite, style | 2 | 256 | 512 | 8);
       this.infoDisplay.setLayoutData(new GridData(1808));
       this.infoDisplay.setIndent(2);
       // Ctrl+F opens the incremental find dialog for the output area.
       this.infoDisplay.addKeyListener(new KeyAdapter() {
-         public void keyPressed(KeyEvent var1) {
-            if (var1.stateMask == SWT.MOD1 && var1.character == 6) {
+         public void keyPressed(KeyEvent event) {
+            if (event.stateMask == SWT.MOD1 && event.character == 6) {
                new FindDialog().open();
             }
          }
       });
-      Menu var3 = new Menu(this.infoDisplay);
-      this.addMenuItem(var3, "mi.copy", "copy", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      Menu menu = new Menu(this.infoDisplay);
+      this.addMenuItem(menu, "mi.copy", "copy", new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             MainWindow.copyToClipboard(infoDisplay.getSelectionText());
          }
       });
-      this.addMenuItem(var3, "mi.selectAll", "plus", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      this.addMenuItem(menu, "mi.selectAll", "plus", new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             infoDisplay.selectAll();
          }
       });
-      this.addMenuItem(var3, "mi.clear", "clear", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      this.addMenuItem(menu, "mi.clear", "clear", new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             infoDisplay.replaceTextRange(0, infoDisplay.getText().length(), "");
          }
       });
-      this.addMenuItem(var3, "l.find", "refine", new SelectionAdapter() {
-         public void widgetSelected(SelectionEvent var1) {
+      this.addMenuItem(menu, "l.find", "refine", new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent event) {
             new FindDialog().open();
          }
       });
-      this.infoDisplay.setMenu(var3);
+      this.infoDisplay.setMenu(menu);
       this.input = new Text(this.composite, 2052);
       this.input.setLayoutData(new GridData(768));
       // Input line: history navigation, find/clear shortcuts, paging and submit.
       this.input.addKeyListener(new KeyAdapter() {
-         public void keyPressed(KeyEvent var1) {
-            int var2 = infoDisplay.getClientArea().height / infoDisplay.getLineHeight();
-            if ((var1.stateMask & SWT.MOD1) != 0 && var1.keyCode == 102) {
+         public void keyPressed(KeyEvent event) {
+            int pageSize = infoDisplay.getClientArea().height / infoDisplay.getLineHeight();
+            if ((event.stateMask & SWT.MOD1) != 0 && event.keyCode == 102) {
                new FindDialog().open();
-            } else if ((var1.stateMask & SWT.MOD1) != 0 && var1.keyCode == 108) {
+            } else if ((event.stateMask & SWT.MOD1) != 0 && event.keyCode == 108) {
                infoDisplay.replaceTextRange(0, infoDisplay.getText().length(), "");
             } else {
-               switch (var1.keyCode) {
+               switch (event.keyCode) {
                   case 13:
                   case 16777296:
                      appendInput();
@@ -308,7 +308,7 @@ public class Console {
 
                         input.setText((String)commandHistory.get(historyMark--));
                         input.setSelection(input.getText().length());
-                        var1.doit = false;
+                        event.doit = false;
                      }
                      break;
                   case 16777218:
@@ -322,14 +322,14 @@ public class Console {
                      }
                      break;
                   case 16777221:
-                     if (infoDisplay.getTopIndex() > var2) {
-                        infoDisplay.setTopIndex(infoDisplay.getTopIndex() - var2);
+                     if (infoDisplay.getTopIndex() > pageSize) {
+                        infoDisplay.setTopIndex(infoDisplay.getTopIndex() - pageSize);
                      } else {
                         infoDisplay.setTopIndex(0);
                      }
                      break;
                   case 16777222:
-                     infoDisplay.setTopIndex(infoDisplay.getTopIndex() + var2);
+                     infoDisplay.setTopIndex(infoDisplay.getTopIndex() + pageSize);
                }
             }
          }
@@ -404,55 +404,55 @@ public class Console {
          this.lastFind = "";
       }
 
-      protected void configureShell(Shell var1) {
-         super.configureShell(var1);
-         var1.setImage(SResources.getImage("refine"));
-         var1.setText(SResources.getString("l.find"));
+      protected void configureShell(Shell shell) {
+         super.configureShell(shell);
+         shell.setImage(SResources.getImage("refine"));
+         shell.setText(SResources.getString("l.find"));
       }
 
-      protected void createButtonsForButtonBar(Composite var1) {
-         this.createButton(var1, 0, SResources.getString("l.find"), true);
-         this.createButton(var1, 1, SResources.getString("b.cancel"), false);
+      protected void createButtonsForButtonBar(Composite parent) {
+         this.createButton(parent, 0, SResources.getString("l.find"), true);
+         this.createButton(parent, 1, SResources.getString("b.cancel"), false);
       }
 
-      protected Control createDialogArea(Composite var1) {
-         Composite var2 = (Composite)super.createDialogArea(var1);
-         var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 10, 5, false));
-         Label var3 = new Label(var2, 0);
-         var3.setText(SResources.getString("l.find") + ": ");
-         var3.setLayoutData(new GridData(32));
-         this.text = new Text(var2, 2052);
+      protected Control createDialogArea(Composite parent) {
+         Composite composite = (Composite)super.createDialogArea(parent);
+         composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 10, 5, false));
+         Label label = new Label(composite, 0);
+         label.setText(SResources.getString("l.find") + ": ");
+         label.setLayoutData(new GridData(32));
+         this.text = new Text(composite, 2052);
          this.text.setLayoutData(new GridData(768));
          // Enter in the find field triggers the next search.
          this.text.addKeyListener(new KeyAdapter() {
-            public void keyPressed(KeyEvent var1) {
-               switch (var1.keyCode) {
+            public void keyPressed(KeyEvent event) {
+               switch (event.keyCode) {
                   case 13:
                   case 16777296:
                      find();
                }
             }
          });
-         this.infoLabel = new Label(var2, 0);
-         GridData var4 = new GridData(768);
-         var4.horizontalSpan = 2;
-         this.infoLabel.setLayoutData(var4);
-         return var2;
+         this.infoLabel = new Label(composite, 0);
+         GridData gridData = new GridData(768);
+         gridData.horizontalSpan = 2;
+         this.infoLabel.setLayoutData(gridData);
+         return composite;
       }
 
       protected void find() {
          if (this.text.getText().length() > 0) {
-            String var1 = this.text.getText().toLowerCase();
-            if (!this.lastFind.equals(var1)) {
+            String searchText = this.text.getText().toLowerCase();
+            if (!this.lastFind.equals(searchText)) {
                this.lastPos = 0;
             }
 
-            this.lastFind = var1;
-            String var2 = infoDisplay.getText().toLowerCase();
-            int var3 = var2.indexOf(var1, this.lastPos);
-            if (var3 != -1) {
-               this.lastPos = var3 + 1;
-               infoDisplay.setSelection(var3, var3 + var1.length());
+            this.lastFind = searchText;
+            String content = infoDisplay.getText().toLowerCase();
+            int index = content.indexOf(searchText, this.lastPos);
+            if (index != -1) {
+               this.lastPos = index + 1;
+               infoDisplay.setSelection(index, index + searchText.length());
                this.infoLabel.setText("");
             } else {
                this.infoLabel.setText(SResources.getString("l.stringNotFound"));
@@ -463,11 +463,11 @@ public class Console {
          }
       }
 
-      protected void buttonPressed(int var1) {
-         if (var1 == 0) {
+      protected void buttonPressed(int buttonId) {
+         if (buttonId == 0) {
             this.find();
          } else {
-            super.buttonPressed(var1);
+            super.buttonPressed(buttonId);
          }
       }
    }
@@ -478,7 +478,7 @@ public class Console {
             "(\"http://.+?\")|(http://[^\\s]+)|(www.[^\\s]+)|([\\d]{1,3}[.][\\d]{1,3}[.][\\d]{1,3}[.][\\d]{1,3}[:][\\d]{1,4})|([\\d]{1,3}[.][\\d]{1,3}[.][\\d]{1,3}[.][\\d]{1,3})",
             Pattern.CASE_INSENSITIVE
          );
-      } catch (PatternSyntaxException var1) {
+      } catch (PatternSyntaxException patternSyntaxException) {
       }
    }
 }

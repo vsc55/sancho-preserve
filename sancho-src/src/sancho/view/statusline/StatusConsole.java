@@ -17,10 +17,10 @@ public class StatusConsole implements IStatusItem {
    private ConsoleViewFrame viewFrame;
    private boolean isVisible;
 
-   public StatusConsole(SashForm var1, Composite var2, Composite var3) {
-      this.sashForm = var1;
-      this.pageContainer = var2;
-      this.composite = var3;
+   public StatusConsole(SashForm sashForm, Composite pageContainer, Composite composite) {
+      this.sashForm = sashForm;
+      this.pageContainer = pageContainer;
+      this.composite = composite;
       this.viewFrame = new ConsoleViewFrame(this.composite, "tab.console", "tab.console.buttonSmall", null);
       this.console = new Console(this.viewFrame.getChildComposite(), 0);
       if (this.isVisible()) {
@@ -37,32 +37,32 @@ public class StatusConsole implements IStatusItem {
       this.setVisible(!this.isVisible);
    }
 
-   public void setVisible(boolean var1) {
+   public void setVisible(boolean visible) {
       WidgetFactory.toggleMaximizedSashFormControl(this.sashForm, this.pageContainer);
-      this.isVisible = var1;
-      this.observe(var1);
+      this.isVisible = visible;
+      this.observe(visible);
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
-      if (var1 instanceof ConsoleMessage) {
-         this.updateConsole((String)var2);
+   public void update(MyObservable observable, Object value, int id) {
+      if (observable instanceof ConsoleMessage) {
+         this.updateConsole((String)value);
       }
    }
 
-   public void updateConsole(final String var1) {
+   public void updateConsole(final String text) {
       if (this.composite != null && !this.composite.isDisposed()) {
          this.composite.getDisplay().asyncExec(new Runnable() {
             public void run() {
                if (Sancho.hasCollectionFactory() && StatusConsole.this.console != null && !StatusConsole.this.console.isDisposed()) {
-                  StatusConsole.this.console.append(var1);
+                  StatusConsole.this.console.append(text);
                }
             }
          });
       }
    }
 
-   public void observe(boolean var1) {
-      if (var1) {
+   public void observe(boolean enabled) {
+      if (enabled) {
          if (Sancho.hasCollectionFactory()) {
             Sancho.getCore().getConsoleMessage().addObserver(this);
             this.updateConsole(Sancho.getCore().getConsoleMessage().getMessage());
@@ -77,8 +77,8 @@ public class StatusConsole implements IStatusItem {
       this.console.updateDisplay();
    }
 
-   public void setConnected(boolean var1) {
-      if (var1 && this.isVisible) {
+   public void setConnected(boolean connected) {
+      if (connected && this.isVisible) {
          this.observe(true);
       }
    }

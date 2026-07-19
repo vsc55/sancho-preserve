@@ -31,56 +31,56 @@ public class IDSelector extends Dialog {
    private boolean dragging;
    private String propString;
 
-   public IDSelector(Shell var1, String[] var2, String var3, String var4, String var5) {
-      super(var1);
-      this.legend = var2;
+   public IDSelector(Shell parentShell, String[] legend, String prefPrefix, String prefSuffix, String propName) {
+      super(parentShell);
+      this.legend = legend;
       this.allIDs = "";
 
-      for (int var6 = 0; var6 < var2.length; var6++) {
-         this.allIDs = this.allIDs + String.valueOf((char)(65 + var6));
+      for (int i = 0; i < legend.length; i++) {
+         this.allIDs = this.allIDs + String.valueOf((char)(65 + i));
       }
 
-      this.propString = var5;
-      this.prefOption = var3 + var4;
+      this.propString = propName;
+      this.prefOption = prefPrefix + prefSuffix;
       this.prefOptionOff = this.prefOption + "Off";
-      String var7 = PreferenceLoader.loadString(this.prefOption);
+      String prefValue = PreferenceLoader.loadString(this.prefOption);
       this.leftIDs = PreferenceLoader.loadString(this.prefOptionOff);
-      this.rightIDs = !var7.equals("") ? var7 : this.allIDs;
+      this.rightIDs = !prefValue.equals("") ? prefValue : this.allIDs;
 
-      for (int var8 = 0; var8 < this.allIDs.length(); var8++) {
-         if (this.leftIDs.indexOf(this.allIDs.charAt(var8)) == -1 && this.rightIDs.indexOf(this.allIDs.charAt(var8)) == -1) {
-            this.rightIDs = this.rightIDs + this.allIDs.charAt(var8);
+      for (int i = 0; i < this.allIDs.length(); i++) {
+         if (this.leftIDs.indexOf(this.allIDs.charAt(i)) == -1 && this.rightIDs.indexOf(this.allIDs.charAt(i)) == -1) {
+            this.rightIDs = this.rightIDs + this.allIDs.charAt(i);
          }
       }
    }
 
-   public Control createDialogArea(Composite var1) {
-      Composite var2 = (Composite)super.createDialogArea(var1);
-      var2.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
-      GridData var3 = new GridData(768);
-      var3.horizontalSpan = 2;
-      Label var4 = new Label(var2, 0);
-      var4.setText(SResources.getString("l.selectorInfo"));
-      var4.setLayoutData(var3);
-      this.createTable(var2);
-      this.createButtons(var2);
-      this.createDefault(var2);
-      return var2;
+   public Control createDialogArea(Composite parent) {
+      Composite composite = (Composite)super.createDialogArea(parent);
+      composite.setLayout(WidgetFactory.createGridLayout(2, 5, 5, 5, 5, false));
+      GridData gridData = new GridData(768);
+      gridData.horizontalSpan = 2;
+      Label label = new Label(composite, 0);
+      label.setText(SResources.getString("l.selectorInfo"));
+      label.setLayoutData(gridData);
+      this.createTable(composite);
+      this.createButtons(composite);
+      this.createDefault(composite);
+      return composite;
    }
 
-   protected void configureShell(Shell var1) {
-      super.configureShell(var1);
-      var1.setText(SResources.getString(this.propString) + " " + SResources.getString("l.selector"));
-      var1.setImage(SResources.getImage("preferences"));
+   protected void configureShell(Shell shell) {
+      super.configureShell(shell);
+      shell.setText(SResources.getString(this.propString) + " " + SResources.getString("l.selector"));
+      shell.setImage(SResources.getImage("preferences"));
    }
 
-   protected void createDefault(Composite var1) {
-      GridData var2 = new GridData(768);
-      var2.horizontalSpan = 2;
-      Button var3 = new Button(var1, 0);
-      var3.setText(SResources.getString("l.default"));
-      var3.setLayoutData(var2);
-      var3.addSelectionListener(new SelectionAdapter() {
+   protected void createDefault(Composite parent) {
+      GridData gridData = new GridData(768);
+      gridData.horizontalSpan = 2;
+      Button button = new Button(parent, 0);
+      button.setText(SResources.getString("l.default"));
+      button.setLayoutData(gridData);
+      button.addSelectionListener(new SelectionAdapter() {
          public void widgetSelected(SelectionEvent selectionEvent) {
             IDSelector.this.rightIDs = IDSelector.this.allIDs;
             IDSelector.this.leftIDs = "";
@@ -90,10 +90,10 @@ public class IDSelector extends Dialog {
       });
    }
 
-   public void createTable(Composite var1) {
-      this.table = new Table(var1, 67620);
+   public void createTable(Composite parent) {
+      this.table = new Table(parent, 67620);
       this.table.setLayoutData(new GridData(1808));
-      Listener var2 = new Listener() {
+      Listener listener = new Listener() {
          public void handleEvent(Event event) {
             switch (event.type) {
                case 3:
@@ -107,26 +107,26 @@ public class IDSelector extends Dialog {
             }
          }
       };
-      int[] var3 = new int[]{3, 4, 5};
+      int[] eventTypes = new int[]{3, 4, 5};
 
-      for (int var4 = 0; var4 < var3.length; var4++) {
-         this.table.addListener(var3[var4], var2);
+      for (int i = 0; i < eventTypes.length; i++) {
+         this.table.addListener(eventTypes[i], listener);
       }
 
       this.createItems();
    }
 
-   public void onMouseMove(Event var1) {
-      Table var2 = (Table)var1.widget;
-      TableItem var3 = var2.getItem(new Point(var1.x, var1.y));
-      if (var3 != null) {
-         if (this.hoverTableItem != null && this.hoverTableItem != var3) {
+   public void onMouseMove(Event event) {
+      Table table = (Table)event.widget;
+      TableItem tableItem = table.getItem(new Point(event.x, event.y));
+      if (tableItem != null) {
+         if (this.hoverTableItem != null && this.hoverTableItem != tableItem) {
             this.hoverTableItem.setBackground(null);
          }
 
          if (this.dragging) {
-            this.hoverTableItem = var3;
-            this.hoverTableItem.setBackground(var2.getDisplay().getSystemColor(22));
+            this.hoverTableItem = tableItem;
+            this.hoverTableItem.setBackground(table.getDisplay().getSystemColor(22));
          }
       } else {
          this.dragging = false;
@@ -137,24 +137,24 @@ public class IDSelector extends Dialog {
       }
    }
 
-   public void onMouseUp(Event var1) {
-      Table var2 = (Table)var1.widget;
-      TableItem var3 = var2.getItem(new Point(var1.x, var1.y));
+   public void onMouseUp(Event event) {
+      Table table = (Table)event.widget;
+      TableItem tableItem = table.getItem(new Point(event.x, event.y));
       if (this.dragging) {
-         if (this.hoverTableItem != null && var2.getSelection().length > 0) {
-            TableItem var4 = var2.getSelection()[0];
-            if (var4 != var3) {
-               int var5 = var2.getSelectionIndex();
-               boolean var6 = var4.getChecked();
-               String var7 = (String)var4.getData("ID");
-               int var8 = var7.charAt(0) - 'A';
-               var2.remove(var5);
-               int var9 = var2.indexOf(this.hoverTableItem) + 1;
-               TableItem var10 = new TableItem(var2, 0, var9);
-               var10.setData("ID", var7);
-               var10.setText(SResources.getString(this.legend[var8]));
-               var10.setChecked(var6);
-               var2.setSelection(var9);
+         if (this.hoverTableItem != null && table.getSelection().length > 0) {
+            TableItem selectedItem = table.getSelection()[0];
+            if (selectedItem != tableItem) {
+               int selectionIndex = table.getSelectionIndex();
+               boolean checked = selectedItem.getChecked();
+               String id = (String)selectedItem.getData("ID");
+               int legendIndex = id.charAt(0) - 'A';
+               table.remove(selectionIndex);
+               int newIndex = table.indexOf(this.hoverTableItem) + 1;
+               TableItem newItem = new TableItem(table, 0, newIndex);
+               newItem.setData("ID", id);
+               newItem.setText(SResources.getString(this.legend[legendIndex]));
+               newItem.setChecked(checked);
+               table.setSelection(newIndex);
                this.hoverTableItem.setBackground(null);
                this.hoverTableItem = null;
             }
@@ -164,40 +164,40 @@ public class IDSelector extends Dialog {
       }
    }
 
-   public void onMouseDown(Event var1) {
-      Table var2 = (Table)var1.widget;
-      TableItem var3 = var2.getItem(new Point(var1.x, var1.y));
-      if (var3 != null) {
+   public void onMouseDown(Event event) {
+      Table table = (Table)event.widget;
+      TableItem tableItem = table.getItem(new Point(event.x, event.y));
+      if (tableItem != null) {
          this.dragging = true;
          this.hoverTableItem = null;
       }
    }
 
    public void createItems() {
-      for (int var1 = 0; var1 < this.rightIDs.length(); var1++) {
-         TableItem var2 = new TableItem(this.table, 0);
-         int var3 = this.rightIDs.charAt(var1) - 'A';
-         var2.setData("ID", "" + this.rightIDs.charAt(var1));
-         var2.setText(SResources.getString(this.legend[var3]));
-         var2.setChecked(true);
+      for (int i = 0; i < this.rightIDs.length(); i++) {
+         TableItem tableItem = new TableItem(this.table, 0);
+         int legendIndex = this.rightIDs.charAt(i) - 'A';
+         tableItem.setData("ID", "" + this.rightIDs.charAt(i));
+         tableItem.setText(SResources.getString(this.legend[legendIndex]));
+         tableItem.setChecked(true);
       }
 
-      for (int var5 = 0; var5 < this.leftIDs.length(); var5++) {
-         TableItem var6 = new TableItem(this.table, 0);
-         int var4 = this.leftIDs.charAt(var5) - 'A';
-         var6.setData("ID", "" + this.leftIDs.charAt(var5));
-         var6.setText(SResources.getString(this.legend[var4]));
+      for (int i = 0; i < this.leftIDs.length(); i++) {
+         TableItem tableItem = new TableItem(this.table, 0);
+         int legendIndex = this.leftIDs.charAt(i) - 'A';
+         tableItem.setData("ID", "" + this.leftIDs.charAt(i));
+         tableItem.setText(SResources.getString(this.legend[legendIndex]));
       }
    }
 
-   public void createButtons(Composite var1) {
-      Composite var2 = new Composite(var1, 0);
-      var2.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 5, 5, false));
-      var2.setLayoutData(new GridData(1808));
-      Button var3 = new Button(var2, 0);
-      var3.setText(SResources.getString("l.up"));
-      var3.setLayoutData(new GridData(1808));
-      var3.addSelectionListener(new SelectionAdapter() {
+   public void createButtons(Composite parent) {
+      Composite composite = new Composite(parent, 0);
+      composite.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 5, 5, false));
+      composite.setLayoutData(new GridData(1808));
+      Button upButton = new Button(composite, 0);
+      upButton.setText(SResources.getString("l.up"));
+      upButton.setLayoutData(new GridData(1808));
+      upButton.addSelectionListener(new SelectionAdapter() {
          public void widgetSelected(SelectionEvent selectionEvent) {
             int selectionIndex;
             if ((selectionIndex = IDSelector.this.table.getSelectionIndex()) > 0) {
@@ -205,10 +205,10 @@ public class IDSelector extends Dialog {
             }
          }
       });
-      Button var4 = new Button(var2, 0);
-      var4.setText(SResources.getString("l.down"));
-      var4.setLayoutData(new GridData(1808));
-      var4.addSelectionListener(new SelectionAdapter() {
+      Button downButton = new Button(composite, 0);
+      downButton.setText(SResources.getString("l.down"));
+      downButton.setLayoutData(new GridData(1808));
+      downButton.addSelectionListener(new SelectionAdapter() {
          public void widgetSelected(SelectionEvent selectionEvent) {
             int selectionIndex = IDSelector.this.table.getSelectionIndex();
             if (selectionIndex < IDSelector.this.table.getItemCount() - 1 && selectionIndex > -1) {
@@ -218,24 +218,24 @@ public class IDSelector extends Dialog {
       });
    }
 
-   public void moveItem(int var1, int var2) {
-      TableItem var3 = this.table.getItem(var1);
-      boolean var4 = var3.getChecked();
-      String var5 = (String)var3.getData("ID");
-      int var6 = var5.charAt(0) - 'A';
-      this.table.remove(var1);
-      TableItem var7 = new TableItem(this.table, 0, var1 + var2);
-      var7.setData("ID", var5);
-      var7.setText(SResources.getString(this.legend[var6]));
-      var7.setChecked(var4);
-      this.table.setSelection(var1 + var2);
+   public void moveItem(int index, int offset) {
+      TableItem tableItem = this.table.getItem(index);
+      boolean checked = tableItem.getChecked();
+      String id = (String)tableItem.getData("ID");
+      int legendIndex = id.charAt(0) - 'A';
+      this.table.remove(index);
+      TableItem newItem = new TableItem(this.table, 0, index + offset);
+      newItem.setData("ID", id);
+      newItem.setText(SResources.getString(this.legend[legendIndex]));
+      newItem.setChecked(checked);
+      this.table.setSelection(index + offset);
    }
 
    public void savePrefs() {
       if (this.rightIDs.length() > 1) {
-         PreferenceStore var1 = PreferenceLoader.getPreferenceStore();
-         var1.setValue(this.prefOption, this.rightIDs);
-         var1.setValue(this.prefOptionOff, this.leftIDs);
+         PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+         preferenceStore.setValue(this.prefOption, this.rightIDs);
+         preferenceStore.setValue(this.prefOptionOff, this.leftIDs);
          PreferenceLoader.saveStore();
       }
 
@@ -245,77 +245,77 @@ public class IDSelector extends Dialog {
    }
 
    public void refreshLists() {
-      TableItem[] var1 = this.table.getItems();
+      TableItem[] items = this.table.getItems();
       this.leftIDs = "";
       this.rightIDs = "";
 
-      for (int var2 = 0; var2 < var1.length; var2++) {
-         if (var1[var2].getChecked()) {
-            this.rightIDs = this.rightIDs + (String)var1[var2].getData("ID");
+      for (int i = 0; i < items.length; i++) {
+         if (items[i].getChecked()) {
+            this.rightIDs = this.rightIDs + (String)items[i].getData("ID");
          } else {
-            this.leftIDs = this.leftIDs + (String)var1[var2].getData("ID");
+            this.leftIDs = this.leftIDs + (String)items[i].getData("ID");
          }
       }
    }
 
-   protected void buttonPressed(int var1) {
+   protected void buttonPressed(int buttonId) {
       this.refreshLists();
-      super.buttonPressed(var1);
+      super.buttonPressed(buttonId);
    }
 
-   public static String createIDString(String[] var0) {
-      StringBuffer var1 = new StringBuffer();
+   public static String createIDString(String[] legend) {
+      StringBuffer buffer = new StringBuffer();
 
-      for (int var2 = 0; var2 < var0.length; var2++) {
-         var1.append(String.valueOf((char)(65 + var2)));
+      for (int i = 0; i < legend.length; i++) {
+         buffer.append(String.valueOf((char)(65 + i)));
       }
 
-      return var1.toString().intern();
+      return buffer.toString().intern();
    }
 
-   public static String getID(int var0) {
-      return String.valueOf((char)(65 + var0));
+   public static String getID(int index) {
+      return String.valueOf((char)(65 + index));
    }
 
-   public static String loadIDs(String var0, String var1) {
-      String var2 = var0 + "Off";
-      String var3 = PreferenceLoader.loadString(var0);
-      String var4 = PreferenceLoader.loadString(var2);
+   public static String loadIDs(String prefName, String allIDs) {
+      String prefNameOff = prefName + "Off";
+      String rightIDs = PreferenceLoader.loadString(prefName);
+      String leftIDs = PreferenceLoader.loadString(prefNameOff);
 
-      for (int var5 = 0; var5 < var3.length(); var5++) {
-         if (var1.indexOf(var3.charAt(var5)) == -1) {
-            PreferenceStore var6 = PreferenceLoader.getPreferenceStore();
-            var6.setValue(var0, var1);
-            var6.setValue(var2, "");
-            return var1;
+      for (int i = 0; i < rightIDs.length(); i++) {
+         if (allIDs.indexOf(rightIDs.charAt(i)) == -1) {
+            PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+            preferenceStore.setValue(prefName, allIDs);
+            preferenceStore.setValue(prefNameOff, "");
+            return allIDs;
          }
       }
 
-      for (int var11 = 0; var11 < var4.length(); var11++) {
-         if (var1.indexOf(var4.charAt(var11)) == -1) {
-            PreferenceStore var7 = PreferenceLoader.getPreferenceStore();
-            var4 = "";
-            var7.setValue(var2, "");
+      for (int i = 0; i < leftIDs.length(); i++) {
+         if (allIDs.indexOf(leftIDs.charAt(i)) == -1) {
+            PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+            leftIDs = "";
+            preferenceStore.setValue(prefNameOff, "");
          }
       }
 
-      for (int var12 = 0; var12 < var1.length(); var12++) {
-         if (var3.indexOf(var1.charAt(var12)) == -1 && var4.indexOf(var1.charAt(var12)) == -1) {
-            var3 = var3 + var1.charAt(var12);
+      for (int i = 0; i < allIDs.length(); i++) {
+         if (rightIDs.indexOf(allIDs.charAt(i)) == -1 && leftIDs.indexOf(allIDs.charAt(i)) == -1) {
+            rightIDs = rightIDs + allIDs.charAt(i);
          }
       }
 
-      String var8 = "";
+      String filteredIDs = "";
 
-      for (int var9 = 0; var9 < var3.length(); var9++) {
-         if (var4.indexOf(var3.charAt(var9)) == -1) {
-            var8 = var8 + var3.charAt(var9);
+      for (int i = 0; i < rightIDs.length(); i++) {
+         if (leftIDs.indexOf(rightIDs.charAt(i)) == -1) {
+            filteredIDs = filteredIDs + rightIDs.charAt(i);
          }
       }
 
-      PreferenceStore var10 = PreferenceLoader.getPreferenceStore();
-      var10.setValue(var0, var8);
-      var10.setValue(var2, var4);
-      return var8.intern();
+      PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
+      preferenceStore.setValue(prefName, filteredIDs);
+      preferenceStore.setValue(prefNameOff, leftIDs);
+      return filteredIDs.intern();
    }
 }

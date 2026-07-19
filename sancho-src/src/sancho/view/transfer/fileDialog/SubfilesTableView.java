@@ -15,10 +15,10 @@ public class SubfilesTableView extends GTableView {
    IPreview iPreview;
    List itemList = new ArrayList();
 
-   public SubfilesTableView(ViewFrame var1, IPreview var2) {
-      super(var1);
-      this.iPreview = var2;
-      this.fillList(var2);
+   public SubfilesTableView(ViewFrame viewFrame, IPreview preview) {
+      super(viewFrame);
+      this.iPreview = preview;
+      this.fillList(preview);
       this.preferenceString = "fd.subFiles";
       this.columnLabels = new String[]{"fd.subFiles.name", "fd.subFiles.size", "fd.subFiles.magic"};
       this.columnAlignment = new int[]{16384, 131072, 16384};
@@ -27,15 +27,15 @@ public class SubfilesTableView extends GTableView {
       this.tableContentProvider = new SubfilesTableContentProvider(this);
       this.tableLabelProvider = new SubfilesTableLabelProvider(this);
       this.tableMenuListener = new SubfilesTableMenuListener(this);
-      this.createContents(var1.getChildComposite());
+      this.createContents(viewFrame.getChildComposite());
    }
 
    public IPreview getIPreview() {
       return this.iPreview;
    }
 
-   protected void createContents(Composite var1) {
-      super.createContents(var1);
+   protected void createContents(Composite composite) {
+      super.createContents(composite);
       this.sViewer.addSelectionChangedListener((SubfilesTableMenuListener)this.tableMenuListener);
       this.addMenuListener();
       this.updateHeader();
@@ -49,18 +49,18 @@ public class SubfilesTableView extends GTableView {
       this.getViewFrame().updateCLabelText(SResources.getString("l.subFiles") + ": " + this.getTable().getItemCount());
    }
 
-   protected void fillList(IPreview var1) {
-      String[] var2 = var1.getSubFileNames();
-      long[] var3 = var1.getSubFileSizes();
-      String[] var4 = var1.getSubFileMagics();
-      if (var2 != null) {
-         for (int var5 = 0; var5 < var2.length; var5++) {
-            String var6 = "";
-            if (var4 != null && var4.length > var5) {
-               var6 = var4[var5];
+   protected void fillList(IPreview preview) {
+      String[] names = preview.getSubFileNames();
+      long[] sizes = preview.getSubFileSizes();
+      String[] magics = preview.getSubFileMagics();
+      if (names != null) {
+         for (int i = 0; i < names.length; i++) {
+            String magic = "";
+            if (magics != null && magics.length > i) {
+               magic = magics[i];
             }
 
-            this.itemList.add(new SubfileItem(var5, var2[var5], var3[var5], var6));
+            this.itemList.add(new SubfileItem(i, names[i], sizes[i], magic));
          }
       }
    }

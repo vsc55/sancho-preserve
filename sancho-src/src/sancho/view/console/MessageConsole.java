@@ -9,9 +9,9 @@ public class MessageConsole extends Console {
    private static final SimpleDateFormat sdFormatter = new SimpleDateFormat("[HH:mm:ss] ");
    protected int clientId;
 
-   public MessageConsole(Composite var1, int var2, int var3) {
-      super(var1, var2);
-      this.clientId = var3;
+   public MessageConsole(Composite composite, int style, int clientId) {
+      super(composite, style);
+      this.clientId = clientId;
    }
 
    public void prefixAppend() {
@@ -24,8 +24,8 @@ public class MessageConsole extends Console {
 
    public void sendMessage() {
       if (Sancho.hasCollectionFactory()) {
-         Object[] var1 = new Object[]{Integer.valueOf(this.clientId), this.input.getText()};
-         Sancho.send((short)43, var1);
+         Object[] args = new Object[]{Integer.valueOf(this.clientId), this.input.getText()};
+         Sancho.send((short)43, args);
       }
    }
 }
