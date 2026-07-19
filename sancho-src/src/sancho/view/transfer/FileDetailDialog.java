@@ -5,6 +5,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowData;
@@ -15,6 +20,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import sancho.core.Sancho;
@@ -117,7 +123,11 @@ public class FileDetailDialog extends AbstractDetailDialog {
       if (var5) {
          if (this.file.hasFileComments()) {
             CTabItem var12 = new CTabItem(var6, 0);
-            FileDetailDialog$1 var14 = new FileDetailDialog$1(this, var6, 0);
+            Composite var14 = new Composite(var6, 0) {
+               public Point computeSize(int var1, int var2, boolean var3) {
+                  return new Point(-1, -1);
+               }
+            };
             var14.setLayout(new FillLayout());
             this.fileCommentsViewFrame = new FileCommentsViewFrame(var14, "l.fileComments", "tab.transfers.buttonSmall", null, this.file);
             var12.setControl(var14);
@@ -129,7 +139,11 @@ public class FileDetailDialog extends AbstractDetailDialog {
 
          if (var4) {
             CTabItem var13 = new CTabItem(var6, 0);
-            FileDetailDialog$2 var15 = new FileDetailDialog$2(this, var6, 0);
+            Composite var15 = new Composite(var6, 0) {
+               public Point computeSize(int var1, int var2, boolean var3) {
+                  return new Point(-1, -1);
+               }
+            };
             var15.setLayout(new FillLayout());
             new SubfilesViewFrame(var15, "l.subFiles", "tab.transfers.buttonSmall", null, this.file);
             var13.setControl(var15);
@@ -229,11 +243,23 @@ public class FileDetailDialog extends AbstractDetailDialog {
       GridData var5 = new GridData(768);
       var5.widthHint = 1;
       var4.setLayoutData(var5);
-      var4.addKeyListener(new FileDetailDialog$3(this, var4));
+      var4.addKeyListener(new KeyAdapter() {
+         public void keyPressed(KeyEvent var1) {
+            if (var1.character == '\r') {
+               FileDetailDialog.this.addMirror(var4.getText());
+               var4.setText("");
+            }
+         }
+      });
       Button var6 = new Button(var3, 0);
       var6.setText(SResources.getString("dd.f.addMirror"));
       var6.setLayoutData(new GridData(128));
-      var6.addSelectionListener(new FileDetailDialog$4(this, var4));
+      var6.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            FileDetailDialog.this.addMirror(var4.getText());
+            var4.setText("");
+         }
+      });
    }
 
    public void addMirror(String var1) {
@@ -258,7 +284,12 @@ public class FileDetailDialog extends AbstractDetailDialog {
       var4.heightHint = 80;
       var4.widthHint = 1;
       this.renameList.setLayoutData(var4);
-      this.renameList.addSelectionListener(new FileDetailDialog$5(this));
+      this.renameList.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            String var2 = FileDetailDialog.this.renameList.getSelection()[0];
+            FileDetailDialog.this.renameText.setText(var2);
+         }
+      });
       Composite var5 = new Composite(var1, 0);
       var5.setLayout(WidgetFactory.createGridLayout(2, 0, 0, 4, 0, false));
       var5.setLayoutData(new GridData(768));
@@ -268,11 +299,22 @@ public class FileDetailDialog extends AbstractDetailDialog {
       GridData var6 = new GridData(768);
       var6.widthHint = 1;
       this.renameText.setLayoutData(var6);
-      this.renameText.addKeyListener(new FileDetailDialog$6(this));
+      this.renameText.addKeyListener(new KeyAdapter() {
+         public void keyPressed(KeyEvent var1) {
+            if (var1.character == '\r') {
+               FileDetailDialog.this.renameFile();
+               FileDetailDialog.this.renameText.setText("");
+            }
+         }
+      });
       Button var7 = new Button(var5, 0);
       var7.setText(SResources.getString("dd.f.renameFile"));
       var7.setLayoutData(new GridData(128));
-      var7.addSelectionListener(new FileDetailDialog$7(this));
+      var7.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            FileDetailDialog.this.renameFile();
+         }
+      });
    }
 
    protected Control createButtonBar(Composite var1) {
@@ -292,7 +334,17 @@ public class FileDetailDialog extends AbstractDetailDialog {
          this.fileCancelButton = new Button(var5, 0);
          this.fileCancelButton.setLayoutData(new RowData());
          this.fileCancelButton.setText(SResources.getString("dd.f.cancelFile"));
-         this.fileCancelButton.addSelectionListener(new FileDetailDialog$8(this));
+         this.fileCancelButton.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent var1) {
+               MessageBox var2 = new MessageBox(FileDetailDialog.this.fileCancelButton.getShell(), 196);
+               var2.setMessage(SResources.getString("dd.f.reallyCancel"));
+               if (var2.open() == 64) {
+                  FileDetailDialog.this.file.setState(EnumFileState.CANCELLED);
+                  FileDetailDialog.this.fileCancelButton.setEnabled(false);
+                  FileDetailDialog.this.fileActionButton.setEnabled(false);
+               }
+            }
+         });
       }
 
       this.fileActionButton = new Button(var5, 0);
@@ -309,12 +361,35 @@ public class FileDetailDialog extends AbstractDetailDialog {
          this.fileActionButton.setEnabled(false);
       }
 
-      this.fileActionButton.addSelectionListener(new FileDetailDialog$9(this));
+      this.fileActionButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            if (FileDetailDialog.this.file.getFileStateEnum() == EnumFileState.PAUSED) {
+               FileDetailDialog.this.file.setState(EnumFileState.DOWNLOADING);
+               FileDetailDialog.this.fileActionButton.setText(SResources.getString("dd.f.pauseFile"));
+            } else if (FileDetailDialog.this.file.getFileStateEnum() == EnumFileState.DOWNLOADING) {
+               FileDetailDialog.this.file.setState(EnumFileState.PAUSED);
+               FileDetailDialog.this.fileActionButton.setText(SResources.getString("dd.f.resumeFile"));
+            } else if (FileDetailDialog.this.file.getFileStateEnum() == EnumFileState.DOWNLOADED) {
+               if (FileDetailDialog.this.renameText.getText().equals("")) {
+                  FileDetailDialog.this.file.saveFileAs(FileDetailDialog.this.file.getName());
+               } else {
+                  FileDetailDialog.this.file.saveFileAs(FileDetailDialog.this.renameText.getText());
+               }
+
+               FileDetailDialog.this.fileActionButton.setText(SResources.getString("b.ok"));
+               FileDetailDialog.this.fileActionButton.setEnabled(false);
+            }
+         }
+      });
       Button var6 = new Button(var5, 0);
       var6.setFocus();
       var6.setLayoutData(new RowData());
       var6.setText(SResources.getString("b.close"));
-      var6.addSelectionListener(new FileDetailDialog$10(this));
+      var6.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            FileDetailDialog.this.close();
+         }
+      });
       return var2;
    }
 
@@ -352,35 +427,5 @@ public class FileDetailDialog extends AbstractDetailDialog {
    public boolean close() {
       this.file.deleteObserver(this);
       return super.close();
-   }
-
-   // $VF: synthetic method
-   static List access$000(FileDetailDialog var0) {
-      return var0.renameList;
-   }
-
-   // $VF: synthetic method
-   static Text access$100(FileDetailDialog var0) {
-      return var0.renameText;
-   }
-
-   // $VF: synthetic method
-   static void access$200(FileDetailDialog var0) {
-      var0.renameFile();
-   }
-
-   // $VF: synthetic method
-   static Button access$300(FileDetailDialog var0) {
-      return var0.fileCancelButton;
-   }
-
-   // $VF: synthetic method
-   static File access$400(FileDetailDialog var0) {
-      return var0.file;
-   }
-
-   // $VF: synthetic method
-   static Button access$500(FileDetailDialog var0) {
-      return var0.fileActionButton;
    }
 }

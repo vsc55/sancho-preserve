@@ -3,6 +3,8 @@ package sancho.view.viewFrame;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import sancho.view.utility.AbstractTab;
 import sancho.view.utility.MaximizeSashMouseAdapter;
 import sancho.view.utility.WidgetFactory;
@@ -13,7 +15,11 @@ public class CTabFolderViewFrame extends SashViewFrame {
 
    public CTabFolderViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
       super(var1, var2, var3, var4);
-      this.cTabFolder.addSelectionListener(new CTabFolderViewFrame$1(this));
+      this.cTabFolder.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            CTabFolderViewFrame.this.onCTabFolderSelection();
+         }
+      });
    }
 
    protected CTabFolder createCTabFolder() {

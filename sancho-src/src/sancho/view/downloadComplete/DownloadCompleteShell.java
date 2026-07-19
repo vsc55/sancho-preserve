@@ -1,7 +1,10 @@
 package sancho.view.downloadComplete;
 
+import java.io.File;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -34,9 +37,15 @@ public class DownloadCompleteShell extends Dialog {
 
    protected void createButtonsForButtonBar(Composite var1) {
       ((GridLayout)var1.getLayout()).numColumns++;
-      Button var2 = new Button(var1, 0);
+      final Button var2 = new Button(var1, 0);
       var2.setText(SResources.getString("b.deleteLogFile"));
-      var2.addSelectionListener(new DownloadCompleteShell$1(this, var2));
+      var2.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var3) {
+            File logFile = new File(VersionInfo.getDownloadLogFile());
+            logFile.delete();
+            var2.setEnabled(false);
+         }
+      });
       this.createButton(var1, 0, SResources.getString("b.ok"), true);
    }
 

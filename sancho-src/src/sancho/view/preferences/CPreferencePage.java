@@ -11,6 +11,8 @@ import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -19,6 +21,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import sancho.view.utility.SResources;
@@ -141,10 +144,28 @@ public class CPreferencePage extends PreferencePage {
       Composite var5 = new Composite(var1, 0);
       var5.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
       var5.setLayoutData(new GridData(1808));
-      CPreferencePage$1 var6 = new CPreferencePage$1(this, var5, 768);
+      ScrolledComposite var6 = new ScrolledComposite(var5, 768) {
+         public Point computeSize(int var1, int var2, boolean var3) {
+            return new Point(-1, -1);
+         }
+      };
       var6.setLayoutData(new GridData(1808));
       var6.setLayout(new FillLayout());
-      var6.addControlListener(new CPreferencePage$2(this));
+      var6.addControlListener(new ControlAdapter() {
+         public void controlResized(ControlEvent var1) {
+            ScrolledComposite var2 = (ScrolledComposite)var1.widget;
+            int var3 = var2.getClientArea().height;
+            if (var3 > 10) {
+               var3 -= 10;
+            }
+
+            ScrollBar var4 = var2.getVerticalBar();
+            if (var4 != null) {
+               var4.setIncrement(15);
+               var4.setPageIncrement(var3);
+            }
+         }
+      });
       Composite var7 = new Composite(var6, 0);
       var6.setExpandHorizontal(true);
       var6.setExpandVertical(true);

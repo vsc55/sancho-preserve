@@ -208,7 +208,11 @@ public abstract class GTreeContentProvider implements IGContentProvider, ITreeCo
             // asyncExec (not syncExec) so this observer callback doesn't block the
             // core reader thread on the UI thread; matches the table content
             // providers and avoids a potential deadlock.
-            this.gView.getComposite().getDisplay().asyncExec(new GTreeContentProvider$1(this, var1, var2, var3));
+            this.gView.getComposite().getDisplay().asyncExec(new Runnable() {
+               public void run() {
+                  GTreeContentProvider.this.onUpdate(var1, var2, var3);
+               }
+            });
          } else {
             this.needsRefresh = true;
          }

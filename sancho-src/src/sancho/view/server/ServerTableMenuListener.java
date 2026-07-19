@@ -1,19 +1,20 @@
 package sancho.view.server;
 
-import java.util.List;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import sancho.core.Sancho;
 import sancho.model.mldonkey.Option;
 import sancho.model.mldonkey.Server;
 import sancho.model.mldonkey.enums.EnumHostState;
 import sancho.model.mldonkey.enums.EnumNetwork;
+import sancho.view.MainWindow;
 import sancho.view.server.users.ServerUsersTableView;
 import sancho.view.utility.SResources;
-import sancho.view.viewer.GView;
 import sancho.view.viewer.table.GTableMenuListener;
 
 public class ServerTableMenuListener extends GTableMenuListener implements IDoubleClickListener {
@@ -40,7 +41,7 @@ public class ServerTableMenuListener extends GTableMenuListener implements IDoub
 
    public void menuAboutToShow(IMenuManager var1) {
       if (this.selectedObjects.size() > 0 && ((Server)this.selectedObjects.get(0)).isConnected()) {
-         var1.add(new ServerTableMenuListener$DisconnectAction(this));
+         var1.add(new DisconnectAction());
       }
 
       if (this.selectedObjects.size() > 0 && ((Server)this.selectedObjects.get(0)).getStateEnum() == EnumHostState.NOT_CONNECTED) {
@@ -63,22 +64,22 @@ public class ServerTableMenuListener extends GTableMenuListener implements IDoub
          }
 
          if (var2) {
-            var1.add(new ServerTableMenuListener$ConnectAction(this));
+            var1.add(new ConnectAction());
          }
       }
 
       if (this.selectedObjects.size() > 0) {
-         var1.add(new ServerTableMenuListener$ConnectMoreAction(this));
-         var1.add(new ServerTableMenuListener$GetServerUsersAction(this));
-         var1.add(new ServerTableMenuListener$CopyServerLink(this));
-         var1.add(new ServerTableMenuListener$RemoveServerAction(this));
-         var1.add(new ServerTableMenuListener$BlackListAction(this));
+         var1.add(new ConnectMoreAction());
+         var1.add(new GetServerUsersAction());
+         var1.add(new CopyServerLink());
+         var1.add(new RemoveServerAction());
+         var1.add(new BlackListAction());
          if (this.gView.getCore() != null && this.gView.getCore().getProtocol() >= 32) {
-            var1.add(new ServerTableMenuListener$RenameAction(this));
+            var1.add(new RenameAction());
          }
 
          if (this.gView.getCore() != null && this.gView.getCore().getProtocol() >= 28) {
-            var1.add(new ServerTableMenuListener$PreferredServerAction(this));
+            var1.add(new PreferredServerAction());
          }
 
          this.addSelectAllMenu(var1);
@@ -139,78 +140,137 @@ public class ServerTableMenuListener extends GTableMenuListener implements IDoub
       }
    }
 
-   // $VF: synthetic method
-   static List access$000(ServerTableMenuListener var0) {
-      return var0.selectedObjects;
+   // Menu action: blacklists each selected server.
+   private class BlackListAction extends Action {
+      public BlackListAction() {
+         super(SResources.getString("m.srv.blacklist"));
+         this.setImageDescriptor(SResources.getImageDescriptor("gun"));
+      }
+
+      public void run() {
+         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
+            ((Server)selectedObjects.get(var1)).blacklist();
+         }
+      }
    }
 
-   // $VF: synthetic method
-   static List access$100(ServerTableMenuListener var0) {
-      return var0.selectedObjects;
+   // Menu action: connects to each selected server.
+   private class ConnectAction extends Action {
+      public ConnectAction() {
+         super(SResources.getString("m.srv.connect"));
+         this.setImageDescriptor(SResources.getImageDescriptor("menu-connect"));
+      }
+
+      public void run() {
+         if (Sancho.hasCollectionFactory()) {
+            for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
+               ((Server)selectedObjects.get(var1)).connect();
+            }
+         }
+      }
    }
 
-   // $VF: synthetic method
-   static List access$200(ServerTableMenuListener var0) {
-      return var0.selectedObjects;
+   // Menu action: asks the core to connect to more servers.
+   private class ConnectMoreAction extends Action {
+      public ConnectMoreAction() {
+         super(SResources.getString("m.srv.connectMore"));
+         this.setImageDescriptor(SResources.getImageDescriptor("plus"));
+      }
+
+      public void run() {
+         if (Sancho.hasCollectionFactory()) {
+            gView.getCore().getServerCollection().connectMore();
+         }
+      }
    }
 
-   // $VF: synthetic method
-   static List access$300(ServerTableMenuListener var0) {
-      return var0.selectedObjects;
+   // Menu action: copies the selected servers' links to the clipboard.
+   private class CopyServerLink extends Action {
+      public CopyServerLink() {
+         super(SResources.getString("m.srv.copyTo"));
+         this.setImageDescriptor(SResources.getImageDescriptor("copy"));
+      }
+
+      public void run() {
+         String var1 = "";
+         String var2 = System.getProperty("line.separator");
+
+         for (int var3 = 0; var3 < selectedObjects.size(); var3++) {
+            Server var4 = (Server)selectedObjects.get(var3);
+            if (var1.length() > 0) {
+               var1 = var1 + var2;
+            }
+
+            var1 = var1 + var4.getLink();
+         }
+
+         MainWindow.copyToClipboard(var1);
+      }
    }
 
-   // $VF: synthetic method
-   static GView access$400(ServerTableMenuListener var0) {
-      return var0.gView;
+   // Menu action: disconnects each selected server.
+   private class DisconnectAction extends Action {
+      public DisconnectAction() {
+         super(SResources.getString("m.srv.disconnect"));
+         this.setImageDescriptor(SResources.getImageDescriptor("menu-disconnect"));
+      }
+
+      public void run() {
+         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
+            ((Server)selectedObjects.get(var1)).disconnect();
+         }
+      }
    }
 
-   // $VF: synthetic method
-   static List access$500(ServerTableMenuListener var0) {
-      return var0.selectedObjects;
+   // Menu action: requests the user list for each selected server.
+   private class GetServerUsersAction extends Action {
+      public GetServerUsersAction() {
+         super(SResources.getString("m.srv.getServerUsers"));
+         this.setImageDescriptor(SResources.getImageDescriptor("rotate"));
+      }
+
+      public void run() {
+         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
+            ((Server)selectedObjects.get(var1)).getServerUsers();
+         }
+      }
    }
 
-   // $VF: synthetic method
-   static List access$600(ServerTableMenuListener var0) {
-      return var0.selectedObjects;
+   // Menu action: toggles the preferred flag on each selected server.
+   private class PreferredServerAction extends Action {
+      public PreferredServerAction() {
+         super(SResources.getString("m.srv.preferredServer"));
+         this.setImageDescriptor(SResources.getImageDescriptor("heart"));
+      }
+
+      public void run() {
+         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
+            ((Server)selectedObjects.get(var1)).togglePreferred();
+         }
+      }
    }
 
-   // $VF: synthetic method
-   static void access$700(ServerTableMenuListener var0) {
-      var0.renameSelectedServers();
+   // Menu action: removes each selected server.
+   private class RemoveServerAction extends Action {
+      public RemoveServerAction() {
+         super(SResources.getString("m.srv.removeServer"));
+         this.setImageDescriptor(SResources.getImageDescriptor("minus"));
+      }
+
+      public void run() {
+         removeSelectedServers();
+      }
    }
 
-   // $VF: synthetic method
-   static List access$800(ServerTableMenuListener var0) {
-      return var0.selectedObjects;
-   }
+   // Menu action: renames each selected server via an input dialog.
+   private class RenameAction extends Action {
+      public RenameAction() {
+         super(SResources.getString("m.srv.rename"));
+         this.setImageDescriptor(SResources.getImageDescriptor("commit_question"));
+      }
 
-   // $VF: synthetic method
-   static List access$900(ServerTableMenuListener var0) {
-      return var0.selectedObjects;
-   }
-
-   // $VF: synthetic method
-   static List access$1000(ServerTableMenuListener var0) {
-      return var0.selectedObjects;
-   }
-
-   // $VF: synthetic method
-   static List access$1100(ServerTableMenuListener var0) {
-      return var0.selectedObjects;
-   }
-
-   // $VF: synthetic method
-   static List access$1200(ServerTableMenuListener var0) {
-      return var0.selectedObjects;
-   }
-
-   // $VF: synthetic method
-   static List access$1300(ServerTableMenuListener var0) {
-      return var0.selectedObjects;
-   }
-
-   // $VF: synthetic method
-   static void access$1400(ServerTableMenuListener var0) {
-      var0.removeSelectedServers();
+      public void run() {
+         renameSelectedServers();
+      }
    }
 }

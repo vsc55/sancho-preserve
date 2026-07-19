@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -175,7 +177,15 @@ public class CoreVerbosityDialog extends Dialog {
 
    protected void createButtonsForButtonBar(Composite var1) {
       Button var2 = this.createButton(var1, 666, SResources.getString("b.deselectAll"), false);
-      var2.addSelectionListener(new CoreVerbosityDialog$1(this));
+      var2.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            for (int var2 = 0; var2 < CoreVerbosityDialog.this.buttonArray.length; var2++) {
+               if (CoreVerbosityDialog.this.buttonArray[var2] != null) {
+                  CoreVerbosityDialog.this.buttonArray[var2].setSelection(false);
+               }
+            }
+         }
+      });
       // OK is the default button so Enter accepts instead of cancelling (which
       // discarded the verbosity changes).
       this.createButton(var1, 0, SResources.getString("b.ok"), true);

@@ -2,6 +2,12 @@ package sancho.view.utility.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.window.Window;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseMoveListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -12,8 +18,10 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import sancho.core.Sancho;
 import sancho.utility.VersionInfo;
 import sancho.view.utility.SResources;
+import sancho.view.utility.WebLauncher;
 
 public class AboutDialog extends Dialog {
    private static final String S_URL = "URL:";
@@ -54,17 +62,87 @@ public class AboutDialog extends Dialog {
    }
 
    public Control createContents(Composite var1) {
-      Canvas var2 = new Canvas(var1, 536870912);
-      Image var3 = SResources.getImage("about");
+      final Canvas canvas = new Canvas(var1, 536870912);
+      final Image image = SResources.getImage("about");
       GridData var4 = new GridData();
-      var4.widthHint = var3.getBounds().width;
-      var4.heightHint = var3.getBounds().height;
-      var2.setLayoutData(var4);
-      var2.setLayout(new FillLayout());
-      var2.addPaintListener(new AboutDialog$1(this, var3, var2));
-      var2.addMouseMoveListener(new AboutDialog$2(this));
-      var2.addMouseListener(new AboutDialog$3(this));
-      var2.update();
+      var4.widthHint = image.getBounds().width;
+      var4.heightHint = image.getBounds().height;
+      canvas.setLayoutData(var4);
+      canvas.setLayout(new FillLayout());
+      canvas.addPaintListener(new PaintListener() {
+         public void paintControl(PaintEvent var1) {
+            int var2 = 315;
+            var2 -= 47;
+            byte var3 = 20;
+            var1.gc.drawImage(image, var1.x, var1.y, var1.width, var1.height, var1.x, var1.y, var1.width, var1.height);
+            var1.gc.setForeground(canvas.getDisplay().getSystemColor(2));
+            AboutDialog.this.drawTextAt(var1.gc, "Version:", VersionInfo.getVersion(), "System:", System.getProperty("os.name"), var2);
+            var2 += var3;
+            AboutDialog.this
+               .drawTextAt(
+                  var1.gc,
+                  "SWT:",
+                  VersionInfo.getSWTPlatform() + "-" + SWT.getVersion(),
+                  "Processors:",
+                  String.valueOf(Runtime.getRuntime().availableProcessors()),
+                  var2
+               );
+            var2 += var3;
+            AboutDialog.this.drawTextAt(var1.gc, "", "", "Uptime:", Sancho.getUptime(), var2);
+            var2 += var3;
+            AboutDialog.this.drawTextAt(var1.gc, "", "", "Total Memory:", String.valueOf(Runtime.getRuntime().totalMemory()), var2);
+            AboutDialog.this.drawTextAt(var1.gc, 2, "Code:", "Rutger Ovidius", var2);
+            var2 += var3;
+            AboutDialog.this.drawTextAt(var1.gc, "", "", "Free Memory:", String.valueOf(Runtime.getRuntime().freeMemory()), var2);
+            AboutDialog.this.drawTextAt(var1.gc, 2, "Graphics:", "Bruce Thomas", var2);
+         }
+      });
+      canvas.addMouseMoveListener(new MouseMoveListener() {
+         public void mouseMove(MouseEvent var1) {
+            Canvas var2 = (Canvas)var1.widget;
+            if (AboutDialog.this.btRect.contains(var1.x, var1.y) && !AboutDialog.this.mOver) {
+               var2.getShell().setCursor(AboutDialog.this.cursorOver);
+               GC var5 = new GC(var2);
+               AboutDialog.this.drawTextAt(var5, 1, "Graphics:", "Bruce Thomas", 348);
+               var5.dispose();
+               AboutDialog.this.mOver = true;
+            } else if (AboutDialog.this.urlRect.contains(var1.x, var1.y) && !AboutDialog.this.mOver) {
+               var2.getShell().setCursor(AboutDialog.this.cursorOver);
+               GC var4 = new GC(var2);
+               var4.dispose();
+               AboutDialog.this.mOver = true;
+            } else if (AboutDialog.this.roRect.contains(var1.x, var1.y) && !AboutDialog.this.mOver) {
+               var2.getShell().setCursor(AboutDialog.this.cursorOver);
+               GC var3 = new GC(var2);
+               AboutDialog.this.drawTextAt(var3, 1, "Code:", "Rutger Ovidius", 328);
+               var3.dispose();
+               AboutDialog.this.mOver = true;
+            } else if (AboutDialog.this.mOver
+               && !AboutDialog.this.roRect.contains(var1.x, var1.y)
+               && !AboutDialog.this.btRect.contains(var1.x, var1.y)
+               && !AboutDialog.this.urlRect.contains(var1.x, var1.y)) {
+               var2.redraw();
+               var2.getShell().setCursor(null);
+               AboutDialog.this.mOver = false;
+            }
+         }
+      });
+      canvas.addMouseListener(new MouseAdapter() {
+         public void mouseDown(MouseEvent var1) {
+            if (AboutDialog.this.btRect.contains(var1.x, var1.y)) {
+               WebLauncher.openLink(VersionInfo.getBruceHomePage());
+            } else if (AboutDialog.this.urlRect.contains(var1.x, var1.y)) {
+               WebLauncher.openLink(VersionInfo.getHomePage2());
+            } else if (AboutDialog.this.roRect.contains(var1.x, var1.y)) {
+               WebLauncher.openLink(VersionInfo.getHomePage2());
+            }
+         }
+
+         public void mouseUp(MouseEvent var1) {
+            AboutDialog.this.close();
+         }
+      });
+      canvas.update();
       return var1;
    }
 

@@ -1,6 +1,5 @@
 package sancho.view.shares;
 
-import org.eclipse.jface.viewers.CustomTableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import sancho.core.Sancho;
 import sancho.model.mldonkey.ClientStats;
@@ -8,7 +7,6 @@ import sancho.model.mldonkey.SharedFileCollection;
 import sancho.utility.MyObservable;
 import sancho.utility.SwissArmy;
 import sancho.view.utility.SResources;
-import sancho.view.viewer.GView;
 import sancho.view.viewer.table.GTableContentProvider;
 
 public class UploadTableContentProvider extends GTableContentProvider {
@@ -81,37 +79,28 @@ public class UploadTableContentProvider extends GTableContentProvider {
                      );
                }
             } else if (var1 instanceof SharedFileCollection) {
-               SharedFileCollection var5 = (SharedFileCollection)var1;
-               this.tableViewer.getTable().getDisplay().asyncExec(new UploadTableContentProvider$1(this, var5));
+               final SharedFileCollection var5 = (SharedFileCollection)var1;
+               this.tableViewer.getTable().getDisplay().asyncExec(new Runnable() {
+                  public void run() {
+                     if (gView != null && !gView.isDisposed()) {
+                        if (var5.removed()) {
+                           tableViewer.remove(var5.getAndClearRemoved());
+                        }
+
+                        if (var5.added()) {
+                           tableViewer.add(var5.getAndClearAdded());
+                        }
+
+                        if (var5.updated()) {
+                           tableViewer.update(var5.getAndClearUpdated(), SResources.SA_Z);
+                        }
+                     }
+                  }
+               });
             }
          } else {
             this.needsRefresh = true;
          }
       }
-   }
-
-   // $VF: synthetic method
-   static GView access$000(UploadTableContentProvider var0) {
-      return var0.gView;
-   }
-
-   // $VF: synthetic method
-   static GView access$100(UploadTableContentProvider var0) {
-      return var0.gView;
-   }
-
-   // $VF: synthetic method
-   static CustomTableViewer access$200(UploadTableContentProvider var0) {
-      return var0.tableViewer;
-   }
-
-   // $VF: synthetic method
-   static CustomTableViewer access$300(UploadTableContentProvider var0) {
-      return var0.tableViewer;
-   }
-
-   // $VF: synthetic method
-   static CustomTableViewer access$400(UploadTableContentProvider var0) {
-      return var0.tableViewer;
    }
 }

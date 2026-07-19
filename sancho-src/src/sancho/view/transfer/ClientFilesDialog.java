@@ -2,6 +2,8 @@ package sancho.view.transfer;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -60,12 +62,22 @@ public class ClientFilesDialog extends Dialog {
          var3.setEnabled(false);
       }
 
-      var3.addSelectionListener(new ClientFilesDialog$1(this, var3));
+      var3.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            ClientFilesDialog.this.client.addAsFriend();
+            var3.setText(SResources.getString("b.ok"));
+            var3.setEnabled(false);
+         }
+      });
       Button var4 = new Button(var2, 0);
       var4.setFocus();
       var4.setLayoutData(new GridData(128));
       var4.setText(SResources.getString("b.close"));
-      var4.addSelectionListener(new ClientFilesDialog$2(this));
+      var4.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            ClientFilesDialog.this.close();
+         }
+      });
       return var2;
    }
 }

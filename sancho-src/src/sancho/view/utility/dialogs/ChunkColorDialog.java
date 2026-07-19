@@ -3,6 +3,7 @@ package sancho.view.utility.dialogs;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -30,7 +31,7 @@ public class ChunkColorDialog extends Dialog {
    protected void buttonPressed(int var1) {
       if (var1 == 0) {
          for (int var3 = 0; var3 < this.prefCSList.size(); var3++) {
-            ChunkColorDialog$PrefColorSelector var2 = (ChunkColorDialog$PrefColorSelector)this.prefCSList.get(var3);
+            PrefColorSelector var2 = (PrefColorSelector)this.prefCSList.get(var3);
             var2.save();
          }
 
@@ -52,9 +53,25 @@ public class ChunkColorDialog extends Dialog {
          String var6 = "p.d.chunk." + var3[var4];
          Label var7 = new Label(var2, 0);
          var7.setText(SResources.getString(var6));
-         this.prefCSList.add(new ChunkColorDialog$PrefColorSelector(var2, var5));
+         this.prefCSList.add(new PrefColorSelector(var2, var5));
       }
 
       return var2;
+   }
+
+   // One color picker bound to a single chunk-color preference key.
+   private static class PrefColorSelector {
+      ColorSelector cs;
+      String prefString;
+
+      public PrefColorSelector(Composite var1, String var2) {
+         this.cs = new ColorSelector(var1);
+         this.cs.setColorValue(PreferenceLoader.loadRGB(var2));
+         this.prefString = var2;
+      }
+
+      public void save() {
+         PreferenceLoader.setRGB(this.prefString, this.cs.getColorValue());
+      }
    }
 }

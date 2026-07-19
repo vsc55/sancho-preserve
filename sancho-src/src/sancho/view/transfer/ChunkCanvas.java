@@ -3,9 +3,12 @@ package sancho.view.transfer;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
@@ -25,6 +28,7 @@ import sancho.utility.MyObservable;
 import sancho.utility.MyObserver;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.WidgetFactory;
+import sancho.view.utility.dialogs.ChunkColorDialog;
 
 public class ChunkCanvas extends Canvas implements MyObserver, DisposeListener, PaintListener, Runnable {
    private static final int INITIAL_HEIGHT = 18;
@@ -91,8 +95,20 @@ public class ChunkCanvas extends Canvas implements MyObserver, DisposeListener, 
       this.createImage();
       this.addDisposeListener(this);
       this.addPaintListener(this);
-      this.addMouseListener(new ChunkCanvas$1(this, var1));
-      this.addControlListener(new ChunkCanvas$2(this));
+      final Composite parentComposite = var1;
+      this.addMouseListener(new MouseAdapter() {
+         public void mouseDoubleClick(MouseEvent var1) {
+            ChunkColorDialog var2 = new ChunkColorDialog(parentComposite.getShell());
+            if (var2.open() == 0) {
+               ChunkCanvas.refreshAll();
+            }
+         }
+      });
+      this.addControlListener(new ControlAdapter() {
+         public void controlResized(ControlEvent var1) {
+            ChunkCanvas.this.resizeImage(var1, false);
+         }
+      });
       synchronized (chunkList) {
          chunkList.add(this);
       }

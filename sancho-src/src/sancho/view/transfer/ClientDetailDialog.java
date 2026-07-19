@@ -1,6 +1,8 @@
 package sancho.view.transfer;
 
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -94,12 +96,22 @@ public class ClientDetailDialog extends AbstractDetailDialog {
          var3.setEnabled(false);
       }
 
-      var3.addSelectionListener(new ClientDetailDialog$1(this, var3));
+      var3.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            ClientDetailDialog.this.client.addAsFriend();
+            var3.setText(SResources.getString("b.ok"));
+            var3.setEnabled(false);
+         }
+      });
       Button var4 = new Button(var2, 0);
       var4.setFocus();
       var4.setLayoutData(new GridData(128));
       var4.setText(SResources.getString("b.close"));
-      var4.addSelectionListener(new ClientDetailDialog$2(this));
+      var4.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            ClientDetailDialog.this.close();
+         }
+      });
       return var1;
    }
 
@@ -138,10 +150,5 @@ public class ClientDetailDialog extends AbstractDetailDialog {
       }
 
       return super.close();
-   }
-
-   // $VF: synthetic method
-   static Client access$000(ClientDetailDialog var0) {
-      return var0.client;
    }
 }

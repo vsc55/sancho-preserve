@@ -1,8 +1,10 @@
 package sancho.view.transfer.downloads;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import sancho.model.mldonkey.enums.EnumFileState;
+import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.MyMenuManager;
 import sancho.view.utility.SResources;
 import sancho.view.viewFrame.TabbedSashViewFrame;
@@ -34,8 +36,33 @@ public class DownloadViewListener extends TabbedSashViewListener {
       this.createExtensionFilterMenuItems(var2);
       var1.add(var2);
       var1.add(new ToggleTabsAction((TabbedSashViewFrame)this.viewFrame));
-      var1.add(new DownloadViewListener$DisplayChunkGraphsAction(this, (DownloadTreeView)this.gView));
+      var1.add(new DisplayChunkGraphsAction((DownloadTreeView)this.gView));
       var2.add(new Separator());
       this.createSashActions(var1, "l.uploaders");
+   }
+
+   // Checkbox menu action that toggles the "display chunk graphs" preference and refreshes the tree.
+   private static class DisplayChunkGraphsAction extends Action {
+      protected DownloadTreeView gView;
+
+      public DisplayChunkGraphsAction(DownloadTreeView var1) {
+         super(SResources.getString("p.r.downloads.displayChunkGraphs"));
+         if (this.isChecked()) {
+            this.setImageDescriptor(SResources.getImageDescriptor("checkmark"));
+         }
+
+         this.gView = var1;
+      }
+
+      public boolean isChecked() {
+         return PreferenceLoader.loadBoolean("displayChunkGraphs");
+      }
+
+      public void run() {
+         boolean var1 = this.isChecked();
+         PreferenceLoader.getPreferenceStore().setValue("displayChunkGraphs", !var1);
+         PreferenceLoader.saveStore();
+         this.gView.setChunkGraphs();
+      }
    }
 }

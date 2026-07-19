@@ -1,9 +1,11 @@
 package sancho.view.rooms;
 
-import java.util.List;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import sancho.model.mldonkey.Room;
 import sancho.model.mldonkey.enums.EnumRoomState;
+import sancho.view.utility.SResources;
 import sancho.view.viewer.table.GTableMenuListener;
 
 public class RoomsTableMenuListener extends GTableMenuListener {
@@ -25,9 +27,9 @@ public class RoomsTableMenuListener extends GTableMenuListener {
 
    public void menuAboutToShow(IMenuManager var1) {
       if (this.selectedObjects.size() > 0) {
-         var1.add(new RoomsTableMenuListener$SetRoomStateAction(this, EnumRoomState.OPEN));
-         var1.add(new RoomsTableMenuListener$SetRoomStateAction(this, EnumRoomState.CLOSED));
-         var1.add(new RoomsTableMenuListener$SetRoomStateAction(this, EnumRoomState.PAUSED));
+         var1.add(new SetRoomStateAction(EnumRoomState.OPEN));
+         var1.add(new SetRoomStateAction(EnumRoomState.CLOSED));
+         var1.add(new SetRoomStateAction(EnumRoomState.PAUSED));
          this.addSelectAllMenu(var1);
       }
    }
@@ -41,13 +43,21 @@ public class RoomsTableMenuListener extends GTableMenuListener {
       }
    }
 
-   // $VF: synthetic method
-   static List access$000(RoomsTableMenuListener var0) {
-      return var0.selectedObjects;
-   }
+   // Menu action that applies a room state to the currently selected rooms.
+   private class SetRoomStateAction extends Action {
+      private EnumRoomState enumRoomState;
 
-   // $VF: synthetic method
-   static List access$100(RoomsTableMenuListener var0) {
-      return var0.selectedObjects;
+      public SetRoomStateAction(EnumRoomState var2) {
+         super("Set: " + var2.getName());
+         this.enumRoomState = var2;
+         this.setImageDescriptor(SResources.getImageDescriptor("rooms.buttonActiveSmall"));
+      }
+
+      public void run() {
+         for (int var1 = 0; var1 < selectedObjects.size(); var1++) {
+            Room var2 = (Room)selectedObjects.get(var1);
+            var2.setRoomState(this.enumRoomState);
+         }
+      }
    }
 }

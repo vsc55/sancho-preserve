@@ -8,8 +8,11 @@ import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.MenuAdapter;
+import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Item;
@@ -86,7 +89,14 @@ public abstract class GView implements DisposeListener {
    protected void addMenuListener() {
       Menu var1 = this.getComposite().getMenu();
       if (var1 != null) {
-         var1.addMenuListener(new GView$1(this));
+         var1.addMenuListener(new MenuAdapter() {
+            public void menuShown(MenuEvent var1) {
+               Menu var2 = GView.this.getComposite().getMenu();
+               if (!GView.this.getViewer().getSelection().isEmpty() && var2.getItemCount() > 0) {
+                  var2.setDefaultItem(var2.getItem(0));
+               }
+            }
+         });
       }
    }
 
@@ -552,7 +562,11 @@ public abstract class GView implements DisposeListener {
          if (this.columnIDs.indexOf(var1) != -1 && !this.dynamicColumn.equals(var1)) {
             this.dynamicColumn = var1;
             if (this.controlAdapter == null) {
-               this.controlAdapter = new GView$2(this);
+               this.controlAdapter = new ControlAdapter() {
+                  public void controlResized(ControlEvent var1) {
+                     GView.this.resizeColumns();
+                  }
+               };
                this.getComposite().addControlListener(this.controlAdapter);
                this.resizeColumns();
             }

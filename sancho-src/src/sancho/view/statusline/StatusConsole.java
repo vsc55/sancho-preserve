@@ -49,9 +49,15 @@ public class StatusConsole implements IStatusItem {
       }
    }
 
-   public void updateConsole(String var1) {
+   public void updateConsole(final String var1) {
       if (this.composite != null && !this.composite.isDisposed()) {
-         this.composite.getDisplay().asyncExec(new StatusConsole$1(this, var1));
+         this.composite.getDisplay().asyncExec(new Runnable() {
+            public void run() {
+               if (Sancho.hasCollectionFactory() && StatusConsole.this.console != null && !StatusConsole.this.console.isDisposed()) {
+                  StatusConsole.this.console.append(var1);
+               }
+            }
+         });
       }
    }
 
@@ -75,10 +81,5 @@ public class StatusConsole implements IStatusItem {
       if (var1 && this.isVisible) {
          this.observe(true);
       }
-   }
-
-   // $VF: synthetic method
-   static Console access$000(StatusConsole var0) {
-      return var0.console;
    }
 }

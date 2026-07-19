@@ -1,10 +1,12 @@
 package sancho.view.transfer.fileDialog;
 
-import java.util.List;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import sancho.model.mldonkey.IPreview;
+import sancho.view.MainWindow;
+import sancho.view.utility.SResources;
 import sancho.view.viewer.table.GTableMenuListenerClient;
 
 public class SubfilesTableMenuListener extends GTableMenuListenerClient implements ISelectionChangedListener {
@@ -32,7 +34,7 @@ public class SubfilesTableMenuListener extends GTableMenuListenerClient implemen
 
    public void menuAboutToShow(IMenuManager var1) {
       if (this.selectedObjects.size() > 0) {
-         var1.add(new SubfilesTableMenuListener$CopySubfileItemToClipboardAction(this));
+         var1.add(new CopySubfileItemToClipboardAction());
          int[] var2 = new int[this.selectedObjects.size()];
 
          for (int var3 = 0; var3 < this.selectedObjects.size(); var3++) {
@@ -54,13 +56,27 @@ public class SubfilesTableMenuListener extends GTableMenuListenerClient implemen
       }
    }
 
-   // $VF: synthetic method
-   static List access$000(SubfilesTableMenuListener var0) {
-      return var0.selectedObjects;
-   }
+   // Menu action that copies the selected subfile items to the clipboard.
+   private class CopySubfileItemToClipboardAction extends Action {
+      public CopySubfileItemToClipboardAction() {
+         super(SResources.getString("mi.copy"));
+         this.setImageDescriptor(SResources.getImageDescriptor("copy"));
+      }
 
-   // $VF: synthetic method
-   static List access$100(SubfilesTableMenuListener var0) {
-      return var0.selectedObjects;
+      public void run() {
+         StringBuffer var1 = new StringBuffer(50);
+         String var2 = System.getProperty("line.separator");
+
+         for (int var3 = 0; var3 < SubfilesTableMenuListener.this.selectedObjects.size(); var3++) {
+            SubfileItem var4 = (SubfileItem)SubfilesTableMenuListener.this.selectedObjects.get(var3);
+            if (var3 > 0) {
+               var1.append(var2);
+            }
+
+            var1.append(var4.toString());
+         }
+
+         MainWindow.copyToClipboard(var1.toString());
+      }
    }
 }

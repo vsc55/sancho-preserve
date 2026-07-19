@@ -1,14 +1,23 @@
 package sancho.view.console;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.io.File;
 import java.io.IOException;
+import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
@@ -17,6 +26,7 @@ import sancho.utility.MyObservable;
 import sancho.utility.MyObserver;
 import sancho.utility.SwissArmy;
 import sancho.utility.VersionInfo;
+import sancho.view.MainWindow;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
@@ -31,8 +41,8 @@ public class ExecConsole implements MyObserver {
    private final int MAX_LINES = PreferenceLoader.loadInt("consoleMaxLines");
    private StyledText outputConsole;
    private Shell shell;
-   private ExecConsole$StreamMonitor stderrMonitor;
-   private ExecConsole$StreamMonitor stdoutMonitor;
+   private StreamMonitor stderrMonitor;
+   private StreamMonitor stdoutMonitor;
    private Display display;
    private boolean hasExited;
 
@@ -42,7 +52,7 @@ public class ExecConsole implements MyObserver {
       this.runExec();
    }
 
-   public void appendLine(ExecConsole$StreamMonitor var1, String var2) {
+   public void appendLine(StreamMonitor var1, String var2) {
       int var3;
       if ((var3 = this.outputConsole.getLineCount()) > this.MAX_LINES) {
          this.outputConsole.replaceTextRange(0, this.outputConsole.getOffsetAtLine(var3 - this.MAX_LINES + 5), "");
@@ -94,8 +104,18 @@ public class ExecConsole implements MyObserver {
       this.shell.setImage(VersionInfo.getProgramIcon());
       this.shell.setText("Core");
       this.shell.setLayout(WidgetFactory.createGridLayout(1, 0, 0, 0, 0, false));
-      this.shell.addDisposeListener(new ExecConsole$1(this));
-      this.shell.addListener(21, new ExecConsole$2(this));
+      this.shell.addDisposeListener(new DisposeListener() {
+         public synchronized void widgetDisposed(DisposeEvent var1) {
+            PreferenceStore var2 = PreferenceLoader.getPreferenceStore();
+            PreferenceConverter.setValue(var2, "coreExecutableWindowBounds", ExecConsole.this.shell.getBounds());
+         }
+      });
+      this.shell.addListener(21, new Listener() {
+         public void handleEvent(Event var1) {
+            var1.doit = false;
+            ExecConsole.this.shell.setVisible(false);
+         }
+      });
       if (PreferenceLoader.contains("coreExecutableWindowBounds")) {
          this.shell.setBounds(PreferenceLoader.loadRectangle("coreExecutableWindowBounds"));
       }
@@ -114,7 +134,11 @@ public class ExecConsole implements MyObserver {
       Menu var1 = new Menu(this.outputConsole);
       MenuItem var2 = new MenuItem(var1, 8);
       var2.setText(SResources.getString("mi.copy"));
-      var2.addListener(13, new ExecConsole$3(this));
+      var2.addListener(13, new Listener() {
+         public void handleEvent(Event var1) {
+            MainWindow.copyToClipboard(ExecConsole.this.outputConsole.getSelectionText());
+         }
+      });
       this.outputConsole.setMenu(var1);
 
       try {
@@ -180,13 +204,17 @@ public class ExecConsole implements MyObserver {
          // on whitespace, so a core path like C:\Program Files\...\mlnet.exe would
          // try to run "C:\Program". var2 (parent dir) can be null for a bare name.
          this.execProcess = Runtime.getRuntime().exec(new String[]{var1.toString()}, null, var2 == null ? null : new File(var2));
-         Runtime.getRuntime().addShutdownHook(new ExecConsole$4(this));
-         this.stdoutMonitor = new ExecConsole$StreamMonitor(this, this.execProcess.getInputStream(), 1);
+         Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+               ExecConsole.this.forceKill();
+            }
+         });
+         this.stdoutMonitor = new StreamMonitor(this.execProcess.getInputStream(), 1);
          this.stdoutMonitor.addObserver(this);
          Thread var3 = new Thread(this.stdoutMonitor);
          var3.setDaemon(true);
          var3.start();
-         this.stderrMonitor = new ExecConsole$StreamMonitor(this, this.execProcess.getErrorStream(), 2);
+         this.stderrMonitor = new StreamMonitor(this.execProcess.getErrorStream(), 2);
          this.stderrMonitor.addObserver(this);
          Thread var4 = new Thread(this.stderrMonitor);
          var4.setDaemon(true);
@@ -200,28 +228,55 @@ public class ExecConsole implements MyObserver {
       if (var2 instanceof String) {
          String var4 = (String)var2;
          if (!this.outputConsole.isDisposed()) {
-            this.outputConsole.getDisplay().asyncExec(new ExecConsole$5(this, var1, var4));
+            this.outputConsole.getDisplay().asyncExec(new Runnable() {
+               public void run() {
+                  if (!ExecConsole.this.outputConsole.isDisposed()) {
+                     ExecConsole.this.appendLine((StreamMonitor)var1, var4);
+                  }
+               }
+            });
          }
       }
    }
 
-   // $VF: synthetic method
-   static Shell access$000(ExecConsole var0) {
-      return var0.shell;
-   }
+   // Drains one of the spawned core process's streams and republishes each line to observers.
+   private class StreamMonitor extends MyObservable implements Runnable {
+      private InputStream inputStream;
+      private boolean keepAlive;
+      private int type;
 
-   // $VF: synthetic method
-   static StyledText access$100(ExecConsole var0) {
-      return var0.outputConsole;
-   }
+      public StreamMonitor(InputStream var2, int var3) {
+         this.keepAlive = true;
+         this.inputStream = var2;
+         this.type = var3;
+      }
 
-   // $VF: synthetic method
-   static boolean access$200(ExecConsole var0) {
-      return var0.coreStarted;
-   }
+      public int getType() {
+         return this.type;
+      }
 
-   // $VF: synthetic method
-   static boolean access$202(ExecConsole var0, boolean var1) {
-      return var0.coreStarted = var1;
+      public void run() {
+         try {
+            BufferedReader var2 = new BufferedReader(new InputStreamReader(this.inputStream));
+
+            String var1;
+            while (this.keepAlive && (var1 = var2.readLine()) != null) {
+               if (!ExecConsole.this.coreStarted && var1.toLowerCase().indexOf("core started") > -1) {
+                  ExecConsole.this.coreStarted = true;
+               }
+
+               this.setChanged();
+               this.notifyObservers(var1);
+            }
+
+            var2.close();
+         } catch (IOException var3) {
+            Sancho.pDebug("streamMonitor:" + var3);
+         }
+      }
+
+      public void stop() {
+         this.keepAlive = false;
+      }
    }
 }

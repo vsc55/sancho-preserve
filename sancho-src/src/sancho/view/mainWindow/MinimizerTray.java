@@ -1,11 +1,16 @@
 package sancho.view.mainWindow;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tray;
 import org.eclipse.swt.widgets.TrayItem;
@@ -17,6 +22,7 @@ import sancho.view.MainWindow;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.statusline.actions.DNDBoxAction;
 import sancho.view.statusline.actions.PreferencesAction;
+import sancho.view.utility.SResources;
 import sancho.view.utility.dialogs.BandwidthDialog;
 
 public class MinimizerTray extends Minimizer implements DisposeListener, IMenuListener {
@@ -55,8 +61,41 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
          this.trayItem = new TrayItem(var1, 0);
          this.trayItem.setImage(VersionInfo.getTrayIcon());
          this.trayItem.setToolTipText(this.titleBarText);
-         this.trayItem.addListener(35, new MinimizerTray$1(this));
-         this.trayItem.addSelectionListener(new MinimizerTray$2(this));
+         this.trayItem.addListener(35, new Listener() {
+            public void handleEvent(Event var1) {
+               Menu var2 = MinimizerTray.this.trayMenu;
+               if (var2 != null && !var2.isDisposed()) {
+                  var2.setVisible(true);
+               }
+            }
+         });
+         this.trayItem.addSelectionListener(new SelectionAdapter() {
+            public void widgetDefaultSelected(SelectionEvent var1) {
+               if (!PreferenceLoader.loadBoolean("systraySingleClick")) {
+                  if (MinimizerTray.this.shell.isVisible()) {
+                     MinimizerTray.this.hide();
+                  } else {
+                     MinimizerTray.this.restore();
+                     if (MinimizerTray.this.shell.getMinimized()) {
+                        MinimizerTray.this.shell.setMinimized(false);
+                     }
+                  }
+               }
+            }
+
+            public void widgetSelected(SelectionEvent var1) {
+               if (PreferenceLoader.loadBoolean("systraySingleClick")) {
+                  if (MinimizerTray.this.shell.isVisible()) {
+                     MinimizerTray.this.hide();
+                  } else {
+                     MinimizerTray.this.restore();
+                     if (MinimizerTray.this.shell.getMinimized()) {
+                        MinimizerTray.this.shell.setMinimized(false);
+                     }
+                  }
+               }
+            }
+         });
       }
    }
 
@@ -135,15 +174,28 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
       var1.add(new PreferencesAction(this.mainWindow));
       new BandwidthDialog(this.shell, var1);
       var1.add(new Separator());
-      var1.add(new MinimizerTray$HideRestoreAction(this));
-      var1.add(new MinimizerTray$CloseAction(this));
+      var1.add(new HideRestoreAction());
+      var1.add(new CloseAction());
    }
 
    public void update(MyObservable var1, Object var2, int var3) {
       if (var1 instanceof ClientStats) {
-         ClientStats var4 = (ClientStats)var1;
+         final ClientStats var4 = (ClientStats)var1;
          if (var4 != null && this.shell != null && !this.shell.isDisposed()) {
-            this.shell.getDisplay().asyncExec(new MinimizerTray$3(this, var4));
+            this.shell.getDisplay().asyncExec(new Runnable() {
+               public void run() {
+                  if (MinimizerTray.this.shell != null
+                     && !MinimizerTray.this.shell.isDisposed()
+                     && MinimizerTray.this.trayItem != null
+                     && !MinimizerTray.this.trayItem.isDisposed()) {
+                     if (MinimizerTray.this.shell.isVisible() && MinimizerTray.this.shell.getMinimized()) {
+                        MinimizerTray.this.setTitleBar(var4);
+                     }
+
+                     MinimizerTray.this.setTrayToolTip(var4);
+                  }
+               }
+            });
          }
       }
    }
@@ -173,18 +225,35 @@ public class MinimizerTray extends Minimizer implements DisposeListener, IMenuLi
       }
    }
 
-   // $VF: synthetic method
-   static Menu access$000(MinimizerTray var0) {
-      return var0.trayMenu;
+   // Context-menu action: toggles between hiding to the tray and restoring the window.
+   private class HideRestoreAction extends Action {
+      public HideRestoreAction() {
+         super(SResources.getString(MinimizerTray.this.shell.isVisible() ? "mi.hide" : "mi.restore"));
+         this.setImageDescriptor(SResources.getImageDescriptor(MinimizerTray.this.shell.isVisible() ? "minus" : "plus"));
+      }
+
+      public void run() {
+         if (MinimizerTray.this.shell.isVisible()) {
+            MinimizerTray.this.hide();
+         } else {
+            MinimizerTray.this.restore();
+            if (MinimizerTray.this.shell.getMinimized()) {
+               MinimizerTray.this.shell.setMinimized(false);
+            }
+         }
+      }
    }
 
-   // $VF: synthetic method
-   static TrayItem access$100(MinimizerTray var0) {
-      return var0.trayItem;
-   }
+   // Context-menu action: closes the application, bypassing minimize-on-close.
+   private class CloseAction extends Action {
+      public CloseAction() {
+         super(SResources.getString("mi.close"));
+         this.setImageDescriptor(SResources.getImageDescriptor("x"));
+      }
 
-   // $VF: synthetic method
-   static boolean access$202(MinimizerTray var0, boolean var1) {
-      return var0.closeMe = var1;
+      public void run() {
+         MinimizerTray.this.closeMe = true;
+         MinimizerTray.this.shell.close();
+      }
    }
 }

@@ -1,8 +1,16 @@
 package sancho.view.statistics;
 
 import gnu.trove.TIntArrayList;
+import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.preference.PreferenceStore;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -39,12 +47,25 @@ public class GraphHistory implements PaintListener {
       this.shell = new Shell(331120);
       this.hScrollBar = this.shell.getHorizontalBar();
       this.hScrollBar.setVisible(false);
-      this.hScrollBar.addSelectionListener(new GraphHistory$1(this));
+      this.hScrollBar.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            GraphHistory.this.shell.redraw();
+         }
+      });
       this.shell.setImage(VersionInfo.getProgramIcon());
       this.shell.setText(this.graph.getTitle());
       this.shell.setLayout(new FillLayout());
-      this.shell.addDisposeListener(new GraphHistory$2(this));
-      this.shell.addControlListener(new GraphHistory$3(this));
+      this.shell.addDisposeListener(new DisposeListener() {
+         public synchronized void widgetDisposed(DisposeEvent var1) {
+            PreferenceStore var2 = PreferenceLoader.getPreferenceStore();
+            PreferenceConverter.setValue(var2, "graphHistoryWindowBounds", GraphHistory.this.shell.getBounds());
+         }
+      });
+      this.shell.addControlListener(new ControlAdapter() {
+         public void controlResized(ControlEvent var1) {
+            GraphHistory.this.adjustScrollBar();
+         }
+      });
       this.shell.addPaintListener(this);
       this.shell.setBounds(PreferenceLoader.loadRectangle("graphHistoryWindowBounds"));
       this.adjustScrollBar();
@@ -141,10 +162,5 @@ public class GraphHistory implements PaintListener {
             var17++;
          }
       }
-   }
-
-   // $VF: synthetic method
-   static Shell access$000(GraphHistory var0) {
-      return var0.shell;
    }
 }

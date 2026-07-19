@@ -9,7 +9,9 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Layout;
+import org.eclipse.swt.widgets.Listener;
 
 public class MyViewForm extends Composite {
    public int marginWidth = 0;
@@ -38,7 +40,22 @@ public class MyViewForm extends Composite {
    public MyViewForm(Composite var1, int var2) {
       super(var1, checkStyle(var2));
       this.setBorderVisible((var2 & 2048) != 0);
-      MyViewForm$1 var3 = new MyViewForm$1(this);
+      Listener var3 = new Listener() {
+         public void handleEvent(Event var1) {
+            switch (var1.type) {
+               case 9:
+                  MyViewForm.this.onPaint(var1.gc);
+               case 10:
+               default:
+                  break;
+               case 11:
+                  MyViewForm.this.onResize();
+                  break;
+               case 12:
+                  MyViewForm.this.onDispose();
+            }
+         }
+      };
       int[] var4 = new int[]{12, 9, 11};
 
       for (int var5 = 0; var5 < var4.length; var5++) {

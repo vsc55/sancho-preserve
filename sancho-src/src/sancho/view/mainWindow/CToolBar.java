@@ -6,6 +6,7 @@ import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -81,8 +82,16 @@ public class CToolBar implements DisposeListener {
 
    private Menu createToolBarRMMenu() {
       Menu var1 = new Menu(this.mainWindow.getShell(), 8);
-      this.createMenuItem(var1, 32, this.toolbarSmallButtons, "mi.cb.small", new CToolBar$1(this));
-      this.createMenuItem(var1, 0, false, "mi.cb.tabSelector", new CToolBar$2(this));
+      this.createMenuItem(var1, 32, this.toolbarSmallButtons, "mi.cb.small", new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            CToolBar.this.toggleSmallButtons();
+         }
+      });
+      this.createMenuItem(var1, 0, false, "mi.cb.tabSelector", new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            CToolBar.this.mainWindow.configureTabs();
+         }
+      });
       return var1;
    }
 
@@ -155,15 +164,5 @@ public class CToolBar implements DisposeListener {
 
    public void widgetDisposed(DisposeEvent var1) {
       this.savePreferences();
-   }
-
-   // $VF: synthetic method
-   static void access$000(CToolBar var0) {
-      var0.toggleSmallButtons();
-   }
-
-   // $VF: synthetic method
-   static MainWindow access$100(CToolBar var0) {
-      return var0.mainWindow;
    }
 }

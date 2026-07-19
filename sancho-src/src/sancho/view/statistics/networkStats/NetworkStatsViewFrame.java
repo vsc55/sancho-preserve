@@ -1,11 +1,13 @@
 package sancho.view.statistics.networkStats;
 
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import sancho.core.Sancho;
 import sancho.model.mldonkey.Network;
 import sancho.model.mldonkey.utility.NetworkStatCollection;
 import sancho.view.utility.AbstractTab;
 import sancho.view.viewFrame.SashViewFrame;
-import sancho.view.viewer.GView;
 
 public class NetworkStatsViewFrame extends SashViewFrame {
    Network network;
@@ -20,42 +22,29 @@ public class NetworkStatsViewFrame extends SashViewFrame {
 
    public void refreshInThread() {
       if (!this.gView.isDisposed()) {
-         this.gView.getComposite().getDisplay().asyncExec(new NetworkStatsViewFrame$1(this));
+         this.gView.getComposite().getDisplay().asyncExec(new Runnable() {
+            public void run() {
+               if (!NetworkStatsViewFrame.this.gView.isDisposed()) {
+                  if (NetworkStatsViewFrame.this.gView.isActive() && NetworkStatsViewFrame.this.gView.isVisible()) {
+                     NetworkStatsViewFrame.this.gView.clearAll();
+                     ((NetworkStatsTableView)NetworkStatsViewFrame.this.gView).updateHeader();
+                  } else {
+                     NetworkStatsViewFrame.this.gView.getContentProvider().setNeedsRefresh(true);
+                  }
+               }
+            }
+         });
       }
    }
 
    public void createViewToolBar() {
       super.createViewToolBar();
-      this.addToolItem("mi.refresh", "rotate", new NetworkStatsViewFrame$2(this));
-   }
-
-   // $VF: synthetic method
-   static GView access$000(NetworkStatsViewFrame var0) {
-      return var0.gView;
-   }
-
-   // $VF: synthetic method
-   static GView access$100(NetworkStatsViewFrame var0) {
-      return var0.gView;
-   }
-
-   // $VF: synthetic method
-   static GView access$200(NetworkStatsViewFrame var0) {
-      return var0.gView;
-   }
-
-   // $VF: synthetic method
-   static GView access$300(NetworkStatsViewFrame var0) {
-      return var0.gView;
-   }
-
-   // $VF: synthetic method
-   static GView access$400(NetworkStatsViewFrame var0) {
-      return var0.gView;
-   }
-
-   // $VF: synthetic method
-   static GView access$500(NetworkStatsViewFrame var0) {
-      return var0.gView;
+      this.addToolItem("mi.refresh", "rotate", new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            if (Sancho.hasCollectionFactory()) {
+               NetworkStatsViewFrame.this.network.getStats();
+            }
+         }
+      });
    }
 }

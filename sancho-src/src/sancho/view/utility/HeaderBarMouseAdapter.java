@@ -1,13 +1,20 @@
 package sancho.view.utility;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.MenuAdapter;
+import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import sancho.view.MainWindow;
 
 public class HeaderBarMouseAdapter extends MouseAdapter {
    private CLabel cLabel;
@@ -23,8 +30,37 @@ public class HeaderBarMouseAdapter extends MouseAdapter {
    }
 
    private void addCopyItem(Menu var1) {
-      HeaderBarMouseAdapter$1 var2 = new HeaderBarMouseAdapter$1(this);
-      var1.addMenuListener(var2);
+      var1.addMenuListener(new MenuAdapter() {
+         Font oldFont = HeaderBarMouseAdapter.this.cLabel.getFont();
+         Font boldFont;
+
+         public void menuShown(MenuEvent var1) {
+            Menu var2 = (Menu)var1.widget;
+            FontData[] var3 = this.oldFont.getFontData();
+
+            for (int var4 = 0; var4 < var3.length; var4++) {
+               var3[var4].setStyle(1);
+            }
+
+            this.boldFont = new Font(null, var3);
+            HeaderBarMouseAdapter.this.cLabel.setFont(this.boldFont);
+            new MenuItem(var2, 2);
+            HeaderBarMouseAdapter.this.addMenuItem(var2, "mi.copy", "copy", new SelectionAdapter() {
+               public void widgetSelected(SelectionEvent var1) {
+                  MainWindow.copyToClipboard(HeaderBarMouseAdapter.this.cLabel.getText());
+               }
+            });
+         }
+
+         public void menuHidden(MenuEvent var1) {
+            Menu var2 = (Menu)var1.widget;
+            var2.removeMenuListener(this);
+            HeaderBarMouseAdapter.this.cLabel.setFont(this.oldFont);
+            if (this.boldFont != null && !this.boldFont.isDisposed()) {
+               this.boldFont.dispose();
+            }
+         }
+      });
    }
 
    private void showMenu(Point var1, boolean var2) {
@@ -59,8 +95,15 @@ public class HeaderBarMouseAdapter extends MouseAdapter {
       }
    }
 
-   // $VF: synthetic method
-   static CLabel access$000(HeaderBarMouseAdapter var0) {
-      return var0.cLabel;
+   // Context-menu action that copies the header label's text to the clipboard.
+   private class CopyAction extends Action {
+      public CopyAction() {
+         super(SResources.getString("mi.copy"));
+         this.setImageDescriptor(SResources.getImageDescriptor("copy"));
+      }
+
+      public void run() {
+         MainWindow.copyToClipboard(HeaderBarMouseAdapter.this.cLabel.getText());
+      }
    }
 }

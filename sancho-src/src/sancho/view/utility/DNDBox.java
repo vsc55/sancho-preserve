@@ -1,6 +1,13 @@
 package sancho.view.utility;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
@@ -10,6 +17,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import sancho.core.Sancho;
 import sancho.model.mldonkey.ClientStats;
@@ -17,6 +25,9 @@ import sancho.utility.MyObservable;
 import sancho.utility.MyObserver;
 import sancho.view.MainWindow;
 import sancho.view.preferences.PreferenceLoader;
+import sancho.view.statusline.actions.DNDBoxAction;
+import sancho.view.statusline.actions.PreferencesAction;
+import sancho.view.utility.dialogs.BandwidthDialog;
 
 public class DNDBox implements MyObserver, PaintListener {
    static int JUMP_MARGIN = 10;
@@ -60,7 +71,7 @@ public class DNDBox implements MyObserver, PaintListener {
       this.shell.addPaintListener(this);
       this.shellBounds = this.shell.getBounds();
       this.popupMenu = new MenuManager();
-      this.popupMenu.addMenuListener(new DNDBox$DNDBoxMenuListener(this));
+      this.popupMenu.addMenuListener(new DNDBoxMenuListener());
       this.popupMenu.setRemoveAllWhenShown(true);
       this.shell.setMenu(this.popupMenu.createContextMenu(this.shell));
       this.screenBounds = this.shell.getDisplay().getBounds();
@@ -71,14 +82,40 @@ public class DNDBox implements MyObserver, PaintListener {
          this.shell.setLocation(this.screenBounds.width - this.shellBounds.width, this.screenBounds.height - this.shellBounds.height - 40);
       }
 
-      this.shell.addDisposeListener(new DNDBox$1(this));
+      this.shell.addDisposeListener(new DisposeListener() {
+         public void widgetDisposed(DisposeEvent var1) {
+            PreferenceConverter.setValue(PreferenceLoader.getPreferenceStore(), "dndBoxWindowBounds", DNDBox.this.shell.getBounds());
+            if (Sancho.hasCollectionFactory()) {
+               Sancho.getCore().getClientStats().deleteObserver(DNDBox.this);
+            }
+         }
+      });
       this.shell.open();
       WidgetFactory.createLinkDropTarget(this.shell);
       if (this.shell.getDisplay().getMonitors().length > 1) {
          this.multiMonitors = true;
       }
 
-      DNDBox$2 var5 = new DNDBox$2(this);
+      Listener var5 = new Listener() {
+         public void handleEvent(Event var1) {
+            switch (var1.type) {
+               case 3:
+                  DNDBox.this.onMouseDown(var1);
+                  break;
+               case 4:
+                  DNDBox.this.onMouseUp(var1);
+                  break;
+               case 5:
+                  DNDBox.this.onMouseMove(var1);
+               case 6:
+               case 7:
+               default:
+                  break;
+               case 8:
+                  DNDBox.this.onMouseDoubleClick(var1);
+            }
+         }
+      };
       int[] var6 = new int[]{3, 4, 5, 8};
 
       for (int var7 = 0; var7 < var6.length; var7++) {
@@ -180,9 +217,60 @@ public class DNDBox implements MyObserver, PaintListener {
       var1.gc.drawRectangle(0, 0, this.shellWidth - 1, this.shellHeight - 1);
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
+   public void update(final MyObservable var1, Object var2, int var3) {
       if (var1 instanceof ClientStats && this.shell != null && !this.shell.isDisposed()) {
-         this.shell.getDisplay().asyncExec(new DNDBox$3(this, var1));
+         this.shell.getDisplay().asyncExec(new Runnable() {
+            public void run() {
+               DNDBox.this.redrawImage((ClientStats)var1);
+            }
+         });
+      }
+   }
+
+   // Context-menu listener that builds the DND box popup on demand.
+   private class DNDBoxMenuListener implements IMenuListener {
+      public void menuAboutToShow(IMenuManager var1) {
+         if (Sancho.monitorMode) {
+            var1.add(new ExitAction(DNDBox.this.mainWindow.getShell()));
+         } else {
+            var1.add(new HideRestoreAction(DNDBox.this.mainWindow.getShell()));
+            if (DNDBox.this.mainWindow.getShell().isVisible()) {
+               var1.add(new DNDBoxAction(DNDBox.this.mainWindow));
+            }
+
+            var1.add(new Separator());
+            var1.add(new PreferencesAction(DNDBox.this.mainWindow));
+            new BandwidthDialog(DNDBox.this.shell, var1);
+         }
+      }
+   }
+
+   // Menu action that closes the given shell (monitor-mode exit).
+   private static class ExitAction extends Action {
+      Shell shell;
+
+      public ExitAction(Shell var1) {
+         super(SResources.getString("menu.file.exit"));
+         this.shell = var1;
+      }
+
+      public void run() {
+         this.shell.close();
+      }
+   }
+
+   // Menu action that toggles the main shell between hidden and restored.
+   private static class HideRestoreAction extends Action {
+      Shell shell;
+
+      public HideRestoreAction(Shell var1) {
+         super(SResources.getString(var1.isVisible() ? "mi.hide" : "mi.restore"));
+         this.setImageDescriptor(SResources.getImageDescriptor(var1.isVisible() ? "minus" : "plus"));
+         this.shell = var1;
+      }
+
+      public void run() {
+         this.shell.setVisible(!this.shell.isVisible());
       }
    }
 }

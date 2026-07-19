@@ -68,8 +68,17 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
 
 ## Housekeeping
 
-- [~] **(In progress) Re-merge decompiled inner classes into their parent files —
-  opportunistically, not en masse.** Started at 448 of 861 source files (52%) split-out
+- [x] ~~**Re-merge decompiled inner classes into their parent files.**~~ — **DONE for the
+  whole tree.** Every split-out `Foo$1.java`/`Foo$Bar.java` fragment has been folded back
+  into its parent; the source tree now has **zero `$` files** (was 448 when the effort
+  began, 861 total files). Anonymous listeners inlined at call sites, named classes nested
+  static/inner, all `this$0`/`access$NNN`/`val$` synthetics removed. Covered incrementally:
+  WebBrowserTab/MenuBar/WinRegPreferencePage, all of `sancho.core`, `sancho.utility`, the
+  `sancho.model.mldonkey` collections, the two JFace viewers, and finally all 93 `sancho.view`
+  parents (334 fragments, waves 1–8). Verified by clean full-tree compile at every step. The
+  historical detail is below for reference.
+  <details><summary>original notes</summary>
+  Started at 448 of 861 source files (52%) split-out
   inner classes (`Foo$1.java` anonymous ×322, `Foo$Bar.java` named ×126) across 112
   parents, with 821 synthetic `access$NNN` accessors, 355 files carrying `this$0`, and 74
   `val$` captures. A bulk merge is weeks of work, purely cosmetic, and high-risk (inlining
@@ -89,19 +98,18 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
   collections (`ACollection_Int` + File/Client/Server/Result/Room/Option/Network/
   SharedFile), and both custom JFace viewers (`CustomTableViewer` 12, `CustomTreeViewer`
   14) — all merged **and** fully `varN`-renamed to descriptive names. See CHANGELOG.
+  </details>
 - [x] ~~**Rename `varN` locals in the rest of `sancho.model`.**~~ — done: all 87 model
   classes outside the already-cleaned collections (domain objects `File`/`Client`/`Result`/
   `Server`/`Network`/`SharedFile`/`Option`/`Room`/`User` + protocol subclasses, the `enums`
   sub-package, and the `utility` wire-format sub-package) renamed to descriptive names.
   `sancho.model` now has zero `varN`; full 747-file compile clean. See CHANGELOG.
-- [ ] **Merge `$`-split files AND rename `varN` in `sancho.view`.** This is where most of
-  the remaining split-out inner-class files live (the bulk of the ~360 `$` files) plus
-  heavy `varN` usage. Two combined passes per class: (1) fold the `Foo$N`/`Foo$Bar`
-  fragments back into the parent (inline anonymous listeners, nest named classes, drop
-  `this$0`/`access$NNN`), (2) rename that file's `varN` to descriptive names. Use the
-  `0.9.4-23` template where available. High-volume; do it opportunistically, compile-check
-  each. Good starting candidates: `ResultTableMenuListener` (18), `LinkRipper` (16),
-  `Console` (11), `FileDetailDialog` (10).
+- [~] **Rename `varN` locals in `sancho.view`.** The `$`-split-file merge is DONE (see the
+  re-merge item above) — every `sancho.view` parent is now a single file. What remains is
+  the descriptive-rename pass: the un-restructured method bodies (and the moved inner-class
+  bodies) still carry decompiler `varN` locals (~18k occurrences across ~600 files). Purely
+  descriptive renaming, no structural change; the same low-risk pass already completed for
+  `sancho.core`/`sancho.utility`/`sancho.model`. Do it per sub-package, compile-checking each.
 - [ ] **Validate the Windows association exe-path on an installed MSI build.** The
   registry association (Preferences → Windows Registry) now creates the keys correctly and
   takes the executable path from `jpackage.app-path` when installed. Running the dev jar

@@ -1,14 +1,29 @@
 package sancho.view.viewFrame;
 
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.AbstractTab;
 import sancho.view.utility.WidgetFactory;
+import sancho.view.viewFrame.actions.AddTabAction;
+import sancho.view.viewFrame.actions.RemoveTabAction;
+import sancho.view.viewFrame.actions.TabsOnTopAction;
 
 public class TabbedViewFrame extends ViewFrame {
    protected Composite cTabChildComposite;
@@ -50,15 +65,106 @@ public class TabbedViewFrame extends ViewFrame {
 
       this.cTabChildComposite = new Composite(this.cTabFolder, 0);
       this.cTabChildComposite.setLayout(new FillLayout());
-      this.cTabFolder.addSelectionListener(new TabbedViewFrame$1(this));
+      this.cTabFolder.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            CTabItem var2 = (CTabItem)var1.item;
+            oldSelectionItem.setData("filterString", gView.filtersToString());
+            oldSelectionItem.setControl(null);
+            switchToTab(var2, false);
+         }
+      });
       int var10 = SWT.getPlatform().equals("fox") ? 3 : 35;
-      this.cTabFolder.addListener(var10, new TabbedViewFrame$2(this));
-      TabbedViewFrame$3 var11 = new TabbedViewFrame$3(this);
-      this.cTabFolder.addListener(29, var11);
-      this.cTabFolder.addListener(4, var11);
-      this.cTabFolder.addListener(5, var11);
-      this.cTabFolder.addListener(7, var11);
-      this.cTabFolder.addListener(6, var11);
+      this.cTabFolder.addListener(var10, new Listener() {
+         public void handleEvent(Event var1) {
+            if (!SWT.getPlatform().equals("fox") || var1.button == 3) {
+               Point var2 = cTabFolder.getDisplay().getCursorLocation();
+               var2 = cTabFolder.toControl(var2);
+               CTabItem var3 = cTabFolder.getItem(var2);
+               if (var3 != null) {
+                  Menu var4 = popupMenu.createContextMenu(cTabFolder);
+                  var4.setVisible(true);
+               }
+            }
+         }
+      });
+      Listener dragListener = new Listener() {
+         boolean drag = false;
+         CTabItem dragItem;
+         boolean exitDrag = false;
+
+         public void handleEvent(Event var1) {
+            Point var2 = cTabFolder.toControl(cTabFolder.getDisplay().getCursorLocation());
+            switch (var1.type) {
+               case 4:
+                  if (!this.drag) {
+                     return;
+                  }
+
+                  cTabFolder.setInsertMark(null, false);
+                  CTabItem var7 = cTabFolder.getItem(var2);
+                  if (var7 == this.dragItem) {
+                     return;
+                  }
+
+                  if (var7 != null) {
+                     int var8 = cTabFolder.indexOf(var7);
+                     CTabItem var5 = new CTabItem(cTabFolder, 0, var8);
+                     var5.setText(this.dragItem.getText());
+                     var5.setData("filterString", this.dragItem.getData("filterString"));
+                     onCTabDispose(var5);
+                     this.dragItem.setControl(null);
+                     this.dragItem.dispose();
+                     switchToTab(var5);
+                  }
+
+                  this.drag = false;
+                  this.exitDrag = false;
+                  this.dragItem = null;
+                  break;
+               case 5:
+                  if (!this.drag) {
+                     return;
+                  }
+
+                  CTabItem var6 = cTabFolder.getItem(var2);
+                  if (var6 == null) {
+                     cTabFolder.setInsertMark(null, false);
+                     return;
+                  }
+
+                  cTabFolder.setInsertMark(var6, false);
+                  break;
+               case 6:
+                  if (this.exitDrag) {
+                     this.exitDrag = false;
+                     this.drag = var1.button != 0;
+                  }
+                  break;
+               case 7:
+                  if (this.drag) {
+                     cTabFolder.setInsertMark(null, false);
+                     this.exitDrag = true;
+                     this.drag = false;
+                  }
+                  break;
+               case 29:
+                  CTabItem var3 = cTabFolder.getItem(var2);
+                  CTabItem var4 = cTabFolder.getSelection();
+                  if (var3 == null || var3 != var4) {
+                     return;
+                  }
+
+                  this.drag = true;
+                  this.exitDrag = false;
+                  this.dragItem = var3;
+            }
+         }
+      };
+      this.cTabFolder.addListener(29, dragListener);
+      this.cTabFolder.addListener(4, dragListener);
+      this.cTabFolder.addListener(5, dragListener);
+      this.cTabFolder.addListener(7, dragListener);
+      this.cTabFolder.addListener(6, dragListener);
    }
 
    public void createItem(String var1) {
@@ -73,7 +179,7 @@ public class TabbedViewFrame extends ViewFrame {
    public void createPopupMenu() {
       this.popupMenu = new MenuManager();
       this.popupMenu.setRemoveAllWhenShown(true);
-      this.popupMenu.addMenuListener(new TabbedViewFrame$TabMenuListener(this, this.tabPrefString));
+      this.popupMenu.addMenuListener(new TabMenuListener(this, this.tabPrefString));
    }
 
    public Composite getChildComposite() {
@@ -85,7 +191,20 @@ public class TabbedViewFrame extends ViewFrame {
    }
 
    public void onCTabDispose(CTabItem var1) {
-      var1.addDisposeListener(new TabbedViewFrame$4(this));
+      var1.addDisposeListener(new DisposeListener() {
+         public void widgetDisposed(DisposeEvent var1) {
+            CTabItem var2 = (CTabItem)var1.widget;
+            PreferenceStore var3 = PreferenceLoader.getPreferenceStore();
+            var3.setValue(tabPrefString + "Tabs", cTabFolder.getItemCount());
+            int var4 = cTabFolder.indexOf(var2);
+            var3.setValue(tabPrefString + "Tab_" + var4 + "_Name", var2.getText());
+            if (cTabFolder.getSelection() == var2) {
+               var3.setValue(tabPrefString + "Tab_" + var4 + "_Filters", gView.filtersToString());
+            } else {
+               var3.setValue(tabPrefString + "Tab_" + var4 + "_Filters", (String)var2.getData("filterString"));
+            }
+         }
+      });
    }
 
    public void switchToTab(CTabItem var1) {
@@ -120,5 +239,26 @@ public class TabbedViewFrame extends ViewFrame {
    public void toggleTabPosition() {
       this.cTabFolder.setTabPosition((this.cTabFolder.getStyle() & 1024) != 0 ? 128 : 1024);
       this.cTabFolder.layout();
+   }
+
+   // Menu listener that populates the tab context menu (add/remove tab, tabs-on-top).
+   private static class TabMenuListener implements IMenuListener {
+      String tabPrefString;
+      TabbedViewFrame viewFrame;
+
+      public TabMenuListener(TabbedViewFrame var1, String var2) {
+         this.viewFrame = var1;
+         this.tabPrefString = var2;
+      }
+
+      public void menuAboutToShow(IMenuManager var1) {
+         var1.add(new AddTabAction(this.viewFrame));
+         if (this.viewFrame.getCTabFolder().getItemCount() > 1) {
+            var1.add(new RemoveTabAction(this.viewFrame));
+         }
+
+         var1.add(new Separator());
+         var1.add(new TabsOnTopAction(this.tabPrefString, this.viewFrame));
+      }
    }
 }

@@ -1,6 +1,8 @@
 package sancho.view.friends;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -8,6 +10,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import sancho.core.Sancho;
 import sancho.utility.VersionInfo;
 import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
@@ -53,24 +56,24 @@ public class AddFriendDialog extends Dialog {
       Button var3 = new Button(var2, 0);
       var3.setLayoutData(new GridData(768));
       var3.setText(SResources.getString("b.ok"));
-      var3.addSelectionListener(new AddFriendDialog$1(this));
+      var3.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            String var2 = "afr " + AddFriendDialog.this.host.getText() + " " + AddFriendDialog.this.port.getText();
+            Sancho.send((short)29, var2);
+            AddFriendDialog.this.close();
+         }
+      });
       Button var4 = new Button(var2, 0);
       var4.setLayoutData(new GridData(768));
       var4.setText(SResources.getString("b.cancel"));
-      var4.addSelectionListener(new AddFriendDialog$2(this));
+      var4.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            AddFriendDialog.this.close();
+         }
+      });
       // Make OK the default button so Enter in the host/port fields submits (the
       // hand-rolled button bar set no default button, so Enter did nothing).
       var2.getShell().setDefaultButton(var3);
       return var2;
-   }
-
-   // $VF: synthetic method
-   static Text access$000(AddFriendDialog var0) {
-      return var0.host;
-   }
-
-   // $VF: synthetic method
-   static Text access$100(AddFriendDialog var0) {
-      return var0.port;
    }
 }

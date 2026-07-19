@@ -1,17 +1,25 @@
 package sancho.view.statusline;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.widgets.Composite;
 import sancho.core.Sancho;
 import sancho.model.mldonkey.ClientStats;
 import sancho.utility.MyObservable;
+import sancho.view.MainWindow;
 import sancho.view.StatusLine;
+import sancho.view.statusline.actions.DNDBoxAction;
 import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
+import sancho.view.utility.dialogs.BandwidthDialog;
 
 public class RateItem implements IStatusItem {
    private Composite statusLineComposite;
@@ -27,7 +35,11 @@ public class RateItem implements IStatusItem {
    public RateItem(StatusLine var1) {
       this.statusLine = var1;
       this.statusLineComposite = var1.getStatusline();
-      this.disconnectMouseAdapter = new RateItem$1(this);
+      this.disconnectMouseAdapter = new MouseAdapter() {
+         public void mouseDoubleClick(MouseEvent var1) {
+            Sancho.getCoreFactory().reconnect();
+         }
+      };
       this.createContent();
       this.updateImages = true;
       this.setConnected(true);
@@ -48,7 +60,7 @@ public class RateItem implements IStatusItem {
       this.statusLineComposite.setLayout(WidgetFactory.createRowLayout(false, true, false, 256, 0, 0, 0, 0, 0));
       this.popupMenu = new MenuManager();
       this.popupMenu.setRemoveAllWhenShown(true);
-      this.popupMenu.addMenuListener(new RateItem$RateMenuListener(this));
+      this.popupMenu.addMenuListener(new RateMenuListener());
       this.downCLabel = new CLabel(this.statusLineComposite, 131072);
       this.downCLabel.setLayoutData(new RowData());
       this.downCLabel.setMenu(this.popupMenu.createContextMenu(this.downCLabel));
@@ -59,7 +71,14 @@ public class RateItem implements IStatusItem {
 
    public void update(MyObservable var1, Object var2, int var3) {
       if (var1 instanceof ClientStats && var1 != null && this.upCLabel != null && !this.upCLabel.isDisposed()) {
-         this.statusLineComposite.getDisplay().asyncExec(new RateItem$2(this, var1));
+         final MyObservable observable = var1;
+         this.statusLineComposite.getDisplay().asyncExec(new Runnable() {
+            public void run() {
+               if (RateItem.this.connected) {
+                  RateItem.this.updateClientStats((ClientStats)observable);
+               }
+            }
+         });
       }
    }
 
@@ -98,23 +117,39 @@ public class RateItem implements IStatusItem {
       }
    }
 
-   // $VF: synthetic method
-   static boolean access$000(RateItem var0) {
-      return var0.connected;
+   // Copies the current up/down rate label text to the clipboard.
+   private class CopyLabelsAction extends Action {
+      public CopyLabelsAction() {
+         super(SResources.getString("mi.copy"));
+         this.setImageDescriptor(SResources.getImageDescriptor("copy"));
+      }
+
+      public void run() {
+         String var1 = "";
+         if (RateItem.this.downCLabel != null && !RateItem.this.downCLabel.isDisposed()) {
+            var1 = var1 + RateItem.this.downCLabel.getText();
+         }
+
+         if (RateItem.this.upCLabel != null && !RateItem.this.upCLabel.isDisposed()) {
+            String var2 = RateItem.this.upCLabel.getText();
+            if (!var2.equals("")) {
+               var1 = var1 + " | " + var2;
+            }
+         }
+
+         MainWindow.copyToClipboard(var1);
+      }
    }
 
-   // $VF: synthetic method
-   static StatusLine access$100(RateItem var0) {
-      return var0.statusLine;
-   }
-
-   // $VF: synthetic method
-   static CLabel access$200(RateItem var0) {
-      return var0.downCLabel;
-   }
-
-   // $VF: synthetic method
-   static CLabel access$300(RateItem var0) {
-      return var0.upCLabel;
+   // Builds the rate label context menu on demand.
+   private class RateMenuListener implements IMenuListener {
+      public void menuAboutToShow(IMenuManager var1) {
+         if (!Sancho.monitorMode) {
+            var1.add(new DNDBoxAction(RateItem.this.statusLine.getMainWindow()));
+            new BandwidthDialog(RateItem.this.downCLabel.getShell(), var1);
+            var1.add(new Separator());
+            var1.add(new CopyLabelsAction());
+         }
+      }
    }
 }

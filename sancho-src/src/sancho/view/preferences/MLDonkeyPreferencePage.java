@@ -4,15 +4,23 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -21,6 +29,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Text;
 import sancho.model.mldonkey.Option;
 import sancho.model.mldonkey.enums.EnumTagType;
@@ -145,7 +154,7 @@ public class MLDonkeyPreferencePage extends FieldEditorPreferencePage {
    }
 
    protected Control createContents(Composite var1) {
-      Collections.sort(this.options, new MLDonkeyPreferencePage$OptionsComparator());
+      Collections.sort(this.options, new OptionsComparator());
       this.filteredOptions = new ArrayList(this.options.size());
       Iterator var2 = this.options.iterator();
 
@@ -162,14 +171,41 @@ public class MLDonkeyPreferencePage extends FieldEditorPreferencePage {
          Text var7 = new Text(var5, 2052);
          var7.setLayoutData(new GridData(768));
          if (SWT.getPlatform().equals("fox")) {
-            var7.addKeyListener(new MLDonkeyPreferencePage$1(this));
+            var7.addKeyListener(new KeyAdapter() {
+               public void keyPressed(KeyEvent var1) {
+                  MLDonkeyPreferencePage.this.updateRefine(var1);
+               }
+            });
          } else {
-            var7.addKeyListener(new MLDonkeyPreferencePage$2(this));
+            var7.addKeyListener(new KeyAdapter() {
+               public void keyReleased(KeyEvent var1) {
+                  MLDonkeyPreferencePage.this.updateRefine(var1);
+               }
+            });
          }
 
          Button var8 = new Button(var5, 32);
          var8.setText(SResources.getString("l.changed"));
-         var8.addSelectionListener(new MLDonkeyPreferencePage$3(this));
+         var8.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent var1) {
+               Button var2 = (Button)var1.widget;
+               MLDonkeyPreferencePage.this.fChanged = var2.getSelection();
+               MLDonkeyPreferencePage.this.group.setRedraw(false);
+               MLDonkeyPreferencePage.this.filteredOptions.clear();
+               MLDonkeyPreferencePage.this.clearEditors();
+               Control[] var3 = MLDonkeyPreferencePage.this.myComp.getChildren();
+
+               for (int var4 = var3.length - 1; var4 >= 0; var4--) {
+                  var3[var4].dispose();
+               }
+
+               MLDonkeyPreferencePage.this.reFilter();
+               MLDonkeyPreferencePage.this.createFieldEditors();
+               MLDonkeyPreferencePage.this.sc.setMinSize(MLDonkeyPreferencePage.this.myComp.computeSize(-1, -1, true));
+               MLDonkeyPreferencePage.this.group.setRedraw(true);
+               MLDonkeyPreferencePage.this.myComp.layout(true);
+            }
+         });
       }
 
       Composite var3;
@@ -188,10 +224,28 @@ public class MLDonkeyPreferencePage extends FieldEditorPreferencePage {
          GridLayout var10 = WidgetFactory.createGridLayout(1, 5, 5, 5, 5, false);
          this.group.setLayout(var10);
          this.group.setLayoutData(new GridData(1808));
-         this.sc = new MLDonkeyPreferencePage$4(this, this.group, 768);
+         this.sc = new ScrolledComposite(this.group, 768) {
+            public Point computeSize(int var1, int var2, boolean var3) {
+               return new Point(-1, -1);
+            }
+         };
          this.sc.setLayoutData(new GridData(1808));
          this.sc.setLayout(new FillLayout());
-         this.sc.addControlListener(new MLDonkeyPreferencePage$5(this));
+         this.sc.addControlListener(new ControlAdapter() {
+            public void controlResized(ControlEvent var1) {
+               ScrolledComposite var2 = (ScrolledComposite)var1.widget;
+               int var3 = var2.getClientArea().height;
+               if (var3 > 10) {
+                  var3 -= 10;
+               }
+
+               ScrollBar var4 = var2.getVerticalBar();
+               if (var4 != null) {
+                  var4.setIncrement(15);
+                  var4.setPageIncrement(var3);
+               }
+            }
+         });
          var3 = (Composite)super.createContents(this.sc);
          var3.setLayoutData(new GridData(1808));
          this.sc.setExpandHorizontal(true);
@@ -230,7 +284,23 @@ public class MLDonkeyPreferencePage extends FieldEditorPreferencePage {
          } else if (var6 != EnumTagType.INT && !this.isInteger(var7)) {
             this.setupEditor(var1, new StringFieldEditor(var4, var4, 20, var1), var5);
          } else {
-            MLDonkeyPreferencePage$6 var9 = new MLDonkeyPreferencePage$6(this, var4, var4, var1);
+            IntegerFieldEditor var9 = new IntegerFieldEditor(var4, var4, var1) {
+               protected void doFillIntoGrid(Composite var1, int var2) {
+                  this.getLabelControl(var1);
+                  Text var3 = this.getTextControl(var1);
+                  GridData var4 = new GridData();
+                  var4.horizontalSpan = var2 - 1;
+                  if (extentX < 0) {
+                     GC var5 = new GC(var3);
+                     Point var6 = var5.textExtent("X");
+                     var5.dispose();
+                     extentX = var6.x;
+                  }
+
+                  var4.widthHint = 20 * extentX;
+                  var3.setLayoutData(var4);
+               }
+            };
             var9.setValidRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
             this.setupEditor(var1, var9, var5);
          }
@@ -262,44 +332,12 @@ public class MLDonkeyPreferencePage extends FieldEditorPreferencePage {
       this.addField(var2);
    }
 
-   // $VF: synthetic method
-   static boolean access$002(MLDonkeyPreferencePage var0, boolean var1) {
-      return var0.fChanged = var1;
-   }
-
-   // $VF: synthetic method
-   static Composite access$100(MLDonkeyPreferencePage var0) {
-      return var0.group;
-   }
-
-   // $VF: synthetic method
-   static List access$200(MLDonkeyPreferencePage var0) {
-      return var0.filteredOptions;
-   }
-
-   // $VF: synthetic method
-   static void access$300(MLDonkeyPreferencePage var0) {
-      var0.clearEditors();
-   }
-
-   // $VF: synthetic method
-   static Composite access$400(MLDonkeyPreferencePage var0) {
-      return var0.myComp;
-   }
-
-   // $VF: synthetic method
-   static ScrolledComposite access$500(MLDonkeyPreferencePage var0) {
-      return var0.sc;
-   }
-
-   // $VF: synthetic method
-   static int access$600() {
-      return extentX;
-   }
-
-   // $VF: synthetic method
-   static int access$602(int var0) {
-      extentX = var0;
-      return var0;
+   // Case-insensitive ordering of options by name for the preference list.
+   private static class OptionsComparator implements Comparator {
+      public int compare(Object var1, Object var2) {
+         Option var3 = (Option)var1;
+         Option var4 = (Option)var2;
+         return var3.getName().compareToIgnoreCase(var4.getName());
+      }
    }
 }

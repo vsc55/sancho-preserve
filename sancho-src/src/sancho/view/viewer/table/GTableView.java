@@ -3,10 +3,16 @@ package sancho.view.viewer.table;
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.viewers.CustomTableViewer;
 import org.eclipse.jface.viewers.ICustomViewer;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Item;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import sancho.view.preferences.PreferenceLoader;
@@ -109,13 +115,37 @@ public abstract class GTableView extends GView {
          var8.setToolTipText(SResources.getString(this.columnLabels[var7] + ".tooltip"));
          int var9 = var1.getInt(this.columnLabels[var7]);
          var8.setWidth(var9 > 0 ? var9 : this.columnDefaultWidths[var7]);
-         var8.addListener(10, new GTableView$1(this));
-         var8.addDisposeListener(new GTableView$2(this, var1, var7));
+         var8.addListener(10, new Listener() {
+            public void handleEvent(Event var1) {
+               onMove();
+            }
+         });
+         var8.addDisposeListener(new DisposeListener() {
+            public synchronized void widgetDisposed(DisposeEvent disposeEvent) {
+               TableColumn tableColumn = (TableColumn)disposeEvent.widget;
+               if (tableColumn.getWidth() > 0) {
+                  var1.setValue(columnLabels[var7], tableColumn.getWidth());
+               }
+            }
+         });
          if (this.preferenceString.equals("result")) {
-            var8.addControlListener(new GTableView$3(this, var1, var7));
+            var8.addControlListener(new ControlAdapter() {
+               public void controlResized(ControlEvent controlEvent) {
+                  TableColumn tableColumn = (TableColumn)controlEvent.widget;
+                  if (tableColumn.getWidth() > 0) {
+                     var1.setValue(columnLabels[var7], tableColumn.getWidth());
+                  }
+               }
+            });
          }
 
-         var8.addListener(13, new GTableView$4(this, var5));
+         final int columnIndex = var5;
+         var8.addListener(13, new Listener() {
+            public void handleEvent(Event var1) {
+               sortByColumn(columnIndex);
+               setSortIndicator();
+            }
+         });
       }
    }
 
@@ -187,15 +217,5 @@ public abstract class GTableView extends GView {
 
    protected CustomTableViewer getTableViewer() {
       return (CustomTableViewer)this.sViewer;
-   }
-
-   // $VF: synthetic method
-   static String[] access$000(GTableView var0) {
-      return var0.columnLabels;
-   }
-
-   // $VF: synthetic method
-   static String[] access$100(GTableView var0) {
-      return var0.columnLabels;
    }
 }

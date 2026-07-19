@@ -1,5 +1,6 @@
 package sancho.view.viewer;
 
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
@@ -17,7 +18,15 @@ public class CTreeEditor extends CControlEditor {
    public CTreeEditor(Tree var1) {
       super(var1);
       this.tree = var1;
-      this.columnListener = new CTreeEditor$1(this);
+      this.columnListener = new ControlListener() {
+         public void controlMoved(ControlEvent var1) {
+            CTreeEditor.this.resize();
+         }
+
+         public void controlResized(ControlEvent var1) {
+            CTreeEditor.this.resize();
+         }
+      };
       this.grabVertical = true;
    }
 

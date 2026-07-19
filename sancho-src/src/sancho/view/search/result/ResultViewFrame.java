@@ -3,7 +3,11 @@ package sancho.view.search.result;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolItem;
+import sancho.core.Sancho;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.AbstractTab;
 import sancho.view.utility.SResources;
@@ -48,14 +52,32 @@ public class ResultViewFrame extends CTabFolderViewFrame {
       this.closeAllTabsToolItem.setImage(SResources.getImage("x"));
       this.closeAllTabsToolItem.setToolTipText(SResources.getString("ti.f.closeAllTabs"));
       this.closeAllTabsToolItem.setEnabled(false);
-      this.closeAllTabsToolItem.addSelectionListener(new ResultViewFrame$1(this));
+      this.closeAllTabsToolItem.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            CTabItem[] var2 = ResultViewFrame.this.cTabFolder.getItems();
+
+            for (int var3 = 0; var3 < var2.length; var3++) {
+               CTabItem var4 = var2[var3];
+               Control var5 = var4.getControl();
+               if (var5 != null && !var5.isDisposed()) {
+                  var5.dispose();
+               }
+
+               var4.dispose();
+            }
+         }
+      });
    }
 
    public void addExtendSearch() {
       this.extendSearchToolItem = new ToolItem(this.toolBar, 0);
       this.extendSearchToolItem.setImage(SResources.getImage("plus"));
       this.extendSearchToolItem.setToolTipText(SResources.getString("ti.extendSearch"));
-      this.extendSearchToolItem.addSelectionListener(new ResultViewFrame$2(this));
+      this.extendSearchToolItem.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            Sancho.send((short)4);
+         }
+      });
       this.updateExtendSearch();
    }
 
@@ -66,7 +88,23 @@ public class ResultViewFrame extends CTabFolderViewFrame {
    public void addPauseContinue() {
       this.pauseContinueToolItem = new ToolItem(this.toolBar, 0);
       this.togglePauseContinue(false);
-      this.pauseContinueToolItem.addSelectionListener(new ResultViewFrame$3(this));
+      this.pauseContinueToolItem.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            CTabItem var2 = ResultViewFrame.this.cTabFolder.getSelection();
+            if (var2 != null) {
+               ResultTab var3 = (ResultTab)var2.getData();
+               if (var3 != null) {
+                  if (var3.isPaused()) {
+                     ResultViewFrame.this.togglePauseContinue(false);
+                     var3.unPause();
+                  } else {
+                     var3.pause();
+                     ResultViewFrame.this.togglePauseContinue(true);
+                  }
+               }
+            }
+         }
+      });
       new ToolItem(this.toolBar, 2);
       if (this.getGView() == null) {
          this.pauseContinueToolItem.setEnabled(false);
@@ -96,15 +134,5 @@ public class ResultViewFrame extends CTabFolderViewFrame {
          this.togglePauseContinue(false);
          this.pauseContinueToolItem.setEnabled(false);
       }
-   }
-
-   // $VF: synthetic method
-   static CTabFolder access$000(ResultViewFrame var0) {
-      return var0.cTabFolder;
-   }
-
-   // $VF: synthetic method
-   static CTabFolder access$100(ResultViewFrame var0) {
-      return var0.cTabFolder;
    }
 }

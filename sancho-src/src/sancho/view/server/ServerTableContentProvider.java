@@ -1,10 +1,9 @@
 package sancho.view.server;
 
-import org.eclipse.jface.viewers.CustomTableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import sancho.model.mldonkey.ServerCollection;
 import sancho.utility.MyObservable;
-import sancho.view.viewer.GView;
+import sancho.view.utility.SResources;
 import sancho.view.viewer.table.GTableContentProvider;
 
 public class ServerTableContentProvider extends GTableContentProvider {
@@ -48,11 +47,36 @@ public class ServerTableContentProvider extends GTableContentProvider {
       super.setActive(var1);
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
+   public void update(final MyObservable var1, Object var2, int var3) {
       if (this.gView.getViewer() != null && !this.gView.getComposite().isDisposed()) {
          if (this.gView.isActive() && this.gView.isVisible()) {
             if (var1 instanceof ServerCollection) {
-               this.tableViewer.getTable().getDisplay().asyncExec(new ServerTableContentProvider$1(this, var1));
+               this.tableViewer.getTable().getDisplay().asyncExec(new Runnable() {
+                  public void run() {
+                     if (gView != null && !gView.isDisposed()) {
+                        ServerCollection serverCollection = (ServerCollection)var1;
+                        boolean var2 = false;
+                        if (serverCollection.removed()) {
+                           tableViewer.remove(serverCollection.getAndClearRemoved());
+                           var2 = true;
+                        }
+
+                        if (serverCollection.added()) {
+                           tableViewer.add(serverCollection.getAndClearAdded());
+                           var2 = true;
+                        }
+
+                        if (serverCollection.updated()) {
+                           boolean var3 = tableViewer.updateOrRefresh(serverCollection.getAndClearUpdated(), SResources.SA_Z);
+                           var2 = !var3;
+                        }
+
+                        if (var2) {
+                           updateLabel(serverCollection);
+                        }
+                     }
+                  }
+               });
             }
          } else {
             this.needsRefresh = true;
@@ -62,30 +86,5 @@ public class ServerTableContentProvider extends GTableContentProvider {
 
    protected void updateLabel(ServerCollection var1) {
       this.gView.getViewFrame().updateCLabelText(var1.getHeaderString());
-   }
-
-   // $VF: synthetic method
-   static GView access$000(ServerTableContentProvider var0) {
-      return var0.gView;
-   }
-
-   // $VF: synthetic method
-   static GView access$100(ServerTableContentProvider var0) {
-      return var0.gView;
-   }
-
-   // $VF: synthetic method
-   static CustomTableViewer access$200(ServerTableContentProvider var0) {
-      return var0.tableViewer;
-   }
-
-   // $VF: synthetic method
-   static CustomTableViewer access$300(ServerTableContentProvider var0) {
-      return var0.tableViewer;
-   }
-
-   // $VF: synthetic method
-   static CustomTableViewer access$400(ServerTableContentProvider var0) {
-      return var0.tableViewer;
    }
 }

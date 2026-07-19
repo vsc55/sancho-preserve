@@ -64,9 +64,15 @@ public class Minimizer implements MyObserver {
 
    public void update(MyObservable var1, Object var2, int var3) {
       if (var1 instanceof ClientStats) {
-         ClientStats var4 = (ClientStats)var1;
+         final ClientStats var4 = (ClientStats)var1;
          if (this.shell != null && !this.shell.isDisposed()) {
-            this.shell.getDisplay().asyncExec(new Minimizer$1(this, var4));
+            this.shell.getDisplay().asyncExec(new Runnable() {
+               public void run() {
+                  if (Minimizer.this.shell != null && !Minimizer.this.shell.isDisposed() && Minimizer.this.shell.getMinimized()) {
+                     Minimizer.this.setTitleBar(var4);
+                  }
+               }
+            });
          }
       }
    }

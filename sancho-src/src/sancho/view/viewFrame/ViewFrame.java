@@ -1,11 +1,22 @@
 package sancho.view.viewFrame;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseTrackListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -41,7 +52,7 @@ public class ViewFrame {
       this(var1, var2, var3, var4, false);
    }
 
-   public ViewFrame(Composite var1, String var2, String var3, AbstractTab var4, boolean var5) {
+   public ViewFrame(Composite var1, final String var2, final String var3, AbstractTab var4, boolean var5) {
       this.parent = var1;
       this.aTab = var4;
       this.prefString = var2;
@@ -51,13 +62,36 @@ public class ViewFrame {
       this.cLabel = WidgetFactory.createCLabel(this.viewForm, var2, var3);
       this.viewForm.setContent(this.childComposite);
       this.viewForm.setTopLeft(this.cLabel);
-      this.cLabel.addMouseTrackListener(new ViewFrame$1(this, var3));
+      this.cLabel.addMouseTrackListener(new MouseTrackListener() {
+         private Image newImage;
+
+         public void mouseHover(MouseEvent var1) {
+         }
+
+         public void disposeImage() {
+            if (this.newImage != null) {
+               this.newImage.dispose();
+               this.newImage = null;
+            }
+         }
+
+         public void mouseEnter(MouseEvent var1) {
+            this.disposeImage();
+            this.newImage = SResources.createActiveImage(SResources.getImageDescriptor(var3));
+            ViewFrame.this.cLabel.setImage(this.newImage);
+         }
+
+         public void mouseExit(MouseEvent var1) {
+            ViewFrame.this.cLabel.setImage(SResources.getImage(var3));
+            this.disposeImage();
+         }
+      });
    }
 
    public void addPopupMenu(ToolBar var1) {
       MenuManager var2 = new MenuManager();
       var2.setRemoveAllWhenShown(true);
-      var2.addMenuListener(new ViewFrame$RefineMenuListener());
+      var2.addMenuListener(new RefineMenuListener());
       var1.setMenu(var2.createContextMenu(var1));
    }
 
@@ -71,12 +105,36 @@ public class ViewFrame {
       this.clearRefineToolItem = new ToolItem(this.toolBar, 0);
       this.clearRefineToolItem.setImage(SResources.getImage("refine"));
       this.clearRefineToolItem.setToolTipText(SResources.getString("ti.clearRefine"));
-      this.clearRefineToolItem.addSelectionListener(new ViewFrame$2(this));
+      this.clearRefineToolItem.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            if (ViewFrame.this.refineText != null) {
+               ViewFrame.this.refineText.add(ViewFrame.this.refineText.getText(), 0);
+               ViewFrame.this.refineText.setText("");
+            }
+
+            if (ViewFrame.this.getGView() != null) {
+               ViewFrame.this.getGView().setRefineString("");
+            }
+         }
+      });
       this.addPopupMenu(this.toolBar);
       ToolItem var1 = new ToolItem(this.toolBar, 2);
       this.refineText = new NoDuplicatesCombo(this.toolBar, 2048);
       this.refineText.setItems(PreferenceLoader.loadStringArray(this.prefString + ".refineSArray"));
-      this.refineText.addDisposeListener(new ViewFrame$3(this));
+      this.refineText.addDisposeListener(new DisposeListener() {
+         public void widgetDisposed(DisposeEvent var1) {
+            NoDuplicatesCombo var2 = (NoDuplicatesCombo)var1.widget;
+            String[] var3 = var2.getItems();
+
+            for (int var4 = 0; var4 < var3.length; var4++) {
+               if (var3[var4].length() > 1000) {
+                  var3[var4] = var3[var4].substring(0, 1000);
+               }
+            }
+
+            PreferenceLoader.setValue(ViewFrame.this.prefString + ".refineSArray", var3, 25);
+         }
+      });
       this.refineText.setToolTipText(SResources.getString("ti.refine"));
       this.refineText.setSize(75, -1);
       if (SWT.getPlatform().equals("fox")) {
@@ -89,12 +147,31 @@ public class ViewFrame {
          var1.setControl(this.refineText);
       }
 
-      this.refineText.addSelectionListener(new ViewFrame$4(this));
+      this.refineText.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            NoDuplicatesCombo var2 = (NoDuplicatesCombo)var1.widget;
+            if (var2.getSelectionIndex() > -1) {
+               ViewFrame.this.refineText.setText(var2.getItem(var2.getSelectionIndex()));
+            }
+
+            if (ViewFrame.this.getGView() != null) {
+               ViewFrame.this.getGView().setRefineString(ViewFrame.this.refineText.getText());
+            }
+         }
+      });
       if (SWT.getPlatform().equals("fox")) {
          this.refineText.setSize(75, this.refineText.getSize().y);
-         this.refineText.addKeyListener(new ViewFrame$5(this));
+         this.refineText.addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent var1) {
+               ViewFrame.this.updateRefine(var1);
+            }
+         });
       } else {
-         this.refineText.addKeyListener(new ViewFrame$6(this));
+         this.refineText.addKeyListener(new KeyAdapter() {
+            public void keyReleased(KeyEvent var1) {
+               ViewFrame.this.updateRefine(var1);
+            }
+         });
       }
 
       if (this.getGView() == null) {
@@ -201,7 +278,11 @@ public class ViewFrame {
       this.menuManager = new MenuManager("");
       this.menuManager.setRemoveAllWhenShown(true);
       this.menuManager.addMenuListener(var1);
-      this.cLabel.addDisposeListener(new ViewFrame$7(this));
+      this.cLabel.addDisposeListener(new DisposeListener() {
+         public void widgetDisposed(DisposeEvent var1) {
+            ViewFrame.this.menuManager.dispose();
+         }
+      });
    }
 
    public void setVisible(boolean var1) {
@@ -217,9 +298,13 @@ public class ViewFrame {
       }
    }
 
-   public void updateCLabelTextInGuiThread(String var1) {
+   public void updateCLabelTextInGuiThread(final String var1) {
       if (this.cLabel != null && !this.cLabel.isDisposed()) {
-         this.cLabel.getDisplay().asyncExec(new ViewFrame$8(this, var1));
+         this.cLabel.getDisplay().asyncExec(new Runnable() {
+            public void run() {
+               ViewFrame.this.updateCLabelText(var1);
+            }
+         });
       }
    }
 
@@ -229,9 +314,13 @@ public class ViewFrame {
       }
    }
 
-   public void updateCLabelToolTipInGuiThread(String var1) {
+   public void updateCLabelToolTipInGuiThread(final String var1) {
       if (this.cLabel != null && !this.cLabel.isDisposed()) {
-         this.cLabel.getDisplay().asyncExec(new ViewFrame$9(this, var1));
+         this.cLabel.getDisplay().asyncExec(new Runnable() {
+            public void run() {
+               ViewFrame.this.updateCLabelToolTip(var1);
+            }
+         });
       }
    }
 
@@ -294,6 +383,33 @@ public class ViewFrame {
          case 16777221:
          case 16777222:
          case 16777296:
+      }
+   }
+
+   // Menu listener that populates the refine tool-bar popup with the filter-toggle actions.
+   private static class RefineMenuListener implements IMenuListener {
+      public void menuAboutToShow(IMenuManager var1) {
+         var1.add(new ToggleRefineAction("mi.refineFilterNegation", "refineFilterNegation"));
+         var1.add(new ToggleRefineAction("mi.refineFilterAlternates", "refineFilterAlternates"));
+      }
+   }
+
+   // Checkbox menu action that toggles a boolean refine-filter preference on/off.
+   private static class ToggleRefineAction extends Action {
+      String prefString;
+
+      public ToggleRefineAction(String var1, String var2) {
+         super(SResources.getString(var1), 2);
+         this.prefString = var2;
+      }
+
+      public boolean isChecked() {
+         return PreferenceLoader.loadBoolean(this.prefString);
+      }
+
+      public void run() {
+         PreferenceLoader.getPreferenceStore().setValue(this.prefString, !this.isChecked());
+         PreferenceLoader.saveStore();
       }
    }
 }

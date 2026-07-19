@@ -9,6 +9,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TreeItem;
 import sancho.model.mldonkey.Client;
 import sancho.model.mldonkey.File;
@@ -101,8 +102,14 @@ public class DownloadTreeLabelProvider extends GTableLabelProvider implements IT
    }
 
    public void setUpOwnerDraw() {
-      DownloadTreeLabelProvider$1 var1 = new DownloadTreeLabelProvider$1(this);
-      this.gView.getViewer().getControl().addListener(42, var1);
+      this.gView.getViewer().getControl().addListener(42, new Listener() {
+         public void handleEvent(Event var1) {
+            switch (DownloadTreeLabelProvider.this.cViewer.getColumnIDs()[var1.index]) {
+               case 9:
+                  DownloadTreeLabelProvider.this.drawChunks(var1);
+            }
+         }
+      });
    }
 
    public Image getColumnImage(Object var1, int var2) {
@@ -324,15 +331,5 @@ public class DownloadTreeLabelProvider extends GTableLabelProvider implements IT
       this.pausedFont = PreferenceLoader.loadFont("downloadsPausedFontData");
       this.queuedFont = PreferenceLoader.loadFont("downloadsQueuedFontData");
       this.downloadedFont = PreferenceLoader.loadFont("downloadsDownloadedFontData");
-   }
-
-   // $VF: synthetic method
-   static ICustomViewer access$000(DownloadTreeLabelProvider var0) {
-      return var0.cViewer;
-   }
-
-   // $VF: synthetic method
-   static void access$100(DownloadTreeLabelProvider var0, Event var1) {
-      var0.drawChunks(var1);
    }
 }

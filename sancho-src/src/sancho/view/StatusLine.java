@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -17,6 +19,7 @@ import sancho.view.statusline.LinkEntryItem;
 import sancho.view.statusline.NetworkItem;
 import sancho.view.statusline.RateItem;
 import sancho.view.statusline.StatusConsole;
+import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
 
 public class StatusLine {
@@ -72,7 +75,14 @@ public class StatusLine {
       var6.setLayout(new FillLayout());
       var6.setLayoutData(new GridData(1808));
       this.cLabel = new CLabel(var6, 0);
-      this.cLabel.addMouseListener(new StatusLine$1(this));
+      this.cLabel.addMouseListener(new MouseAdapter() {
+         public void mouseUp(MouseEvent var1) {
+            CLabel var2 = (CLabel)var1.widget;
+            if (var2.getText().equals(SResources.getString("l.newMessage"))) {
+               StatusLine.this.getMainWindow().switchToFriends();
+            }
+         }
+      });
       this.cLabel.setText("");
       this.addSeparator(this.statusLineComposite);
       this.statusConsole = new StatusConsole(var1, var2, var3);

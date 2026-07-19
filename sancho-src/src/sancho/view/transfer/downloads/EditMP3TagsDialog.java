@@ -1,6 +1,8 @@
 package sancho.view.transfer.downloads;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -9,6 +11,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import sancho.core.Sancho;
 import sancho.model.mldonkey.File;
 import sancho.utility.VersionInfo;
 import sancho.view.utility.BSpinner;
@@ -235,54 +238,33 @@ public class EditMP3TagsDialog extends Dialog {
       Button var3 = new Button(var2, 0);
       var3.setLayoutData(new GridData(768));
       var3.setText(SResources.getString("b.ok"));
-      var3.addSelectionListener(new EditMP3TagsDialog$1(this));
+      var3.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            Object[] var2 = new Object[]{
+               Integer.valueOf(EditMP3TagsDialog.this.file.getId()),
+               EditMP3TagsDialog.this.title.getText(),
+               EditMP3TagsDialog.this.artist.getText(),
+               EditMP3TagsDialog.this.album.getText(),
+               EditMP3TagsDialog.this.year.getText(),
+               EditMP3TagsDialog.this.comment.getText(),
+               Integer.valueOf(EditMP3TagsDialog.this.trackNumber.getSelection()),
+               Integer.valueOf(EditMP3TagsDialog.this.genre.getSelectionIndex())
+            };
+            Sancho.send((short)26, var2);
+            EditMP3TagsDialog.this.close();
+         }
+      });
       Button var4 = new Button(var2, 0);
       var4.setLayoutData(new GridData(768));
       var4.setText(SResources.getString("b.cancel"));
-      var4.addSelectionListener(new EditMP3TagsDialog$2(this));
+      var4.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            EditMP3TagsDialog.this.close();
+         }
+      });
       // OK is the default button so Enter in the tag fields commits the edits (the
       // hand-rolled button bar set no default, so Enter did nothing).
       var2.getShell().setDefaultButton(var3);
       return var2;
-   }
-
-   // $VF: synthetic method
-   static File access$000(EditMP3TagsDialog var0) {
-      return var0.file;
-   }
-
-   // $VF: synthetic method
-   static Text access$100(EditMP3TagsDialog var0) {
-      return var0.title;
-   }
-
-   // $VF: synthetic method
-   static Text access$200(EditMP3TagsDialog var0) {
-      return var0.artist;
-   }
-
-   // $VF: synthetic method
-   static Text access$300(EditMP3TagsDialog var0) {
-      return var0.album;
-   }
-
-   // $VF: synthetic method
-   static Text access$400(EditMP3TagsDialog var0) {
-      return var0.year;
-   }
-
-   // $VF: synthetic method
-   static Text access$500(EditMP3TagsDialog var0) {
-      return var0.comment;
-   }
-
-   // $VF: synthetic method
-   static BSpinner access$600(EditMP3TagsDialog var0) {
-      return var0.trackNumber;
-   }
-
-   // $VF: synthetic method
-   static Combo access$700(EditMP3TagsDialog var0) {
-      return var0.genre;
    }
 }

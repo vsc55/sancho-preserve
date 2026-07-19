@@ -2,6 +2,8 @@ package sancho.view.utility;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.PreferenceStore;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -9,6 +11,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
@@ -77,13 +80,33 @@ public class IDSelector extends Dialog {
       Button var3 = new Button(var1, 0);
       var3.setText(SResources.getString("l.default"));
       var3.setLayoutData(var2);
-      var3.addSelectionListener(new IDSelector$1(this));
+      var3.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent selectionEvent) {
+            IDSelector.this.rightIDs = IDSelector.this.allIDs;
+            IDSelector.this.leftIDs = "";
+            IDSelector.this.table.removeAll();
+            IDSelector.this.createItems();
+         }
+      });
    }
 
    public void createTable(Composite var1) {
       this.table = new Table(var1, 67620);
       this.table.setLayoutData(new GridData(1808));
-      IDSelector$2 var2 = new IDSelector$2(this);
+      Listener var2 = new Listener() {
+         public void handleEvent(Event event) {
+            switch (event.type) {
+               case 3:
+                  IDSelector.this.onMouseDown(event);
+                  break;
+               case 4:
+                  IDSelector.this.onMouseUp(event);
+                  break;
+               case 5:
+                  IDSelector.this.onMouseMove(event);
+            }
+         }
+      };
       int[] var3 = new int[]{3, 4, 5};
 
       for (int var4 = 0; var4 < var3.length; var4++) {
@@ -174,11 +197,25 @@ public class IDSelector extends Dialog {
       Button var3 = new Button(var2, 0);
       var3.setText(SResources.getString("l.up"));
       var3.setLayoutData(new GridData(1808));
-      var3.addSelectionListener(new IDSelector$3(this));
+      var3.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent selectionEvent) {
+            int selectionIndex;
+            if ((selectionIndex = IDSelector.this.table.getSelectionIndex()) > 0) {
+               IDSelector.this.moveItem(selectionIndex, -1);
+            }
+         }
+      });
       Button var4 = new Button(var2, 0);
       var4.setText(SResources.getString("l.down"));
       var4.setLayoutData(new GridData(1808));
-      var4.addSelectionListener(new IDSelector$4(this));
+      var4.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent selectionEvent) {
+            int selectionIndex = IDSelector.this.table.getSelectionIndex();
+            if (selectionIndex < IDSelector.this.table.getItemCount() - 1 && selectionIndex > -1) {
+               IDSelector.this.moveItem(selectionIndex, 1);
+            }
+         }
+      });
    }
 
    public void moveItem(int var1, int var2) {
@@ -280,25 +317,5 @@ public class IDSelector extends Dialog {
       var10.setValue(var0, var8);
       var10.setValue(var2, var4);
       return var8.intern();
-   }
-
-   // $VF: synthetic method
-   static String access$002(IDSelector var0, String var1) {
-      return var0.rightIDs = var1;
-   }
-
-   // $VF: synthetic method
-   static String access$100(IDSelector var0) {
-      return var0.allIDs;
-   }
-
-   // $VF: synthetic method
-   static String access$202(IDSelector var0, String var1) {
-      return var0.leftIDs = var1;
-   }
-
-   // $VF: synthetic method
-   static Table access$300(IDSelector var0) {
-      return var0.table;
    }
 }

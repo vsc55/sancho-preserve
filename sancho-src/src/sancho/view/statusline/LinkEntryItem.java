@@ -1,10 +1,14 @@
 package sancho.view.statusline;
 
+import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import sancho.core.Sancho;
 import sancho.view.StatusLine;
 import sancho.view.utility.LinkRipper;
 import sancho.view.utility.SResources;
@@ -28,27 +32,67 @@ public class LinkEntryItem {
       Composite var1 = new Composite(this.composite, 0);
       var1.setLayoutData(new GridData(1104));
       var1.setLayout(new FillLayout());
-      ToolBar var2 = new ToolBar(var1, 8388608);
+      final ToolBar var2 = new ToolBar(var1, 8388608);
       ToolItem var3 = new ToolItem(var2, 8388608);
       var3.setImage(SResources.getImage("http-add"));
       var3.setToolTipText(SResources.getString("sl.httpAdd"));
-      var3.addSelectionListener(new LinkEntryItem$1(this, var2));
+      var3.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            InputDialog dialog = new InputDialog(var2.getShell(), SResources.getString("sl.http.title"), SResources.getString("sl.http.linkTo"), "", null);
+            dialog.open();
+            String result = dialog.getValue();
+            if (result != null) {
+               Sancho.send((short)29, "http " + result);
+            }
+         }
+      });
       ToolItem var4 = new ToolItem(var2, 0);
       var4.setImage(SResources.getImage("web-link-12"));
       var4.setToolTipText(SResources.getString("sl.rip"));
-      var4.addSelectionListener(new LinkEntryItem$2(this));
-      ToolItem var5 = new ToolItem(var2, 32);
+      var4.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            LinkRipper linkRipper = LinkEntryItem.this.statusLine.getMainWindow().getLinkRipper();
+            if (linkRipper != null) {
+               linkRipper.setFocus();
+            } else {
+               linkRipper = LinkEntryItem.this.statusLine.getMainWindow().openLinkRipper();
+               LinkEntryItem.this.setupLinkRipper(linkRipper);
+               linkRipper.open();
+            }
+         }
+      });
+      final ToolItem var5 = new ToolItem(var2, 32);
       var5.setImage(SResources.getImage("up_arrow_green"));
       var5.setToolTipText(SResources.getString("sl.linkEntry"));
-      var5.addSelectionListener(new LinkEntryItem$3(this, var5));
-      ToolItem var6 = new ToolItem(var2, 32);
+      var5.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            GridData gridData = new GridData(768);
+            if (LinkEntryItem.this.linkEntryToggle) {
+               var5.setSelection(false);
+               gridData.heightHint = 0;
+            } else {
+               var5.setSelection(true);
+               gridData.heightHint = 75;
+            }
+
+            LinkEntryItem.this.linkEntryToggle = !LinkEntryItem.this.linkEntryToggle;
+            LinkEntryItem.this.linkEntryComposite.setLayoutData(gridData);
+            LinkEntryItem.this.statusLine.getMainWindow().getMainComposite().layout();
+         }
+      });
+      final ToolItem var6 = new ToolItem(var2, 32);
       var6.setImage(SResources.getImage("console-12"));
       var6.setToolTipText(SResources.getString("tab.console.tooltip"));
       if (this.statusConsole.isVisible()) {
          var6.setSelection(true);
       }
 
-      var6.addSelectionListener(new LinkEntryItem$4(this, var6));
+      var6.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            LinkEntryItem.this.statusConsole.toggleVisible();
+            var6.setSelection(LinkEntryItem.this.statusConsole.isVisible());
+         }
+      });
    }
 
    public void setupLinkRipper(LinkRipper var1) {

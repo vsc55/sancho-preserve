@@ -1,6 +1,9 @@
 package sancho.view.statistics;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.swt.widgets.MessageBox;
+import sancho.view.utility.SResources;
 import sancho.view.viewFrame.SashViewFrame;
 import sancho.view.viewFrame.SashViewListener;
 
@@ -15,14 +18,58 @@ public class GraphViewListener extends SashViewListener {
    }
 
    public void menuAboutToShow(IMenuManager var1) {
-      var1.add(new GraphViewListener$HourlyGraphHistoryAction(this.graphCanvas.getGraphData()));
-      var1.add(new GraphViewListener$ClearGraphHistoryAction(this, this.graphCanvas.getGraphData()));
-      var1.add(new GraphViewListener$ReverseGraphAction(this.graphCanvas));
+      var1.add(new HourlyGraphHistoryAction(this.graphCanvas.getGraphData()));
+      var1.add(new ClearGraphHistoryAction(this.graphCanvas.getGraphData()));
+      var1.add(new ReverseGraphAction(this.graphCanvas));
       this.createSashActions(var1, this.showResString);
    }
 
-   // $VF: synthetic method
-   static GraphCanvas access$000(GraphViewListener var0) {
-      return var0.graphCanvas;
+   // Menu action: opens the hourly graph-history window.
+   private static class HourlyGraphHistoryAction extends Action {
+      GraphData graph;
+
+      public HourlyGraphHistoryAction(GraphData var1) {
+         super(SResources.getString("graph.hourlyHistory"));
+         this.setImageDescriptor(SResources.getImageDescriptor("graph"));
+         this.graph = var1;
+      }
+
+      public void run() {
+         new GraphHistory(this.graph);
+      }
+   }
+
+   // Menu action: clears the graph history after user confirmation (needs the outer graph canvas' shell).
+   private class ClearGraphHistoryAction extends Action {
+      GraphData graph;
+
+      public ClearGraphHistoryAction(GraphData var1) {
+         super(SResources.getString("graph.clearHistory"));
+         this.setImageDescriptor(SResources.getImageDescriptor("clear"));
+         this.graph = var1;
+      }
+
+      public void run() {
+         MessageBox var1 = new MessageBox(GraphViewListener.this.graphCanvas.getShell(), 196);
+         var1.setMessage(SResources.getString("mi.areYouSure"));
+         if (var1.open() == 64) {
+            this.graph.clearHistory();
+         }
+      }
+   }
+
+   // Menu action: reverses the graph's drawing orientation.
+   private static class ReverseGraphAction extends Action {
+      GraphCanvas graphCanvas;
+
+      public ReverseGraphAction(GraphCanvas var1) {
+         super(SResources.getString("graph.reverseGraph"));
+         this.setImageDescriptor(SResources.getImageDescriptor("rotate"));
+         this.graphCanvas = var1;
+      }
+
+      public void run() {
+         this.graphCanvas.reverse();
+      }
    }
 }

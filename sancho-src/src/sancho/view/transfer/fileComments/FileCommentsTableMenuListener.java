@@ -1,9 +1,12 @@
 package sancho.view.transfer.fileComments;
 
-import java.util.List;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import sancho.model.mldonkey.utility.FileComment;
+import sancho.view.MainWindow;
+import sancho.view.utility.SResources;
 import sancho.view.viewer.table.GTableMenuListenerClient;
 
 public class FileCommentsTableMenuListener extends GTableMenuListenerClient implements ISelectionChangedListener {
@@ -31,7 +34,7 @@ public class FileCommentsTableMenuListener extends GTableMenuListenerClient impl
 
    public void menuAboutToShow(IMenuManager var1) {
       if (this.selectedObjects.size() > 0) {
-         var1.add(new FileCommentsTableMenuListener$CopyFileCommentsToClipboardAction(this));
+         var1.add(new CopyFileCommentsToClipboardAction());
       }
    }
 
@@ -44,13 +47,27 @@ public class FileCommentsTableMenuListener extends GTableMenuListenerClient impl
       }
    }
 
-   // $VF: synthetic method
-   static List access$000(FileCommentsTableMenuListener var0) {
-      return var0.selectedObjects;
-   }
+   // Menu action that copies the selected file comments to the clipboard.
+   private class CopyFileCommentsToClipboardAction extends Action {
+      public CopyFileCommentsToClipboardAction() {
+         super(SResources.getString("mi.copy"));
+         this.setImageDescriptor(SResources.getImageDescriptor("copy"));
+      }
 
-   // $VF: synthetic method
-   static List access$100(FileCommentsTableMenuListener var0) {
-      return var0.selectedObjects;
+      public void run() {
+         StringBuffer var1 = new StringBuffer(50);
+         String var2 = System.getProperty("line.separator");
+
+         for (int var3 = 0; var3 < FileCommentsTableMenuListener.this.selectedObjects.size(); var3++) {
+            FileComment var4 = (FileComment)FileCommentsTableMenuListener.this.selectedObjects.get(var3);
+            if (var3 > 0) {
+               var1.append(var2);
+            }
+
+            var1.append(var4.toString());
+         }
+
+         MainWindow.copyToClipboard(var1.toString());
+      }
    }
 }

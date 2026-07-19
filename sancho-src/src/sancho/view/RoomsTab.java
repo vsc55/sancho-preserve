@@ -1,9 +1,14 @@
 package sancho.view;
 
 import gnu.trove.TIntObjectHashMap;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabFolder2Adapter;
+import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import sancho.core.Sancho;
 import sancho.model.mldonkey.Room;
@@ -21,10 +26,11 @@ import sancho.view.rooms.roomUsers.RoomUsersViewFrame;
 import sancho.view.utility.AbstractTab;
 import sancho.view.utility.WidgetFactory;
 import sancho.view.viewFrame.SashViewFrame;
+import sancho.view.viewFrame.SashViewListener;
 
 public class RoomsTab extends AbstractTab implements MyObserver {
    protected CTabFolder cTabFolder;
-   protected RoomsTab$RoomCTabFolderViewFrame cTabFolderViewFrame;
+   protected RoomCTabFolderViewFrame cTabFolderViewFrame;
    protected TIntObjectHashMap roomTabMap;
 
    public RoomsTab(MainWindow var1, String var2) {
@@ -104,14 +110,22 @@ public class RoomsTab extends AbstractTab implements MyObserver {
    }
 
    public void createRoomsCTabFolder(SashForm var1) {
-      this.cTabFolderViewFrame = new RoomsTab$RoomCTabFolderViewFrame(this, var1, "t.r.rooms", "tab.rooms.buttonSmall", this);
+      this.cTabFolderViewFrame = new RoomCTabFolderViewFrame(var1, "t.r.rooms", "tab.rooms.buttonSmall", this);
       this.addViewFrame(this.cTabFolderViewFrame);
       int var2 = PreferenceLoader.loadBoolean("roomsCTabFolderTabsOnTop") ? 128 : 1024;
       this.cTabFolder = WidgetFactory.createCTabFolder(this.cTabFolderViewFrame.getChildComposite(), 8388672 | var2);
       WidgetFactory.addCTabFolderMenu(this.cTabFolder, "roomsCTabFolder");
       this.cTabFolder.setBorderVisible(false);
-      this.cTabFolder.addCTabFolder2Listener(new RoomsTab$1(this));
-      this.cTabFolder.addSelectionListener(new RoomsTab$2(this));
+      this.cTabFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
+         public void close(CTabFolderEvent var1) {
+            RoomsTab.this.closeTab((CTabItem)var1.item);
+         }
+      });
+      this.cTabFolder.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            RoomsTab.this.setCTabFolderSelection((CTabItem)var1.item);
+         }
+      });
    }
 
    public void onConnect() {
@@ -209,9 +223,47 @@ public class RoomsTab extends AbstractTab implements MyObserver {
       var3.setFocus();
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
+   public void update(final MyObservable var1, final Object var2, int var3) {
       if (this.getContent() != null && !this.getContent().isDisposed()) {
-         this.getContent().getDisplay().asyncExec(new RoomsTab$3(this, var1, var2));
+         this.getContent().getDisplay().asyncExec(new Runnable() {
+            public void run() {
+               RoomsTab.this.runUpdate(var1, var2);
+            }
+         });
+      }
+   }
+
+   // Context-menu listener contributing the available-rooms sash actions.
+   private static class RoomCTabFolderViewListener extends SashViewListener {
+      public RoomCTabFolderViewListener(SashViewFrame var1) {
+         super(var1);
+      }
+
+      public void menuAboutToShow(IMenuManager var1) {
+         this.createSashActions(var1, "t.r.availableRooms");
+      }
+   }
+
+   // View frame hosting the rooms CTabFolder, with close-closed / close-all toolbar actions.
+   private class RoomCTabFolderViewFrame extends SashViewFrame {
+      public RoomCTabFolderViewFrame(SashForm var2, String var3, String var4, AbstractTab var5) {
+         super(var2, var3, var4, var5);
+         this.createViewListener(new RoomCTabFolderViewListener(this));
+         this.createViewToolBar();
+      }
+
+      public void createViewToolBar() {
+         super.createViewToolBar();
+         this.addToolItem("t.r.closeClosed", "x-light", new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent var1) {
+               RoomsTab.this.closeAllClosedRooms();
+            }
+         });
+         this.addToolItem("t.r.closeAll", "x", new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent var1) {
+               RoomsTab.this.closeAllTabs();
+            }
+         });
       }
    }
 }

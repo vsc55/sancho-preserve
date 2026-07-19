@@ -2,9 +2,12 @@ package sancho.view.utility.setupWizard;
 
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import sancho.view.preferences.PreferenceLoader;
@@ -36,7 +39,16 @@ public class CoreBinaryPage extends WizardPage {
       Button var6 = new Button(var5, 0);
       var6.setText(SResources.getString("b.browse"));
       var6.setLayoutData(new GridData());
-      var6.addSelectionListener(new CoreBinaryPage$1(this));
+      var6.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            FileDialog var2 = new FileDialog(CoreBinaryPage.this.getShell(), 0);
+            var2.setFilterExtensions(new String[]{"*"});
+            String var3;
+            if ((var3 = var2.open()) != null) {
+               CoreBinaryPage.this.text.setText(var3);
+            }
+         }
+      });
       this.setControl(var2);
    }
 

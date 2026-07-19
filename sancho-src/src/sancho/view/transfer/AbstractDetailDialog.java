@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.MenuEvent;
+import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
@@ -17,6 +21,7 @@ import sancho.model.mldonkey.Network;
 import sancho.utility.MyObservable;
 import sancho.utility.MyObserver;
 import sancho.utility.VersionInfo;
+import sancho.view.MainWindow;
 import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
 
@@ -40,13 +45,25 @@ public abstract class AbstractDetailDialog extends Dialog implements MyObserver 
       GridData var5 = new GridData();
       var5.widthHint = 100;
       var4.setLayoutData(var5);
-      CLabel var6 = new CLabel(var1, 0);
+      final CLabel var6 = new CLabel(var1, 0);
       Menu var7 = new Menu(var6);
-      var7.addMenuListener(new AbstractDetailDialog$1(this, var6));
+      var7.addMenuListener(new MenuListener() {
+         public void menuHidden(MenuEvent var1) {
+            var6.setBackground(var6.getDisplay().getSystemColor(22));
+         }
+
+         public void menuShown(MenuEvent var1) {
+            var6.setBackground(var6.getDisplay().getSystemColor(26));
+         }
+      });
       MenuItem var8 = new MenuItem(var7, 8);
       var8.setText(SResources.getString("mi.copy"));
       var8.setImage(SResources.getImage("copy"));
-      var8.addListener(13, new AbstractDetailDialog$2(this, var6));
+      var8.addListener(13, new Listener() {
+         public void handleEvent(Event var1) {
+            MainWindow.copyToClipboard(var6.getText());
+         }
+      });
       var6.setMenu(var7);
       var5 = new GridData();
       if (var3) {
@@ -102,9 +119,16 @@ public abstract class AbstractDetailDialog extends Dialog implements MyObserver 
    public void updateViews(int var1) {
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
+   public void update(MyObservable var1, Object var2, final int var3) {
       if (this.getShell() != null && !this.getShell().isDisposed()) {
-         this.getShell().getDisplay().asyncExec(new AbstractDetailDialog$3(this, var3));
+         this.getShell().getDisplay().asyncExec(new Runnable() {
+            public void run() {
+               if (AbstractDetailDialog.this.getShell() != null && !AbstractDetailDialog.this.getShell().isDisposed()) {
+                  AbstractDetailDialog.this.updateLabels();
+                  AbstractDetailDialog.this.updateViews(var3);
+               }
+            }
+         });
       }
    }
 }

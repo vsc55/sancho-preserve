@@ -22,6 +22,22 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
   locals, parameters, catch/loop variables were renamed — no fields, method/class names,
   control flow, or literals changed. `sancho.model` now has zero `varN`. No behaviour
   change (verified: full 747-file compile clean).
+- **Folded every remaining decompiled inner-class file in `sancho.view` back into its
+  parent** — 334 split-out `Foo$1.java` / `Foo$Bar.java` fragments across 93 parent
+  classes, completing the inner-class re-merge started earlier for `WebBrowserTab`/`MenuBar`/
+  `sancho.core`/`sancho.utility`/the model collections/the JFace viewers. Anonymous
+  listeners are inlined at their call sites as `new Type(){…}`; named classes
+  (menu-item `Action`s, dialogs, comparators, view frames, stream monitors, …) become
+  nested `static`/inner classes; the decompiler's `this$0` back-references, ~hundreds of
+  synthetic `access$NNN` accessors, and `val$` captures are removed (loop-captured or
+  name-colliding locals get an effectively-final descriptive copy). Cross-file references
+  to a nested named type (e.g. `HostPage.TextLabel` from `SSHHostPage`) were updated.
+  The `0.9.4-23` original was used as a structural template where available (72 of 93
+  parents). **The entire source tree now has zero split-out inner-class (`$`) files**
+  (down from 448 when the re-merge began). Genuine `Class.forName`/`class$` idiom fields
+  are left intact. No behaviour change; verified by a clean full-tree compile (861→413
+  source files). Existing `varN` locals inside un-restructured method bodies are left for
+  a follow-up descriptive-rename pass (see ToDo).
 
 ## [0.9.4-75] — 2026-07-19
 

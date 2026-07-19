@@ -1,6 +1,7 @@
 package sancho.view.viewer.table;
 
 import java.util.ArrayList;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.program.Program;
@@ -35,16 +36,16 @@ public abstract class GTableMenuListenerClient extends GTableMenuListener {
          if (var5 != null || var4 != null && var4.length > 1) {
             MyMenuManager var8 = new MyMenuManager(SResources.getString("m.d.preview"));
             var8.setImageString("preview");
-            var8.add(new GTableMenuListenerClient$PreviewAction(this, var2, var3));
+            var8.add(new PreviewAction(var2, var3));
             var8.add(new Separator());
             if (var5 != null) {
-               var8.add(new GTableMenuListenerClient$PreviewProgramAction(this, var2[0], var5, var3[0]));
+               var8.add(new PreviewProgramAction(var2[0], var5, var3[0]));
                var8.add(new Separator());
             }
 
             if (var4 != null && var4.length > 1) {
                for (int var7 = 0; var7 < var4.length; var7++) {
-                  var8.add(new GTableMenuListenerClient$PreviewAppAction(this, var2[0], var4[var7], var3[0]));
+                  var8.add(new PreviewAppAction(var2[0], var4[var7], var3[0]));
                }
             }
 
@@ -54,7 +55,7 @@ public abstract class GTableMenuListenerClient extends GTableMenuListener {
          } else {
             MyMenuManager var6 = new MyMenuManager(SResources.getString("m.d.preview"));
             var6.setImageString("preview");
-            var6.add(new GTableMenuListenerClient$PreviewAction(this, var2, var3));
+            var6.add(new PreviewAction(var2, var3));
             var6.add(new Separator());
             var6.add(new TransferAction(this.gView.getShell(), var2, var3));
             var1.add(var6);
@@ -125,6 +126,65 @@ public abstract class GTableMenuListenerClient extends GTableMenuListener {
 
       if (var10.length > 0) {
          var3.add(new ConnectClientAction(var4));
+      }
+   }
+
+   // Menu action that previews every selected sub-file with its default preview command.
+   private class PreviewAction extends Action {
+      int[] subFileArray;
+      IPreview[] iPreviewArray;
+
+      public PreviewAction(IPreview[] var2, int[] var3) {
+         super(SResources.getString("m.d.preview"));
+         this.setImageDescriptor(SResources.getImageDescriptor("preview"));
+         this.iPreviewArray = var2;
+         this.subFileArray = var3;
+      }
+
+      public void run() {
+         for (int var1 = 0; var1 < this.iPreviewArray.length; var1++) {
+            for (int var2 = 0; var2 < this.subFileArray.length; var2++) {
+               sendToStatusline(this.iPreviewArray[var1].preview(this.subFileArray[var2]));
+            }
+         }
+      }
+   }
+
+   // Menu action that previews a sub-file with a specific external application.
+   private class PreviewAppAction extends Action {
+      IPreview iPreview;
+      String app;
+      int subFileNum;
+
+      public PreviewAppAction(IPreview var2, String var3, int var4) {
+         super(new java.io.File(var3).getName());
+         this.setImageDescriptor(SResources.getImageDescriptor("preview"));
+         this.iPreview = var2;
+         this.app = var3;
+         this.subFileNum = var4;
+      }
+
+      public void run() {
+         sendToStatusline(this.iPreview.preview(this.app, this.subFileNum));
+      }
+   }
+
+   // Menu action that previews a sub-file with the OS-registered program.
+   private class PreviewProgramAction extends Action {
+      IPreview iPreview;
+      Program program;
+      int subFileNum;
+
+      public PreviewProgramAction(IPreview var2, Program var3, int var4) {
+         super(var3.getName());
+         this.setImageDescriptor(var2.getFileTypeImageDescriptor());
+         this.iPreview = var2;
+         this.program = var3;
+         this.subFileNum = var4;
+      }
+
+      public void run() {
+         sendToStatusline(this.iPreview.preview(this.program, this.subFileNum));
       }
    }
 }

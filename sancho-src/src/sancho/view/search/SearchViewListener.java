@@ -1,8 +1,9 @@
 package sancho.view.search;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
+import sancho.view.utility.SResources;
 import sancho.view.viewFrame.SashViewListener;
-import sancho.view.viewFrame.ViewFrame;
 
 public class SearchViewListener extends SashViewListener {
    public SearchViewListener(SearchViewFrame var1) {
@@ -10,12 +11,19 @@ public class SearchViewListener extends SashViewListener {
    }
 
    public void menuAboutToShow(IMenuManager var1) {
-      var1.add(new SearchViewListener$ClearAllCombosAction(this));
+      var1.add(new ClearAllCombosAction());
       this.createSashActions(var1, "t.search.results");
    }
 
-   // $VF: synthetic method
-   static ViewFrame access$000(SearchViewListener var0) {
-      return var0.viewFrame;
+   // Menu action that clears all saved search combo entries.
+   private class ClearAllCombosAction extends Action {
+      public ClearAllCombosAction() {
+         super(SResources.getString("mi.clearCombos"));
+         this.setImageDescriptor(SResources.getImageDescriptor("clear"));
+      }
+
+      public void run() {
+         ((SearchViewFrame)viewFrame).clearAllSavedSearchCombos();
+      }
    }
 }

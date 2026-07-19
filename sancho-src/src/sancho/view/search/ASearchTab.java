@@ -3,6 +3,10 @@ package sancho.view.search;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -77,7 +81,23 @@ public abstract class ASearchTab implements MyObserver {
 
    protected Combo createIntegerCombo(Composite var1, int var2, String var3, String[] var4) {
       Combo var5 = this.createCombo(var1, var2, var3, var4);
-      var5.addKeyListener(new ASearchTab$1(this));
+      var5.addKeyListener(new KeyAdapter() {
+         public void keyPressed(KeyEvent var1) {
+            switch (var1.keyCode) {
+               case 8:
+               case 127:
+               case 16777219:
+               case 16777220:
+                  return;
+               default:
+                  try {
+                     Integer.parseInt(String.valueOf(var1.character));
+                  } catch (NumberFormatException var3) {
+                     var1.doit = false;
+                  }
+            }
+         }
+      });
       return var5;
    }
 
@@ -112,7 +132,16 @@ public abstract class ASearchTab implements MyObserver {
       var3.setText(SResources.getString(var2));
       NoDuplicatesCombo var4 = new NoDuplicatesCombo(var1, 2052);
       var4.setLayoutData(new GridData(768));
-      var4.addKeyListener(new ASearchTab$2(this));
+      var4.addKeyListener(new KeyAdapter() {
+         public void keyPressed(KeyEvent var1) {
+            if (var1.character == '\r' || var1.character == 16777296) {
+               ASearchTab.this.performSearch();
+               NoDuplicatesCombo var2 = (NoDuplicatesCombo)var1.widget;
+               var2.add(var2.getText(), 0);
+               var2.setText("");
+            }
+         }
+      });
       this.searchComboList.add(var4);
       return var4;
    }
@@ -124,13 +153,22 @@ public abstract class ASearchTab implements MyObserver {
       }
    }
 
-   protected Combo createSavedSearchCombo(Composite var1, String var2, String var3) {
+   protected Combo createSavedSearchCombo(Composite var1, String var2, final String var3) {
       Combo var4 = this.createSearchCombo(var1, var2);
       if (PreferenceLoader.loadBoolean("searchSaveEntries")) {
          var4.setItems(PreferenceLoader.loadStringArray(var3 + ".sArray"));
       }
 
-      var4.addDisposeListener(new ASearchTab$3(this, var3));
+      var4.addDisposeListener(new DisposeListener() {
+         public void widgetDisposed(DisposeEvent var1) {
+            Combo var2 = (Combo)var1.widget;
+            if (PreferenceLoader.loadBoolean("searchSaveEntries")) {
+               PreferenceLoader.setValue(var3 + ".sArray", var2.getItems(), 25);
+            } else {
+               PreferenceLoader.getPreferenceStore().setValue(var3 + ".sArray", "");
+            }
+         }
+      });
       return var4;
    }
 
@@ -288,7 +326,30 @@ public abstract class ASearchTab implements MyObserver {
 
    public void update(MyObservable var1, Object var2, int var3) {
       if (this.networkCombo != null && !this.networkCombo.isDisposed()) {
-         this.networkCombo.getDisplay().asyncExec(new ASearchTab$4(this));
+         this.networkCombo.getDisplay().asyncExec(new Runnable() {
+            public void run() {
+               if (ASearchTab.this.networkCombo != null && !ASearchTab.this.networkCombo.isDisposed()) {
+                  if (Sancho.hasCollectionFactory() && ASearchTab.this.viewFrame.getCore().getNetworkCollection().getEnabledAndSearchable() != 0) {
+                     ASearchTab.this.syncNetworkCombo(false);
+                  } else {
+                     if (ASearchTab.this.searchCombo.isEnabled()) {
+                        ASearchTab.this.searchCombo.setText(ASearchTab.S_NO_NETWORK);
+                        ASearchTab.this.searchCombo.setEnabled(false);
+                     }
+
+                     if (ASearchTab.this.networkCombo.isEnabled()) {
+                        ASearchTab.this.networkCombo.removeAll();
+                        ASearchTab.this.networkCombo.setText(ASearchTab.S_NO_NETWORK);
+                        ASearchTab.this.networkCombo.setEnabled(false);
+                     }
+
+                     if (ASearchTab.this.searchTab.isButtonEnabled()) {
+                        ASearchTab.this.searchTab.setButtonEnabled(false);
+                     }
+                  }
+               }
+            }
+         });
       }
    }
 

@@ -17,6 +17,7 @@ import sancho.utility.MyObserver;
 import sancho.utility.SwissArmy;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.statistics.GraphCanvas;
+import sancho.view.statistics.GraphData;
 import sancho.view.statistics.GraphViewFrame;
 import sancho.view.statistics.networkStats.NetworkStatsViewFrame;
 import sancho.view.statistics.networks.NetworksViewFrame;
@@ -246,7 +247,11 @@ public class StatisticTab extends AbstractTab implements MyObserver {
    public void updateNetworkCollection(Object var1, int var2) {
       if ((var2 & NetworkCollection.CHANGED_STATS) != 0) {
          Network var3 = (Network)var1;
-         this.cTabFolder.getDisplay().asyncExec(new StatisticTab$1(this, var3));
+         this.cTabFolder.getDisplay().asyncExec(new Runnable() {
+            public void run() {
+               StatisticTab.this.updateNetworkTab(var3);
+            }
+         });
       }
    }
 
@@ -278,7 +283,43 @@ public class StatisticTab extends AbstractTab implements MyObserver {
 
    public void updateHeaderLabels(ClientStats var1) {
       if (this.uploadsHeaderCLabel != null && !this.uploadsHeaderCLabel.isDisposed()) {
-         this.uploadsHeaderCLabel.getDisplay().asyncExec(new StatisticTab$2(this, var1));
+         this.uploadsHeaderCLabel.getDisplay().asyncExec(new Runnable() {
+            public void run() {
+               if (StatisticTab.this.uploadsHeaderCLabel != null && !StatisticTab.this.uploadsHeaderCLabel.isDisposed()) {
+                  StatisticTab.this.uploadsHeaderCLabel
+                     .setText(this.writeLabel(StatisticTab.this.uploadsGraphCanvas.getGraphData(), RS_UPLOADS, var1.getUploadCounter()));
+                  StatisticTab.this.downloadsHeaderCLabel
+                     .setText(this.writeLabel(StatisticTab.this.downloadsGraphCanvas.getGraphData(), RS_DOWNLOADS, var1.getDownloadCounter()));
+               }
+            }
+
+            public String writeLabel(GraphData var1, String var2, long var3) {
+               StringBuffer var5 = new StringBuffer(32);
+               var5.append(var2);
+               var5.append(": ");
+               var5.append(SwissArmy.calcStringSize(var3));
+               var5.append(" ");
+               var5.append(RS_TOTAL);
+               var5.append(", ");
+               var5.append((double)var1.getAvg() / 100.0);
+               var5.append(" ");
+               var5.append(RS_AVG);
+               var5.append(", ");
+               var5.append((double)var1.getMax() / 100.0);
+               var5.append(" ");
+               var5.append(RS_MAX);
+               if (StatisticTab.this.updateDelay > 0) {
+                  var5.append(" ");
+                  var5.append(" (");
+                  var5.append(StatisticTab.this.updateDelay);
+                  var5.append("s ");
+                  var5.append(RS_DELAY);
+                  var5.append(")");
+               }
+
+               return var5.toString();
+            }
+         });
       }
    }
 
@@ -290,60 +331,5 @@ public class StatisticTab extends AbstractTab implements MyObserver {
       super.updateDisplay();
       this.updateDelay = PreferenceLoader.loadInt("graphUpdateDelay");
       this.lastTimeStamp = 0L;
-   }
-
-   // $VF: synthetic method
-   static CLabel access$000(StatisticTab var0) {
-      return var0.uploadsHeaderCLabel;
-   }
-
-   // $VF: synthetic method
-   static GraphCanvas access$100(StatisticTab var0) {
-      return var0.uploadsGraphCanvas;
-   }
-
-   // $VF: synthetic method
-   static String access$200() {
-      return RS_UPLOADS;
-   }
-
-   // $VF: synthetic method
-   static GraphCanvas access$300(StatisticTab var0) {
-      return var0.downloadsGraphCanvas;
-   }
-
-   // $VF: synthetic method
-   static String access$400() {
-      return RS_DOWNLOADS;
-   }
-
-   // $VF: synthetic method
-   static CLabel access$500(StatisticTab var0) {
-      return var0.downloadsHeaderCLabel;
-   }
-
-   // $VF: synthetic method
-   static String access$600() {
-      return RS_TOTAL;
-   }
-
-   // $VF: synthetic method
-   static String access$700() {
-      return RS_AVG;
-   }
-
-   // $VF: synthetic method
-   static String access$800() {
-      return RS_MAX;
-   }
-
-   // $VF: synthetic method
-   static int access$900(StatisticTab var0) {
-      return var0.updateDelay;
-   }
-
-   // $VF: synthetic method
-   static String access$1000() {
-      return RS_DELAY;
    }
 }

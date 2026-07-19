@@ -13,6 +13,10 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import sancho.model.mldonkey.IObject_UID;
 import sancho.utility.VersionInfo;
 import sancho.view.preferences.PreferenceLoader;
@@ -145,10 +149,28 @@ public abstract class GTableMenuListener implements IMenuListener, ISelectionCha
       // Skip the extra mouse listener on macOS (old "carbon" and modern "cocoa"),
       // matching the original intent — the platform handles the popup itself.
       if (!var1.equals("fox") && !var1.equals("carbon") && !var1.equals("cocoa")) {
-         this.gView.getComposite().addMouseListener(new GTableMenuListener$1(this));
+         this.gView.getComposite().addMouseListener(new MouseAdapter() {
+            public void mouseDown(MouseEvent var1) {
+               if (GTableMenuListener.this.gView.getItemAt(var1.x, var1.y) == null) {
+                  GTableMenuListener.this.deselectAll();
+               }
+            }
+         });
       }
 
-      this.gView.getComposite().addKeyListener(new GTableMenuListener$2(this));
+      this.gView.getComposite().addKeyListener(new KeyAdapter() {
+         public void keyPressed(KeyEvent var1) {
+            if ((var1.stateMask & SWT.MOD1) != 0 && (var1.stateMask & 131072) != 0 && var1.character == 1) {
+               GTableMenuListener.this.deselectAll();
+            } else if (var1.stateMask == SWT.MOD1 && var1.character == 1) {
+               GTableMenuListener.this.selectAll();
+            } else if (var1.keyCode == 127) {
+               GTableMenuListener.this.onDeleteKey();
+            } else if (var1.keyCode == 16777227) {
+               GTableMenuListener.this.onF2Key();
+            }
+         }
+      });
    }
 
    protected void onDeleteKey() {

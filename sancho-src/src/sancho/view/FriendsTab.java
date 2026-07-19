@@ -3,10 +3,19 @@ package sancho.view;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Hashtable;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabFolder2Adapter;
+import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import sancho.core.Sancho;
 import sancho.model.mldonkey.Client;
 import sancho.model.mldonkey.utility.ClientMessage;
@@ -24,11 +33,13 @@ import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.AbstractTab;
 import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
+import sancho.view.viewFrame.SashViewFrame;
+import sancho.view.viewFrame.SashViewListener;
 
 public class FriendsTab extends AbstractTab implements MyObserver {
    private CTabFolder cTabFolder;
    private Hashtable openTabs = new Hashtable();
-   private FriendsTab$MessagesViewFrame messagesViewFrame;
+   private MessagesViewFrame messagesViewFrame;
    private FriendsViewFrame friendsViewFrame;
 
    public FriendsTab(MainWindow var1, String var2) {
@@ -73,7 +84,18 @@ public class FriendsTab extends AbstractTab implements MyObserver {
    private void createLeftSash(SashForm var1) {
       this.friendsViewFrame = new FriendsViewFrame(var1, "l.friends", "tab.friends.buttonSmall", this);
       this.addViewFrame(this.friendsViewFrame);
-      this.friendsViewFrame.getGView().getComposite().addMouseListener(new FriendsTab$1(this));
+      this.friendsViewFrame.getGView().getComposite().addMouseListener(new MouseAdapter() {
+         public void mouseDoubleClick(MouseEvent var1) {
+            if (var1.widget instanceof Table) {
+               Table var2 = (Table)var1.widget;
+               TableItem[] var3 = var2.getSelection();
+
+               for (int var4 = 0; var4 < var3.length; var4++) {
+                  FriendsTab.this.openTab((Client)var3[var4].getData());
+               }
+            }
+         }
+      });
    }
 
    private void createFilesView(SashForm var1) {
@@ -97,14 +119,31 @@ public class FriendsTab extends AbstractTab implements MyObserver {
    }
 
    private void createMessagesView(SashForm var1) {
-      this.messagesViewFrame = new FriendsTab$MessagesViewFrame(this, var1, "l.messageTabs", "tab.friends.buttonSmall", this);
+      this.messagesViewFrame = new MessagesViewFrame(var1, "l.messageTabs", "tab.friends.buttonSmall", this);
       this.addViewFrame(this.messagesViewFrame);
       int var2 = PreferenceLoader.loadBoolean("messagesCTabFolderTabsOnTop") ? 128 : 1024;
       this.cTabFolder = WidgetFactory.createCTabFolder(this.messagesViewFrame.getChildComposite(), 8388608 | var2);
       WidgetFactory.addCTabFolderMenu(this.cTabFolder, "messagesCTabFolder");
       this.cTabFolder.setBorderVisible(false);
-      this.cTabFolder.addCTabFolder2Listener(new FriendsTab$2(this));
-      this.cTabFolder.addSelectionListener(new FriendsTab$3(this));
+      this.cTabFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
+         public void close(CTabFolderEvent var1) {
+            CTabItem var2 = (CTabItem)var1.item;
+            MessageConsole var3 = (MessageConsole)var2.getData("messageConsole");
+            Integer var4 = (Integer)var2.getData("id");
+            FriendsTab.this.openTabs.remove(var4);
+            var3.dispose();
+            var2.dispose();
+            FriendsTab.this.setTabsLabel();
+         }
+      });
+      this.cTabFolder.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            CTabItem var2 = (CTabItem)var1.item;
+            MessageConsole var3 = (MessageConsole)var2.getData("messageConsole");
+            FriendsTab.this.setTabsLabel();
+            var3.setFocus();
+         }
+      });
    }
 
    public void closeAllTabs() {
@@ -140,7 +179,13 @@ public class FriendsTab extends AbstractTab implements MyObserver {
             }
          }
 
-         this.cTabFolder.getDisplay().asyncExec(new FriendsTab$4(this, var2, var4));
+         // var4 is reassigned in the loop above, so capture it in a final for the runnable.
+         final Client sender = var4;
+         this.cTabFolder.getDisplay().asyncExec(new Runnable() {
+            public void run() {
+               FriendsTab.this.messageFromClient((ClientMessage)var2, sender);
+            }
+         });
       }
    }
 
@@ -239,8 +284,32 @@ public class FriendsTab extends AbstractTab implements MyObserver {
       }
    }
 
-   // $VF: synthetic method
-   static Hashtable access$000(FriendsTab var0) {
-      return var0.openTabs;
+   // View frame hosting the message tabs; contributes the "close all tabs" tool item.
+   private class MessagesViewFrame extends SashViewFrame {
+      public MessagesViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
+         super(var1, var2, var3, var4);
+         this.createViewListener(new MessagesViewListener(this));
+         this.createViewToolBar();
+      }
+
+      public void createViewToolBar() {
+         super.createViewToolBar();
+         this.addToolItem("ti.f.closeAllTabs", "x", new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent var1) {
+               FriendsTab.this.closeAllTabs();
+            }
+         });
+      }
+   }
+
+   // Context-menu listener contributing the client-files sash actions.
+   private static class MessagesViewListener extends SashViewListener {
+      public MessagesViewListener(SashViewFrame var1) {
+         super(var1);
+      }
+
+      public void menuAboutToShow(IMenuManager var1) {
+         this.createSashActions(var1, "l.clientFiles");
+      }
    }
 }

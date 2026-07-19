@@ -1,12 +1,14 @@
 package sancho.view.transfer.pending;
 
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.ToolItem;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.AbstractTab;
 import sancho.view.utility.SResources;
+import sancho.view.utility.WidgetFactory;
 import sancho.view.viewFrame.SashViewFrame;
-import sancho.view.viewer.GView;
 
 public class PendingViewFrame extends SashViewFrame {
    public PendingViewFrame(SashForm var1, String var2, String var3, AbstractTab var4) {
@@ -18,10 +20,27 @@ public class PendingViewFrame extends SashViewFrame {
 
    public void createViewToolBar() {
       super.createViewToolBar();
-      ToolItem var1 = new ToolItem(this.toolBar, 0);
-      var1.setImage(SResources.getImage("plus"));
-      var1.addSelectionListener(new PendingViewFrame$1(this, var1));
-      this.toggleActive(var1, PreferenceLoader.loadBoolean("pollPending"));
+      ToolItem toolItem = new ToolItem(this.toolBar, 0);
+      toolItem.setImage(SResources.getImage("plus"));
+      toolItem.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            boolean var2 = !PreferenceLoader.loadBoolean("pollPending");
+            PreferenceLoader.getPreferenceStore().setValue("pollPending", var2);
+            PreferenceLoader.saveStore();
+            if (PendingViewFrame.this.getCore() != null) {
+               PendingViewFrame.this.getCore().updatePreferences();
+            }
+
+            PendingViewFrame.this.toggleActive(toolItem, var2);
+            if (var2) {
+               PendingViewFrame.this.gView.setInput();
+            } else {
+               PendingViewFrame.this.gView.getViewer().setInput(null);
+               WidgetFactory.setMaximizedSashFormControl(PendingViewFrame.this.getParentSashForm(), 0);
+            }
+         }
+      });
+      this.toggleActive(toolItem, PreferenceLoader.loadBoolean("pollPending"));
       new ToolItem(this.toolBar, 2);
       this.addRefine();
    }
@@ -29,15 +48,5 @@ public class PendingViewFrame extends SashViewFrame {
    public void toggleActive(ToolItem var1, boolean var2) {
       var1.setImage(SResources.getImage(var2 ? "minus" : "plus"));
       var1.setToolTipText(SResources.getString(var2 ? "l.disableTable" : "l.enableTable"));
-   }
-
-   // $VF: synthetic method
-   static GView access$000(PendingViewFrame var0) {
-      return var0.gView;
-   }
-
-   // $VF: synthetic method
-   static GView access$100(PendingViewFrame var0) {
-      return var0.gView;
    }
 }

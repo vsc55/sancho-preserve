@@ -23,11 +23,14 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import sancho.core.CoreFactory;
+import sancho.model.mldonkey.File;
 import sancho.core.ICore;
 import sancho.core.Sancho;
 import sancho.utility.MyObservable;
@@ -131,7 +134,40 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
             this.toggleDNDBox();
          }
 
-         var1.addFilter(1, new MainWindow$1(this));
+         var1.addFilter(1, new Listener() {
+            public void handleEvent(Event var1) {
+               if ((var1.stateMask & SWT.MOD1) != 0 || (var1.stateMask & 65536) != 0) {
+                  if ((var1.stateMask & 65536) != 0) {
+                     if (var1.keyCode == 16777219) {
+                        int var2 = MainWindow.this.getCurrentTabIndex() - 1;
+                        if (var2 < 0) {
+                           var2 = MainWindow.this.getTabCount() - 1;
+                        }
+
+                        MainWindow.this.setCurrentTab(var2);
+                     } else if (var1.keyCode == 16777220) {
+                        int var3 = MainWindow.this.getCurrentTabIndex() + 1;
+                        if (var3 >= MainWindow.this.getTabCount()) {
+                           var3 = 0;
+                        }
+
+                        MainWindow.this.setCurrentTab(var3);
+                     }
+                  }
+
+                  if (var1.keyCode >= 49 && var1.keyCode <= 57) {
+                     int var4 = var1.keyCode - 48;
+                     if (var4 <= MainWindow.this.getTabCount()) {
+                        MainWindow.this.setCurrentTab(var4 - 1);
+                     }
+                  }
+
+                  if ((var1.stateMask & SWT.MOD1) != 0 && var1.keyCode == 116) {
+                     MainWindow.this.sendTorrentsFromHD();
+                  }
+               }
+            }
+         });
       }
 
       if (PreferenceLoader.loadBoolean("versionCheck")) {
@@ -403,7 +439,46 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
          if (var1 instanceof CoreFactory) {
             // asyncExec so this core-thread observer callback doesn't block on the
             // UI thread; the update is fire-and-forget and asyncExec keeps order.
-            this.shell.getDisplay().asyncExec(new MainWindow$2(this, var2));
+            this.shell.getDisplay().asyncExec(new Runnable() {
+               public void run() {
+                  if (MainWindow.this.shell != null && !MainWindow.this.shell.isDisposed()) {
+                     if (var2 instanceof File) {
+                        if (PreferenceLoader.loadBoolean("downloadCompleteDialog")) {
+                           if (MainWindow.this.downloadCompleteDialog == null) {
+                              MainWindow.this.downloadCompleteDialog = new DownloadCompleteDialog(new Shell(), MainWindow.this);
+                              MainWindow.this.downloadCompleteDialog.open();
+                           }
+
+                           MainWindow.this.downloadCompleteDialog.addFile((File)var2);
+                        }
+                     } else if (var2 instanceof Boolean) {
+                        boolean var1 = var2 == Boolean.TRUE;
+
+                        for (Object var3o : MainWindow.this.registeredTabs) { AbstractTab var3 = (AbstractTab)var3o;
+                           if (var1) {
+                              var3.onConnect();
+                           } else {
+                              var3.onDisconnect();
+                           }
+                        }
+
+                        if (MainWindow.this.statusLine != null) {
+                           MainWindow.this.statusLine.setConnected(var1);
+                        }
+
+                        if (MainWindow.this.minimizer != null) {
+                           MainWindow.this.minimizer.setConnected(var1);
+                        }
+
+                        if (MainWindow.this.dndBox != null) {
+                           MainWindow.this.dndBox.setConnected(var1);
+                        }
+                     } else if (var2 instanceof String && MainWindow.this.statusLine != null) {
+                        MainWindow.this.statusLine.setText((String)var2);
+                     }
+                  }
+               }
+            });
          }
       }
    }
@@ -578,53 +653,4 @@ public class MainWindow implements ShellListener, MyObserver, DisposeListener {
       }
    }
 
-   // $VF: synthetic method
-   static int access$000(MainWindow var0) {
-      return var0.getCurrentTabIndex();
-   }
-
-   // $VF: synthetic method
-   static int access$100(MainWindow var0) {
-      return var0.getTabCount();
-   }
-
-   // $VF: synthetic method
-   static void access$200(MainWindow var0, int var1) {
-      var0.setCurrentTab(var1);
-   }
-
-   // $VF: synthetic method
-   static Shell access$300(MainWindow var0) {
-      return var0.shell;
-   }
-
-   // $VF: synthetic method
-   static DownloadCompleteDialog access$400(MainWindow var0) {
-      return var0.downloadCompleteDialog;
-   }
-
-   // $VF: synthetic method
-   static DownloadCompleteDialog access$402(MainWindow var0, DownloadCompleteDialog var1) {
-      return var0.downloadCompleteDialog = var1;
-   }
-
-   // $VF: synthetic method
-   static List access$500(MainWindow var0) {
-      return var0.registeredTabs;
-   }
-
-   // $VF: synthetic method
-   static StatusLine access$600(MainWindow var0) {
-      return var0.statusLine;
-   }
-
-   // $VF: synthetic method
-   static Minimizer access$700(MainWindow var0) {
-      return var0.minimizer;
-   }
-
-   // $VF: synthetic method
-   static DNDBox access$800(MainWindow var0) {
-      return var0.dndBox;
-   }
 }

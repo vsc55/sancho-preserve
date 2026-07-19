@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -106,27 +108,51 @@ public class HostPage extends WizardPage {
       var2.widthHint = 120;
       var2.horizontalSpan = 2;
       this.list.setLayoutData(var2);
-      this.list.addSelectionListener(new HostPage$1(this));
+      this.list.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            resetInfo();
+         }
+      });
       Button var7 = new Button(var6, 8);
       var7.setLayoutData(new GridData(256));
       var7.setText(SResources.getString("b.addAsNewEntry"));
-      var7.addSelectionListener(new HostPage$2(this));
+      var7.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            addAsNew();
+         }
+      });
       Button var8 = new Button(var6, 8);
       var8.setLayoutData(new GridData(256));
       var8.setText(SResources.getString("b.deleteEntry"));
-      var8.addSelectionListener(new HostPage$3(this));
+      var8.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            if (list.getSelectionIndex() != 0) {
+               removeCurrent();
+            }
+         }
+      });
       Button var9 = new Button(var6, 8);
       var4 = new GridData(768);
       var4.horizontalSpan = 2;
       var9.setLayoutData(var4);
       var9.setText(SResources.getString("b.saveAsCurrent"));
-      var9.addSelectionListener(new HostPage$4(this));
+      var9.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            saveAsCurrent();
+         }
+      });
       Button var10 = new Button(var6, 8);
       var4 = new GridData(768);
       var4.horizontalSpan = 2;
       var10.setLayoutData(var4);
       var10.setText(SResources.getString("b.makeDefault"));
-      var10.addSelectionListener(new HostPage$5(this));
+      var10.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            if (list.getSelectionIndex() != 0) {
+               makeDefault();
+            }
+         }
+      });
    }
 
    public BSpinner createPort(Composite var1, String var2, String var3) {
@@ -138,8 +164,8 @@ public class HostPage extends WizardPage {
       return var4;
    }
 
-   public HostPage$SpinnerLabel createPort2(Composite var1, String var2, String var3) {
-      HostPage$SpinnerLabel var4 = new HostPage$SpinnerLabel(this);
+   public SpinnerLabel createPort2(Composite var1, String var2, String var3) {
+      SpinnerLabel var4 = new SpinnerLabel();
       var4.addLabel(this.addLabel(var1, var2));
       BSpinner var5 = new BSpinner(var1, 2048);
       var5.setMaximum(65536);
@@ -173,12 +199,12 @@ public class HostPage extends WizardPage {
       return var5;
    }
 
-   public HostPage$TextLabel createText2(Composite var1, String var2, String var3) {
+   public TextLabel createText2(Composite var1, String var2, String var3) {
       return this.createText2(var1, var2, var3, false);
    }
 
-   public HostPage$TextLabel createText2(Composite var1, String var2, String var3, boolean var4) {
-      HostPage$TextLabel var5 = new HostPage$TextLabel(this);
+   public TextLabel createText2(Composite var1, String var2, String var3, boolean var4) {
+      TextLabel var5 = new TextLabel();
       var5.addLabel(this.addLabel(var1, var2));
       Text var6 = new Text(var1, 2052 | (var4 ? 4194304 : 0));
       var6.setLayoutData(new GridData(768));
@@ -311,5 +337,63 @@ public class HostPage extends WizardPage {
 
    public int getNum() {
       return this.hm_num;
+   }
+
+   // Pairs a BSpinner with its Label so both can be toggled/queried together.
+   public static class SpinnerLabel {
+      BSpinner spinner;
+      Label label;
+
+      public void addSpinner(BSpinner var1) {
+         this.spinner = var1;
+      }
+
+      public void addLabel(Label var1) {
+         this.label = var1;
+      }
+
+      public void setSelection(int var1) {
+         this.spinner.setSelection(var1);
+      }
+
+      public int getSelection() {
+         return this.spinner.getSelection();
+      }
+
+      public void setEnabled(boolean var1) {
+         this.spinner.setEnabled(var1);
+         this.label.setEnabled(var1);
+      }
+   }
+
+   // Pairs a Text field with its Label so both can be toggled/queried together.
+   public static class TextLabel {
+      Text text;
+      Label label;
+
+      public void setText(String var1) {
+         this.text.setText(var1);
+      }
+
+      public void addText(Text var1) {
+         this.text = var1;
+      }
+
+      public void addLabel(Label var1) {
+         this.label = var1;
+      }
+
+      public String getText() {
+         return this.text.getText();
+      }
+
+      public void setEchoChar(char var1) {
+         this.text.setEchoChar(var1);
+      }
+
+      public void setEnabled(boolean var1) {
+         this.text.setEnabled(var1);
+         this.label.setEnabled(var1);
+      }
    }
 }

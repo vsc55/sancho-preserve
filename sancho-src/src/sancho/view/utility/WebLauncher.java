@@ -3,6 +3,8 @@ package sancho.view.utility;
 import java.io.IOException;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import sancho.utility.VersionInfo;
 import sancho.view.preferences.PreferenceLoader;
 
@@ -76,7 +78,7 @@ public class WebLauncher {
          }
       } else {
          // Linux/other. If the user configured a specific browser, honour it via the
-         // WebLauncher$1 thread. Otherwise use the desktop default through SWT's
+         // background browser thread below. Otherwise use the desktop default through SWT's
          // Program.launch (xdg-open/gio) instead of the dead mozilla/konqueror/
          // netscape chain, falling back to xdg-open and finally the legacy path.
          if (webBrowser == null || webBrowser.equals("")) {
@@ -91,38 +93,47 @@ public class WebLauncher {
             }
          }
 
-         WebLauncher$1 var7 = new WebLauncher$1("webBrowser", var0, var2);
-         var7.start();
+         final String linkHref = var1;
+         Thread browserThread = new Thread("webBrowser") {
+            public void run() {
+               try {
+                  if (!webBrowserOpened
+                     || !webBrowser.equals("MozillaFirebird")
+                        && !webBrowser.equals("netscape")
+                        && !webBrowser.equals("mozilla")) {
+                     Process var11 = openWebBrowser(linkHref);
+                     webBrowserOpened = true;
+
+                     try {
+                        if (var11 != null) {
+                           var11.waitFor();
+                        }
+                     } catch (InterruptedException var8) {
+                        openWebBrowserError(var2);
+                     } finally {
+                        webBrowserOpened = false;
+                     }
+                  } else {
+                     String[] var1 = new String[]{webBrowser, "-remote", "openURL(" + linkHref + ")"};
+                     Runtime.getRuntime().exec(var1);
+                  }
+               } catch (IOException var10) {
+                  openWebBrowserError(var2);
+               }
+            }
+         };
+         browserThread.start();
       }
    }
 
-   private static void openWebBrowserError(Display var0) {
-      var0.asyncExec(new WebLauncher$2(var0));
-   }
-
-   // $VF: synthetic method
-   static boolean access$000() {
-      return webBrowserOpened;
-   }
-
-   // $VF: synthetic method
-   static String access$100() {
-      return webBrowser;
-   }
-
-   // $VF: synthetic method
-   static Process access$200(String var0) throws IOException {
-      return openWebBrowser(var0);
-   }
-
-   // $VF: synthetic method
-   static boolean access$002(boolean var0) {
-      webBrowserOpened = var0;
-      return var0;
-   }
-
-   // $VF: synthetic method
-   static void access$300(Display var0) {
-      openWebBrowserError(var0);
+   private static void openWebBrowserError(final Display var0) {
+      var0.asyncExec(new Runnable() {
+         public void run() {
+            MessageBox var1 = new MessageBox(new Shell(var0), 1);
+            var1.setText(SResources.getString("l.webBrowserErrorTitle"));
+            var1.setMessage(SResources.getString("l.webBrowserError"));
+            var1.open();
+         }
+      });
    }
 }

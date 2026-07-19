@@ -1,13 +1,12 @@
 package sancho.view.search.result;
 
-import org.eclipse.jface.viewers.CustomTableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Display;
+import sancho.model.mldonkey.utility.SearchWaiting;
 import sancho.utility.MyObservable;
 import sancho.utility.ObjectMap;
 import sancho.view.utility.SResources;
 import sancho.view.viewFrame.CTabFolderViewFrame;
-import sancho.view.viewer.GView;
 import sancho.view.viewer.table.GTableContentProvider;
 
 public class ResultTableContentProvider extends GTableContentProvider {
@@ -45,11 +44,44 @@ public class ResultTableContentProvider extends GTableContentProvider {
       super.dispose();
    }
 
-   public void update(MyObservable var1, Object var2, int var3) {
+   public void update(final MyObservable var1, final Object var2, final int var3) {
       if (this.gView != null && !this.gView.isDisposed()) {
          if (this.gView.isVisible() && this.gView.isActive()) {
             Display var4 = this.tableViewer.getTable().getDisplay();
-            var4.asyncExec(new ResultTableContentProvider$1(this, var2, var1, var3));
+            var4.asyncExec(new Runnable() {
+               public void run() {
+                  if (var2 == null) {
+                     ObjectMap objectWeakMap = (ObjectMap)var1;
+                     if (gView == null || gView.isDisposed()) {
+                        return;
+                     }
+
+                     switch (var3) {
+                        case 0:
+                           if (objectWeakMap.added()) {
+                              tableViewer.add(objectWeakMap.getAndClearAdded());
+                              updateHeaderLabel();
+                           }
+                           break;
+                        case 1:
+                           if (objectWeakMap.updated()) {
+                              tableViewer.update(objectWeakMap.getAndClearUpdated(), SResources.SA_Z);
+                              updateHeaderLabel();
+                           }
+                           break;
+                        case 2:
+                           if (objectWeakMap.removed()) {
+                              tableViewer.remove(objectWeakMap.getAndClearRemoved());
+                              updateHeaderLabel();
+                           }
+                     }
+                  } else if (var2 instanceof SearchWaiting) {
+                     SearchWaiting searchWaiting = (SearchWaiting)var2;
+                     searchWaitingString = " (" + SResources.getString("s.r.waiting") + searchWaiting.getNumWaiting() + ")";
+                     updateHeaderLabel();
+                  }
+               }
+            });
          } else {
             this.needsRefresh = true;
          }
@@ -70,35 +102,5 @@ public class ResultTableContentProvider extends GTableContentProvider {
             this.gView.getViewFrame().updateCLabelText(RS_RESULTS + ": " + var2 + this.searchWaitingString);
          }
       }
-   }
-
-   // $VF: synthetic method
-   static GView access$000(ResultTableContentProvider var0) {
-      return var0.gView;
-   }
-
-   // $VF: synthetic method
-   static GView access$100(ResultTableContentProvider var0) {
-      return var0.gView;
-   }
-
-   // $VF: synthetic method
-   static CustomTableViewer access$200(ResultTableContentProvider var0) {
-      return var0.tableViewer;
-   }
-
-   // $VF: synthetic method
-   static CustomTableViewer access$300(ResultTableContentProvider var0) {
-      return var0.tableViewer;
-   }
-
-   // $VF: synthetic method
-   static CustomTableViewer access$400(ResultTableContentProvider var0) {
-      return var0.tableViewer;
-   }
-
-   // $VF: synthetic method
-   static String access$502(ResultTableContentProvider var0, String var1) {
-      return var0.searchWaitingString = var1;
    }
 }

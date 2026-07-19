@@ -50,9 +50,15 @@ public class ConsoleTab extends AbstractTab implements MyObserver {
       }
    }
 
-   public void updateConsole(String var1) {
+   public void updateConsole(final String var1) {
       if (this.getContent() != null && !this.getContent().isDisposed()) {
-         this.getContent().getDisplay().asyncExec(new ConsoleTab$1(this, var1));
+         this.getContent().getDisplay().asyncExec(new Runnable() {
+            public void run() {
+               if (Sancho.hasCollectionFactory() && ConsoleTab.this.console != null && !ConsoleTab.this.console.isDisposed()) {
+                  ConsoleTab.this.console.append(var1);
+               }
+            }
+         });
       }
    }
 
@@ -74,10 +80,5 @@ public class ConsoleTab extends AbstractTab implements MyObserver {
 
       this.console.dispose();
       super.dispose();
-   }
-
-   // $VF: synthetic method
-   static Console access$000(ConsoleTab var0) {
-      return var0.console;
    }
 }

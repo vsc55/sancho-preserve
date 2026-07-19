@@ -2,6 +2,8 @@ package sancho.view.utility.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -13,6 +15,7 @@ import sancho.core.Sancho;
 import sancho.utility.VersionInfo;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.utility.SResources;
+import sancho.view.utility.WebLauncher;
 import sancho.view.utility.WidgetFactory;
 
 public class BugDialog extends Dialog {
@@ -117,11 +120,19 @@ public class BugDialog extends Dialog {
       Button var3 = new Button(var2, 0);
       var3.setLayoutData(new GridData(768));
       var3.setText(SResources.getString("b.reportBug"));
-      var3.addSelectionListener(new BugDialog$1(this));
+      var3.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            WebLauncher.openLink("mailto:" + VersionInfo.getEmail());
+         }
+      });
       Button var4 = new Button(var2, 0);
       var4.setLayoutData(new GridData(128));
       var4.setText(SResources.getString("b.close"));
-      var4.addSelectionListener(new BugDialog$2(this));
+      var4.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            BugDialog.this.close();
+         }
+      });
       return var2;
    }
 }

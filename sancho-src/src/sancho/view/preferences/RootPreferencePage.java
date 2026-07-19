@@ -1,6 +1,7 @@
 package sancho.view.preferences;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -10,11 +11,14 @@ import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.TabFolder;
@@ -78,7 +82,11 @@ public class RootPreferencePage extends CPreferencePage {
          }
       }
 
-      var5.addSelectionListener(new RootPreferencePage$1(this, var5));
+      var5.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            PreferenceLoader.getPreferenceStore().setValue("locale", var5.getItem(var5.getSelectionIndex()));
+         }
+      });
       this.createSeparator(var2);
       this.setupBooleanEditor("autoReconnect", "p.r.general.autoReconnect", var2);
       this.setupIntegerEditor("autoReconnectDelay", "p.r.general.autoReconnectDelay", 1, 10000, var2);
@@ -135,7 +143,12 @@ public class RootPreferencePage extends CPreferencePage {
          var4.select(var5);
       }
 
-      var4.addSelectionListener(new RootPreferencePage$2(this));
+      var4.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            Combo var2 = (Combo)var1.widget;
+            PreferenceLoader.getPreferenceStore().setValue("dlFileDoubleClick", var2.getSelectionIndex());
+         }
+      });
       this.createSeparator(var2);
       this.setupIntegerEditor("dlPercentDecimals", "p.r.downloads.percentDecimals", 0, 5, var2);
       this.setupIntegerEditor("dlRateDecimals", "p.r.downloads.rateDecimals", 0, 5, var2);
@@ -192,7 +205,16 @@ public class RootPreferencePage extends CPreferencePage {
       Button var13 = new Button(var8, 0);
       var13.setText(SResources.getString("b.browse"));
       var13.setLayoutData(new GridData(768));
-      var13.addSelectionListener(new RootPreferencePage$3(this, var12));
+      var13.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            FileDialog var2 = new FileDialog(var12.getShell(), 4);
+            if (var2.open() != null) {
+               String var3 = var2.getFilterPath() + System.getProperty("file.separator");
+               var3 = var3 + var2.getFileName();
+               var12.setText(var3);
+            }
+         }
+      });
       var6 = new GridData(768);
       var6.horizontalSpan = 5;
       Composite var14 = new Composite(var8, 0);
@@ -209,8 +231,27 @@ public class RootPreferencePage extends CPreferencePage {
       var6.widthHint = 200;
       var6.heightHint = 75;
       var17.setLayoutData(var6);
-      var15.addSelectionListener(new RootPreferencePage$4(this, var11, var12, var4, var5, var17));
-      var16.addSelectionListener(new RootPreferencePage$5(this, var17, var4, var5));
+      var15.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            if (!var11.getText().equals("") && !var12.getText().equals("")) {
+               String var2 = var11.getText();
+               String var3 = var12.getText();
+               var4.add(var2);
+               var5.add(var3);
+               RootPreferencePage.this.refreshList(var17, var4, var5);
+            }
+         }
+      });
+      var16.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            if (var17.getSelectionIndex() != -1) {
+               int var2 = var17.getSelectionIndex();
+               var4.remove(var2);
+               var5.remove(var2);
+               RootPreferencePage.this.refreshList(var17, var4, var5);
+            }
+         }
+      });
       this.loadList(var17, var4, var5);
       this.createSeparator(var2);
       this.setupDirectoryEditor("previewDownloadDirectory", "p.r.downloads.previewDownloadDirectory", var2);
@@ -359,7 +400,7 @@ public class RootPreferencePage extends CPreferencePage {
    }
 
    private void addLocalesFromDir(Set locales, File dir) {
-      File[] files = dir.listFiles(new RootPreferencePage$PropertiesFilter());
+      File[] files = dir.listFiles(new PropertiesFilter());
       if (files != null) {
          for (int i = 0; i < files.length; i++) {
             this.addLocale(locales, files[i].getName());
@@ -421,6 +462,14 @@ public class RootPreferencePage extends CPreferencePage {
                var3.add(var7);
             }
          }
+      }
+   }
+
+   // Accepts sancho_*.properties translation files when enumerating available locales.
+   static class PropertiesFilter implements FilenameFilter {
+      public boolean accept(File var1, String var2) {
+         String var3 = var2.toLowerCase();
+         return var3.startsWith(VersionInfo.getName()) && var3.endsWith(".properties");
       }
    }
 }

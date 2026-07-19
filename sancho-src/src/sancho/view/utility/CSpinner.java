@@ -7,6 +7,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
 public class CSpinner extends Composite {
@@ -36,11 +37,31 @@ public class CSpinner extends Composite {
       var3 = new GridData();
       var3.heightHint = var5;
       this.down.setLayoutData(var3);
-      this.text.addListener(25, new CSpinner$1(this));
-      this.text.addListener(31, new CSpinner$2(this));
-      this.up.addListener(13, new CSpinner$3(this));
-      this.down.addListener(13, new CSpinner$4(this));
-      this.addListener(15, new CSpinner$5(this));
+      this.text.addListener(25, new Listener() {
+         public void handleEvent(Event var1) {
+            CSpinner.this.verify(var1);
+         }
+      });
+      this.text.addListener(31, new Listener() {
+         public void handleEvent(Event var1) {
+            CSpinner.this.myTraverse(var1);
+         }
+      });
+      this.up.addListener(13, new Listener() {
+         public void handleEvent(Event var1) {
+            CSpinner.this.up();
+         }
+      });
+      this.down.addListener(13, new Listener() {
+         public void handleEvent(Event var1) {
+            CSpinner.this.down();
+         }
+      });
+      this.addListener(15, new Listener() {
+         public void handleEvent(Event var1) {
+            CSpinner.this.focusIn();
+         }
+      });
       this.text.setFont(this.getFont());
       this.minimum = 0;
       this.maximum = 9;

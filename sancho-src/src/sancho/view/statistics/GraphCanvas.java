@@ -1,8 +1,12 @@
 package sancho.view.statistics;
 
 import org.eclipse.jface.preference.PreferenceStore;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Image;
@@ -32,8 +36,16 @@ public class GraphCanvas extends Composite implements PaintListener, Runnable, D
       this.graphPainter = new GraphPainter(var1, this.graphData);
       this.addPaintListener(this);
       this.addDisposeListener(this);
-      this.addControlListener(new GraphCanvas$1(this));
-      this.addMouseListener(new GraphCanvas$2(this));
+      this.addControlListener(new ControlAdapter() {
+         public void controlResized(ControlEvent var1) {
+            GraphCanvas.this.needNewBuffer = true;
+         }
+      });
+      this.addMouseListener(new MouseAdapter() {
+         public void mouseDoubleClick(MouseEvent var1) {
+            GraphCanvas.this.toggleDisplay();
+         }
+      });
       this.updateDisplay();
    }
 
@@ -115,10 +127,5 @@ public class GraphCanvas extends Composite implements PaintListener, Runnable, D
 
    public void dispose() {
       this.graphData.dispose();
-   }
-
-   // $VF: synthetic method
-   static boolean access$002(GraphCanvas var0, boolean var1) {
-      return var0.needNewBuffer = var1;
    }
 }

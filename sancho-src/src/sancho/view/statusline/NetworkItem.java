@@ -2,16 +2,31 @@ package sancho.view.statusline;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import sancho.core.Sancho;
 import sancho.model.mldonkey.Network;
+import sancho.model.mldonkey.enums.EnumNetwork;
 import sancho.utility.MyObservable;
 import sancho.view.StatusLine;
+import sancho.view.statusline.actions.NetworkConnectMoreAction;
+import sancho.view.statusline.actions.NetworkDisableAction;
+import sancho.view.statusline.actions.NetworkEnableAction;
 import sancho.view.utility.WidgetFactory;
 
 public class NetworkItem implements IStatusItem {
@@ -38,7 +53,7 @@ public class NetworkItem implements IStatusItem {
       this.toolBar = new ToolBar(this.composite, 8388608);
       if (Sancho.hasCollectionFactory()) {
          Network[] var1 = Sancho.getCore().getNetworkCollection().getNetworks();
-         Arrays.sort(var1, new NetworkItem$NetworkComparator());
+         Arrays.sort(var1, new NetworkComparator());
 
          for (int var3 = 0; var3 < var1.length; var3++) {
             Network var4 = var1[var3];
@@ -46,12 +61,27 @@ public class NetworkItem implements IStatusItem {
                ToolItem var2 = new ToolItem(this.toolBar, 0);
                var2.setData(var4);
                this.deletePopupMenus();
-               MenuManager var5 = new MenuManager();
+               final MenuManager var5 = new MenuManager();
                this.popupMenuList.add(var5);
                var5.setRemoveAllWhenShown(true);
-               var5.addMenuListener(new NetworkItem$NetworkMenuListener(var4.getEnumNetwork()));
-               var2.addSelectionListener(new NetworkItem$1(this, var5));
-               var2.addDisposeListener(new NetworkItem$2(this));
+               var5.addMenuListener(new NetworkMenuListener(var4.getEnumNetwork()));
+               var2.addSelectionListener(new SelectionAdapter() {
+                  public void widgetSelected(SelectionEvent var1) {
+                     Rectangle var2 = ((ToolItem)var1.widget).getBounds();
+                     Menu var3 = var5.createContextMenu(NetworkItem.this.toolBar);
+                     Point var4 = new Point(var2.x, var2.y + var2.height);
+                     var4 = NetworkItem.this.toolBar.toDisplay(var4);
+                     var3.setLocation(var4.x, var4.y);
+                     var3.setVisible(true);
+                  }
+               });
+               var2.addDisposeListener(new DisposeListener() {
+                  public void widgetDisposed(DisposeEvent var1) {
+                     if (Sancho.hasCollectionFactory()) {
+                        Sancho.getCore().getNetworkCollection().deleteObserver(NetworkItem.this);
+                     }
+                  }
+               });
                var2.setToolTipText(var4.getToolTip());
                var2.setImage(var4.getImage());
             }
@@ -109,18 +139,60 @@ public class NetworkItem implements IStatusItem {
 
    public void update(MyObservable var1, Object var2, int var3) {
       if (var2 != null && var2 instanceof Network && this.toolBar != null && !this.toolBar.isDisposed()) {
-         Network var4 = (Network)var2;
-         this.composite.getDisplay().asyncExec(new NetworkItem$3(this, var4));
+         final Network var4 = (Network)var2;
+         this.composite.getDisplay().asyncExec(new Runnable() {
+            public void run() {
+               if (NetworkItem.this.toolBar != null && !NetworkItem.this.toolBar.isDisposed()) {
+                  ToolItem var1 = NetworkItem.this.getToolItemByNetwork(var4);
+                  if (var1 != null && !var1.isDisposed()) {
+                     var1.setImage(var4.getImage());
+                     var1.setToolTipText(var4.getToolTip());
+                  }
+               }
+            }
+         });
       }
    }
 
-   // $VF: synthetic method
-   static ToolBar access$000(NetworkItem var0) {
-      return var0.toolBar;
+   // sorts networks by name, keeping gnutella ahead of g2
+   private static class NetworkComparator implements Comparator {
+      public int compare(Object var1, Object var2) {
+         Network var3 = (Network)var1;
+         Network var4 = (Network)var2;
+         if (var3.getName().equalsIgnoreCase("g2") && var4.getName().equalsIgnoreCase("gnutella")) {
+            return 1;
+         } else {
+            return var4.getName().equalsIgnoreCase("g2") && var3.getName().equalsIgnoreCase("gnutella") ? -1 : var3.getName().compareToIgnoreCase(var4.getName());
+         }
+      }
    }
 
-   // $VF: synthetic method
-   static ToolItem access$100(NetworkItem var0, Network var1) {
-      return var0.getToolItemByNetwork(var1);
+   // builds the per-network tool item popup menu on demand
+   private static class NetworkMenuListener implements IMenuListener {
+      EnumNetwork enumNetwork;
+
+      public NetworkMenuListener(EnumNetwork var1) {
+         this.enumNetwork = var1;
+      }
+
+      public void menuAboutToShow(IMenuManager var1) {
+         if (Sancho.hasCollectionFactory()) {
+            Network var2 = Sancho.getCore().getNetworkCollection().getByEnum(this.enumNetwork);
+            if (var2 != null) {
+               if (!var2.isVirtual()) {
+                  if (var2.isEnabled()) {
+                     var1.add(new NetworkDisableAction(var2.getEnumNetwork()));
+                  } else {
+                     var1.add(new NetworkEnableAction(var2.getEnumNetwork()));
+                  }
+               }
+
+               if (var2.isEnabled() && (var2.hasServers() || var2.hasSupernodes())) {
+                  var1.add(new Separator());
+                  var1.add(new NetworkConnectMoreAction(var2.getEnumNetwork()));
+               }
+            }
+         }
+      }
    }
 }

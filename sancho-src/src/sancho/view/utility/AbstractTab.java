@@ -2,6 +2,8 @@ package sancho.view.utility;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -45,7 +47,13 @@ public abstract class AbstractTab {
 
    public void createButton(String var1) {
       this.toolButton = new ToolButton(this.mainWindow.getCoolBar().getToolBar(), 8);
-      this.toolButton.addSelectionListener(new AbstractTab$1(this));
+      this.toolButton.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            if (!AbstractTab.this.isActive()) {
+               AbstractTab.this.setActive();
+            }
+         }
+      });
       this.toolButton.setText(SResources.getString(var1));
       this.toolButton.setToolTipText(SResources.getString(var1 + ".tooltip"));
       this.toolButton.setBigActiveImage(SResources.getImage(var1 + ".buttonActive"));

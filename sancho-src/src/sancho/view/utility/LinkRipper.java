@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -19,17 +20,26 @@ import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DropTarget;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
@@ -62,10 +72,38 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
    private void activateDropTarget(Text var1) {
       byte var2 = 23;
       DropTarget var3 = new DropTarget(var1, var2);
-      UniformResourceLocator var4 = UniformResourceLocator.getInstance();
+      final UniformResourceLocator var4 = UniformResourceLocator.getInstance();
       TextTransfer var5 = TextTransfer.getInstance();
       var3.setTransfer(new Transfer[]{var4, var5});
-      var3.addDropListener(new LinkRipper$1(this, var4, var1));
+      final Text linkEntryText = var1;
+      var3.addDropListener(new DropTargetAdapter() {
+         public void dragEnter(DropTargetEvent var1) {
+            // Request DROP_LINK only if the source offers it, else COPY, else NONE — forcing
+            // detail=4 made SWT reject a COPY-only drag so the drop was never delivered.
+            boolean var2 = false;
+
+            for (int var3 = 0; var3 < var1.dataTypes.length; var3++) {
+               if (var4.isSupportedType(var1.dataTypes[var3])) {
+                  var2 = true;
+                  break;
+               }
+            }
+
+            if (var2 && (var1.operations & 4) != 0) {
+               var1.detail = 4;
+            } else if ((var1.operations & 1) != 0) {
+               var1.detail = 1;
+            } else {
+               var1.detail = 0;
+            }
+         }
+
+         public void drop(DropTargetEvent var1) {
+            if (var1.data != null) {
+               linkEntryText.append((String)var1.data);
+            }
+         }
+      });
    }
 
    public void addMenuItem(Menu var1, String var2, String var3, SelectionAdapter var4) {
@@ -111,11 +149,19 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
       Button var3 = new Button(var2, 0);
       var3.setLayoutData(new GridData(768));
       var3.setText(SResources.getString("b.downloadAll"));
-      var3.addSelectionListener(new LinkRipper$2(this));
+      var3.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            downloadAll();
+         }
+      });
       Button var4 = new Button(var2, 0);
       var4.setLayoutData(new GridData(128));
       var4.setText(SResources.getString("b.close"));
-      var4.addSelectionListener(new LinkRipper$3(this));
+      var4.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            close();
+         }
+      });
       return var2;
    }
 
@@ -142,11 +188,44 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
       this.urlGroup.setText(SResources.getString("rip.waiting"));
       this.urlList = new List(this.urlGroup, 2818);
       this.createMenu();
-      this.urlList.addListener(3, new LinkRipper$4(this));
+      this.urlList.addListener(3, new Listener() {
+         public void handleEvent(Event var1) {
+            if (var1.button == 3) {
+               Menu var2 = popupMenu.createContextMenu(urlList);
+               var2.setLocation(urlList.getDisplay().getCursorLocation());
+               var2.setVisible(true);
+            }
+         }
+      });
       this.urlList.setLayoutData(new GridData(1808));
-      this.urlList.addMouseListener(new LinkRipper$5(this));
-      var5.addSelectionListener(new LinkRipper$6(this));
-      this.urlText.addKeyListener(new LinkRipper$7(this));
+      this.urlList.addMouseListener(new MouseAdapter() {
+         public void mouseDoubleClick(MouseEvent var1) {
+            String[] var2 = urlList.getSelection();
+            String var3 = "";
+            if (var2.length > 0) {
+               var3 = var2[0];
+            }
+
+            if (urlList.getSelectionCount() == 1 && var3.toLowerCase().startsWith("ftp") && var3.endsWith("/")) {
+               urlText.setText(var3);
+               ripLinks();
+            } else {
+               downloadSelected();
+            }
+         }
+      });
+      var5.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            ripLinks();
+         }
+      });
+      this.urlText.addKeyListener(new KeyAdapter() {
+         public void keyPressed(KeyEvent var1) {
+            if (var1.character == '\r' || var1.character == 16777296) {
+               ripLinks();
+            }
+         }
+      });
       return var2;
    }
 
@@ -207,13 +286,13 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
    }
 
    public void menuAboutToShow(IMenuManager var1) {
-      var1.add(new LinkRipper$DownloadSelectedAction(this));
-      var1.add(new LinkRipper$DownloadAllAction(this));
+      var1.add(new DownloadSelectedAction());
+      var1.add(new DownloadAllAction());
       var1.add(new Separator());
-      var1.add(new LinkRipper$CopyAction(this));
-      var1.add(new LinkRipper$CopyAllAction(this));
+      var1.add(new CopyAction());
+      var1.add(new CopyAllAction());
       var1.add(new Separator());
-      var1.add(new LinkRipper$ToggleShowAllAction());
+      var1.add(new ToggleShowAllAction());
    }
 
    public void ripLinks() {
@@ -253,13 +332,25 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
 
          if (var11 == null) {
             if (this.urlGroup != null && !this.urlGroup.isDisposed()) {
-               this.urlGroup.getDisplay().syncExec(new LinkRipper$10(this));
+               this.urlGroup.getDisplay().syncExec(new Runnable() {
+                  public void run() {
+                     urlGroup.setText(SResources.getString("rip.error"));
+                  }
+               });
                this.ripping = false;
             }
          } else {
-            String[] var13 = SwissArmy.parseLinks(var11);
+            final String[] var13 = SwissArmy.parseLinks(var11);
             if (this.urlGroup != null && !this.urlGroup.isDisposed()) {
-               this.urlGroup.getDisplay().syncExec(new LinkRipper$11(this, var13));
+               this.urlGroup.getDisplay().syncExec(new Runnable() {
+                  public void run() {
+                     urlGroup.setText(SResources.getString("l.foundLinks") + "(" + var13.length + "):");
+
+                     for (int var1 = 0; var1 < var13.length; var1++) {
+                        urlList.add(var13[var1]);
+                     }
+                  }
+               });
                this.ripping = false;
             }
          }
@@ -299,15 +390,27 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
                }
             }
 
-            String[] var17 = new String[var3.size()];
+            final String[] var17 = new String[var3.size()];
             var3.toArray(var17);
             if (this.urlGroup == null || this.urlGroup.isDisposed()) {
                return;
             }
 
-            this.urlGroup.getDisplay().syncExec(new LinkRipper$8(this, var17));
+            this.urlGroup.getDisplay().syncExec(new Runnable() {
+               public void run() {
+                  urlGroup.setText(SResources.getString("l.foundLinks") + "(" + var17.length + "):");
+
+                  for (int var1 = 0; var1 < var17.length; var1++) {
+                     urlList.add(var17[var1]);
+                  }
+               }
+            });
          } catch (Exception var10) {
-            this.urlGroup.getDisplay().syncExec(new LinkRipper$9(this));
+            this.urlGroup.getDisplay().syncExec(new Runnable() {
+               public void run() {
+                  urlGroup.setText(SResources.getString("rip.error"));
+               }
+            });
          }
 
          this.ripping = false;
@@ -342,6 +445,85 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
          frameRE = Pattern.compile("src='(.+?)'");
          endSlashRE = Pattern.compile("http://.+/");
       } catch (Exception var1) {
+      }
+   }
+
+   // Context-menu action: copy the selected links to the clipboard.
+   private class CopyAction extends Action {
+      public CopyAction() {
+         super(SResources.getString("mi.copy"));
+         this.setImageDescriptor(SResources.getImageDescriptor("copy"));
+      }
+
+      public void run() {
+         String var1 = "";
+
+         for (int var2 = 0; var2 < urlList.getSelection().length; var2++) {
+            var1 = var1 + urlList.getSelection()[var2] + "\n";
+         }
+
+         if (!var1.equals("")) {
+            addToClipBoard(var1);
+         }
+      }
+   }
+
+   // Context-menu action: copy every ripped link to the clipboard.
+   private class CopyAllAction extends Action {
+      public CopyAllAction() {
+         super(SResources.getString("mi.copyAll"));
+         this.setImageDescriptor(SResources.getImageDescriptor("plus"));
+      }
+
+      public void run() {
+         String var1 = "";
+
+         for (int var2 = 0; var2 < urlList.getItems().length; var2++) {
+            var1 = var1 + urlList.getItems()[var2] + "\n";
+         }
+
+         if (!var1.equals("")) {
+            addToClipBoard(var1);
+         }
+      }
+   }
+
+   // Context-menu action: send every ripped link to the core for download.
+   private class DownloadAllAction extends Action {
+      public DownloadAllAction() {
+         super(SResources.getString("mi.downloadAll"));
+         this.setImageDescriptor(SResources.getImageDescriptor("down_arrow_green"));
+      }
+
+      public void run() {
+         downloadAll();
+      }
+   }
+
+   // Context-menu action: send the selected links to the core for download.
+   private class DownloadSelectedAction extends Action {
+      public DownloadSelectedAction() {
+         super(SResources.getString("mi.downloadSelected"));
+         this.setImageDescriptor(SResources.getImageDescriptor("down_arrow_yellow"));
+      }
+
+      public void run() {
+         downloadSelected();
+      }
+   }
+
+   // Context-menu toggle: persist the "show all links" preference (no outer state needed).
+   private static class ToggleShowAllAction extends Action {
+      public ToggleShowAllAction() {
+         super(SResources.getString("mi.showAll"), 2);
+      }
+
+      public boolean isChecked() {
+         return PreferenceLoader.loadBoolean("linkRipperShowAll");
+      }
+
+      public void run() {
+         PreferenceLoader.getPreferenceStore().setValue("linkRipperShowAll", !this.isChecked());
       }
    }
 }

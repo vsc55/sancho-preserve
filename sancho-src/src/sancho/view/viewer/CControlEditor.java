@@ -20,7 +20,10 @@ public class CControlEditor {
 
    public CControlEditor(Composite var1) {
       this.parent = var1;
-      this.scrollbarListener = new CControlEditor$1(this);
+      this.scrollbarListener = new Listener() {
+         public void handleEvent(Event var1) {
+         }
+      };
       ScrollBar var2 = var1.getHorizontalBar();
       if (var2 != null) {
          var2.addListener(13, this.scrollbarListener);

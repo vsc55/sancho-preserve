@@ -1,9 +1,12 @@
 package sancho.view.statistics.networks;
 
-import java.util.List;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import sancho.model.mldonkey.Network;
+import sancho.view.MainWindow;
+import sancho.view.utility.SResources;
 import sancho.view.viewer.table.GTableMenuListener;
 
 public class NetworksTableMenuListener extends GTableMenuListener implements ISelectionChangedListener {
@@ -25,9 +28,9 @@ public class NetworksTableMenuListener extends GTableMenuListener implements ISe
 
    public void menuAboutToShow(IMenuManager var1) {
       if (this.selectedObjects.size() > 0) {
-         var1.add(new NetworksTableMenuListener$CopyNetworkToClipboardAction(this));
+         var1.add(new CopyNetworkToClipboardAction());
          if (this.gView.getCore().getProtocol() >= 41) {
-            var1.add(new NetworksTableMenuListener$GetStatsAction(this));
+            var1.add(new GetStatsAction());
          }
       }
    }
@@ -41,23 +44,42 @@ public class NetworksTableMenuListener extends GTableMenuListener implements ISe
       }
    }
 
-   // $VF: synthetic method
-   static List access$000(NetworksTableMenuListener var0) {
-      return var0.selectedObjects;
+   // Context-menu action: copies the selected networks to the clipboard.
+   private class CopyNetworkToClipboardAction extends Action {
+      public CopyNetworkToClipboardAction() {
+         super(SResources.getString("mi.copy"));
+         this.setImageDescriptor(SResources.getImageDescriptor("copy"));
+      }
+
+      public void run() {
+         StringBuffer var1 = new StringBuffer(50);
+         String var2 = System.getProperty("line.separator");
+
+         for (int var3 = 0; var3 < NetworksTableMenuListener.this.selectedObjects.size(); var3++) {
+            Network var4 = (Network)NetworksTableMenuListener.this.selectedObjects.get(var3);
+            if (var3 > 0) {
+               var1.append(var2);
+            }
+
+            var1.append(var4.toString());
+         }
+
+         MainWindow.copyToClipboard(var1.toString());
+      }
    }
 
-   // $VF: synthetic method
-   static List access$100(NetworksTableMenuListener var0) {
-      return var0.selectedObjects;
-   }
+   // Context-menu action: requests fresh stats for the selected networks.
+   private class GetStatsAction extends Action {
+      public GetStatsAction() {
+         super(SResources.getString("mi.getStats"));
+         this.setImageDescriptor(SResources.getImageDescriptor("rotate"));
+      }
 
-   // $VF: synthetic method
-   static List access$200(NetworksTableMenuListener var0) {
-      return var0.selectedObjects;
-   }
-
-   // $VF: synthetic method
-   static List access$300(NetworksTableMenuListener var0) {
-      return var0.selectedObjects;
+      public void run() {
+         for (int var1 = 0; var1 < NetworksTableMenuListener.this.selectedObjects.size(); var1++) {
+            Network var2 = (Network)NetworksTableMenuListener.this.selectedObjects.get(var1);
+            var2.getStats();
+         }
+      }
    }
 }

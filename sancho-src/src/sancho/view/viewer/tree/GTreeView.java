@@ -3,10 +3,17 @@ package sancho.view.viewer.tree;
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.jface.viewers.CustomTreeViewer;
 import org.eclipse.jface.viewers.ICustomViewer;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Item;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import sancho.view.preferences.PreferenceLoader;
@@ -116,6 +123,9 @@ public abstract class GTreeView extends GView {
 
       for (int var5 = 0; var5 < this.columnIDs.length(); var5++) {
          int var7 = this.columnIDs.charAt(var5) - 'A';
+         final PreferenceStore preferenceStore = var1;
+         final int arrayItem = var7;
+         final int columnIndex = var5;
          TreeColumn var8 = new TreeColumn(var2, this.columnAlignment[var7]);
          var8.setMoveable(true);
          var1.setDefault(this.columnLabels[var7], this.columnDefaultWidths[var7]);
@@ -123,13 +133,36 @@ public abstract class GTreeView extends GView {
          var8.setToolTipText(SResources.getString(this.columnLabels[var7] + ".tooltip"));
          int var9 = var1.getInt(this.columnLabels[var7]);
          var8.setWidth(var9 > 0 ? var9 : this.columnDefaultWidths[var7]);
-         var8.addListener(10, new GTreeView$1(this));
-         var8.addDisposeListener(new GTreeView$2(this, var1, var7));
+         var8.addListener(10, new Listener() {
+            public void handleEvent(Event var1) {
+               GTreeView.this.onMove();
+            }
+         });
+         var8.addDisposeListener(new DisposeListener() {
+            public synchronized void widgetDisposed(DisposeEvent var1) {
+               TreeColumn var2 = (TreeColumn)var1.widget;
+               if (var2.getWidth() > 0) {
+                  preferenceStore.setValue(GTreeView.this.columnLabels[arrayItem], var2.getWidth());
+               }
+            }
+         });
          if (this.preferenceString.equals("result")) {
-            var8.addControlListener(new GTreeView$3(this, var1, var7));
+            var8.addControlListener(new ControlAdapter() {
+               public void controlResized(ControlEvent var1) {
+                  TableColumn var2 = (TableColumn)var1.widget;
+                  if (var2.getWidth() > 0) {
+                     preferenceStore.setValue(GTreeView.this.columnLabels[arrayItem], var2.getWidth());
+                  }
+               }
+            });
          }
 
-         var8.addListener(13, new GTreeView$4(this, var5));
+         var8.addListener(13, new Listener() {
+            public void handleEvent(Event var1) {
+               GTreeView.this.sortByColumn(columnIndex);
+               GTreeView.this.setSortIndicator();
+            }
+         });
       }
    }
 
@@ -177,15 +210,5 @@ public abstract class GTreeView extends GView {
 
    protected CustomTreeViewer getTreeViewer() {
       return (CustomTreeViewer)this.sViewer;
-   }
-
-   // $VF: synthetic method
-   static String[] access$000(GTreeView var0) {
-      return var0.columnLabels;
-   }
-
-   // $VF: synthetic method
-   static String[] access$100(GTreeView var0) {
-      return var0.columnLabels;
    }
 }

@@ -2,6 +2,7 @@ package sancho.view.viewer.table;
 
 import sancho.utility.MyObservable;
 import sancho.utility.ObjectMap;
+import sancho.view.utility.SResources;
 import sancho.view.viewer.GView;
 
 public abstract class GTableContentProviderOM extends GTableContentProvider {
@@ -52,7 +53,33 @@ public abstract class GTableContentProviderOM extends GTableContentProvider {
    public void onUpdate(ObjectMap var1, Object var2, int var3) {
       if (this.gView != null && !this.gView.isDisposed()) {
          if (this.gView.isActive() && this.gView.isVisible()) {
-            this.gView.getComposite().getDisplay().asyncExec(new GTableContentProviderOM$1(this, var3, var1));
+            this.gView.getComposite().getDisplay().asyncExec(new Runnable() {
+               public void run() {
+                  if (GTableContentProviderOM.this.gView != null && !GTableContentProviderOM.this.gView.isDisposed()) {
+                     switch (var3) {
+                        case 0:
+                           if (var1.added()) {
+                              GTableContentProviderOM.this.tableViewer.add(var1.getAndClearAdded());
+                              GTableContentProviderOM.this.updateHeaderLabel(var1.size());
+                           }
+                           break;
+                        case 1:
+                           if (var1.updated()) {
+                              GTableContentProviderOM.this.tableViewer.update(var1.getAndClearUpdated(), SResources.SA_Z);
+                              if (GTableContentProviderOM.this.updateOnUpdate) {
+                                 GTableContentProviderOM.this.updateHeaderLabel(var1.size());
+                              }
+                           }
+                           break;
+                        case 2:
+                           if (var1.removed()) {
+                              GTableContentProviderOM.this.tableViewer.remove(var1.getAndClearRemoved());
+                              GTableContentProviderOM.this.updateHeaderLabel(var1.size());
+                           }
+                     }
+                  }
+               }
+            });
          } else {
             this.needsRefresh = true;
          }

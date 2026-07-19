@@ -1,6 +1,8 @@
 package sancho.view.utility.setupWizard;
 
 import org.eclipse.jface.preference.PreferenceStore;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -12,22 +14,22 @@ import sancho.view.utility.SResources;
 import sancho.view.utility.WidgetFactory;
 
 public class SSHHostPage extends HostPage {
-   HostPage$TextLabel ssh_host;
-   HostPage$SpinnerLabel ssh_lport;
-   HostPage$TextLabel ssh_pass;
-   HostPage$SpinnerLabel ssh_port;
-   HostPage$TextLabel ssh_rhost;
-   HostPage$SpinnerLabel ssh_rport;
-   HostPage$TextLabel ssh_user;
+   HostPage.TextLabel ssh_host;
+   HostPage.SpinnerLabel ssh_lport;
+   HostPage.TextLabel ssh_pass;
+   HostPage.SpinnerLabel ssh_port;
+   HostPage.TextLabel ssh_rhost;
+   HostPage.SpinnerLabel ssh_rport;
+   HostPage.TextLabel ssh_user;
    Button use_ssh;
    Composite sshComposite;
    Button ssh_fwd_p;
-   HostPage$SpinnerLabel ssh_prport;
-   HostPage$SpinnerLabel ssh_plport;
+   HostPage.SpinnerLabel ssh_prport;
+   HostPage.SpinnerLabel ssh_plport;
    Combo ssh_proxyCombo;
-   HostPage$TextLabel ssh_proxy;
-   HostPage$TextLabel ssh_proxy_user;
-   HostPage$TextLabel ssh_proxy_pass;
+   HostPage.TextLabel ssh_proxy;
+   HostPage.TextLabel ssh_proxy_user;
+   HostPage.TextLabel ssh_proxy_pass;
    Button r1;
    Button r2;
 
@@ -99,7 +101,11 @@ public class SSHHostPage extends HostPage {
       var11.setLayoutData(var8);
       this.ssh_proxy_user = this.createText2(var11, SResources.getString("hm.ssh_proxy_user"), "");
       this.ssh_proxy_pass = this.createText2(var11, SResources.getString("hm.ssh_proxy_pass"), "", true);
-      this.use_ssh.addSelectionListener(new SSHHostPage$1(this));
+      this.use_ssh.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            SSHHostPage.this.toggleSSHEnabled(SSHHostPage.this.use_ssh.getSelection());
+         }
+      });
    }
 
    public void loadHost(HostObject var1, int var2) {

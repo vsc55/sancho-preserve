@@ -1,10 +1,18 @@
 package sancho.view.utility.dialogs;
 
 import gnu.trove.TObjectIntHashMap;
+import gnu.trove.TObjectIntIterator;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -12,6 +20,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import sancho.core.ICore;
 import sancho.core.Sancho;
@@ -103,7 +112,7 @@ public class BandwidthDialog extends Dialog {
 
             if (var12.size() > 0) {
                var9++;
-               var3.add(new BandwidthDialog$ChangePresetAction(this, (String)var5.get(var11), var12));
+               var3.add(new ChangePresetAction((String)var5.get(var11), var12));
             }
          }
       }
@@ -149,7 +158,7 @@ public class BandwidthDialog extends Dialog {
          } else if (var1 == this.BUTTON_MINUS) {
             this.deletePreset(this.selectedPreset);
          } else if (var1 == this.BUTTON_CONFIG) {
-            new BandwidthDialog$ConfigOptionsDialog(this.getShell(), this.foundStrings).open();
+            new ConfigOptionsDialog(this.getShell(), this.foundStrings).open();
             this.close();
          }
       }
@@ -211,12 +220,33 @@ public class BandwidthDialog extends Dialog {
          this.spinnerArray.add(this.createOption(var2, var10, this.intArray[var9]));
       }
 
-      this.presetCombo.addVerifyListener(new BandwidthDialog$1(this));
-      this.presetCombo.addSelectionListener(new BandwidthDialog$2(this));
+      this.presetCombo.addVerifyListener(new VerifyListener() {
+         public void verifyText(VerifyEvent var1) {
+            if (!BandwidthDialog.this.modifying) {
+               BandwidthDialog.this.modifying = true;
+               Combo var2 = (Combo)var1.widget;
+               String var3 = var2.getText() + var1.character;
+               if (!var3.equals("\u0000")) {
+                  var2.setItem(BandwidthDialog.this.selectedPreset, var3);
+               }
+
+               BandwidthDialog.this.modifying = false;
+            }
+         }
+      });
+      this.presetCombo.addSelectionListener(new SelectionAdapter() {
+         public void widgetSelected(SelectionEvent var1) {
+            Combo var2 = (Combo)var1.widget;
+            BandwidthDialog.this.savePreset(BandwidthDialog.this.oldSelection, var2.getItem(BandwidthDialog.this.oldSelection));
+            BandwidthDialog.this.selectedPreset = var2.getSelectionIndex();
+            BandwidthDialog.this.oldSelection = BandwidthDialog.this.selectedPreset;
+            BandwidthDialog.this.loadPreset(BandwidthDialog.this.selectedPreset, false);
+         }
+      });
       return var2;
    }
 
-   protected BSpinner createOption(Composite var1, Option var2, int var3) {
+   protected BSpinner createOption(Composite var1, final Option var2, int var3) {
       if (var2 == null) {
          return null;
       } else {
@@ -224,7 +254,7 @@ public class BandwidthDialog extends Dialog {
          var4.setText(var2.getName());
          var4.setToolTipText(var2.getDescription());
          var4.setLayoutData(new GridData(768));
-         BSpinner var5 = new BSpinner(var1, 2048);
+         final BSpinner var5 = new BSpinner(var1, 2048);
          var5.setToolTipText(var2.getDefaultValue());
          var5.setMinimum(0);
          var5.setMaximum(1000000);
@@ -235,7 +265,11 @@ public class BandwidthDialog extends Dialog {
          var6.setToolTipText(SResources.getString("l.default"));
          var6.setText(SResources.getString("l.default"));
          var6.setImage(SResources.getImage("rotate"));
-         var6.addSelectionListener(new BandwidthDialog$3(this, var5, var2));
+         var6.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent var1) {
+               var5.setSelection(Integer.parseInt(var2.getDefaultValue()));
+            }
+         });
          return var5;
       }
    }
@@ -321,6 +355,113 @@ public class BandwidthDialog extends Dialog {
             BSpinner var5 = (BSpinner)this.spinnerArray.get(var3);
             PreferenceLoader.getPreferenceStore().setValue("bwPreset" + var1 + "_" + var4.getName(), var5.getSelection());
          }
+      }
+   }
+
+   // Menu action that applies a saved preset's stored option values to the core.
+   private static class ChangePresetAction extends Action {
+      private TObjectIntHashMap hm;
+
+      public ChangePresetAction(String var1, TObjectIntHashMap var2) {
+         super(var1);
+         this.hm = var2;
+      }
+
+      public void run() {
+         if (Sancho.hasCollectionFactory()) {
+            TObjectIntIterator var1 = this.hm.iterator();
+
+            while (var1.hasNext()) {
+               var1.advance();
+               Option var2 = (Option)var1.key();
+               int var3 = var1.value();
+               var2.setValue(String.valueOf(var3));
+            }
+         }
+      }
+   }
+
+   // Dialog for choosing which bandwidth options appear as presets.
+   private static class ConfigOptionsDialog extends Dialog {
+      String[] foundList;
+      List rightList;
+
+      public ConfigOptionsDialog(Shell var1, String[] var2) {
+         super(var1);
+         this.foundList = var2;
+      }
+
+      protected void configureShell(Shell var1) {
+         super.configureShell(var1);
+         var1.setImage(VersionInfo.getProgramIcon());
+         var1.setText(SResources.getString("l.bandwidthConfigTitle"));
+      }
+
+      protected void createButtonsForButtonBar(Composite var1) {
+         this.createButton(var1, 0, SResources.getString("b.ok"), true);
+         this.createButton(var1, 1, SResources.getString("b.cancel"), false);
+      }
+
+      protected Control createDialogArea(Composite var1) {
+         Composite var2 = (Composite)super.createDialogArea(var1);
+         var2.setLayout(WidgetFactory.createGridLayout(4, 5, 5, 10, 5, false));
+         if (!Sancho.hasCollectionFactory()) {
+            return var2;
+         } else {
+            final List var3 = new List(var2, 2818);
+            String[] var4 = Sancho.getCore().getOptionCollection().getAllIntOptions();
+            Arrays.sort(var4, new StringComparator());
+            var3.setItems(var4);
+            GridData var5 = new GridData();
+            var5.heightHint = 100;
+            var3.setLayoutData(var5);
+            Button var6 = new Button(var2, 8);
+            var6.setImage(SResources.getImage("plus"));
+            var6.setLayoutData(new GridData());
+            this.rightList = new List(var2, 2818);
+            var5 = new GridData();
+            var5.heightHint = 100;
+            this.rightList.setLayoutData(var5);
+            this.rightList.setItems(this.foundList);
+            Button var7 = new Button(var2, 8);
+            var7.setImage(SResources.getImage("minus"));
+            var7.setLayoutData(new GridData());
+            var7.addSelectionListener(new SelectionAdapter() {
+               public void widgetSelected(SelectionEvent var1) {
+                  if (ConfigOptionsDialog.this.rightList.getSelectionCount() > 0) {
+                     ConfigOptionsDialog.this.rightList.remove(ConfigOptionsDialog.this.rightList.getSelectionIndices());
+                  }
+               }
+            });
+            var6.addSelectionListener(new SelectionAdapter() {
+               public void widgetSelected(SelectionEvent var1) {
+                  if (var3.getSelectionCount() > 0) {
+                     String[] var2 = var3.getSelection();
+
+                     for (int index = 0; var2 != null && index < var2.length; index++) {
+                        ConfigOptionsDialog.this.rightList.add(var2[index]);
+                     }
+                  }
+               }
+            });
+            return var2;
+         }
+      }
+
+      protected void buttonPressed(int var1) {
+         if (var1 == 0 && this.rightList != null) {
+            PreferenceLoader.setValue("bwPresets", this.rightList.getItems());
+            PreferenceLoader.saveStore();
+         }
+
+         super.buttonPressed(var1);
+      }
+   }
+
+   // Alphabetical ordering for option-name strings.
+   private static class StringComparator implements Comparator {
+      public int compare(Object var1, Object var2) {
+         return ((String)var1).compareTo((String)var2);
       }
    }
 }

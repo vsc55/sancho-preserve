@@ -1,13 +1,20 @@
 package sancho.view.utility;
 
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.preference.PreferenceStore;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.DropTarget;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
@@ -17,8 +24,11 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import sancho.core.Sancho;
+import sancho.utility.SwissArmy;
 import sancho.view.preferences.PreferenceLoader;
 import sancho.view.transfer.UniformResourceLocator;
+import sancho.view.viewer.actions.CTabFolderTabsAction;
 
 public class WidgetFactory {
    public static CTabFolder createCTabFolder(Composite var0) {
@@ -111,27 +121,32 @@ public class WidgetFactory {
    }
 
    public static SashForm createSashForm(Composite var0, String var1) {
-      String var2 = var1 + "Orientation";
-      int var3 = PreferenceLoader.loadInt(var2);
+      String orientationPrefString = var1 + "Orientation";
+      int var3 = PreferenceLoader.loadInt(orientationPrefString);
       if (var3 != 256 && var3 != 512) {
          PreferenceStore var4 = PreferenceLoader.getPreferenceStore();
-         var3 = var4.getDefaultInt(var2);
+         var3 = var4.getDefaultInt(orientationPrefString);
       }
 
       SashForm var5 = new SashForm(var0, var3);
       var5.setData("prefString", var1);
-      var5.addDisposeListener(new WidgetFactory$1(var2, var5));
+      var5.addDisposeListener(new DisposeListener() {
+         public void widgetDisposed(DisposeEvent var1) {
+            PreferenceStore var2 = PreferenceLoader.getPreferenceStore();
+            var2.setValue(orientationPrefString, var5.getOrientation());
+         }
+      });
       return var5;
    }
 
    public static void loadSashForm(SashForm var0, String var1) {
-      String var2 = var1 + "Child";
+      String sashChildPrefString = var1 + "Child";
       int var3 = PreferenceLoader.loadIntOrN1(var1 + "Maximized");
       if (sashPrefsExist(var0, var1)) {
          int[] var4 = new int[var0.getChildren().length];
 
          for (int var5 = 0; var5 < var0.getChildren().length; var5++) {
-            Rectangle var6 = PreferenceLoader.loadRectangle(var2 + var5);
+            Rectangle var6 = PreferenceLoader.loadRectangle(sashChildPrefString + var5);
             var4[var5] = var0.getOrientation() == 256 ? var6.width : var6.height;
          }
 
@@ -151,7 +166,15 @@ public class WidgetFactory {
 
       for (int var9 = 0; var9 < var0.getChildren().length; var9++) {
          Control var11 = var0.getChildren()[var9];
-         var11.addDisposeListener(new WidgetFactory$2(var8, var2, var9));
+         final int childNumber = var9;
+         var11.addDisposeListener(new DisposeListener() {
+            public void widgetDisposed(DisposeEvent var1) {
+               Control var2 = (Control)var1.widget;
+               if (var2.getBounds().width > 10 && var2.getBounds().height > 10) {
+                  PreferenceConverter.setValue(var8, sashChildPrefString + childNumber, var2.getBounds());
+               }
+            }
+         });
       }
    }
 
@@ -202,16 +225,58 @@ public class WidgetFactory {
 
    public static void createLinkDropTarget(Control var0) {
       DropTarget var1 = new DropTarget(var0, 21);
-      UniformResourceLocator var2 = UniformResourceLocator.getInstance();
+      UniformResourceLocator uRL = UniformResourceLocator.getInstance();
       TextTransfer var3 = TextTransfer.getInstance();
-      var1.setTransfer(new Transfer[]{var2, var3});
-      var1.addDropListener(new WidgetFactory$3(var2));
+      var1.setTransfer(new Transfer[]{uRL, var3});
+      var1.addDropListener(new DropTargetAdapter() {
+         public void dragEnter(DropTargetEvent var1) {
+            // Request DROP_LINK only if the source offers it, else COPY, else NONE — forcing
+            // detail=4 made SWT reject a COPY-only drag so the drop was never delivered.
+            boolean var2 = false;
+
+            for (int var3 = 0; var3 < var1.dataTypes.length; var3++) {
+               if (uRL.isSupportedType(var1.dataTypes[var3])) {
+                  var2 = true;
+                  break;
+               }
+            }
+
+            if (var2 && (var1.operations & 4) != 0) {
+               var1.detail = 4;
+            } else if ((var1.operations & 1) != 0) {
+               var1.detail = 1;
+            } else {
+               var1.detail = 0;
+            }
+         }
+
+         public void drop(DropTargetEvent var1) {
+            if (var1.data != null) {
+               SwissArmy.sendLink(Sancho.getCore(), (String)var1.data);
+            }
+         }
+      });
    }
 
    public static void addCTabFolderMenu(CTabFolder var0, String var1) {
       MenuManager var2 = new MenuManager();
       var2.setRemoveAllWhenShown(true);
-      var2.addMenuListener(new WidgetFactory$CTabFolderMenuListener(var0, var1));
+      var2.addMenuListener(new CTabFolderMenuListener(var0, var1));
       var0.setMenu(var2.createContextMenu(var0));
+   }
+
+   // Menu listener that populates a CTabFolder's context menu with the tabs-position action.
+   private static class CTabFolderMenuListener implements IMenuListener {
+      CTabFolder cTabFolder;
+      String prefString;
+
+      public CTabFolderMenuListener(CTabFolder var1, String var2) {
+         this.cTabFolder = var1;
+         this.prefString = var2;
+      }
+
+      public void menuAboutToShow(IMenuManager var1) {
+         var1.add(new CTabFolderTabsAction(this.cTabFolder, this.prefString));
+      }
    }
 }

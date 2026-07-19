@@ -50,7 +50,14 @@ public class ResultTab implements MyObserver, Runnable, DisposeListener {
    private void createContent() {
       this.cTabItem = new CTabItem(this.cTabFolder, 8388608);
       this.viewFrame.updateCLabelText(SResources.getString("t.search.results"));
-      this.cTabItem.addDisposeListener(new ResultTab$1(this));
+      this.cTabItem.addDisposeListener(new DisposeListener() {
+         public void widgetDisposed(DisposeEvent var1) {
+            ResultTab.this.viewFrame.onCTabFolderSelection();
+            if (ResultTab.this.cTabFolder.getItemCount() == 0) {
+               ResultTab.this.viewFrame.updateCLabelText(SResources.getString("t.search.results"));
+            }
+         }
+      });
       this.cTabItem.addDisposeListener(this);
       this.cTabItem.setText(SwissArmy.stringNoAccel(this.searchString));
       this.cTabItem.setToolTipText(SResources.getString("s.r.searchingFor") + this.searchString);
@@ -113,7 +120,14 @@ public class ResultTab implements MyObserver, Runnable, DisposeListener {
          if (var2 instanceof SearchWaiting) {
             SearchWaiting var4 = (SearchWaiting)var2;
             if (var4.getId() == this.searchId && this.searchingLabel != null && !this.searchingLabel.isDisposed()) {
-               this.searchingLabel.getDisplay().asyncExec(new ResultTab$2(this, var4));
+               this.searchingLabel.getDisplay().asyncExec(new Runnable() {
+               public void run() {
+                  if (ResultTab.this.searchingLabel != null && !ResultTab.this.searchingLabel.isDisposed()) {
+                     ResultTab.this.searchingLabel.setText(SResources.getString("s.r.searchesWaiting") + var4.getNumWaiting());
+                     ResultTab.this.searchingLabel.getParent().layout();
+                  }
+               }
+            });
             }
          }
 
@@ -133,20 +147,5 @@ public class ResultTab implements MyObserver, Runnable, DisposeListener {
          this.viewFrame.getCore().getResultCollection().deleteObserver(this);
          this.viewFrame.getCore().getResultCollection().closeSearch(this.searchId);
       }
-   }
-
-   // $VF: synthetic method
-   static ResultViewFrame access$000(ResultTab var0) {
-      return var0.viewFrame;
-   }
-
-   // $VF: synthetic method
-   static CTabFolder access$100(ResultTab var0) {
-      return var0.cTabFolder;
-   }
-
-   // $VF: synthetic method
-   static Label access$200(ResultTab var0) {
-      return var0.searchingLabel;
    }
 }
