@@ -112,13 +112,15 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
   parallel agent fleet; a first run hit the API session limit mid-way and corrupted two
   files — `CSpinner`'s ` ` escape and `BandwidthDialog` with NUL bytes — which were
   restored from the last good commit and re-renamed cleanly by a second, controlled run.)
-- [ ] **Validate the Windows association exe-path on an installed MSI build.** The
-  registry association (Preferences → Windows Registry) now creates the keys correctly and
-  takes the executable path from `jpackage.app-path` when installed. Running the dev jar
-  (`java -jar`) that property is unset, so the command falls back to a placeholder path —
-  install `0.9.4-75`'s MSI (or a local jpackage build) and confirm
-  `HKCU\Software\Classes\<proto>\shell\open\command` points at the real `sancho.exe`, and
-  that clicking a magnet/ed2k/sig2dat link actually launches Sancho.
+- [x] ~~**Validate the Windows associations on an installed MSI build.**~~ — done:
+  validated on the `0.9.6` MSI. The exe path resolves to the real `sancho.exe`, the Windows
+  Registry page shows the correct per-item state (Sancho / other app, user vs. machine), and
+  the startup check prompts only for the unregistered associations and creates them at the
+  chosen level.
+- [x] ~~**Validate MSI/deb/rpm upgrade over an existing install.**~~ — done: confirmed the
+  `0.9.6` MSI upgrades in place over an older installed build, with no "another version of
+  this product is already installed" (error 1638). The 0.9.5 fix (incrementing
+  ProductVersion) works.
 - [ ] **(Evaluated, deferred) Migrate off Trove 2.1.0 — the last unmaintained dependency.**
   Trove is the primitive-collections backbone of the model: `ACollection_Int` wraps a
   `TIntObjectHashMap` (int id → model object) for the 8 core collections (File/Client/
@@ -140,16 +142,25 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
   Recommendation: not worth it now; keep this plan for if/when it becomes necessary.
 
 - [ ] **Decide what `ClientTableView.updateDisplay` should do with the dead
-  `downloadsAvailableColor` key.** It reads an unregistered preference (→ `null`), so the
-  clients table currently falls back to the default foreground — harmless but the intended
-  color is never applied. Options: wire it to the registered `downloadsAvailableFileColor`
-  (risk: paints the whole table with a highlight color), register a distinct preference +
-  editor, or drop the line. Needs a visual call.
-- [ ] **Two low-value dead preference keys** (audit): `disableUTF8`
-  (`SwissArmy.java:646`) has no default and no UI — likely an intentional hidden/advanced
-  switch (permanently `false` from the UI); `hm_0_protocol` (`PreferenceLoader.java`) is a
-  registered default never read (the host-manager uses `hm_<n>_coreProtocol`). Leave or
-  tidy.
+  `downloadsAvailableColor` key** (`ClientTableView.java:74`). The line
+  `table.setForeground(PreferenceLoader.loadColor("downloadsAvailableColor"))` is a no-op:
+  the key is never registered (no `setDefault`, no color editor — this is its only use), so
+  `loadColor` always returns `null` and `table.setForeground(null)` just resets the clients
+  table to the default foreground it already has. It looks like a half-wired attempt to reuse
+  the "available" highlight concept — the working analog is the *registered*
+  `downloadsAvailableFileColor` (editor "p.d.downloads.available" under Display → Downloads,
+  used by `DownloadTreeLabelProvider` to tint available files in the downloads tree). Options:
+  **(A, recommended) drop the line** — behaviour-identical, removes the confusing dead ref;
+  (B) point it at `downloadsAvailableFileColor` — would paint the *whole* clients table text
+  in the highlight color (likely unwanted); (C) register a distinct preference + editor for a
+  real clients-table text color (a new feature). Deferred by the user for now; needs a visual
+  call. NB: unlike `disableUTF8`, this one really is inert.
+- [x] ~~**Dead preference keys.**~~ — done: `hm_0_protocol` removed (a registered default
+  never read — the host-manager uses `hm_<n>_coreProtocol`). **`disableUTF8` is deliberately
+  kept:** it is *not* dead — `SwissArmy` reads it and `ConsoleMessage` uses it to pick the
+  console decoding (`getString(false)` vs UTF-8 `getString()`). It is an intentional,
+  permanently-`false` hidden escape hatch (settable only by hand-editing the prefs file) for a
+  core that sends non-UTF-8 console text. Do not remove it or re-flag it as dead.
 
 - [x] ~~De-duplicate keys in the base `sancho.properties`~~ — done: `mi.dynamicColumn`
   and `mi.sort` (each duplicated with an identical value) collapsed to one definition
@@ -170,10 +181,13 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
   outstanding: the keys the original 2004-2006 translators never filled in for the other
   languages (e.g. `fr_FR` ~409, `pt_BR` ~488, `gl_ES` ~433) — those fall back to English.
   Completing them is a large, lower-value translation pass.
-- [ ] **Prune the leftover `appimage/usr/bin/distrib/` bundle.** All the `.properties`
-  duplicates are gone; the folder still holds legacy docs/icons/`sancho.reg`/preview
-  scripts (`preview.sh`/`.bat`, `sendalltorrents`) that nothing in the build references.
-  Decide what (if anything) the AppImage still needs and drop the rest.
+- [x] ~~**Prune the leftover `appimage/usr/bin/distrib/` bundle.**~~ — done: removed the
+  unreferenced, platform-mismatched files (`sancho.reg`, `preview.sh`/`.bat`,
+  `sendalltorrents`, and the Windows/macOS icons `sancho.ico`/`sancho.icns`). Kept the
+  license/authorship docs (`AUTHORS`/`LICENSE.txt`/`CPL.txt`/`LGPL.txt`/`README`), the
+  upstream `ChangeLog` (linked from README.md and CHANGELOG.md), and the Linux icons
+  (`sancho-*.png`/`.xpm`) the legacy AppDir may still use. Verified nothing in the app or the
+  AppImage build (`AppRun`/`build.sh`/`sancho-wrapper.sh`) references the removed files.
 
 - [x] ~~Dependabot~~ — done: `.github/dependabot.yml` watches GitHub Actions and
   Maven deps/plugins weekly, ignoring the compatibility-pinned ones (Eclipse SWT,

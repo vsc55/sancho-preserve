@@ -182,9 +182,18 @@ the command `"…\sancho.exe" "-l" "%1"` — the same layout the app itself uses
 `.reg` editing needed:
 
 1. Run `sancho.exe` and open **Preferences → sancho: Windows registry**.
-2. **File extensions** tab → **Register association** → **Update windows registry**
-   associates `.torrent` files. The **Protocols** tab does the same for `ed2k:`,
-   `magnet:` and `sig2dat:`. (This runs `regedit`, so Windows may prompt for elevation.)
+2. Each protocol (`ed2k:`, `magnet:`, `sig2dat:`, `sfdl:`) and the `.torrent` extension
+   shows its **current state** — associated with Sancho or with another application, and at
+   user (`HKCU`) or machine (`HKLM`) level. Choose **Register association** (or **Unregister
+   association**) on the ones you want to change, then **Update windows registry**.
+3. By default it writes a **per-user** association under `HKCU\Software\Classes`, which needs
+   no elevation — it imports with `reg.exe`, not `regedit`. Tick *"Register for all users"* to
+   write machine-wide `HKEY_CLASSES_ROOT` instead, which does require administrator.
+
+On Windows, Sancho also **checks these associations at startup** (a checkbox on that page
+turns the check off). If any are completely unregistered it offers to create them at user or
+machine level — or to stop asking. Associations already owned by another application are left
+untouched.
 
 Double-clicking a `.torrent` (or an `ed2k:`/`magnet:` link) then runs
 `sancho.exe -l "<file-or-link>"`, which connects to the MLDonkey core and hands it the
@@ -192,9 +201,10 @@ download directly (`S_DLLINK`), without opening the full GUI. As the preference 
 warns, for `.torrent` files the core should be able to read the file (same machine, or
 mldonkey core > 2.5.17).
 
-The launcher is named `sancho.exe` and started with `-Duser.dir=$ROOTDIR` on purpose:
-the registry page derives the executable path from `user.dir`, and `$ROOTDIR` pins it to
-the folder that actually contains `sancho.exe`, so the written association is always correct.
+On an installed build the association command resolves to the real `sancho.exe` via the
+`jpackage.app-path` property jpackage sets on the launcher. Running the portable/dev jar that
+property is unset, so it falls back to the launcher's `-Duser.dir=$ROOTDIR` (which pins the
+working directory to the folder that contains `sancho.exe`).
 
 #### Unattended / silent install (MSI)
 

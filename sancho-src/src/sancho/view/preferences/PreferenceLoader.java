@@ -378,7 +378,6 @@ public class PreferenceLoader {
       store.setDefault("hm_0_username", "admin");
       store.setDefault("hm_0_password", "");
       store.setDefault("hm_0_port", 4001);
-      store.setDefault("hm_0_protocol", 0);
       store.setDefault("hm_0_ssh_host", "192.168.0.1");
       store.setDefault("hm_0_ssh_rhost", "127.0.0.1");
       store.setDefault("hm_0_ssh_port", 22);
