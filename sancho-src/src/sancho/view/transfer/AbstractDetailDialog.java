@@ -42,9 +42,10 @@ public abstract class AbstractDetailDialog extends Dialog implements MyObserver 
    protected CLabel createLine(Composite composite, String text, boolean fullWidth) {
       Label label = new Label(composite, 0);
       label.setText(SResources.getString(text));
-      GridData gridData = new GridData();
-      gridData.widthHint = 100;
-      label.setLayoutData(gridData);
+      // No fixed widthHint: let the field-name label size to its text so longer
+      // (translated) labels aren't clipped. In this GridLayout the column still
+      // aligns to the widest label, so the value columns stay lined up.
+      label.setLayoutData(new GridData());
       final CLabel valueLabel = new CLabel(composite, 0);
       Menu menu = new Menu(valueLabel);
       menu.addMenuListener(new MenuListener() {
@@ -65,7 +66,7 @@ public abstract class AbstractDetailDialog extends Dialog implements MyObserver 
          }
       });
       valueLabel.setMenu(menu);
-      gridData = new GridData();
+      GridData gridData = new GridData();
       if (fullWidth) {
          gridData.widthHint = 300;
          gridData.horizontalSpan = 3;

@@ -208,9 +208,8 @@ public class FileDetailDialog extends AbstractDetailDialog {
    private void createChunkAgesGroup(Composite composite) {
       Label label = new Label(composite, 0);
       label.setText(SResources.getString("dd.f.chunkAges"));
-      GridData labelGridData = new GridData();
-      labelGridData.widthHint = 100;
-      label.setLayoutData(labelGridData);
+      // Size to the label text (was a fixed 100px that clipped longer translations).
+      label.setLayoutData(new GridData());
       Combo combo = new Combo(composite, 8);
       GridData comboGridData = new GridData(768);
       comboGridData.widthHint = 1;
