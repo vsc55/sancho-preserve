@@ -281,8 +281,10 @@ public class LinkRipper extends Dialog implements Runnable, IMenuListener {
       }
    }
 
+   // Resizable window (the ripped-URL list fills the extra space, and the size is
+   // remembered via constrainShellSize/close); add MAX so it can be maximized too.
    protected int getShellStyle() {
-      return 2160 | (SWT.getPlatform().equals("fox") ? 0 : 0);
+      return SWT.BORDER | SWT.CLOSE | SWT.TITLE | SWT.RESIZE | SWT.MAX;
    }
 
    public void menuAboutToShow(IMenuManager menuManager) {

@@ -2,6 +2,7 @@ package sancho.view.utility;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.PreferenceStore;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -72,6 +73,12 @@ public class IDSelector extends Dialog {
       super.configureShell(shell);
       shell.setText(SResources.getString(this.propString) + " " + SResources.getString("l.selector"));
       shell.setImage(SResources.getImage("preferences"));
+   }
+
+   // Resizable/maximizable: the column table (GridData FILL_BOTH) grabs the extra
+   // space, so a taller/wider window shows more columns at once.
+   protected int getShellStyle() {
+      return super.getShellStyle() | SWT.RESIZE | SWT.MAX;
    }
 
    protected void createDefault(Composite parent) {
