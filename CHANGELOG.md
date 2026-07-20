@@ -8,6 +8,31 @@ The upstream project's original changelog (2004–2006) is preserved at
 authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 (`git checkout 0.9.4-23`).
 
+## [0.9.9] — 2026-07-20
+
+### Added
+
+- **The Windows `.msi` installer is now multilingual — a single file that shows its UI in the
+  machine's Windows language.** One `sancho.msi` now carries **English, German, Spanish, French,
+  Italian, Japanese, Portuguese (Portugal + Brazil) and Simplified Chinese**; Windows Installer
+  applies the embedded transform matching the OS UI language at install time (falling back to
+  English), so there is no per-language download and nothing to choose. German/Japanese/Chinese
+  reuse jpackage's bundled strings; Spanish/French/Italian/Portuguese are hand-authored in
+  `packaging/windows/wix-lang/`, while the standard installer dialogs/buttons come translated
+  from WiX's `WixUIExtension`. The build (`tools/build-app.ps1 -Type msi`) does this automatically:
+  jpackage builds the base English MSI and, via `--temp`, leaves its WiX intermediates behind, then
+  the new `tools/wix-multilang.ps1` re-lights them once per language, generates a language transform
+  (`torch`) for each, and embeds the transforms as LCID-named sub-storages with the package language
+  list set. Embedding is done by the bundled `tools/wix-embed-transforms.vbs` (WindowsInstaller COM),
+  so no Windows SDK sample scripts are needed on the build/CI machine. Adding a language is a new
+  `.wxl` in `wix-lang/` plus a row in the script's language table.
+
+### Changed
+
+- **The installer's file/URL association checkbox is now localized.** The "Register .torrent files
+  and ed2k:, magnet:, sig2dat: links…" checkbox in the shortcut-options dialog was hardcoded English;
+  it is now a `!(loc.SanchoRegisterAssociationsLabel)` token translated in every language's `.wxl`.
+
 ## [0.9.8] — 2026-07-20
 
 ### Fixed

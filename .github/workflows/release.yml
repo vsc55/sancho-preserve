@@ -140,6 +140,34 @@ jobs:
 
           Get-ChildItem out | ForEach-Object { Write-Host $_.Name }
 
+      - name: Verify the .msi is multilingual
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $msi = (Get-ChildItem out/sancho-*-win64.msi | Select-Object -First 1).FullName
+
+          # Must match the base + $EXTRA language table in tools/wix-multilang.ps1:
+          # en 1033 (base) + de 1031, fr 1036, it 1040, ja 1041, pt 2070/1046, zh 2052, es 3082.
+          $expected = @(1033, 1031, 1036, 1040, 1041, 2070, 1046, 2052, 3082)
+          $inst = New-Object -ComObject WindowsInstaller.Installer
+
+          # 1) the package language list (Template summary property, "<platform>;<lcid,...>").
+          $template = $inst.SummaryInformation($msi, 0).Property(7)
+          Write-Host "MSI Template summary = $template"
+          $langs = ($template -split ';')[-1] -split ',' | ForEach-Object { [int]$_ }
+          $missing = $expected | Where-Object { $_ -notin $langs }
+          if ($missing) { throw "not multilingual: missing LCIDs $($missing -join ',') (got $($langs -join ','))" }
+
+          # 2) the language transforms are actually embedded (one sub-storage per non-base LCID).
+          $db = $inst.OpenDatabase($msi, 0)
+          $view = $db.OpenView("SELECT ``Name`` FROM _Storages"); $view.Execute()
+          $n = 0; while ($view.Fetch()) { $n++ }
+          $wantTransforms = $expected.Count - 1
+          Write-Host "  embedded transforms = $n (expected $wantTransforms)"
+          if ($n -lt $wantTransforms) { throw "expected $wantTransforms embedded transforms, found $n" }
+          Write-Host "  multilingual MSI OK ($($langs.Count) languages, $n transforms)"
+
       - name: Smoke-test the .msi (silent install / verify / uninstall)
         if: runner.os == 'Windows'
         shell: pwsh

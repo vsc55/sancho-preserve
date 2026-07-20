@@ -105,13 +105,18 @@ $jpArgs = @(
 # release replace the installed one), and the custom WiX (packaging/windows/wix)
 # that offers the optional .torrent/ed2k/magnet/sig2dat association registration.
 # Per-machine install (default) -> associations land in HKLM. Requires WiX 3.14.
+$wixWork = Join-Path $root "target/wix-work"
 if (($Type -eq "msi" -or $Type -eq "exe") -and ($IsWindows -or $env:OS -eq "Windows_NT")) {
+    # --temp keeps jpackage's WiX intermediates (wixobj/config/app image) so the
+    # multilingual post-step below can re-light them; the dir must not pre-exist.
+    if (Test-Path $wixWork) { Remove-Item -Recurse -Force $wixWork }
     $jpArgs += @(
         "--win-menu", "--win-menu-group", "Sancho",
         "--win-shortcut",
         "--win-shortcut-prompt",   # shows the options dialog carrying our REGISTERASSOC checkbox
         "--win-upgrade-uuid", "eb175abb-5d6d-4c3d-87f2-420da357de4f",
-        "--resource-dir", (Join-Path $root "packaging/windows/wix")
+        "--resource-dir", (Join-Path $root "packaging/windows/wix"),
+        "--temp", $wixWork
     )
 }
 
@@ -120,11 +125,23 @@ if ($LASTEXITCODE -ne 0) { throw "jpackage failed" }
 
 # jpackage names the installer sancho-<appVersion>.<ext>; rename it to carry the full
 # project version (with build number) so the local artifact is sancho-0.9.4-66.msi.
+$installerMsi = Join-Path $dest "sancho-$appVersion.$Type"
 if (($Type -eq "msi" -or $Type -eq "exe") -and ($fullVersion -ne $appVersion)) {
-    $built = Join-Path $dest "sancho-$appVersion.$Type"
-    if (Test-Path $built) {
-        Move-Item -Force $built (Join-Path $dest "sancho-$fullVersion.$Type")
+    if (Test-Path $installerMsi) {
+        $installerMsi = Join-Path $dest "sancho-$fullVersion.$Type"
+        Move-Item -Force (Join-Path $dest "sancho-$appVersion.$Type") $installerMsi
     }
+}
+
+# Fold every UI language into that single .msi (embedded transforms auto-applied by
+# the OS language). Reuses jpackage's WiX intermediates left in target/wix-work.
+if ($Type -eq "msi" -and ($IsWindows -or $env:OS -eq "Windows_NT")) {
+    Write-Host "==> building multilingual installer"
+    & (Join-Path $PSScriptRoot "wix-multilang.ps1") `
+        -WorkDir $wixWork `
+        -LangDir (Join-Path $root "packaging/windows/wix-lang") `
+        -OutFile $installerMsi
+    if ($LASTEXITCODE) { throw "wix-multilang.ps1 failed" }
 }
 
 Write-Host ""

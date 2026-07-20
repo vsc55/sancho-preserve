@@ -56,12 +56,15 @@
                  Text="!(loc.ShortcutPromptDlgStartMenuShortcutControlLabel)"/>
         <?endif?>
 
-        <!-- Sancho: register .torrent / ed2k / magnet / sig2dat associations. -->
+        <!-- Sancho: register .torrent / ed2k / magnet / sig2dat associations.
+             Label is localized via MsiInstallerStrings_<lang>.wxl (see the
+             SanchoRegisterAssociationsLabel string); tools/wix-multilang.ps1
+             re-lights this dialog per language for the multilingual MSI. -->
         <Control Type="CheckBox" X="20" Width="330" Height="26" CheckBoxValue="1"
                  Id="RegisterAssociations"
                  Y="205"
                  Property="REGISTERASSOC"
-                 Text="Register .torrent files and ed2k:, magnet:, sig2dat: links to open with Sancho"/>
+                 Text="!(loc.SanchoRegisterAssociationsLabel)"/>
 
         <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes"
                  Text="!(loc.WixUINext)" />

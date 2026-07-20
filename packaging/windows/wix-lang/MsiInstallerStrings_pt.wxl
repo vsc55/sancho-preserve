@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Portuguese installer strings (European Portuguese, pt-PT). jpackage does not
+     bundle Portuguese; the standard WiX dialogs/buttons come from WixUIExtension's
+     pt-PT culture. The same translation is registered for both Portugal (2070) and
+     Brazil (1046) in wix-multilang.ps1. The last string is the custom associations
+     checkbox in ShortcutPromptDlg.wxs.
+     Keep [ProductName]/[INSTALLDIR]/{\Font} tokens and the *Bitmap value verbatim. -->
+<WixLocalization Culture="pt-pt" xmlns="http://schemas.microsoft.com/wix/2006/localization" Codepage="1252">
+  <String Id="message.install.dir.exist">A pasta [INSTALLDIR] já existe. Pretende instalar nessa pasta mesmo assim?</String>
+  <String Id="MainFeatureTitle">Funcionalidade principal</String>
+  <String Id="DowngradeErrorMessage">Já está instalada uma versão mais recente do [ProductName]. As desatualizações estão desativadas. A instalação será encerrada.</String>
+  <String Id="DisallowUpgradeErrorMessage">Já está instalada uma versão anterior do [ProductName]. As atualizações estão desativadas. A instalação será encerrada.</String>
+
+  <String Id="ShortcutPromptDlg_Title">Instalação do [ProductName]</String>
+  <String Id="ShortcutPromptDlgTitle">{\WixUI_Font_Title}Atalhos</String>
+  <String Id="ShortcutPromptDlgBannerBitmap">WixUI_Bmp_Banner</String>
+  <String Id="ShortcutPromptDlgDescription">Selecione os atalhos a criar.</String>
+  <String Id="ShortcutPromptDlgDesktopShortcutControlLabel">Criar atalho(s) no ambiente de trabalho</String>
+  <String Id="ShortcutPromptDlgStartMenuShortcutControlLabel">Criar atalho(s) no menu Iniciar</String>
+  <String Id="InstallDirNotEmptyDlg_Title">Instalação do [ProductName]</String>
+  <String Id="ContextMenuCommandLabel">Abrir com o [ProductName]</String>
+
+  <!-- Sancho custom: the file/URL association checkbox. -->
+  <String Id="SanchoRegisterAssociationsLabel">Associar ficheiros .torrent e ligações ed2k:, magnet:, sig2dat: para abrir com o Sancho</String>
+</WixLocalization>

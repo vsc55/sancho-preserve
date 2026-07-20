@@ -65,6 +65,42 @@ Backlog of improvements for the modernized `sancho-p2p` build. Done items live i
   WiX 3) with shortcuts, upgrade code, and an opt-out checkbox / `REGISTERASSOC`
   property to register the .torrent + ed2k/magnet/sig2dat associations. See
   CHANGELOG.
+- [x] **Multi-language MSI (single installer, auto-selected by OS language).** Route B,
+  done: `tools/build-app.ps1 -Type msi` now emits ONE `sancho.msi` carrying every UI
+  language. jpackage builds the base `en` MSI (JDK 21 + WiX 3) and, via `--temp`, leaves
+  its WiX intermediates behind; `tools/wix-multilang.ps1` re-lights them once per culture,
+  `torch`es each against the base into a language transform (`.mst`), and embeds the
+  transforms as LCID-named sub-storages + sets the package language list. The embed uses a
+  bundled `tools/wix-embed-transforms.vbs` (WindowsInstaller COM) instead of the Windows
+  SDK's `wisubstg.vbs`/`WiLangId.vbs`, so no SDK scripts are needed on the build/CI host.
+  Languages: en (1033) + de/ja/zh (1031/1041/2052, free from jpackage's bundled
+  `MsiInstallerStrings_*.wxl`) + es (3082), fr (1036), it (1040), pt (2070 Portugal +
+  1046 Brazil, one European-Portuguese translation serving both) — the extra ones
+  hand-authored in `packaging/windows/wix-lang/MsiInstallerStrings_*.wxl` (standard WiX
+  dialog buttons still come free from WixUIExtension's per-culture strings).
+  The association checkbox in `ShortcutPromptDlg.wxs` is now a `!(loc.SanchoRegisterAssociationsLabel)`
+  token, translated in each language's `.wxl`. To add a language: drop a
+  `MsiInstallerStrings_<culture>.wxl` in `packaging/windows/wix-lang/` and add its row to
+  the `$EXTRA` table in `wix-multilang.ps1`. NOTE: the extra-language `.wxl` live in
+  `wix-lang/` (NOT in jpackage's `--resource-dir`) on purpose — jpackage auto-discovers
+  every `MsiInstallerStrings_*.wxl` under `--resource-dir` and, on finding a locale it does
+  not bundle (es), makes it the primary culture and mis-builds; only the base `en` override
+  (needed so jpackage's own build resolves the checkbox token) stays in `packaging/windows/wix/`.
+  Still pinned to **JDK 21** (JDK 25's jpackage emits WiX 4 sources); CI already uses JDK 21 + WiX 3.14.
+  Possible follow-up: cover more regional LCIDs that today fall back to English
+  (es-MX 2058 and es traditional-sort 1034; fr-CA 3084; de-AT/CH) — cheap, just add
+  the LCID to the language's `Lcids` in `wix-multilang.ps1`.
+- [ ] **(Option B — bigger) Modernize the Windows installer toolchain to WiX 4/6 +
+  jpackage JDK 25.** The current build is pinned to WiX 3 (EOL) because the custom
+  `packaging/windows/wix/{main.wxs,ShortcutPromptDlg.wxs,overrides.wxi}` are WiX 3 syntax
+  and the CI uses JDK 21. jpackage in JDK 22+ emits WiX 4 sources and drives `wix.exe`
+  (WiX 4/6); its auto-conversion of the WiX 3 template fails on the `<Condition>` child of
+  the association `<Component>`s (WiX 4 moved it to a `Condition` attribute). To modernize:
+  port the 3 custom WiX files to WiX 4 syntax (new namespace, `Condition` attribute,
+  `$(WIXUIARCH)`), switch the CI release job to JDK 25 + install the `wix` dotnet-tool, and
+  re-test the full MSI (install / upgrade / uninstall / associations / silent
+  `REGISTERASSOC=0`). Future-proofs the installer and removes the JDK-21 pin. Do the
+  multi-language work above on top of whichever toolchain wins.
 
 ## Housekeeping
 
