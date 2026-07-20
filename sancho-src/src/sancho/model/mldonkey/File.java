@@ -567,7 +567,7 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
       StringBuffer buffer = new StringBuffer();
       buffer.append(this.relativeAvail);
       buffer.append("%");
-      return buffer.toString().intern();
+      return buffer.toString();
    }
 
    public synchronized long getSize() {
@@ -588,7 +588,7 @@ public class File extends AObjectO implements MyObserver, IObject_UID, IPreview 
          return "-";
       } else {
          int activeSources = this.getActiveSources();
-         return activeSources > 0 ? sources + "(" + activeSources + ")" : String.valueOf(sources).intern();
+         return activeSources > 0 ? sources + "(" + activeSources + ")" : String.valueOf(sources);
       }
    }
 

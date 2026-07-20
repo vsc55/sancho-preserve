@@ -115,14 +115,14 @@ public class Client extends AObjectO {
          text.append("(");
          text.append(this.getState().getFileNum());
          text.append(")");
-         return text.toString().intern();
+         return text.toString();
       } else if (state != EnumHostState.CONNECTED_DOWNLOADING && this.getStateRank() > 0) {
          text.append(" (Q: ");
          text.append(this.getState().getRank());
          text.append(")");
-         return text.toString().intern();
+         return text.toString();
       } else {
-         return text.toString().intern();
+         return text.toString();
       }
    }
 

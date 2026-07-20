@@ -205,7 +205,7 @@ public class Client19 extends Client {
       this.downloaded = buffer.getUInt64();
       this.uploaded = buffer.getUInt64();
       this.uploadFilename = buffer.getString();
-      this.clientSoftwareImageString = this.calcClientSoftwareImageString().intern();
+      this.clientSoftwareImageString = this.calcClientSoftwareImageString();
       this.isUploader = !this.uploadFilename.equals("");
       if (previousDownloaded != this.downloaded || previousUploaded != this.uploaded) {
          changed = true;

@@ -215,7 +215,7 @@ public class ResultCollection extends ACollection_Int {
       }
 
       public String getStats() {
-         return this.sb.toString().intern();
+         return this.sb.toString();
       }
    }
 }

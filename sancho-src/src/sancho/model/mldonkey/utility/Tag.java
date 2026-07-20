@@ -49,6 +49,6 @@ public class Tag {
    }
 
    public synchronized String toString() {
-      return this.enumType == EnumType.STRING ? this.getStringValue() : String.valueOf(this.getValue()).intern();
+      return this.enumType == EnumType.STRING ? this.getStringValue() : String.valueOf(this.getValue());
    }
 }

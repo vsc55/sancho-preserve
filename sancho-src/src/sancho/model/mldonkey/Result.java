@@ -100,7 +100,7 @@ public class Result extends AObject implements IObject_UID {
    }
 
    public synchronized String getBitrateTagString() {
-      return this.tag_bitrate > 0 ? String.valueOf(this.tag_bitrate).intern() : "";
+      return this.tag_bitrate > 0 ? String.valueOf(this.tag_bitrate) : "";
    }
 
    public synchronized String getCodecTag() {
@@ -117,7 +117,7 @@ public class Result extends AObject implements IObject_UID {
 
    public String getCompleteSourcesString() {
       int completeSources = this.getCompleteSources();
-      return completeSources != -1 ? String.valueOf(completeSources).intern() : "";
+      return completeSources != -1 ? String.valueOf(completeSources) : "";
    }
 
    public String getED2K() {
@@ -190,7 +190,7 @@ public class Result extends AObject implements IObject_UID {
          buffer.append("(");
          buffer.append(this.getAvail());
          buffer.append(")");
-         return buffer.toString().intern();
+         return buffer.toString();
       } else {
          return String.valueOf(this.getAvail());
       }
@@ -201,7 +201,7 @@ public class Result extends AObject implements IObject_UID {
    }
 
    public synchronized String getSizeString() {
-      return SwissArmy.calcStringSize(this.getSize()).intern();
+      return SwissArmy.calcStringSize(this.getSize());
    }
 
    public synchronized Tag[] getTagList() {

@@ -277,7 +277,7 @@ public class IDSelector extends Dialog {
          buffer.append(String.valueOf((char)(65 + i)));
       }
 
-      return buffer.toString().intern();
+      return buffer.toString();
    }
 
    public static String getID(int index) {
@@ -323,6 +323,6 @@ public class IDSelector extends Dialog {
       PreferenceStore preferenceStore = PreferenceLoader.getPreferenceStore();
       preferenceStore.setValue(prefName, filteredIDs);
       preferenceStore.setValue(prefNameOff, leftIDs);
-      return filteredIDs.intern();
+      return filteredIDs;
    }
 }

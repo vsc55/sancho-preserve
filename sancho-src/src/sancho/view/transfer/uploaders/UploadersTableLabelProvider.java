@@ -57,7 +57,7 @@ public class UploadersTableLabelProvider extends GTableLabelProvider {
             case 6:
                return client.getAddr().toString();
             case 7:
-               return String.valueOf(client.getPort()).intern();
+               return String.valueOf(client.getPort());
             case 8:
                return client.getModeString();
             case 9:

@@ -27,7 +27,7 @@ public class File31 extends File25 {
       if (this.md4 == null) {
          for (int i = 0; i < this.uids.length; i++) {
             if (this.uids[i].startsWith("urn:ed2k:")) {
-               return this.uids[i].substring(9).intern();
+               return this.uids[i].substring(9);
             }
          }
       }

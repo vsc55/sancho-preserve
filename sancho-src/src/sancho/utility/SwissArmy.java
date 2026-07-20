@@ -112,7 +112,7 @@ public class SwissArmy {
    }
 
    public static synchronized String calcStringSizeGrouped(long size) {
-      return dfGrouped.format(size).intern();
+      return dfGrouped.format(size);
    }
 
    public static synchronized String calcStringSize(long size) {
@@ -121,23 +121,23 @@ public class SwissArmy {
       } else {
          double value = (double)size;
          if (!humanReadable) {
-            return dfGrouped.format(value).intern();
+            return dfGrouped.format(value);
          } else {
             StringBuffer buffer = new StringBuffer(10);
             if (value >= 1.0995116E12F && !maxMegabytes) {
                df000.format(value / 1.0995116E12F, buffer, FP);
-               return buffer.append(S_STB).toString().intern();
+               return buffer.append(S_STB).toString();
             } else if (value >= 1.0737418E9F && !maxMegabytes) {
                df000.format(value / 1.0737418E9F, buffer, FP);
-               return buffer.append(S_SGB).toString().intern();
+               return buffer.append(S_SGB).toString();
             } else if (value >= 1048576.0) {
                df00.format(value / 1048576.0, buffer, FP);
-               return buffer.append(S_SMB).toString().intern();
+               return buffer.append(S_SMB).toString();
             } else if (value >= 1024.0) {
                df00.format(value / 1024.0, buffer, FP);
-               return buffer.append(S_SKB).toString().intern();
+               return buffer.append(S_SKB).toString();
             } else {
-               return String.valueOf(size).intern();
+               return String.valueOf(size);
             }
          }
       }
@@ -146,7 +146,7 @@ public class SwissArmy {
    public static String calcStringOfSeconds(long seconds) {
       StringBuffer buffer = new StringBuffer(10);
       if (seconds < 60L) {
-         return buffer.append(seconds).append(S_S).toString().intern();
+         return buffer.append(seconds).append(S_S).toString();
       } else {
          long days = seconds / secondsInDay;
          if (days > 9999L) {
@@ -158,23 +158,23 @@ public class SwissArmy {
             long minutes = remainder / 60L;
             remainder -= minutes * 60L;
             if (days > 0L) {
-               return buffer.append(days).append(S_D).toString().intern();
+               return buffer.append(days).append(S_D).toString();
             } else if (hours > 0L) {
                buffer.append(hours).append(S_H);
                if (minutes > 0L) {
                   buffer.append(" ").append(minutes).append(S_M);
                }
 
-               return buffer.toString().intern();
+               return buffer.toString();
             } else if (minutes > 0L) {
                buffer.append(minutes).append(S_M);
                if (remainder > 0L) {
                   buffer.append(" ").append(remainder).append(S_S);
                }
 
-               return buffer.toString().intern();
+               return buffer.toString();
             } else {
-               return buffer.append(minutes).append(S_M).toString().intern();
+               return buffer.append(minutes).append(S_M).toString();
             }
          }
       }
@@ -183,7 +183,7 @@ public class SwissArmy {
    public static String calcStringOfSecondsFull(long seconds) {
       StringBuffer buffer = new StringBuffer(10);
       if (seconds < 60L) {
-         return buffer.append(seconds).append(S_S).toString().intern();
+         return buffer.append(seconds).append(S_S).toString();
       } else {
          long days = seconds / secondsInDay;
          long remainder = seconds - days * secondsInDay;
@@ -223,7 +223,7 @@ public class SwissArmy {
             buffer.append(remainder).append(S_S);
          }
 
-         return buffer.toString().intern();
+         return buffer.toString();
       }
    }
 
@@ -277,7 +277,7 @@ public class SwissArmy {
             buffer.append(Integer.toHexString(b));
          }
 
-         return buffer.toString().intern();
+         return buffer.toString();
       }
    }
 
@@ -709,18 +709,18 @@ public class SwissArmy {
    public static synchronized String calcRate(float rate) {
       StringBuffer buffer = new StringBuffer(8);
       df000.format((double)rate, buffer, FP);
-      return buffer.toString().intern();
+      return buffer.toString();
    }
 
    public static synchronized String percentToString(float percent) {
       StringBuffer buffer = new StringBuffer(10);
       dfPercent.format((double)percent, buffer, FP);
       buffer.append("%");
-      return buffer.toString().intern();
+      return buffer.toString();
    }
 
    public static synchronized String rateToString(float rate) {
-      return dfRate.format((double)(rate / 1000.0F)).intern();
+      return dfRate.format((double)(rate / 1000.0F));
    }
 
    public static int UTF8Length(String text) {

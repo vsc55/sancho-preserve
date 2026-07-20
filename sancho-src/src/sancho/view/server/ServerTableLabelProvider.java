@@ -46,9 +46,9 @@ public class ServerTableLabelProvider extends GTableLabelProvider {
          case 3:
             return server.getAddr().toString();
          case 4:
-            return String.valueOf(server.getPort()).intern();
+            return String.valueOf(server.getPort());
          case 5:
-            return String.valueOf(server.getScore()).intern();
+            return String.valueOf(server.getScore());
          case 6:
             return server.getNumUsersString();
          case 7:

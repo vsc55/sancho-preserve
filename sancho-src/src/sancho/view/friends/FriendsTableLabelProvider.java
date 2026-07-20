@@ -67,7 +67,7 @@ public class FriendsTableLabelProvider extends GTableLabelProvider {
          case 7:
             return client.getAddr().toString();
          case 8:
-            return String.valueOf(client.getPort()).intern();
+            return String.valueOf(client.getPort());
          case 9:
             return client.getModeString();
          case 10:

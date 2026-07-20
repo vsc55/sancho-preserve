@@ -48,7 +48,7 @@ public class Addr {
          buffer.append(this.byteArray[2] & 255);
          buffer.append(".");
          buffer.append(this.byteArray[3] & 255);
-         return buffer.toString().intern();
+         return buffer.toString();
       } else {
          return "";
       }

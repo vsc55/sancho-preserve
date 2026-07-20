@@ -26,13 +26,13 @@ public class RoomsTableLabelProvider extends GTableLabelProvider {
          case 0:
             return room.getName();
          case 1:
-            return String.valueOf(room.getNumUsers()).intern();
+            return String.valueOf(room.getNumUsers());
          case 2:
             return room.getRoomState().getName();
          case 3:
             return room.getNetworkName();
          case 4:
-            return String.valueOf(room.getId()).intern();
+            return String.valueOf(room.getId());
          default:
             return "?";
       }

@@ -160,7 +160,7 @@ public class DownloadTreeLabelProvider extends GTableLabelProvider implements IT
          File file = (File)element;
          switch (this.cViewer.getColumnIDs()[columnIndex]) {
             case 0:
-               return String.valueOf(file.getId()).intern();
+               return String.valueOf(file.getId());
             case 1:
                return file.getEnumNetwork().getName();
             case 2:
@@ -178,7 +178,7 @@ public class DownloadTreeLabelProvider extends GTableLabelProvider implements IT
             case 8:
                return file.getRateString();
             case 9:
-               return String.valueOf(file.getNumChunks()).intern();
+               return String.valueOf(file.getNumChunks());
             case 10:
                return file.getEtaString();
             case 11:
@@ -190,9 +190,9 @@ public class DownloadTreeLabelProvider extends GTableLabelProvider implements IT
             case 14:
                return file.getEta2String();
             case 15:
-               return String.valueOf(file.getNumClients()).intern();
+               return String.valueOf(file.getNumClients());
             case 16:
-               return String.valueOf(file.getNumSources()).intern();
+               return String.valueOf(file.getNumSources());
             case 17:
                return file.getRemainingString();
             case 18:
@@ -208,7 +208,7 @@ public class DownloadTreeLabelProvider extends GTableLabelProvider implements IT
          Client client = ((FileClient)element).getClient();
          switch (this.cViewer.getColumnIDs()[columnIndex]) {
             case 0:
-               return String.valueOf(client.getId()).intern();
+               return String.valueOf(client.getId());
             case 1:
                return client.getEnumNetwork().getName();
             case 2:
@@ -218,7 +218,7 @@ public class DownloadTreeLabelProvider extends GTableLabelProvider implements IT
             case 4:
                return client.getDownloadedString();
             case 5:
-               return String.valueOf(client.getPort()).intern();
+               return String.valueOf(client.getPort());
             case 6:
                return client.getAddr().toString();
             case 7:
@@ -228,7 +228,7 @@ public class DownloadTreeLabelProvider extends GTableLabelProvider implements IT
             default:
                return "";
             case 9:
-               return String.valueOf(client.getNumChunks(((FileClient)element).getFile().getId())).intern();
+               return String.valueOf(client.getNumChunks(((FileClient)element).getFile().getId()));
             case 11:
                return client.getSoftware();
             case 13:

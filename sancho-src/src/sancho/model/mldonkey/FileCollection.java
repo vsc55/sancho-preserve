@@ -211,7 +211,7 @@ public class FileCollection extends ACollection_Int2 {
          text.append(")");
       }
 
-      return text.toString().intern();
+      return text.toString();
    }
 
    public void putFile(int id, File file) {

@@ -18,9 +18,9 @@ public class RoomUsersTableLabelProvider extends GTableLabelProvider {
          case 2:
             return user.getAddr().toString();
          case 3:
-            return String.valueOf(user.getPort()).intern();
+            return String.valueOf(user.getPort());
          case 4:
-            return String.valueOf(user.getServerId()).intern();
+            return String.valueOf(user.getServerId());
          default:
             return "??";
       }

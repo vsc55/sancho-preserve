@@ -18,7 +18,7 @@ public class ServerUsersTableLabelProvider extends GTableLabelProvider {
          case 2:
             return user.getAddr().toString();
          case 3:
-            return String.valueOf(user.getPort()).intern();
+            return String.valueOf(user.getPort());
          default:
             return "??";
       }
