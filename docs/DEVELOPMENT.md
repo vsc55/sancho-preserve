@@ -112,8 +112,9 @@ From VS Code it can be launched with F5 (uses the jar / `sancho.core.Sancho` cla
 
 ### 5.3.3 Native packaging
 
-`tools/build-app.ps1` (pwsh 7+, jpackage; requires JDK 17+ and Maven; Linux `deb`→dpkg/fakeroot,
-`rpm`→rpmbuild; Windows `msi`→WiX 3.14):
+`tools/build-app.ps1` (pwsh 7+, jpackage; requires JDK 17+ and Maven — but the Windows `msi`
+needs **JDK 21** + **WiX 3.14**, see the multilingual note below; Linux `deb`→dpkg/fakeroot,
+`rpm`→rpmbuild):
 
 ```powershell
 pwsh -File tools/build-app.ps1 -Type app-image   # portable
@@ -139,6 +140,39 @@ associations, `0` skips them; in an interactive install it maps to the setup dia
 install is **per-machine** (writes `HKLM`), so a silent install needs an elevated/admin context.
 `msiexec` flags: `/qn` no UI, `/qb` basic UI, `/norestart`, `/l*v <file>` full log.
 
+**Multilingual MSI (single installer, auto-selected by OS language).** The `.msi` is one file that
+shows its UI in the machine's Windows language — **en** (base) + **de, fr, it, ja, pt (Portugal 2070 +
+Brazil 1046), zh, es**. Windows Installer applies the embedded transform whose LCID matches the OS UI
+language at install time, falling back to English; there is no language prompt and no per-language
+download. Build flow (in `build-app.ps1 -Type msi`, after jpackage):
+
+1. jpackage builds the base **en** MSI and, with `--temp target/wix-work`, leaves its WiX intermediates
+   (`wixobj/`, `config/`, the staged app image).
+2. `tools/wix-multilang.ps1` re-lights those `wixobj` once per culture → one MSI per language, then
+   `torch`es each against the base into a language transform (`.mst`).
+3. `tools/wix-embed-transforms.vbs` (WindowsInstaller COM, via `cscript` — no Windows SDK scripts
+   needed) embeds each `.mst` as an LCID-named sub-storage and sets the package `Template` language list.
+
+Localization strings live in **two** places, and the split matters:
+
+- `packaging/windows/wix/MsiInstallerStrings_en.wxl` — the base English override, inside jpackage's
+  `--resource-dir`. It carries the custom `!(loc.SanchoRegisterAssociationsLabel)` token (the
+  associations checkbox in `ShortcutPromptDlg.wxs`) so jpackage's own build resolves it.
+- `packaging/windows/wix-lang/MsiInstallerStrings_<culture>.wxl` — the extra languages, **kept OUT of
+  `--resource-dir` on purpose**: jpackage auto-discovers every `MsiInstallerStrings_*.wxl` under
+  `--resource-dir` and, on finding a locale it does not bundle (e.g. `es`), makes it the primary culture
+  and mis-builds. de/ja/zh reuse jpackage's bundled translations; es/fr/it/pt are hand-authored (the
+  standard dialog buttons still come free from WiX's `WixUIExtension`).
+
+**To add a language:** drop a `MsiInstallerStrings_<culture>.wxl` in `packaging/windows/wix-lang/` and
+add a row to the `$EXTRA` table in `wix-multilang.ps1` (a language may map to several LCIDs, as `pt`
+does). Then update the expected-LCID list in the release.yml verification step.
+
+> **Toolchain pin:** the multilingual step (and the custom WiX 3 template) require jpackage that emits
+> **WiX 3** sources — i.e. **JDK 21** + **WiX 3.14** (`light`/`torch` on PATH). JDK 22+ jpackage emits
+> WiX 4 and breaks the flow. Also note PowerShell's COM cannot set MSI indexed record properties
+> (`StringData(i)=x` → `DISP_E_TYPEMISMATCH`), which is why the embedding is done in VBScript.
+
 **AppImage (legacy):** an AppImage of the older (pre-modernization) build can be generated from the
 `appimage/` AppDir — `./appimagetool-x86_64.AppImage Sancho.AppDir/` → `Sancho-x86_64.AppImage`. Kept
 for preservation only; the maintained Linux artifacts are the `.deb`/`.rpm`/app-image above.
@@ -147,9 +181,10 @@ for preservation only; the maintained Linux artifacts are the `.deb`/`.rpm`/app-
 
 - **There are no unit tests in the tree.** No `src/test`, no test dependencies (JUnit/TestNG) in
   `pom.xml`; builds use `-DskipTests`.
-- The existing automated verification is an **MSI smoke-test** in CI
-  (`.github/workflows/release.yml:143-185`): silent install, checks the `.exe` and the association
-  registry keys, uninstalls, and reinstalls with `REGISTERASSOC=0`.
+- The existing automated verification is an **MSI smoke-test** in CI (`.github/workflows/release.yml`):
+  silent install, checks the `.exe` and the association registry keys, uninstalls, and reinstalls with
+  `REGISTERASSOC=0`. A preceding step also **verifies the MSI is multilingual** (reads the `Template`
+  summary language list and counts the embedded transform sub-storages against the expected set).
 - The CI regression check is a `mvn clean package` on Linux (`build.yml`).
 - _Not deducible from code:_ any manual test strategy beyond the above.
 
@@ -158,7 +193,7 @@ for preservation only; the maintained Linux artifacts are the `.deb`/`.rpm`/app-
 | Workflow | Trigger | Does |
 |---|---|---|
 | `build.yml` | push to `main` (ignores `**.md`, `appimage/**`; skips `Release …` commits), PRs, manual | `mvn -B -ntp clean package` on Ubuntu/JDK 21 (regression guard) |
-| `release.yml` | push of tag `v*` or `[0-9]*`; manual = build-only | Creates the release with `CHANGELOG.md` notes, a Win/Linux/macOS matrix (JDK 21) packaging MSI/ZIP/DEB/RPM/DMG + uber-jars, an MSI smoke-test, and uploads 8 assets |
+| `release.yml` | push of tag `v*` or `[0-9]*`; manual = build-only | Creates the release with `CHANGELOG.md` notes, a Win/Linux/macOS matrix (JDK 21) packaging the multilingual MSI + ZIP/DEB/RPM/DMG + uber-jars, a multilingual-MSI check + MSI smoke-test, and uploads 8 assets |
 
 **Publishing a release:** bump `<version>` in `pom.xml`, turn `## [Unreleased]` in `CHANGELOG.md` into
 `## [x.y.z] — date`, commit, `git tag x.y.z`, push branch + tag → triggers `release.yml`.

@@ -36,7 +36,7 @@ Grab the latest build from the **[Releases](../../releases)** page:
 
 | Platform | File | Install / run |
 | --- | --- | --- |
-| Windows (installer) | `sancho-<ver>-win64.msi` | Run it — installs to Program Files with Start-menu/desktop shortcuts and (optional) `.torrent`/`ed2k`/`magnet`/`sig2dat` associations |
+| Windows (installer) | `sancho-<ver>-win64.msi` | Run it — installs to Program Files with Start-menu/desktop shortcuts and (optional) `.torrent`/`ed2k`/`magnet`/`sig2dat` associations. Multilingual: the setup UI follows your Windows language (en/de/es/fr/it/ja/pt/zh) |
 | Windows (portable) | `sancho-<ver>-win64.zip` | Unzip anywhere, run `sancho.exe` (portable, bundled JRE) |
 | Debian / Ubuntu | `sancho-<ver>-linux-x86_64.deb` | `sudo apt install ./sancho-*.deb` |
 | Fedora / RHEL | `sancho-<ver>-linux-x86_64.rpm` | `sudo dnf install ./sancho-*.rpm` |
