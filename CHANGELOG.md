@@ -32,7 +32,27 @@ authentic early **0.9.4-23** source lives at the `0.9.4-23` tag
 - **CI:** the release workflow now sets up JDK 25 and installs the WiX 6 dotnet tool
   (`wix 6.0.2` + the `WixToolset.Util`/`WixToolset.UI` extensions) instead of relying on the runner's
   WiX 3.14. WiX **7** is deliberately not used: it refuses to run until its Open Source Maintenance
-  Fee EULA is accepted (`error WIX7015`), which a public CI build cannot do.
+  Fee EULA is accepted (`error WIX7015`), which a public CI build cannot do. `actions/upload-artifact`
+  moved from v4 to v7, which targets Node 24 (v4 tripped GitHub's Node 20 deprecation warning).
+- **CI: packaging changes can be dry-run.** Pushing a tag starting with `test` builds the whole
+  Win/Linux/macOS matrix and generates, multilingual-checks and smoke-tests the MSI exactly as a real
+  release would, but creates no GitHub Release and uploads to none — the packages are attached to the
+  workflow run as artifacts instead. A manual `workflow_dispatch` behaves the same.
+
+### Fixed
+
+- **`build-app.ps1` could package a stale build.** It reused an existing `target/app-input` whenever
+  the directory was present, so one Maven build can feed several packages (the Linux job builds `deb`
+  and `rpm` back to back). A directory left over from an *earlier version* was reused just the same,
+  silently producing an installer that reports the current version while shipping older code. The
+  staged input is now discarded unless it holds a jar for the version being built. (Local builds only;
+  CI always starts from a clean checkout, so released artifacts were never affected.)
+- **The multilingual step could report success after failing to embed anything.** A read-only COM
+  handle left open on the base MSI kept the file locked, so the embedding step could not open it for
+  writing — yet the build still finished "successfully", producing a single-language installer. The
+  handles are now released before embedding, the result is verified afterwards (sub-storage count and
+  package language list) instead of trusting the exit code, and the embedding script aborts with a
+  non-zero status naming the step that failed.
 
 ## [0.9.9] — 2026-07-20
 
