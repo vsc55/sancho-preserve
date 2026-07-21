@@ -69,6 +69,20 @@ else              { $icon = Join-Path $root "packaging/linux/sancho.png" }
 
 $appInput = Join-Path $root "target/app-input"
 
+# The staged app-input is reused when it is already there, so one Maven build can feed
+# several packages (the Linux release builds deb and rpm back to back). Only reuse it
+# when it actually holds THIS version, though: a directory left over from an earlier
+# build would otherwise be packaged silently, producing an installer that looks current
+# but ships stale code.
+if (Test-Path $appInput) {
+    $staged = Get-ChildItem (Join-Path $appInput "*.jar") -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like "*$fullVersion*" }
+    if (-not $staged) {
+        Write-Host "==> target/app-input holds another version; rebuilding it for $fullVersion"
+        Remove-Item -Recurse -Force $appInput
+    }
+}
+
 if (-not (Test-Path $appInput)) {
     Write-Host "==> mvn clean package"
     mvn -q clean package
